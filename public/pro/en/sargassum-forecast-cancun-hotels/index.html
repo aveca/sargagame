@@ -415,13 +415,15 @@
       lang:'en',
       date:new Date().toISOString()
     };
-    fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
     try{if(window.gtag)gtag('event','sg_b2b_signup',{vertical:'hotels',zone:zone,lang:'en',geo:'cancun'});}catch(_){}
-    form.style.display='none';
-    document.getElementById('form-ok').style.display='block';
-    document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    sgB2BCapture(ENDPOINT,payload,{form:form,lang:'en',source:'b2b',onSuccess:function(){
+      form.style.display='none';
+      document.getElementById('form-ok').style.display='block';
+      document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    }});
   });
 })();
 </script>
+  <script src="/b2b-capture.js"></script>
 </body>
 </html>

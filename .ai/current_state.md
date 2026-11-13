@@ -1,41 +1,812 @@
-> **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
-
-## 2026-11-04 · Agent: coding_agent (OpenCode) · Mission P0 — déblocage PR #1250 (fraîcheur Copernicus) · RÉFÉRENCE LA PLUS RÉCENTE
+## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
 
 ### Travail effectué
-- **Résumé 1 ligne** : PR #1250 resynchronisée sur `main` par merge (jamais de rebase), test régional rendu conforme au registre `regions/`, et **reproduction déterministe du mismatch de fraîcheur observé en production** ajoutée, falsifiée et validée.
+- **Résumé 1 ligne** : defect #2 (semáforo ES sans hreflang `en`) corrigé pour Riviera Maya ; page EN émise, cluster hreflang es+en+x-default vérifié sur les deux langues, test de régression ajouté.
 - **Détails** :
-  - **Git** : `origin/main` a avancé de `997efb6ce` à `2d134a9ff` ; merge **sans conflit** de `origin/main` dans `fix/copernicus-runtime-freshness-route-20261103` (un rebase aurait imposé un force-push, interdit). Historique conservé.
-  - **Divergence constatée** : le ref distant de la branche pointait `ba1145f33` (2 commits) alors que le head du PR #1250 était `843c44d8a` (1 commit) — head de PR GitHub en retard, resynchronisé au push.
-  - **Contrat scientifique intact** : aucune observation NOAA/ERDDAP, aucun score de plage, aucune donnée de prévision, aucun prix, aucun checkout, aucun grant, aucun secret, aucun DNS, aucune donnée de production modifiés. Seuil opérationnel 900 min et seuil public 36 h inchangés (verrouillés par test).
-  - **Test régional corrigé** : `tests/unit/worker-copernicus-regional-preservation.test.cjs` figeait `assertAllRegionsValid() === 6` alors que `regions/` contient 7 fichiers (barbados inclus) → test rouge. Le test valide désormais **tous** les fichiers de région (nombre lu sur le dossier) et couvre la **surface live** dérivée du registre (`live !== false` → 6 régions, 12 requêtes), avec assertion qu'une région non live ne reçoit **pas** d'en-tête CORS.
-  - **Mismatch production reproduit** : `tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` (nouveau, 12 checks) rejoue les valeurs mesurées sur l'API publique Punta Cana (`erddapTimestamp=2026-10-27T12:00:00Z`, `updatedAt=2026-10-28T17:29:55.323Z`, `dataAgeMinutes=1772`, `stale=false`) avec horloge figée, prouve que l'âge est dérivé de `erddapTimestamp` et **jamais** de `updatedAt`, verrouille les frontières 36 h / 900 min, et refuse tout âge inventé (horodatage absent / invalide / futur / source non live).
-- **Fichiers modifiés** : `tests/unit/worker-copernicus-regional-preservation.test.cjs` (modifié), `tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` (nouveau), `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`.
-- **Tests réalisés** :
-  - [x] Node **v24.14.0**
-  - [x] `node tests/unit/worker-copernicus-regional-preservation.test.cjs` → PASS (6 régions, 12 requêtes)
-  - [x] `node tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` → PASS (12 checks)
-  - [x] `node tests/unit/worker-copernicus-freshness.test.cjs` → PASS (6 scénarios) ; `tests/unit/worker-private-guard.test.cjs` → PASS
-  - [x] **Falsification** : route Worker désactivée → le nouveau test **échoue** (exit 1) ; worker restauré (diff vide) → le test détecte bien le défaut
-  - [x] `npm test` → **152/152** fichiers de test OK (après build ; l'unique échec pré-build `sitemap-guard-beach-pages` était un ordre-de-build : `dist/` absent)
-  - [x] `npm run build` → exit 0 ; budget gzip **206,5 Ko / 210 Ko** (`211468 / 215040` octets)
-  - [x] `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`, `RAW_CSS_TEXT=[]`
-  - [x] `npx playwright test` → exit 0
-  - [x] Régression navigateur custom (390x844 + 1280x800) → **PASS 16 checks**, captures inspectées visuellement : badge « SATELLITE EN RETARD · il y a 2 j » affiché, pins en gris neutre, aucune promesse de statut en direct
-  - [x] Lighthouse (npx, hors dépendances du dépôt) → mobile perf 71 / a11y 100 / SEO 100 / CLS 0 ; desktop perf **100** / a11y 100 / SEO 100 / CLS 0
-- **Problèmes restants** :
-  - [ ] PR #1250 reste **Draft** : non mergée, non déployée. Le mismatch production n'est donc **pas** résolu en production tant que le Worker n'est pas déployé avec `run_worker_first` sélectif.
-  - [ ] Le score `best-practices` Lighthouse (73) est dû à des artefacts du preview local (cookies tiers, endpoint `.php` non exécuté, absence de source maps en build prod) — sans lien avec ce PR.
-  - [ ] Titre homepage « MARTINIQUE AUJOURD'HUI » alors que la source est en retard : hors périmètre de ce PR (traitement stale de la carte déjà en place, pins neutres).
-- **Prochaine action recommandée** :
-  1. Revue puis merge de PR #1250 (Draft → Ready) — Rôle : release_agent
-  2. Déploiement du Worker régional avec `run_worker_first: ["/api/copernicus/sargassum.json"]` puis vérification HTTP des 6 domaines — Rôle : devops_agent (autorisation requise)
-- **Branche / PR** :
-  - Branche : `fix/copernicus-runtime-freshness-route-20261103`
-  - PR : #1250 (Draft, base `main`)
-  - Commit head : `5658bcc35` (merge de `origin/main`) + commit de tests à venir
+  - `scripts/lib/region-seo-pages.cjs` : `buildSlugMap` — slug `semaforo` basé sur `primary === 'es'` (au lieu de `lang === 'es'`) ; `emitLangPages` — bloc semáforo émis pour toute langue ayant un slug défini, copy EN (title/desc/H1/intro) quand `lang === 'en'`.
+  - `tests/region-seo-hubs-freshness.test.cjs` : 5 assertions de régression (titre EN, hreflang es/en/x-default sur ES + EN).
+  - Build MQ (défaut), Riviera Maya (es+en), Florida (en) : exit 0.
+  - `node tests/region-seo-hubs-freshness.test.cjs` → OK.
+  - Vérifié sur build réel : `dist/semaforo-del-sargazo/` + `dist/en/semaforo-del-sargazo/` existent, hreflang cluster complet (es, en, x-default) sur les deux.
+  - Florida (EN primaire) : aucune page semáforo émise — pas de régression.
+- **Fichiers modifiés** : `scripts/lib/region-seo-pages.cjs`, `tests/region-seo-hubs-freshness.test.cjs`.
+- **Tests réalisés** : `npm run build` (MQ, rivieramaya, florida) exit 0 ; `node tests/region-seo-hubs-freshness.test.cjs` → OK.
+- **Problèmes restants** : défauts MQ/GP dans `vite.config.js` (denylistés, non corrigibles dans cette mission).
+- **Prochaine action recommandée** : committer la branche `seo/ahrefs-repair-issue1408`, pousser, créer PR.
+- **Branche / PR** : Branche : `seo/ahrefs-repair-issue1408` ; PR : à créer ; Commit head : à définir.
+## 2026-11-10 23:20 UTC · Agent: OpenCode (coding + QA) — état live réel des 6 domaines + diagnostic de la boucle Factory #1384
+
+### Travail effectué
+- **Résumé 1 ligne** : l'état **live** des 6 domaines et de la boucle Factory est établi et documenté ; une **découverte P0** (la conversion B2C est fermée hors fenêtre satellite) est consignée pour décision fondateur — **aucun code produit, aucun paiement, aucun déploiement, aucun merge**.
+- **Détails** :
+  - **P0 live — la vente B2C est fermée quand l'observation satellite a plus de 12 h** (`.ai/bugs.md` **BUG-2026-015**). Sur les 6 domaines : la fiche s'ouvre par le pin mais **ne contient aucun CTA paywall** (`lockCtaCount = 0`), l'accueil n'a **aucun CTA Premium**, la carte n'affiche **aucun nom de plage** (`labels = 0`). Le paywall reste atteignable **par deep-link `?paywall=1`** (prix p30 14,99 € correct). Cause : `src/ChasseHome.jsx:522` (`satelliteDecisionCurrent` ⇒ observation ERDDAP **< 12 h**), observation live `2026-11-09T12:00:00Z` = **2101 min (35 h)**, `stale = false`, NOAA publiant **1×/jour à 12:00Z** ⇒ fenêtre fermée **12 h sur 24**. Corroboré par l'audit E2E planifié sur `main` (run `42909506789`) : **16 défauts bloquants**, tous `pick-beach`/`nav-broken`, **une seule cause racine**. **Décision founder requise** : (a) découpler l'entrée paywall du verdict satellite (la prévision 7 j vient du pipeline forecast) ou (b) aligner le seuil UI (720 min) sur le SLA de déploiement (900 min) et la cadence NOAA. **Aucun correctif produit dans ce PR.**
+  - **État live des 6 domaines** (lecture seule) : HTTP 200 partout (325–457 ms) ; bundle servi **pré-#1383** (`/premium/` EUR 799/1499/2499, USD 899/1699, **season USD absent**, **surcharge +15 %** encore appliquée, marqueurs SOS `sg-soscta`/`sg_sos_checkout`/`SOS PLAGE 24H`/`SOSPlage`, `/?sos=1` → 200) ; `GET /api/mollie-pay?pass=sos` → **410** sur les 6 (la création SOS est bien close côté serveur financier).
+  - **Workers live** : `sg-payments` = `e1d72c56-6d52-4fef-961d-9071ab1731c0` (2026-11-10T00:48Z, « Return 410 for SOS GET /api/mollie-pay ») ⇒ **pré-#1383, non redéployé** ; `sg-noso` = `2f8cf9c4-925c-4c08-9ef0-8d59002cbb77` (00:50Z, « Disable USD +15% display markup »).
+  - **Diagnostic de la boucle Factory #1384** (« heartbeat expiré ») : **cause racine unique prouvée** — `cfg.mission.maxAttempts` (3) existait dans `.ai/autopilot/config.json` mais **n'était jamais lu** par `scripts/autopilot/lib/mission-watchdog.cjs`. Le watchdog écrivait `retrying` (état non terminal) et se retrouvait « périmé » au cycle suivant (heartbeat jamais émis) ⇒ **auto-reprise infinie**. Mesures : **242 commentaires `retrying`** pour **1** `imported` et **1** `blocked` (11:45:54Z), sur 254 commentaires ; `attempts = 242` dans `mission-state.json`.
+  - **Second défaut, prouvé** : le garde-fou de sécurité a été déclenché par un **commentaire de statut** (11:39:16Z, ligne « … merge, déploiement et LIVE comme étapes distinctes » — une *description* de protocole) alors que le **corps de la mission est propre** (`blocked:false`). Le garde-fou scanne titre + corps + **commentaires** ⇒ une mission légitime a été bloquée 13 h après son import, sur une trace durable (`blockedSafety`) devenue fausse. Correctif en cours : les commentaires de statut de la boucle (`<!-- autopilot-status:… -->`, `<!-- SARGAGAME-CYCLE-STATUS -->`) sont écartés du scan, et un blocage de sécurité devenu sans objet peut être **levé**.
+  - **Troisième défaut** : un **timeout transitoire** unique sur `sargazotulum.com` a déclenché `FACTORY_STOP` et arrêté toute la boucle 24/7 — alors que le domaine répond 200 (86–457 ms). Le health check ne confirmait pas la panne.
+
+### Fichiers modifiés
+- `.ai/bugs.md` — **BUG-2026-015** (nouveau) : conversion fermée hors fenêtre satellite (P0, décision founder).
+- `.ai/changelog.md` — entrée datée : découverte live, état des 6 domaines, diagnostic #1384.
+- `.ai/current_state.md` — ce handoff.
+- `.ai/tasks.md` — tâche P0 ajoutée (décision produit + correctif), non marquée done.
+
+### Tests réalisés
+- [x] Lecture seule live sur les 6 domaines (HTTP 200, prix `/premium/`, marqueurs SOS, `/?sos=1`, `GET /api/mollie-pay?pass=sos` → 410)
+- [x] Sonde navigateur (iPhone 12, lecture seule) sur les 6 domaines : `labels`, `lockCtaCount`, CTA accueil, ouverture de fiche, paywall par deep-link
+- [x] Age de l'observation satellite calculé sur le JSON live : **2101 min** → `isSatelliteFresh12h` = false
+- [x] Audit E2E planifié sur `main` (run `42909506789`) : **16 défauts bloquants**, cause unique
+- [x] Analyse de l'issue #1384 (254 commentaires) : répartition `imported` 1 / `retrying` 242 / `blocked` 1
+- [x] Reproduction locale du faux positif du garde-fou (corps propre + commentaire de statut → `blocked:true`) — verrouillée par un test
+
+### Problèmes restants
+- [ ] **P0 → BUG-2026-015** : conversion fermée ~12 h sur 24 — **décision founder requise** avant tout correctif.
+- [ ] **P0 → Merge de #1406** : autorisation explicite requise sur le SHA exact ; **non mergée**.
+- [ ] **P0 → `sg-payments` non redéployé** (action manuelle du fondateur) : live `e1d72c56…` (pré-#1383).
+- [ ] **P0 → Déploiement production bloqué** par le SLA satellite (`sourceAgeMinutes > 900`), NOAA 1×/jour à 12:00Z. **Aucun contournement tenté.**
+- [ ] **P1 → Retrait de `sg-noso` suspendu** au déploiement (routes à remplacer, pas à supprimer).
+- [ ] **P1 → BUG-2026-014** : « Around me » incliquable (z-index) — tâche UI dédiée.
+- [ ] **P1 → Preuve bout-en-bout LIVE impossible** : pas de clé Mollie, pas de `STRIPE_TEST_SECRET_KEY`, pas de clé service Supabase staging.
+
+### Prochaine action recommandée
+1. **Trancher BUG-2026-015** (entrée paywall découplée du verdict satellite **ou** seuil aligné sur le SLA/cadence NOAA) — Rôle : founder + product_agent
+2. **Autoriser (ou refuser) le merge de #1406 sur le SHA exact** — Rôle : founder
+3. Après merge et publication NOAA (~12:00Z) : déployer le bundle, **redéployer `sg-payments`**, re-vérifier les 6 domaines, puis remplacer les 6 routes `sg-noso` — Rôle : devops_agent + qa_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-money-hardening-20261110` (base `origin/main` `0160a4dd73a2b4bf5505ec2507a243b80f7b84ac`)
+- PR : **#1406** — https://github.com/aveca/sargagame/pull/1406 — **OPEN, NON MERGÉE**
+- Commits : `ddefd5e2f` (chemin argent) · `bb61ac37c` (harnais E2E) · `5e3e696e7` (handoff) · *(docs live)*
 
 ---
+
+## 2026-11-10 21:33 UTC · Agent: OpenCode (coding) — P0 « chemin argent » : serveur autoritaire sur le checkout, PR #1370 reprise et réconciliée (NON mergée)
+
+### Travail effectué
+- **Résumé 1 ligne** : le chemin argent B2C des 6 sites est durci côté **serveur** (le worker qui encaisse réellement), réconcilié avec #1383 sans la régresser, et couvert par 99 assertions — **aucun paiement réel, aucun merge, aucun déploiement**.
+- **Détails** :
+  - **PR #1370 reprise, pas mergée telle quelle** : head `4809a76f83a174c3c8778eb369ac0b84c3c1bc60`, en retard sur #1383 (déjà mergée `1261f1ebf`) — prix périmés et diff vs `main` qui **supprimait** `handleMollieReturn`, `handleMolliePayPage`, `handleLegacyCheckout`, les 410 B2B, les plans B2B annuels et les abonnements B2C (⇒ merge naïf = régression). Branche neuve `agent/coding/p0-money-hardening-20261110` sur `origin/main` = `0160a4dd73a2b4bf5505ec2507a243b80f7b84ac`. **#1294 est un doublon** (déjà dans `main`) → pas de cherry-pick, documenté.
+  - **Failles fermées** (`workers/sg-payments/index.js`, serveur réel des 6 domaines sur `/api/*`) : `pass` inconnu ou **absent** ⇒ montant libre encaissable (0,01 €…299 €) ; montant/devise dictés par le client ; `source`/`plan`/`offer_kind` client **choisissant la classification du webhook** ⇒ **365 jours d'accès B2B « pro_annual » payés 29 €** (offre annuelle approuvée : 690 €) ; `redirectUrl` client (open redirect) ; `Host` client en URL de webhook (exfiltration vers un domaine arbitraire) ; `pfl_…` de profil marchand codé en dur (jamais utilisé) ; paiement `mode:"test"` rapporté `paid` par `payment_status` (⇒ Premium déverrouillé côté front).
+  - **Garde-fous** : `resolvePassOffer(pass, cur)` serveur autoritaire (grille unique `PASS_PRICES`) · `400 unknown_offer` / `400 price_mismatch` avec **0 appel Mollie** · `offer_kind` écrit par le serveur · métadonnées client filtrées (`RESERVED_METADATA_KEYS`) · `source` = attribution seule · **durée B2B dérivée du CATALOGUE du plan** (`B2B_PLANS[plan].interval`) + refus `offer_kind_plan_mismatch` (annuel sur plan mensuel) et `b2b_offer_with_pass` · **un pass B2C légitime reste B2C** (une source forgée ne prive pas l'acheteur) · `requestHost()` + `safeRedirectUrl()` (retour/webhook confinés à la flotte) · `mollieProfileId()` (binding uniquement) · `payment_status` : `mode` exposé, `paid=false` si test, contrôle propriétaire.
+  - **Même traitement** : `workers/sargagame/index.js` (workers régionaux), `public/api/mollie.php` (création fail-closed, email obligatoire, metadata + URLs serveur), `public/api/mollie-webhook.php` (B2B annuel reconnu par **montant approuvé** 290/690/1990 € · 390/790 $ **ou** `offer_kind` serveur ; `source` = trace seulement).
+  - **Harnais E2E réparé** (défaut pré-existant, reproduit à l'identique sur le build de référence) : la carte ne peint un verdict par plage que si l'observation satellite a **moins de 12 h** (NOAA publie 1×/jour à 12:00Z) ⇒ les tests n'étaient verts que dans la fenêtre de fraîcheur, et l'interception de `window.track` **n'interceptait rien** (le front appelle sa fonction importée ; télémétrie distante désactivée en local). → helper `tests/e2e/helpers/satellite-freshness.ts` (charge utile réelle, horodatage ERDDAP « maintenant », **aucun verdict fabriqué**) + capture au **sink first-party** `/collect.php` + assertions **renforcées** (`sg_session_start` **ET** `sg_beach_open`) + specs `around-me` (serveur du harnais, gate réel `?world_around_me=1`, bandeau cookies). **`tests/e2e` : 11 passed/14 failed → 18 passed/7 failed** ; les 7 restants = **un seul vrai bug produit** (`.ai/bugs.md` BUG-2026-014, la carte `z-index:1020` recouvre le panneau `z-index:20` ⇒ « Me localiser » incliquable) — **hors périmètre** de ce PR (feature flaggée, domaine UI).
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — worker financier live : création, classification, livraison, idempotence (cœur du correctif).
+- `workers/sargagame/index.js` — workers régionaux : mêmes garanties de création.
+- `public/api/mollie.php` — checkout PHP : grille serveur, email obligatoire, metadata + URLs flotte.
+- `public/api/mollie-webhook.php` — webhook PHP : classification `offer_kind` / montant approuvé.
+- `tests/unit/p0-money-path-offer-resolution.test.cjs` — **nouveau**, 99 assertions (0 paiement réel, appels sortants interceptés).
+- `tests/unit/b2b-conversion-instrumentation.test.cjs` — contrat **renforcé** (exige `mol_paylink_classify` + `$isApprovedAnnual && !$pass`).
+- `tests/e2e/funnel-payment.spec.ts`, `tests/e2e/qualite-ui-ux.spec.ts`, `tests/e2e/paywall-e2e.spec.ts`, `tests/e2e/around-me.spec.ts`, `tests/e2e/helpers/satellite-freshness.ts` (nouveau), `tests/e2e/helpers/cookie-banner.ts` (nouveau) — harnais E2E.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/bugs.md` — mémoire projet à jour.
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko gzip ≤ 210 Ko** (211232/215040)
+- [x] `php -l` → OK sur `mollie.php`, `mollie-webhook.php`, `mollie-lib.php`
+- [x] `npx esbuild workers/sg-payments/index.js workers/sargagame/index.js --bundle=false` → exit 0
+- [x] `npm test` → **190/190 fichiers OK** (l'échec initial `sitemap-guard-beach-pages` était un **ordre de build** : il passe une fois `dist/` présent)
+- [x] `node scripts/ux-smoke.mjs` → **4 tokens** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → **4/4**, stable sur 3 exécutions (≈ 7 s contre 30 s de timeout avant)
+- [x] `npx playwright test tests/e2e` → 18 passed / **7 failed** (cause unique = BUG-2026-014, bug produit réel)
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → OK ; `git diff --check` → exit 0
+
+### Problèmes restants
+- [ ] **P0 → Déploiement production bloqué par le SLA satellite** : ERDDAP NOAA `time_coverage_end = 2026-11-09T12:00:00Z`, `sourceAgeMinutes 1129 > 900` ; NOAA publie 1×/jour à 12:00Z → fenêtre **12:00Z→03:00Z** ; cron `daily-copernicus` 00:00/06:00/12:00/18:00Z. **Aucun contournement tenté.**
+- [ ] **P0 → Preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test/live), pas de `STRIPE_TEST_SECRET_KEY`, pas de clé service Supabase staging.
+- [ ] **P0 → Worker `sg-payments` non redéployé** (action manuelle du fondateur) : version live `e1d72c56-6d52-4fef-961d-9071ab1731c0` (pré-#1383), SHA-256 `C478F188…CFA1A`, 137 931 o — le live est **en retard** sur `main` et sur ce PR.
+- [ ] **P1 → Retrait de `sg-noso` suspendu au déploiement** (routes à **remplacer**, pas à supprimer ; scripts `sg-cf-remove-noso-routes.cjs` en create→verify→delete + `sg-live-verify-final.cjs`).
+- [ ] **P1 → BUG-2026-014** (nouveau) : la carte recouvre le panneau « Around me » ⇒ « Me localiser » incliquable sur mobile. Correctif UI hors périmètre de ce PR.
+- [ ] **P1 → Autorisation requise** : merge de ce PR (SHA exact) **et** déploiement financier live.
+
+### Prochaine action recommandée
+1. Relire la PR et **autoriser (ou refuser) le merge sur le SHA exact** de la branche `agent/coding/p0-money-hardening-20261110` — Rôle : founder
+2. Après merge : **déployer** le bundle puis **redéployer `sg-payments`** (action manuelle), puis re-vérifier les 6 domaines (prix / SOS / 410) — Rôle : devops_agent + qa_agent
+3. Tâche UI dédiée : BUG-2026-014 (`z-index` du panneau « Around me ») — Rôle : ui_ux_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-money-hardening-20261110` (base `origin/main` `0160a4dd73a2b4bf5505ec2507a243b80f7b84ac`)
+- PR : *(à ouvrir — branche poussée, PR NON mergée)*
+- Commits : `ddefd5e2f` (chemin argent) · `bb61ac37c` (harnais E2E) · `docs(handoff)`
+## 2026-11-11 14:05 UTC · Agent: OpenCode (coding) — PR B « chemin argent » : le paiement Pro livre enfin l'accès
+
+### Travail effectué
+- **Résumé 1 ligne** : le parcours Pro 79 €/mois **encaissait sans livrer** — le webhook créait le droit (grant durable + jeton KV) mais **n'envoyait aucun email**, et la page de retour ne portait **aucun lien jeton** ; corrigé, testé, **PR ouverte, non mergée, aucun déploiement**.
+- **Détails** :
+  - **Défaut D1 — aucun email de livraison** : `workers/sg-payments/index.js` (`fulfillPaidPayment` → branche `b2b_first`/`b2b_annual`) créait le grant mais n'envoyait rien. Le client payait 79 €/mois et ne recevait **aucun accès**. Nouvelle fonction `deliverProAccessEmail()` : email transactionnel (FR/EN/ES, langue alignée sur `/pro/espace/`) portant le lien `https://<domaine>/pro/espace/?k=<jeton>` + le lien carte `/?k=<jeton>`, offre et montant repris de `B2B_PLANS` (source de vérité, **aucun montant inventé**), envoi via `sendEmail()` (4 fournisseurs, issue de livraison **honnête** : `success` / `ambiguous` / `rejected`).
+  - **Défaut D2 — page de retour sans jeton** : `handleMollieReturn` renvoie désormais un bouton **« Mon Espace Pro »** qui porte le jeton (`?k=`) quand l'accès est actif, + une ligne qui confirme l'activation.
+  - **Défaut D3 — double abonnement au renouvellement (argent)** : `maybeCreateFollowupSubscription` recréait un abonnement à **chaque** paiement de renouvellement (le paiement hérite `metadata.firstPaymentId` et `sequenceType: "recurring"`) → le client aurait été **débité 2×, 3×… par mois**. Garde-fous : refus si `firstPaymentId` présent, refus si `sequenceType !== "first"`, marqueur KV désormais **scopé client + offre** (`mol_sub_cust_<customerId>_<planKey>`, l'ancienne clé par paiement reste lue → migration sans risque).
+  - **Défaut D4 — URL de webhook PHP 404** : `public/api/mollie.php` pointait par défaut sur `/public/api/mollie-webhook.php` (**404 live**, le Worker intercepte `/public/**`). Les 2 défauts pointent maintenant sur `/api/mollie-webhook.php` (route joignable).
+  - **Idempotence de la livraison** : marqueur KV `mollie_pro_access_<idPaiement>` — un rejeu du webhook **et** un second événement pour le même paiement n'envoient **aucun second email**. En cas d'issue ambiguë (le fournisseur a *pu* accepter), le marqueur est conservé (pas de doublon) ; en cas de refus explicite, il est libéré (un rejeu peut réessayer).
+  - **PR A (séparée)** : BUG-2026-015 — l'offre B2C est découplée de la fraîcheur satellite (CTA d'achat + date de dernière observation, données toujours suspendues) → **PR #1410**.
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — livraison email + jeton au retour + garde-fou double abonnement.
+- `public/api/mollie.php` — URL de webhook par défaut joignable (2 lignes).
+- `tests/unit/p0-pro-access-delivery.test.cjs` — **nouveau**, 40 assertions (test comportemental : webhook, email, jeton vérifié, rejeu, page de retour, renouvellement, URL PHP).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — mémoire projet à jour.
+
+### Tests réalisés
+- [x] `node tests/unit/p0-pro-access-delivery.test.cjs` → **40 assertions PASS** (dont « le jeton livré est vérifié `pro:true` »)
+- [x] `npm test` → **190/190 OK** (le fichier `sitemap-guard-beach-pages` exige `dist/` : OK après build)
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko ≤ 210 Ko** (exit 0)
+- [x] `php -l public/api/mollie.php` → OK · `npx esbuild workers/sg-payments/index.js` → exit 0 · `git diff --check` → exit 0
+- [x] 14 tests Mollie/paiement existants rejoués → PASS (aucune régression)
+
+### Problèmes restants
+- [ ] **BLOQUANT VENTE — clé Mollie LIVE** : le secret `MOLLIE_API_KEY` déployé est une clé **TEST** (bandeau « this is a testmode payment » sur les 6 domaines) → **aucun encaissement réel possible** tant que le fondateur n'a pas posé la clé LIVE. Action fondateur, non exécutable par l'agent (secret).
+- [ ] **Livraison non validable en TEST** : `validatePaymentForFulfillment` impose `mode === "live"` (`not_live_mode`) → par conception, un paiement testmode ne délivre aucun droit. La preuve bout-en-bout exigera une transaction LIVE.
+- [ ] **Déploiement du Worker `sg-payments`** : le code de la PR B n'est **pas** redéployé (aucun déploiement financier sans validation explicite).
+- [ ] **PHP = chemin de repli seulement** : les 6 domaines sont servis par le Worker `sg-payments` ; le PHP (`mollie.php`, `mollie-webhook.php`) n'est **pas** le chemin live. Le PHP **n'envoie toujours pas** l'email de livraison (helper `mol_b2b_trial_email` absent du dépôt, dette connue R8) : à traiter si un domaine repassait en PHP-only.
+
+### Prochaine action recommandée
+1. **Fondateur** — poser la clé Mollie **LIVE** (secret `MOLLIE_API_KEY`) sur `sg-payments` → Rôle : fondateur (autorisation explicite requise)
+2. **Fondateur** — valider le déploiement de la PR B (SHA exact + preuve + rollback) → Rôle : fondateur
+3. **DevOps** — redéployer `sg-payments` sur le SHA validé, puis rejouer le parcours Pro live (checkout → webhook → email → accès) → Rôle : devops
+
+### Branche / PR
+- Branche : `agent/coding/p0-pro-delivery-20261111`
+- PR : **#1411** (https://github.com/aveca/sargagame/pull/1411) — ouverte, **NON mergée**, **aucun déploiement**
+- Commit head : `4098f7866c194ecc697d8fdcd85de802b5d4641a`
+- PR A (séparée) : **#1410** — commit `5dad516b194ab6354b645e6d51d4ce78a4105d02`
+
+---
+
+## 2026-11-10 08:05 UTC · Agent: OpenCode (coding + growth + ui) — les 3 livrables sont produits
+
+### Travail effectué
+- **Résumé 1 ligne** : les **3 artefacts manquants** sont produits et vérifiés — (1) patch durable de l'offre B2C (422 225 o, 64 fichiers, application contrôlée), (2) audit UX **live** factuel + maquette `mockup-gp.html` (3 langues, conforme aux interdits), (3) **7 brouillons** de relance B2B #4–#10 (**0 envoi**) — et la mémoire projet est à jour.
+- **Détails** :
+  - **Panel de personas exécuté** (obligation AGENTS.md) : `product-manager` + `ux-critic` + `adversarial-reviewer`, en lecture seule, sur la maquette et les relances → verdicts **convergents** sur la hiérarchie (p30 = carte primaire, seule surface or), l'honnêteté de la donnée et le plafond de 7 brouillons. Condensé + arbitrages : `ux-audit/panneau-verdicts.md`.
+  - **Livrable 1 — patch durable** : `sargagame-cycle4/sargagame-b2c-offer-durable.patch` (422 225 o, 64 fichiers, `git diff --binary ff12dbfd3 17d75ec0a`). **Vérifié** : `git apply --check` OK sur `ff12dbfd3`, puis application réelle → arbre identique au commit de la PR (hash du seul fichier nouveau `b5fb19a4…` identique). Un patch produit via `Set-Content` avait été **corrompu par l'encodage PowerShell** → il a été réécrit directement par `git diff --output`.
+  - **Livrable 2 — audit UX + maquette** : `ux-audit/AUDIT-UX.md` (audit factuel code + live, défauts P0/P1/P2 avec `fichier:ligne`, 3 corrections prioritaires), `ux-audit/mockup-gp.html` (maquette autonome **hors `public/`/`dist/`**, bandeau « MAQUETTE — non publiée », 3 offres, FR/EN/ES), `ux-audit/mockup-qa.json`, `ux-audit/audit-live-report.json`, `ux-audit/audit-live-verify.json` + 10 captures.
+    - **Défauts UX prouvés sur le live** : « LA plage propre chaque matin, 7h » (`src/PassOffer.jsx:91`, live GP + US) · aperçu de prévision **codé en dur** « Net / Limpio » (`src/PremiumModal.jsx:894`, visible sur Tulum) · compteur « ★ 630+ suivent leurs plages » (`:126`) · badge « 0,50 €/jour » / « $0.57/day » (`:16,50`) · 2ᵉ bouton de paiement « Payer 4,99 € » (abonnement mensuel distinct — **faux positif du 1er script corrigé**) · barre collante « Voir le prix → » qui déclenche le paiement (`:157-163`) · cibles < 44 px · « 4×/jour » encore publié (`public/onboarding.html:536,587`, `public/jeu/index.html:324`).
+    - **Maquette contrôlée** : 3 langues × 0 violation d'interdit · 1 seule surface or · 0 cible < 44 px · 0 contraste non-AA · 0 texte < 12 px · 0 débordement · 3 cartes / 3 CTA · prix au format de la langue · badge « **Notre recommandation** » (teal) au lieu du superlatif « Le plus choisi » (non prouvé) · abonnement mensuel conservé mais **explicitement étiqueté « /mois »**.
+    - **Faux positifs corrigés** (2 scripts) : le « 4,99 € » du paywall est l'**abonnement mensuel distinct** (pas l'ancien tarif trip7) ; les contrastes « non-AA » étaient des éléments **masqués par le modal** (mesure refaite sur le pixel réellement peint via `elementsFromPoint`).
+  - **Livrable 3 — relances B2B #4–#10** : `b2b_outreach.md` — **7 brouillons, 0 envoi**, ton doux, ≤ 280 mots, 1 destinataire, lien de désinscription + `List-Unsubscribe` + reply-to `alerte@sargasses-martinique.com` + mentions 97TECH/RCS, **0 appel**, **0 CT / CC / BCC**.
+    - **État de contact réconcilié par `emailHash` strict** (jamais par nom de domaine approchant) : les 7 ont reçu c0 (28/06) + c4 (02/07) ; **2 ont en plus une touche de juillet à leur adresse** (Majesty Palm 07/07, La Suite Villa 14/07) → **n° 4 pour eux, n° 3 pour les 5 autres** ; Karibea a bien reçu une touche le 14/07 mais **sur une autre adresse** de la société (hash `d62ef580…` ≠ `34e3bf35…`) → 2 messages à cette adresse, 3 touches à l'entreprise. Dernier envoi 118–130 j (cadence 90 j respectée). **0 bounce, 0 opt-out.**
+    - **Faits mobilisables vérifiés** : observation publiée la plus récente = **9 nov. 12:00 UTC** (`erddapTimestamp`) ; **21/21 plages suivies classées propres** à ce relevé (`history.json`) ; Anse Mitan `clean` (AFAI 0,07) ; Pointe des Châteaux `clean` (AFAI 0,06). **Pointe du Bout / Anse Gros Raisins / Anse Mabouya ne sont PAS dans les 21 suivies** → aucun statut avancé ; **Le François n'a aucune plage suivie** → **aucune plage nommée** dans ce brouillon.
+    - **Écartés** : « la saison bat son plein » (faux en novembre), « 4×/jour », « X jours à éviter », « Le plus choisi », alerte « avant l'échouage », tout pourcentage mono-région.
+    - **QC automatisé** (`b2b_outreach_qa.json`) : 7/7 brouillons conformes (190–221 mots, 0 mot interdit, unsub + mentions + reply-to + CTA + « stop » + date de l'observation présents, **0 plage nommée pour Le François**).
+  - **Déploiement : toujours BLOQUÉ, et toujours pour la même raison externe.** Run `Daily Copernicus + Deploy` de 06:49Z → `GATE_STATUS: BLOCKED_STALE_SOURCE`, `sourceAgeMinutes: 1129` (> SLA 900) ; le commit de données `a6e14b9ce` (« refresh Copernicus 06:49 UTC ») ne change **rien** à l'ancienneté de l'observation (toujours `2026-11-09T12:00:00Z`). **Aucun contournement du gate n'a été tenté.** Le retrait de `sg-noso` reste donc **suspendu à la séquence** : (1) déploiement, (2) vérification live, (3) remplacement de route, (4) re-vérification.
+
+### Fichiers modifiés
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — mémoire projet à jour (ce handoff + changelog + tâche). **Aucun code applicatif, aucun prix, aucun secret, aucun déploiement.**
+- Livrables (hors dépôt, dans la racine de session `C:\Users\user\AppData\Local\Temp\opencode\sargagame-cycle4\`) : `sargagame-b2c-offer-durable.patch` · `ux-audit/AUDIT-UX.md` · `ux-audit/panneau-verdicts.md` · `ux-audit/mockup-gp.html` · `ux-audit/mockup-qa.json` · `ux-audit/audit-live-report.json` · `ux-audit/audit-live-verify.json` · `ux-audit/live-verify-20261110-0830.txt` · `ux-audit/live-*.png` · `ux-audit/mockup-0*.png` · `b2b_outreach.md` · `b2b_outreach_qa.json`.
+
+### Tests réalisés
+- [x] Patch : `git apply --check` → exit 0 sur `ff12dbfd3` ; application réelle → arbre identique à `17d75ec0a` (hash `b5fb19a4…` contrôlé)
+- [x] Audit live (Playwright iPhone 12, reduced-motion, **lecture seule**, deep-link `?paywall=1`, 0 clic sur un CTA de paiement) : `audit-ux-live.mjs` + `audit-ux-verify.mjs` → rapport + 10 captures
+- [x] Maquette : `verify-mockup.mjs` → **3 langues, 0 violation, 1 or, 0 <44 px, 0 non-AA, 0 <12 px, 0 overflow, 3 cartes/3 CTA**
+- [x] Brouillons B2B : `sg-b2b-qa.cjs` → **7/7 conformes** ; réconciliation de l'état de contact par hash (`sg-b2b-truth-table.cjs`)
+- [ ] Gate applicatif (build / bundle / smoke / `npm test`) → **NON REJOUÉ** : cette livraison ne touche **aucun** fichier applicatif (`.ai/**` seul, hors périmètre de build) — le gate de la PR #1383 reste vert sur `17d75ec0a`.
+
+### Problèmes restants / Blockers
+- [ ] **P0 — Déploiement bloqué par le SLA satellite** : `sourceAgeMinutes 1129 > 900` ; NOAA publie 1 observation/jour à 12:00Z → fenêtre **12:00Z → 03:00Z**. Reprise automatique (cron 12:00Z / 18:00Z). Ne jamais dégrader le gate.
+- [ ] **P0 — Preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test/live), pas de `STRIPE_TEST_SECRET_KEY`, pas de clé service Supabase staging.
+- [ ] **P1 — Retrait de `sg-noso`** : **suspendu au déploiement** (routes à REMPLACER, pas à supprimer). Scripts prêts : `sg-cf-remove-noso-routes.cjs plan|apply` + `sg-live-verify-final.cjs`.
+  - **Correction 2026-11-10 08:20 — le script ne faisait QUE SUPPRIMER** (`apply` = 6 × `DELETE`, aucune création) : l'appliquer tel quel aurait laissé les 6 domaines **sans route**. Il a été réécrit en **create → verify → delete** : création de `DOMAINE/* → sargagame-<région>`, relecture de la zone pour prouver la coexistence des 2 routes, puis seulement suppression de la route `sg-noso`, puis revérification. Aucun domaine ne peut se retrouver sans route.
+  - **Mapping live prouvé** (service bindings réels de `sg-noso`, lus via l'API) : `GP → sargagame-gp` · `MQ → sargagame-mq` · `FL → sargagame-florida` · `PC → sargagame-puntacana` · **`CN (cancun) → sargagame-rivieramaya`** · `TL → sargagame-tulum`. Les 6 workers existent **et** portent un binding `assets` + 3 secrets + l'URL Supabase → ils peuvent servir le domaine directement (les 102 routes `/api/* → sg-payments`, plus spécifiques, restent prioritaires).
+  - **⚠️ NOUVEAU RISQUE ÉTABLI (raison de la séquence)** : `sg-noso` réécrit le bundle **à l'exécution** (table de prix gelée, neutralisation SOS, titre du paywall). Le retirer **avant** le déploiement du bundle #1383 exposerait le **VIEUX** bundle (anciens prix 4,99 € / 499 et **surface SOS non masquée**). La séquence est donc impérative : (1) déploiement, (2) vérification live des 6 domaines, (3) remplacement de route, (4) re-vérification.
+- [ ] **P1 — Worker `sg-payments` non redéployé** : aucun workflow CI ne le déploie → action manuelle du fondateur.
+- [ ] **P1 — Validation de Yacov requise** : (a) maquette UX → avant toute mise en ligne ; (b) **7 brouillons B2B → 0 envoi tant que l'accord n'est pas écrit**.
+- [ ] **P2 — `sales-lifecycle-emails`** : token GitHub 403 sur `workflow_dispatch` (besoin `actions: write`).
+- [ ] **P2 — Dette copy repérée par l'audit** (à traiter dans une PR dédiée après validation) : « 4×/jour » dans `public/onboarding.html:536,587`, `public/jeu/index.html:324`, `public/themes-lab/*`, `scripts/automation/b2b-cold-outreach.cjs` ; « Le plus choisi » dans `scripts/lib/premium-page.cjs:77` ; libellés de plans incohérents (`src/PremiumModal.jsx:930-933`, bloc `hasAnnual` latent sur les régions USD).
+
+### Prochaine action recommandée
+1. Après le run de 12:00Z/18:00Z : `node sg-live-verify-final.cjs` (prix / marqueurs SOS / `/?sos=1` / 410 × 6 domaines), puis **remplacer** les 6 routes `DOMAINE/* → sg-noso` par `DOMAINE/* → sargagame-<région>` (mapping live exact), puis re-vérifier — Rôle : devops_agent + qa_agent
+2. Présenter à Yacov : `ux-audit/AUDIT-UX.md` + `ux-audit/mockup-gp.html` (captures FR/EN/ES) et les 7 brouillons `b2b_outreach.md` — **décision demandée** : maquette → mise en ligne ou non ; relances → envoi ou non — Rôle : founder + ui_ux_agent + growth_agent
+3. Demander à Yacov : clé Mollie test, `sk_test` Stripe, clé service Supabase staging, token GitHub `actions: write` — Rôle : founder
+4. Ouvrir une PR dédiée pour la **dette copy** listée ci-dessus (4×/jour, « Le plus choisi », libellés de plans) — **seulement après validation** — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/livrables-audit-ux-b2b-20261110` (base `origin/main` = `a6e14b9ce`)
+- PR : **#1402 — MERGED** le 2026-11-10T08:36:51Z, merge commit `14335075c19dc9a8bcd52883b0c50e0e88d9190a`
+- Commit head : `6598a082221d207df81cb750fe2975d293e343371` · **CI verte sur le SHA exact** (`test-frontend` ✅ 2 min 31 · `perf` ✅ 24 s · `lighthouse-report` ✅ 3 min 9 · `GitGuardian` ✅) et **re-vérifiée verte sur le commit de merge** `14335075c` (`CI Tests` ✅ · `Perf Budget + Lighthouse` ✅ · `Daily Copernicus + Deploy` ✅)
+- **Aucun déploiement déclenché** : le workflow `Cloudflare Production` ignore `.ai/**` (paths-ignore) → les 6 sites sont **inchangés** par cette PR
+- État prod au moment de la fusion : **inchangé** — le live sert toujours l'ancien bundle (54 écarts mesurés, `ux-audit/live-verify-20261110-0830.txt`), le déploiement reste bloqué par le gate satellite.
+
+---
+## 2026-11-10 05:45 UTC · Agent: OpenCode (coding) — post-merge PR #1383
+
+### Travail effectué
+- **Résumé 1 ligne** : la PR **#1383** (patch durable de l'offre B2C + retrait SOS + resync du worker `sg-payments`) est **MERGÉE sur `main`** (`1261f1ebf`) avec une **CI verte sur le SHA exact** ; le déploiement production est **bloqué par le gate de fraîcheur satellite** (cause scientifique externe, sans rapport avec le patch) ; l'analyse de `sg-noso` montre que son retrait **n'est PAS neutre** et exige une décision de Yacov sur le mur d'offres.
+- **Détails** :
+  - **Merge effectif** : `gh pr merge 1383 --merge` → merge commit `1261f1ebfa9453f6a4089be33f6be22a9ff5d515`. CI **verte sur `17d75ec0a2821b4adfad0b251ef6aa27e19f822d`** : `test-frontend` ✅ · `perf` ✅ · `lighthouse-report` ✅ · `GitGuardian` ✅ · `Build and package` × 6 ✅. La branche locale a été fusionnée avec `origin/main` (`ff12dbfd3`) **avant** le push : conflits résolus uniquement dans `.ai/*.md` (journaux additifs, les deux côtés conservés), **0 conflit applicatif**.
+  - **Déploiement production BLOQUÉ par la DONNÉE, pas par le patch** : le run `Cloudflare Production` (42761342608) échoue sur `Pre-deploy satellite freshness gate` : `FAIL SATELLITE_PREDEPLOY region=florida limit=900min reason=observation hors SLA (1039.17 min > 900 min)`. Cause vérifiée à la source : ERDDAP NOAA publie `time_coverage_end = 2026-11-09T12:00:00Z` (sonde `.das`) — **aucune observation plus récente n'existe**. Le pipeline est à jour (`kept erddap-live data`). La cadence NOAA est **journalière à 12:00Z** alors que le SLA de déploiement est de **900 min (15 h)** : la fenêtre de publication est donc **12:00Z → 03:00Z**. Le run de 05:19Z était hors fenêtre.
+  - **Reprise automatique** : `daily-copernicus.yml` tourne à 00:00/06:00/12:00/18:00Z ; dès qu'ERDDAP publie la nouvelle observation, le commit de données déclenche `Cloudflare Production` (push sur `main` + `workflow_run` de `Daily Copernicus + Deploy`) → gate frais → deploy des 6 workers régionaux + des assets. **Prochaine fenêtre : 12:00Z, repli 18:00Z.** Aucun contournement du gate n'a été tenté (inventer ouvieillir la donnée est interdit).
+  - **État LIVE mesuré AVANT déploiement** (lecture seule, 6 domaines) : `/api/mollie-pay?pass=sos` → **410 `offre_indisponible`** sur les 6 (déjà live) ; `/?sos=1` → **200 avec surface SOS encore servie** (le build n'est pas déployé) ; bundle live : marqueurs SOS `sg-soscta`, `sg_sos_checkout`, `SOS PLAGE 24H`, `SOSPlage` encore présents ; `/premium/` live = EUR 799/1499/2499 + USD 899/1699 (le **season USD manque**) ; bundle live USD contient encore **499** (l'ancien tarif trip7) ; `/premium/` live contient encore `HIGH_MONTHS` / `RATE = 0.15`.
+  - **Analyse de `sg-noso` (lecture seule, code live récupéré, 9 580 car)** — ce n'est **PAS** un proxy inerte mais un **réécrivain runtime** : il (a) remplace la table de prix gelée du bundle, (b) met le taux de haute saison à 0, (c) neutralise le parcours SOS (CTA masqué, deep-link coupé, `create_payment` désactivé), (d) **injecte 2 offres supplémentaires** dans le paywall off-site (Pass 7 jours + Pass Saison) via `extraTiers`, (e) réécrit le titre du paywall. Il relaie les 6 domaines vers les workers `sargagame-*` par **service binding**.
+  - **Conséquence critique du retrait** : les workers `sargagame-*` (déployés par la CI, assets + secrets Mollie/Supabase) n'ont **AUCUNE route publique** — ils ne sont joignables que par le service binding de `sg-noso`. **Supprimer la route `DOMAINE/* → sg-noso` sans la REMPLACER par `DOMAINE/* → sargagame-<région>` mettrait les 6 sites hors service.** Le retrait doit donc être un **remplacement de route**, pas une suppression.
+  - **Second impact — RÉFUTÉ par preuve (correction d'une conclusion antérieure)** : l'injection `extraTiers` du shim est **MORTE** sur le bundle courant. Preuve : sur les **33 chunks live** du domaine Martinique, les chaînes **uniques** à `extraTiers` (`Une escapade, un week-end prolongé`, `pass:"trip7",days:7`, `pass:"season",days:210`) sont **absentes**, et le chunk paywall `PremiumModal-CXOkM4NX.js` contient **exactement** le paywall du dépôt : titre `Sache où sera la mer`, sous-titre honnête `Dernière observation satellite · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.`, **un seul** bouton `sg-passcard-hero`. La réécriture du titre par le shim est également inactive (`La plage sans sargasses, chaque matin.` absent). **Conclusion : le paywall live EST déjà le paywall du dépôt → le retrait du shim est financièrement NEUTRE (ni « 3 offres → 1 », ni perte d'offre).**
+  - **Ce qui est DÉJÀ durable (indépendant du shim)** : la correction d'honnêteté « Satellite 4×/jour » → « Dernière observation satellite » est **déjà dans `src/PassOffer.jsx`** (le shim ne fait plus rien dessus) ; les prix, l'absence de SOS et le refus 410 sont dans le dépôt et seront déployés par la CI.
+
+### Fichiers modifiés
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — mémoire projet à jour (ce handoff + l'entrée de changelog + la tâche).
+
+### Tests réalisés
+- [x] Gate local **après fusion avec `origin/main`** : `npm run build` exit 0 · `check-bundle-budget` **206,3 Ko ≤ 210 Ko** (211232/215040) · `php -l` 5/5 · `node --check` 4/4 · `npm test` **189/189 OK** · `ux-smoke` **4 tokens OK** (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`) · régions valides · `git diff --cached --check` exit 0
+- [x] CI de la PR #1383 **verte sur le SHA exact** (voir détails)
+- [x] **Lecture seule** : code live `sg-payments` (SHA-256 `C478F188…CFA1A`), code live `sg-noso` (9 580 car), routes des 6 zones (6 routes `DOMAINE/* → sg-noso`, 102 routes `sg-payments` conservées), bindings des workers `sargagame-*`, métadonnées ERDDAP (`.das`), état live des 6 domaines
+- [ ] Déploiement production → **NON EXÉCUTÉ** (bloqué par le gate de fraîcheur satellite, fenêtre 12:00Z → 03:00Z)
+
+### Problèmes restants / Blockers
+- [ ] **P0 — Déploiement bloqué par le SLA satellite** : l'observation ERDDAP a 17 h (SLA 900 min) ; NOAA publie une fois par jour à 12:00Z. Aucune donnée plus récente n'existe → **rien à publier avant 12:00Z**. Action : laisser la reprise automatique (cron 12:00Z / 18:00Z) se faire, puis rejouer la vérification live. Ne jamais dégrader le gate.
+- [ ] **P1 — Retrait de `sg-noso` : RÉPLACEMENT de route (pas suppression)**. Le retrait est **neutre pour le paywall** (prouvé ci-dessus) mais **obligatoirement un remplacement** : les workers `sargagame-*` n'ont aucune route publique. Mapping à reprendre **exactement** des service bindings live : `sargasses-guadeloupe.com → sargagame-gp` · `sargasses-martinique.com → sargagame-mq` · `sargassummiami.com → sargagame-florida` · `sargassumpuntacana.com → sargagame-puntacana` · `sargassumcancun.com → sargagame-rivieramaya` · `sargazotulum.com → sargagame-tulum`. Worker `sg-noso` **conservé** (routes re-créables en 1 appel). Scripts prêts : `sg-cf-remove-noso-routes.cjs plan|apply` + `sg-live-verify-final.cjs` (lecture seule). **Séquence obligatoire** : (1) déploiement du patch validé, (2) vérification live des 6 domaines, (3) remplacement de route, (4) re-vérification live.
+- [ ] **P0 — Preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test ou live), pas de `STRIPE_TEST_SECRET_KEY` (sk_test), pas de clé service Supabase staging → « paiement réel + webhook + attribution d'accès » non démontrable. Action : exécution par le fondateur sur un paiement sandbox.
+- [ ] **P1 — Worker `sg-payments` non redéployé** : aucun workflow CI ne le déploie. Le dépôt est désormais **en avance** sur le live (mêmes prix + garde-fous) ; le redéploiement est une action manuelle du fondateur (cf. `workers/sg-payments/PROVENANCE.md` §8 et « Rappel de déploiement »).
+- [x] **Artefacts livrables** : produits le 2026-11-10 (voir le handoff du 08:05 UTC plus haut) — patch durable `sargagame-b2c-offer-durable.patch`, audit UX + `ux-audit/mockup-gp.html`, relances B2B `b2b_outreach.md` (7 brouillons, 0 envoi). **Rien en ligne sans validation de Yacov** (maquette UX, relances).
+- [ ] **P2 — `sales-lifecycle-emails`** : token GitHub 403 sur `workflow_dispatch` (besoin `actions: write`) → lancement manuel par Yacov en `send=false`.
+
+### Prochaine action recommandée
+1. Après le run de 12:00Z/18:00Z : rejouer `node sg-live-verify-final.cjs` (prix, marqueurs SOS, `/?sos=1`, 410) sur les 6 domaines — Rôle : qa_agent
+2. Après le déploiement : remplacer les 6 routes `DOMAINE/* → sg-noso` par `DOMAINE/* → sargagame-<région>` (mapping live ci-dessus), re-vérifier les 6 domaines — Rôle : devops_agent + qa_agent
+3. Demander à Yacov : clé Mollie test, `sk_test` Stripe, clé service Supabase staging, token GitHub `actions: write` — Rôle : founder
+
+### Branche / PR
+- Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109` (poussée, head `17d75ec0a`)
+- PR : **#1383 — MERGED** le 2026-11-10T05:18:47Z, merge commit `1261f1ebfa9453f6a4089be33f6be22a9ff5d515`
+- Commit head (main) : `1261f1ebf` · CI verte sur `17d75ec0a` · déploiement production **en attente de la fenêtre SLA satellite**
+
+---
+## 2026-11-10 04:40 UTC · Agent: OpenCode (coding)
+
+### Travail effectué
+- **Résumé 1 ligne** : alignement DURABLE du dépôt sur l'offre B2C live validée (trip7 7,99 € / $8.99 · p30 14,99 € / $16.99 · season 24,99 € / $27.99), suppression de la surcharge USD « +15 % », retrait définitif du pass SOS (1 €), et resynchronisation du worker de production `sg-payments` sur son code LIVE (source de vérité serveur) avec les garde-fous du durcissement re-appliqués par-dessus.
+- **Détails** :
+  - **Constat de départ (vérifié LIVE, lecture seule)** : le serveur de paiement `sg-payments` **en production** facturait déjà 7,99 € / 14,99 € / 24,99 € (EUR) et 8,99 $ / 16,99 $ / 27,99 $ (USD), **sans** surcharge saisonnière ; le **dépôt** était en retard (trip7 4,99 €, season 19,99 €, USD 11,99 $ / 5,99 $). Le code live a été récupéré via l'API Cloudflare (`GET /accounts/{id}/workers/scripts/sg-payments/content/v2`, SHA-256 `C478F188…CFA1A`, 137 457 o) puis resynchronisé **à l'identique** dans `workers/sg-payments/index.js` — sans réécriture de mémoire. Un déploiement du fichier du dépôt aurait **régressé** la production.
+  - **Contrôle de non-régression du durcissement** (comparaison automatique HEAD(#1383) ↔ LIVE ↔ fichier courant) : **0 fonction** du durcissement P0.118 §5/§6/§7 perdue ; tous les marqueurs présents dans les trois versions (signature fail-closed 503/403, parse classique + Next-gen `entityId`/`eventId`, idempotence RPC `sg_upsert_payment_grant` + `ON CONFLICT`, marqueur KV posé **après** l'écriture, révocation `payment.refunded`). Seule variable de #1383 absente du live : `FULFILL_PRICES` → ré-appliquée.
+  - **Séparation CRÉATION / LIVRAISON** (2 workers + PHP) : `PASS_PRICES` = grille de création (3 passes, **sans** `sos`) ; `FULFILL_PRICES` = grille de livraison (**avec** `sos` à 1,00 €) pour livrer un paiement `sos` **déjà encaissé** — encaisser sans livrer serait un trou de confiance. La **création** de `sos` est refusée en **410 `offre_indisponible`** (contrat live), un pass inconnu en **400 « Prix invalide »** (fail-closed, 0 création Mollie).
+  - **Fenêtre historique** : `HISTORICAL_PASS_PRICES` / `HISTORICAL_PRICES` + `OFFER_CUTOFF_DATE` = **2026-11-09T00:00:00Z** : les montants de l'ancienne offre (trip7 4,99 € / $5.99, p30 11,99 $, season 19,99 €) restent livrables **uniquement** pour un paiement créé **avant** la coupure (date de création vérifiable). Un paiement **nouveau** à l'ancien tarif est **refusé**.
+  - **Surcharge USD « +15 % » supprimée partout** (client, PHP, workers, `/premium/`, CGV, copy) : le serveur live facture le montant **affiché** ; l'affichage et le débit ne peuvent plus diverger. Le bandeau de surcoût de `PassOffer.jsx` est retiré (il affichait un montant différent du montant débité).
+  - **Copy alignée sur l'offre validée** : `/offres/`, `/cgv.html`, `/a-propos/`, `/about/`, `/onboarding.html`, `/veilleur/`, `src/HomeAZ.jsx`, `src/HomeJuicy.jsx`, `src/VerticalesMap.jsx`, `src/PremiumModal.jsx`, `regions/*.json` (`tripPass` = 7,99 € / $8.99) et `regions/seo-content/*.json`.
+  - **Généré `/premium/`** : `public/premium/index.html` (servi tel quel — `gen-premium-pages.cjs` n'est pas dans `npm run build`) et `scripts/lib/premium-page.cjs` portent les 3 passes EUR **et** USD, sans `HIGH_MONTHS` / `RATE` / `sos`.
+  - **Non touché (volontairement)** : `public/api/mollie-passlinks.json` et `mol_paylink_grid()` (liens Mollie réels + clé API absente en local) ; l'abonnement B2C mensuel **4,99 €/mois** (produit distinct, encore live : `B2C_SUB_PLANS.monthly`) ; les secrets de production (`MOLLIE_API_KEY`, `MOLLIE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_KEY`) — aucun secret lu, écrit ou deviné.
+  - **Diff applicatif** : 42 fichiers, +933 / −493 (hors `.ai/`).
+
+### Fichiers modifiés
+- `src/lib/pricing.js` — source unique des prix client : 7,99/14,99/24,99 € + 8,99/16,99/27,99 $, plus de `sos`, plus de surcharge saisonnière.
+- `src/PassOffer.jsx` — bandeau de surcoût « +15 % » retiré ; montant affiché = montant débité.
+- `src/PremiumModal.jsx` — CTA trip7 à 7,99 € / $8.99, saison à 24,99 € ; présélection URL via `resolvePass` (plus de centimes figés, plus de clé serveur invalide `saison`).
+- `src/Sargasses_PROD.jsx` — `EUR_TRIP_CENTS` = 799, `PRICE_TRIP` par défaut = $8.99.
+- `src/HomeAZ.jsx`, `src/HomeJuicy.jsx`, `src/VerticalesMap.jsx` — prix d'entrée « dès 7,99 € / from $8.99 ».
+- `public/api/mollie.php` — grille de création = 3 passes (sans `sos`), plus de surcharge ×1,15.
+- `public/api/mollie-lib.php` — `mol_historical_pass_prices()` + `mol_offer_cutoff_date()` (2026-11-09) : livraison des paiements antérieurs à la coupure.
+- `public/api/mollie-config.example.php` — template purgé de `sos` / `p7`, montants de l'offre documentés.
+- `public/api/create-checkout.php`, `public/api/paypal.php` — allowlists = [799, 1499, 2499] EUR / [899, 1699, 2799] USD (anti-tampering).
+- `scripts/lib/premium-page.cjs`, `public/premium/index.html` — catalogue `/premium/` = 3 passes EUR + 3 USD, sans `sos`, sans `HIGH_MONTHS`/`RATE`.
+- `public/offres/index.html`, `public/cgv.html`, `public/a-propos/index.html`, `public/about/index.html`, `public/onboarding.html`, `public/veilleur/index.html` — copy publique alignée (7,99 € / 8,99 $ / 14,99 € / 16,99 $ / 24,99 € / 27,99 $).
+- `regions/mq.json`, `regions/gp.json`, `regions/florida.json`, `regions/puntacana.json`, `regions/rivieramaya.json`, `regions/tulum.json`, `regions/barbados.json`, `regions/seo-content/*.json` — `tripPass` = 7,99 € / $8.99.
+- `workers/sargagame/index.js` — **déployé par la CI sur les 6 workers régionaux** : grilles création/livraison séparées, `sos` → 410, `HISTORICAL_PRICES` + `OFFER_CUTOFF_DATE`, plus de ×1,15.
+- `workers/sg-payments/index.js` — resynchronisé à l'identique sur le live, puis garde-fous re-appliqués (`FULFILL_PRICES`, `HISTORICAL_PASS_PRICES`, `OFFER_CUTOFF_DATE`, fail-closed création, 400 sur prix invalide, `payment_status` propriétaire + `passEnd`).
+- `workers/sg-payments/PROVENANCE.md` — §8 (resync live, SHA-256, taille), §8.1 (offre), §8.2 (garde-fous), §8.3 (contrôle de non-régression) + rappel de déploiement.
+- `tests/unit/price-parity.test.cjs` — réécrit : verrouille la parité affichage/débit sur les 8 sources de prix + les surfaces publiées.
+- `tests/unit/pass-offer-copy.test.cjs`, `tests/unit/sos-public-surface-removed.test.cjs`, `tests/unit/mollie-payment-logic.test.cjs`, `tests/unit/mollie-fulfillment-review.test.cjs`, `tests/unit/puntacana-es-observation-copy.test.cjs` — attentes alignées (410 `sos`, 7,99 €, refus de l'ancien tarif, $8.99).
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (`✓ built in 4.24s`, sitemap 98 URLs, 136 pages plages)
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko gzip ≤ 210 Ko** (exact 211235 / 215040 bytes) → exit 0
+- [x] `php -l` sur `mollie.php`, `mollie-lib.php`, `mollie-config.example.php`, `create-checkout.php`, `paypal.php` → **No syntax errors detected** (5/5)
+- [x] `node --check` sur `pricing.js`, `premium-page.cjs`, `workers/sargagame/index.js`, `workers/sg-payments/index.js` → exit 0 (4/4)
+- [x] `node scripts/ux-smoke.mjs` (build prod + `vite preview` :4173) → **4 tokens OK** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `npm test` → **188/188 fichier(s) de test OK** (runner `scripts/run-tests.cjs`)
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0 (`REGIONS_OK`)
+- [x] Vérification du **build** : **0 marqueur SOS** dans `dist/` (`sg-soscta`, `sg_sos_checkout`, `SOS PLAGE 24H`, `sos_success`, `SOSPlage`) ; anciens montants USD (5.99 / 11.99 / 19.99) **absents** ; `dist/premium/index.html` = 799/1499/2499 + 899/1699/2799, sans `HIGH_MONTHS`/`RATE`. Le seul « 4,99 » résiduel = l'**abonnement B2C mensuel** (produit distinct, non modifié).
+- [x] Contrôle de non-régression du durcissement (#1383 ↔ LIVE ↔ courant) → 0 fonction perdue (voir script `sg-compare-worker2.cjs`)
+- [ ] `npx playwright test` → **NON EXÉCUTÉ** (aucun e2e de paiement impacted conservé ; le parcours e2e SOS a été supprimé avec le parcours)
+
+### Problèmes restants / Blockers
+- [ ] **BLOQUÉ — preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test ou live), pas de `STRIPE_TEST_SECRET_KEY` (sk_test) pour `sg-payments-staging`, pas de clé service Supabase staging → impossible de prouver « paiement réel + webhook + attribution d'accès » de bout en bout. Sévérité **P0**. Action : exécution par le fondateur sur un paiement sandbox, puis LIVE contrôlé.
+- [ ] **PRÊT MAIS NON ACTIVÉ** : le patch est dans le dépôt (branche + PR) ; le merge déclenche le déploiement FTP des **6 sites** et des **6 workers régionaux** (`workers/sargagame/index.js` est le `main` de `wrangler.template.jsonc`). Le worker `sg-payments` **n'est pas déployé par la CI** (aucun workflow ne le mentionne) → son redéploiement reste manuel et non requis par ce patch. Sévérité **P0**. Action : merge sous verrou de certification (CI verte sur le SHA exact), puis vérification live.
+- [ ] **À FAIRE APRÈS DÉPLOIEMENT — retirer `sg-noso` des 6 routes Cloudflare** : les 6 domaines pointent encore vers `sg-noso` (`DOMAINE/* → sg-noso`). Le worker est **conservé** (routes re-créables en 1 appel) ; le retrait n'est déclenché **qu'après** correctif déployé + vérification live des 6 domaines. Sévérité **P1**. Action : retirer les routes, puis re-vérifier.
+- [ ] **BUG LIVE — bundle USD à 499** : le bundle live USD (`sargassummiami.com`) annonce encore `ud=499` pour trip7 alors que le catalogue live `/premium/` et le serveur live sont à 899. Le patch du dépôt corrige la source ; la correction en production dépend du déploiement. Sévérité **P1**. Action : re-vérifier les 6 domaines après déploiement (799/899, 1499/1699, 2499/2799).
+- [ ] **NON VÉRIFIÉ — marqueurs SOS encore présents dans les bundles live** : cohérent avec l'absence de déploiement ; à re-vérifier après merge (`/?sos=1` → 410 attendu). Sévérité **P1**.
+- [ ] **Livrables toujours introuvables** : `/workspace/sargagame-b2c-offer-durable.patch`, audit UX + `mockup-gp.html` (`/workspace/ux-audit/`), relances B2B #4–#10 (`/workspace/b2b_outreach.md`). Sévérité **P2**. Action : produire les fichiers ; **rien en ligne sans validation de Yacov** pour la maquette UX et les relances.
+- [ ] **BLOQUÉ — `sales-lifecycle-emails`** : token GitHub 403 sur `workflow_dispatch` (besoin `actions: write`) → lancement manuel par Yacov en `send=false`. Sévérité **P2**.
+
+### Prochaine action recommandée
+1. Rebaser `agent/coding/p0-sos-retrait-mollie-live-20261109` sur `origin/main`, rejouer le gate, commit + push, mettre à jour la PR **#1383**, attendre la **CI verte sur le SHA exact**, puis merger (mandat fondateur) — Rôle : coding_agent
+2. Après merge : re-vérifier les 6 domaines (bundles 799/899 · 1499/1699 · 2499/2799, 0 marqueur SOS, `/?sos=1` → 410, `/api/mollie-pay?pass=sos` → 410) puis **retirer `sg-noso`** des 6 routes et re-vérifier — Rôle : devops_agent + qa_agent
+3. Présenter à Yacov l'audit UX + `mockup-gp.html` (validation requise avant mise en ligne) et préparer les relances B2B #4–#10 en **brouillons** — Rôle : growth_agent + ui_ux_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
+- PR : **#1383** (base `main`) — head précédent `dc83bdd44a2f15473212858b06c98f8022b9c49e`, **CONFLICTING/DIRTY** vs `origin/main` (`ff12dbfd3`) au début de cette session ; le rebase + le commit du patch ci-dessus sont **la prochaine action**
+- Commit head : 9ecf0ca6488189cfe3b86a630f3394a8081596b3 (patch )ac75194 + merge origin/main f12dbfd3)
+
+---
+## 2026-11-09 12:40 UTC · Agent: OpenCode (coding)
+
+### Travail effectué
+- **Résumé 1 ligne** : parcours de paiement SOS (1 €) retiré du client ET de la création serveur (fail-closed), tout en conservant la livraison des paiements `sos` déjà encaissés ; webhook Mollie fiabilisé (classique + Next-gen, signature fail-closed, révocation, idempotence) et trou de prix du worker de prod `sg-payments` refermé.
+- **Détails** :
+  - **Retrait de la surface publique SOS** (confirmé) : deep-link `?sos=1`, state `showSOS`, FAB `.sg-soscta`, bloc SOS de la fiche plage, modal `SOSPlage` (`src/SOSPlage.jsx` supprimé), `src/lib/sos-observation-state.mjs` supprimé, classe `.sg-soscta` retirée du CSS, `src/lib/pricing.js` (PASS_KEYS/PASS_DAYS/PASS_BASE_CENTS/PASS_COPY) sans `sos`, catalogue `/premium/` (`scripts/lib/premium-page.cjs` + `public/premium/index.html`) purgé, template `public/api/mollie-config.example.php` purgé. Aucun événement de funnel `sg_sos_*` n'est plus émis ni allowlisté.
+  - **Script à risque supprimé** : `test-mollie-api.mjs` (racine) créait un **paiement LIVE** de 1 € contre la production via `/?sos_success=1`. Supprimé (non référencé nulle part).
+  - **Création serveur fail-closed** : `public/api/mollie.php` (allowlist `$passPrices` sans `sos`), `workers/sargagame/index.js` (`PASS_PRICES` sans `sos` + `FULFILL_PRICES` avec `sos`), `workers/sg-payments/index.js` (`PASS_PRICES` sans `sos` + `FULFILL_PRICES` avec `sos`). **Trou refermé dans le worker de production** : `create_payment` faisait `if (pass && PASS_PRICES[pass]) … else if (!pass …)` → un pass inconnu (`sos` ou arbitraire) ne passait dans **aucune** branche → **aucun contrôle de prix** → un montant libre (0,01 €, 999 €) pouvait être encaissé. Règle appliquée : pass connu → montant contrôlé ; pass inconnu → `400 Prix invalide` (vérifié par exécution réelle sur les deux workers, aucun appel Mollie de création émis).
+  - **Livraison `sos` CONSERVÉE** (décision de mission) : encaisser sans livrer serait un trou de confiance. `FULFILL_PRICES` (2 workers), `DAYS_TABLE`/`PASS_DURATIONS` (sos = 1 j), `mol_pass_prices()` (PHP) et le webhook PHP livrent toujours un paiement `sos` déjà encaissé.
+  - **Webhook Mollie fiabilisé** :
+    - `public/api/mollie-webhook.php` réécrit : parse **classique** (`application/x-www-form-urlencoded`, `id=tr_…`) **+ Next-gen** (JSON `{resource:"event", id:"event_…", type:"payment.paid", entityId:"tr_…"}` — l'`id` d'événement n'est **PAS** l'`entityId`), signature `X-Mollie-Signature` comparée à temps constant (503 sans secret, 403 signature invalide), état réel relu auprès de l'API Mollie (jamais le corps), `settled` traité comme `paid`, **révocation** sur `canceled`/`expired`/`failed`/`refunded`, délivrance idempotente.
+    - `workers/sargagame/index.js` : le webhook **ne vérifiait aucune signature** (n'importe qui pouvait POSTer un `id=tr_…`) → signature fail-closed ajoutée (503 sans `MOLLIE_WEBHOOK_SECRET`, 403 sinon), support des deux formats, révocation durable (expiration de la ligne `payment_grants` — la table n'a pas de colonne `status`), `settled` accepté.
+  - **BUG CRITIQUE corrigé — montant illisible** : `validateMollieAmountPHP()` lisait `$payment->amount->currency` alors que le runtime renvoie un **tableau** → montant lu à `null`/0 → **tout pass B2C payé était refusé** (`amount_mismatch`) → **argent encaissé, accès JAMAIS délivré**. Correctif : lecture via `mol_payment_amount()` (tableau OU objet) + validateur partagé `mol_validate_pass_amount()` (alias legacy `p7` + date de coupure). Le test `b2b-conversion-instrumentation.test.cjs` verrouillait ce bug comme un comportement « attendu » → corrigé (un p30 à 14,99 € est désormais **accepté**, un montant faux toujours refusé).
+  - **Confirmation serveur** : `payment_status` (PHP) et `workers/sg-payments` relisent l'état chez Mollie, **refusent un paiement appartenant à un autre email** (`403 payment_owner_mismatch`), **délivrent le droit de façon idempotente** (RPC `sg_upsert_payment_grant`) et valident le format `tr_…`. Le webhook seul n'est plus le point unique de délivrance **Contrôle propriétaire désormais effectif** : les 5 appels client `payment_status` (`src/PremiumModal.jsx` ×4, `src/Sargasses_PROD.jsx` ×1) transmettent l’email de la commande — sans lui, le refus `payment_owner_mismatch` du serveur aurait été inerte. Garde-fou ajouté dans `tests/unit/mollie-payment-logic.test.cjs` (audit automatique de tous les appels). (un webhook perdu ne doit pas signifier « payé sans accès »).
+  - **Idempotence** : `public/api/mollie-lib.php` passe désormais par la **RPC idempotente** `sg_upsert_payment_grant` (`ON CONFLICT (payment_id) DO NOTHING`) au lieu d'un POST direct (qui échouait en doublon sur `unique(payment_id)` → 500 → rejeu en boucle de Mollie). Repli INSERT conservé.
+  - **Révocation durable** : `mol_b2c_pass_revoke()` expire désormais la ligne Supabase (`expires_at`) et supprime le transient `/tmp` ; `revokeB2CPass()` ajouté au worker régional.
+  - **Post-déploiement** : `--sos-test` **inversé** — il vérifie désormais l'**ABSENCE** de surface SOS servie (marqueurs `sg-soscta`, `SOS PLAGE 24H`, `sos_success`, `sg_sos_checkout`… + catalogue `/premium/`). Lecture seule : **aucune requête de création de paiement** n'est émise (un POST `create_payment` en prod créerait un paiement LIVE, interdit sans validation explicite).
+  - **Aucun secret, aucun prix modifié, aucune migration rejouée** (001–008 déjà appliquées), aucune donnée scientifique touchée.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — deep-link `?sos=1`, state `showSOS`, FAB `.sg-soscta`, overlay `LazySOSPlage`, événements `sg_sos_*` : supprimés.
+- `src/BeachSheet.jsx` — bloc SOS payant + composant `SOSPlage` + état `showSOS` : supprimés.
+- `src/SOSPlage.jsx` — **supprimé**.
+- `src/lib/sos-observation-state.mjs` — **supprimé**.
+- `src/app-runtime.css` — classe `.sg-soscta` : supprimée (commentaires de contexte mis à jour).
+- `src/lib/pricing.js` — grille client sans `sos` (PASS_KEYS / PASS_DAYS / PASS_BASE_CENTS / PASS_COPY).
+- `src/WorldMapView.jsx` — commentaire obsolète (CTA « SOS doré ») corrigé.
+- `public/api/mollie.php` — allowlist de création sans `sos` ; `payment_status` devient une confirmation serveur (relit Mollie, contrôle propriétaire, délivrance idempotente).
+- `public/api/mollie-lib.php` — `mol_pass_prices()`, `mol_legacy_pass_aliases/prices/cutoff_date()`, `mol_validate_pass_amount()` (montant via `mol_payment_amount()`), `mol_b2c_grant_upsert()` (RPC idempotente), `mol_b2c_pass_revoke()` durable.
+- `public/api/mollie-webhook.php` — réécrit : classique + Next-gen, signature fail-closed, révocation, `settled`, idempotence.
+- `public/api/mollie-config.example.php` — entrée `sos` retirée.
+- `public/premium/index.html` — catalogue embarqué purgé de `sos`.
+- `scripts/lib/premium-page.cjs` — `OFFERS` sans `sos`.
+- `scripts/autopilot/post-deploy-verify.cjs` — `--sos-test` inversé (absence de surface SOS), plus de contrôle de présence.
+- `.github/workflows/cloudflare-production.yml` — commentaire du contrôle post-déploiement aligné (commande inchangée).
+- `workers/sargagame/index.js` — `PASS_PRICES` (création) sans `sos` + `FULFILL_PRICES` (livraison) avec `sos` ; webhook signature + Next-gen + révocation (`revokeB2CPass`) ; `validateMollieAmount` accepte `settled` ; `payment_status` accepte `settled`.
+- `workers/sg-payments/index.js` — `PASS_PRICES`/`FULFILL_PRICES` séparés ; **trou de prix refermé** (pass inconnu → 400) ; `payment_status` devient confirmation serveur (propriétaire + délivrance idempotente) ; refus de prix renvoyé en **400** (et non 500).
+- `test-mollie-api.mjs` — **supprimé** (créait un paiement LIVE de 1 € en production).
+- `tests/unit/sos-public-surface-removed.test.cjs` — **nouveau** : absence de surface publique + création refusée (exécution réelle sur les 2 workers) + livraison conservée + confirmation serveur.
+- `tests/unit/mollie-webhook-p03.test.cjs`, `tests/unit/mollie-fulfillment-review.test.cjs` — contrat webhook mis à jour (signature obligatoire, Next-gen, 403/503).
+- `tests/unit/mollie-payment-logic.test.cjs`, `tests/unit/price-parity.test.cjs`, `tests/unit/pass-offer-copy.test.cjs`, `tests/unit/funnel-checkout-events.test.cjs`, `tests/unit/observation-freshness.test.cjs`, `tests/unit/b2b-conversion-instrumentation.test.cjs`, `tests/ux-first-screen-cta.test.cjs` — attentes alignées sur le retrait.
+- `tests/unit/sos-observation-state.test.cjs`, `sos-mollie-return-pending.test.cjs`, `sos-modal.test.cjs`, `sos-checkout-freshness-gate.test.cjs`, `tests/e2e/sos-plage-checkout.spec.ts` — **supprimés**.
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (`✓ built in 3.33s`, sitemap 98 URLs OK)
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko gzip ≤ 210 Ko** (exact 211220 / 215040 bytes) → exit 0
+- [x] `php -l` sur `mollie.php`, `mollie-lib.php`, `mollie-webhook.php`, `mollie-config.example.php` → **No syntax errors detected** (PHP 8.4.22)
+- [x] `node scripts/ux-smoke.mjs` (build prod + `vite preview` :4173) → **4 tokens OK** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `npm test` (runner maison, 180 fichiers) → **179/180 OK** ; le seul échec restant (`tests/sitemap-guard-beach-pages.test.cjs`) exige `dist/` et passe après build (`RESULTAT ✓ TOUS LES TESTS OK`)
+- [x] `node scripts/agent-handoff.cjs` non requis ; `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0
+- [x] `git diff --check` → exit 0 (avertissements CRLF uniquement)
+- [x] `npx playwright test` → **NON EXÉCUTÉ** (aucun e2e de paiement impacted conservé ; le parcours e2e SOS a été supprimé avec le parcours)
+- [x] Preuve exécutée du trou de prix refermé : `create_payment(pass=sos)` et `create_payment(pass=inconnu)` → **400 « Prix invalide »** sur les DEUX workers, **0 appel de création Mollie** ; `create_payment(pass=trip7, 499)` → 200 et 1 création (non-régression)
+
+### Problèmes restants / Blockers
+- [ ] **BLOQUÉ — bout-en-bout LIVE non démontrable** : aucun accès API Mollie/Cloudflare local, pas de `MOLLIE_API_KEY` LIVE dans l'environnement, aucun secret de webhook disponible → impossible de prouver « paiement réel + webhook + attribution d'accès » de bout en bout. Sévérité **P0**. Action : exécution par le fondateur sur un paiement sandbox puis LIVE contrôlé, avec relecture du `payment_status` et du grant `payment_grants`.
+- [ ] **BLOQUÉ — code réellement déployé non diffable** : SHA-256 du fichier repo `workers/sg-payments/index.js` = `ded72d33…` ; commit `18cb16d7e` → `d075f3e6…` ; `agents/deployments.md` annonce `fcf4e333…` (v382) → aucune correspondance → l'état réel de la production ne peut pas être affirmé. Sévérité **P0**. Action : re-fetch de l'API Cloudflare (`GET /accounts/{id}/workers/scripts/sg-payments`) pour comparer octet pour octet avant toute activation.
+- [ ] **PRÊT MAIS NON ACTIVÉ** : la branche `agent/coding/p0-sos-retrait-mollie-live-20261109` corrige le worker de prod **en dépôt** ; le déploiement du Worker `sg-payments` (v382 → nouvelle version) **n'est pas effectué** et **ne doit pas l'être sans validation explicite**. Sévérité **P0**. Action : revue de la PR, puis déploiement contrôlé par le fondateur.
+- [ ] **BLOQUÉ — vérification prod des 6 domaines** : limitée à des GET non authentifiés ; aucune preuve d'achat possible ; le contrôle post-déploiement inversé (`sos_public_surface`) n'a **pas** été rejoué contre la prod (les marqueurs SOS y sont encore présents tant que le build n'est pas déployé). Sévérité **P1**. Action : rejouer `node scripts/autopilot/post-deploy-verify.cjs --all --sos-test` après déploiement.
+- [ ] **NON VÉRIFIÉ — absence de clé Mollie LIVE** : le refus de création `sos` et la signature webhook sont prouvés par exécution locale (mocks), **pas** contre l'API Mollie. Sévérité **P1**. Action : test d'intégration sandbox.
+
+### Prochaine action recommandée
+1. Faire relire la PR (chemin financier) puis décider du déploiement du Worker `sg-payments` — Rôle : coding_agent + security_agent, **avec accord explicite du fondateur**
+2. Rejouer le contrôle post-déploiement inversé sur les 6 domaines et prouver « webhook → grant → accès » sur un paiement **sandbox** — Rôle : qa_agent
+3. Comparer le code live du Worker (`GET /workers/scripts/sg-payments`) au SHA du dépôt avant activation — Rôle : devops_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
+- PR : **#1383** (base `main`) — **NON mergée, AUCUN déploiement déclenché** — CI **verte** sur le SHA exact (`test-frontend` ✅, `perf` ✅, `lighthouse-report` ✅, `GitGuardian` ✅)
+- Commit head : `7225b3729de7ef7c5d54a0eac995b53257e07ddb` (mission `dd3ae1026` + merge `origin/main` `827351232` ; + commits de documentation de handoff par-dessus)
+
+---
+## 2026-11-10 00:03 UTC · Agent: Cursor (data/growth)
+
+### Travail effectué
+- **Résumé 1 ligne** : la publication satellite n'est plus bloquée par le SLA de 900 min quand l'observation est plus récente que celle déjà publiée (plafond 7 jours, jamais une régression, une source dégradée ou un pic tout-vert) ; les e-mails de vente B2C/B2B fondateur sont rebranchés.
+- **Détails** :
+  - `verify-ftp-ready` et le gate pré-déploiement comparent l'observation candidate à celle déjà commitée ou live. Le libellé « frais » reste 900 min. Au-delà de 7 jours, plus ancienne, source non live ou pic tout-vert : refus.
+  - Le workflow ne classe `BLOCKED_STALE_SOURCE` que si le script sort en erreur. Un avertissement de publication autorisée ne fait plus échouer le job.
+  - `data-refresh` / `daily-copernicus` ne dispatchent la prod que si les données ont changé.
+  - Timeout du bulletin week-end porté à 40 min.
+  - Workflow `sales-lifecycle-emails` : briefing matin aux abonnés actifs (désinscription + CTA pass 30 jours 14,99 € / $16.99), relance panier une fois, expiration, bienvenue payant, digest B2B uniquement vers yacovassaraf@gmail.com. Aucun cold email hôtel.
+
+### Fichiers modifiés
+- `scripts/autopilot/check-predeploy-satellite-freshness.cjs` — éligibilité de publication séparée du SLA 900 min.
+- `scripts/verify-ftp-ready.cjs` — publie si pas de régression.
+- `.github/workflows/data-refresh.yml`, `daily-copernicus.yml`, `weekend-email.yml`, `sales-lifecycle-emails.yml`.
+- `scripts/automation/send-b2c-morning-alerts.cjs`, `send-b2b-weekly-digest.cjs`, `recover-abandoned-cart.cjs`, `pass-expiry-winback.cjs`, `planner-alerts.cjs`.
+- `tests/unit/publication-eligibility.test.cjs`.
+
+### Tests réalisés
+- [ ] `npm run build` → non requis (aucun bundle applicatif, aucun PHP, aucun paywall)
+- [x] `node tests/unit/publication-eligibility.test.cjs` → 44 assertions
+- [x] `node tests/unit/predeploy-satellite-freshness.test.cjs` → 29 assertions
+- [x] `node tests/unit/copernicus-publication-status.test.cjs` → 12 cas
+- [x] `node tests/unit/copernicus-workflow-status-contract.test.cjs` → OK
+- [x] `node --check` sur les `.cjs` touchés → OK
+- [x] YAML des 4 workflows parsé → OK
+
+### Problèmes restants
+- [ ] La prod sert encore l'observation du 27 oct tant que `Data Freshness` n'a pas fetché ERDDAP et que le déploiement n'est pas vert. — P0 — lancer le workflow après merge.
+- [ ] Le RPC `sg_claim_b2c_alert_delivery` doit exister en base pour que le briefing matin parte vraiment (sinon fail-closed, zéro doublon). — P1 — vérifier au premier `--send`.
+
+### Prochaine action recommandée
+1. Merger, déclencher `Data Freshness (ERDDAP → repo)`, vérifier les 6 domaines. — Rôle : devops
+2. Dry-run `sales-lifecycle-emails` avec `send=false`. — Rôle : growth
+
+### Branche / PR
+- Branche : `cursor/data-freshness-sales-emails-42fc`
+- PR : ouverte dans ce run
+- Commit head : voir le commit de cette branche
+
+---
+
+## 2026-11-09 15:36 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : le pont autonome GitHub ↔ Factory V3 ↔ OpenCode est **réellement opérationnel 24/7** — service persistant installé et vérifié sur le PC réel, cycle de vie complet publié sur l'issue #1376 (`imported → started → retrying → heartbeat → blocked`), PR #1377 ouverte par le pont avec CI 4/4 verte, et **9 défauts d'exécution réels corrigés** (défauts #13 à #22).
+- **Détails** :
+  - **Cycle de vie live prouvé sur GitHub** : mission `AUTOPILOT-E2E-BRIDGE-20261109-R4` (issue `aveca/sargagame#1376`). Statuts publiés : `imported` ×1, `started` ×6, `failed` ×5, `retrying` ×3, `heartbeat` ×2, **`blocked` ×1** (anti-spam vérifié : un seul `blocked` malgré les cycles répétés, marqueur durable `finalPublishedFor`). **Aucun `completed` sans preuve.**
+  - **PR #1377 ouverte par le pont** : head `cff6e8f2f122cf5cd2ea31051b18ba23010b1fa0`, branche `agent/autopilot/2026-11-09-142542877-p1dk-184l1-…`, **1 seul fichier** `.ai/autopilot/README.md` (+16/−0) — **aucun** `public/api/**` malgré le gate qui régénère ces artefacts. CI **4/4 verte** (GitGuardian Security Checks, lighthouse-report, perf, test-frontend).
+  - **Service 24/7 installé et VÉRIFIÉ** : tâche planifiée `SargagameAutopilot` (`Running`, `AtLogOn`, `RestartInterval` 1 min ×999, `ExecutionTimeLimit` 0, `IgnoreNew`), chaîne `wscript.exe → run-hidden.vbs → cmd → autopilot-service.cmd → autopilot-live.cmd → run.cjs --live --continuous → runner.cjs`, **un seul runner** (verrou PID). Runner vivant (PID 7372) au dernier contrôle.
+  - **9 défauts réels corrigés** (détails et preuves dans `.ai/changelog.md`) : PR polluée par les artefacts de build (#13) · `ReferenceError: diff` (#14) · `ReferenceError: allowedScope` (#15) · crash du pont sur bug interne (#16) · l'agent « narrait » au lieu d'écrire (#17) · `completed` fantôme du watchdog (#18) · statut final jamais publié (#19) · arrêt propre impossible (#20) · boucle de service sans délai (#21) · moteur exécuté annoncé faux (#22).
+  - **Corrections structurelles, pas des contournements** : la phase de commit est une **fonction à paramètres explicites** (`phaseCommitAndPublish`) → la famille de bugs « variable hors portée après la boucle » est structurellement impossible ; le prompt est une **fonction pure exportée** (`buildAgentPrompt`) → il est vérifiable hors-ligne **et** testable en conditions réelles via une sonde qui appelle le même constructeur.
+  - **Sonde réelle du prompt** : `Read` → `Write` → « Wrote file successfully. » — 5/5 contrôles OK (fichier modifié, titre de section, commande, ligne de sortie, contenu d'origine conservé), prompt 14 370 car., modèle `qwen3.5:9b`.
+  - **Garde-fous** : 5 nouveaux modules (`safety-guard`, `mission-lifecycle`, `mission-watchdog`, `mission-publisher`, `agent-router`, `final-scope`, `agent-prompt`) + 6 fichiers de test + extension du test de câblage (47 assertions). Le garde-fou anti-fuite de portée est **mutation-testé** (défaut réintroduit → 3 échecs sur le code muté → restauration → OK).
+  - **Sécurité inchangée et fail-closed** : une issue est une donnée, jamais une autorisation. Déploiement production, merge, paiement/prix, secrets/permissions, migrations irréversibles et envois massifs sont refusés **et signalés** (avec gestion des négations).
+
+### Fichiers modifiés
+- `scripts/autopilot/orchestrator.cjs` — `phaseCommitAndPublish` (paramètres explicites), revalidation post-gate, reprise bornée (`MAX_BRIDGE_ERROR_RETRIES`), publication des preuves dès la PR, publication de l'état final (sélection **ou** mission d'origine via `findByPr`).
+- `scripts/autopilot/implement.cjs` — prompt construit par `buildAgentPrompt` (fonction pure) ; moteur réel `opencode` annoncé.
+- `scripts/autopilot/lib/agent-prompt.cjs` — **nouveau** : constructeur pur du prompt (action en tête + rappel en fin, `read` puis `write`).
+- `scripts/autopilot/lib/agent-prompt.probe.cjs` — **nouveau** : sonde réelle (mêmes constructeur et adaptateur que la production).
+- `scripts/autopilot/lib/safety-guard.cjs` + `lib/safety-guard.test.cjs` — **nouveaux** : refus fail-closed des missions dangereuses, gestion des négations, masquage ciblé des secrets.
+- `scripts/autopilot/lib/mission-lifecycle.cjs` + `lib/mission-lifecycle.test.cjs` — **nouveaux** : état durable des missions, `findByTaskId`, `findByPr`, `finalPublishedFor`.
+- `scripts/autopilot/lib/mission-watchdog.cjs` — **nouveau** : reprise sans doublon ; l'état terminal **reflète** la réalité (plus de faux `completed`).
+- `scripts/autopilot/lib/mission-publisher.cjs` — **nouveau** : publication unique des statuts de cycle de vie sur l'issue source.
+- `scripts/autopilot/lib/agent-router.cjs` — **nouveau** : routage strict ; seul `opencode` est câblé non-interactif.
+- `scripts/autopilot/lib/final-scope.cjs` + `lib/final-scope.test.cjs` — **nouveaux** : périmètre final + revalidation post-gate.
+- `scripts/autopilot/lib/gitops.cjs` — `restoreOutOfScope` (restauration hors périmètre), `getPrDetail` porte désormais l'URL de PR.
+- `scripts/autopilot/lib/orchestrator-scope.test.cjs` — **nouveau** : garde-fou **statique** anti-fuite de portée (mutation-testé).
+- `scripts/autopilot/lib/restore-scope.test.cjs` — **nouveau** : restauration hors périmètre.
+- `scripts/autopilot/multi-repo-bridge.cjs` + `multi-repo-bridge.test.cjs` + `multi-repo-bridge-e2e.test.cjs` — import allowlisté, `AUTOPILOT_TASK` validé, anti-doublon, E2E 12 étapes.
+- `scripts/autopilot/runner.cjs`, `scripts/autopilot/status.cjs`, `scripts/autopilot/prune.cjs` — câblage du pont multi-dépôt, état consultable, purge.
+- `scripts/autopilot/autopilot-service.cmd`, `autopilot-stop.cmd`, `autopilot-stop.ps1`, `install-service.ps1` — **nouveaux** : persistance, arrêt propre, installation de la tâche planifiée.
+- `docs/AUTOPILOT-RUNBOOK.md` — **nouveau** : runbook d'exploitation (état, redémarrage, arrêt, diagnostic, limites).
+- `.ai/autopilot/config.json` — section `mission` (heartbeat, watchdog, tentatives).
+- `.ai/autopilot/.gitignore` — `mission-state.json` (état runtime) **ignoré**.
+- `tests/unit/autopilot-runner-multirepo-wiring.test.cjs` — 47 assertions (forme stricte `publishMissionStatus(opp.id, 'failed')` + reprise bornée).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — handoff de cette mission.
+
+### Tests réalisés
+- [ ] `npm run build` → **N/A** (outillage d'automatisation uniquement — aucun bundle applicatif, Worker, `public/api/**` ou interface touché)
+- [ ] `node scripts/check-bundle-budget.cjs` → **N/A** (idem — budget inchangé, aucune dépendance ajoutée)
+- [ ] `php -l` → **N/A** (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → **N/A** (aucune interface touchée)
+- [x] `node --check` sur chaque `.cjs` touché → exit 0
+- [x] `node scripts/run-tests.cjs` → **185/189 fichiers OK** ; les **4 échecs sont PRÉEXISTANTS** (identiques à `origin/main`, lisent `dist/` et `scripts/automation/**`, **aucun fichier modifié par ce travail**) : `sitemap-guard-beach-pages`, `b2b-outreach-proof-freshness`, `generate-og-beaches-freshness`, `regional-homepage-freshness-copy`
+- [x] Tests ciblés : `safety-guard` OK · `mission-lifecycle` OK · `final-scope` OK · `restore-scope` OK · `orchestrator-scope` OK · `multi-repo-bridge-e2e` OK · `multi-repo-bridge` OK · `autopilot-runner-multirepo-wiring` **47 assertions OK**
+- [x] **Mutation-test du garde-fou anti-fuite de portée** : le défaut réel (`allowedScope` redéclaré dans la boucle) est réintroduit → **3 échecs** sur le code muté → restauration → **OK**
+- [x] **Sonde réelle du prompt** (`agent-prompt.probe.cjs`) : agent réel `Read` → `Write` → « Wrote file successfully. » — **5/5** contrôles OK
+- [x] **Cycle de vie live vérifié sur GitHub** (issue #1376) : compte exact des statuts publiés, PR #1377, commit SHA, branche, agent, motif de blocage
+- [x] **Conformité de la PR #1377 vérifiée** : périmètre strict, aucune denylist, aucun secret dans le corps, mention de la revalidation post-gate
+- [x] **Anti-spam vérifié** : 1 seul commentaire `blocked` malgré les cycles répétés
+- [x] **Reprise après crash mid-mission vérifiée** (même `task_id`, pas de doublon) ; une mission terminale n'est jamais relancée
+- [x] **Arrêt propre vérifié** : `autopilot-stop.cmd` → verrou libéré en 3–15 s, aucun processus `node` résiduel
+- [x] `git diff --check` → OK
+
+### Problèmes restants / Blockers
+- [ ] **PR #1377 non mergée** (en attente de vérification humaine) → le clone runner reste épinglé sur le code corrigé. — sévérité P1 — action : `coding_agent` après merge, rebasculer le checkout runner sur `origin/main`.
+- [ ] **Déclencheur `AtStartup` refusé sans droits admin** → le service démarre à chaque ouverture de session, pas au démarrage de la machine. La tâche est `Interactive` (session ouverte requise). — sévérité P2 — action : exécuter `scripts/autopilot/install-service.ps1` depuis une console **élevée**.
+- [ ] **Pas d'accès API Cloudflare local** (`CLOUDFLARE_API_TOKEN` absent, `.wrangler` absent) → la phase **PREVIEW** ne peut pas déployer l'aperçu Pages (`https://1377.sargagame.pages.dev` non vérifiable) → la mission finit `blocked-preview` et non `completed`. — sévérité P1 — action : fournir le token + `.wrangler`.
+- [ ] **`aveca/bot-wow` sans harness `scripts/autopilot`** → ses missions sont **relayées** (statut publié) mais **pas exécutées** localement. — sévérité P1 — action : installer le même harness côté `bot-wow`.
+- [ ] **`f3.py` (Factory V3 Python) inexploitable** : `INTERACTIVE`, `claims_allowed:false`, base figée au 2026-10-27. — sévérité P3 — action : hors chemin retenu, documenté.
+- [ ] **Pont control `C:\factory\control\github-bridge.cjs`** : processus mort, heartbeat figé au 2026-10-22, hors périmètre (pont par labels `factory:*`, pas le contrat `[AUTOPILOT]`). — sévérité P3 — action : documenté dans le runbook.
+- [ ] **Aider / Hermes** : déclarés dans la Factory mais **aucune voie non interactive** → jamais annoncés comme exécutés (seul `opencode` l'est). — sévérité P2 — action : câbler un exécutable non interactif par agent.
+- [ ] **`queue.json` / `scheduler.json` restent versionnés** (convention existante du dépôt) → un commit peut y embarquer du churn runtime. — sévérité P3 — action : décider d'un futur `git rm --cached` (hors périmètre de cette mission).
+
+### Prochaine action recommandée
+1. Merger la PR de cette mission après relecture, puis rebasculer le checkout runner sur `origin/main` et redémarrer le service — Rôle : `coding_agent`.
+2. Fournir `CLOUDFLARE_API_TOKEN` + `.wrangler` pour rendre la phase PREVIEW vérifiable et allowlisted `completed` — Rôle : `devops_agent`.
+3. Installer le harness `scripts/autopilot` côté `aveca/bot-wow` pour exécuter (et non seulement relayer) ses missions — Rôle : `coding_agent`.
+
+### Branche / PR
+- Branche : `agent/coding/autopilot-bridge-20261109`
+- PR : **#1378** — OPEN, NON mergée (base `main`), CI **4/4 verte**
+- Commit head : `2c8ac8b178138b50ed18a238eadf698bfe8b1fe2`
+  (`41f2e6a8` = livraison initiale · `2c8ac8b17` = correctif du défaut #23 révélé par la CI)
+
+> **Complément (après premier push)** : la CI de #1378 a révélé le **défaut #23** — `multi-repo-bridge-e2e.test.cjs` exigeait un agent **réellement installé** (binaire `opencode` absent du runner CI) : le test passait en local et échouait en CI. Correctif : point d'injection `options.router` dans le pont + test vérifiant la **décision** de routage (et non l'installation de la machine) + nouveau scénario « machine sans agent » (la mission reste importée et actionnable) + nouveau `lib/agent-router.test.cjs`.
+> **Preuve CI sur le SHA exact `2c8ac8b17`** : `test-frontend` **190/190 fichiers de test OK** (les 4 échecs locaux ne se reproduisent pas en CI : `dist/` y est construit), `perf` OK, `lighthouse-report` OK, `GitGuardian Security Checks` OK.
+> **Neutralité production confirmée** : **0 run** `cloudflare-production.yml` sur la branche (les derniers runs datent du 2026-11-07) — aucun déploiement, aucun secret de paiement réécrit.
+
+---
+
+
+## 2026-11-08 06:15 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : la boucle Factory ne se contente plus de « tourner » — elle **produit** : premier démarrage réussi de l'agent local (exit 0), et **2 défauts de supervision supplémentaires** corrigés (heartbeat muet pendant les cycles longs, échec d'agent non diagnostiquable).
+- **Détails** :
+  - **Premier agent local réellement exécuté (preuve vivante)** : après le correctif du contrat d'agent (handoff précédent), la boucle a sélectionné une opportunité de découverte (`visual-shift-high on mq/deep-1`), a créé le worktree, lancé l'agent local, et l'agent a **sorti en code 0** après ~15 min. C'est la première fois que l'agent local démarre et va au bout dans ce dépôt.
+  - **Défaut #11 — le heartbeat se taisait pendant les cycles longs.** Le heartbeat du lock, l'instantané `status.json` et le ping healthchecks n'étaient rafraîchis qu'aux **frontières de cycle**. Or un cycle qui exécute l'agent dure jusqu'à `policy.agentMaxMinutes` = **25 min** : pendant tout le travail, `status.json` affichait un `lastHeartbeat` vieux de **674 s** (mesuré) et le dead-man's switch ne recevait aucun ping (il n'est émis qu'au démarrage, en cas de succès de cycle et en cas d'échec). Un opérateur — ou un watchdog externe — concluait à une panne et pouvait arrêter le runner **au moment précis où il produisait enfin du travail**. Le lock lui-même n'était jamais en danger (`lib/lock.cjs` est *fail-closed* sur un pid vivant : jamais préempté) : le défaut était dans le **signal**, pas dans la sécurité. Correctif : `writeStatusSnapshot()` factorisé + **gardien de vie** par cycle (heartbeat + instantané + ping healthchecks toutes les 60 s), arrêté dans un `finally`.
+  - **Défaut #12 — un agent « réussi » sans changement était INDIAGNOSTIQUABLE.** La boucle parquait `scope violation: FAIL_TARGET_UNCHANGED: no files modified by agent`, sans plus. La cause réelle, établie par une **sonde contrôlée** : l'agent appelle bien son outil d'écriture (« Wrote file successfully »), mais le modèle local (9B) produit un **chemin corrompu** — `tests/u nit/.agent-probe.txt` au lieu de `tests/unit/.agent-probe.txt` (artefact supprimé ; le runner a été vérifié propre). L'écriture part donc à côté de la cible, le diff du worktree reste vide, et le garde-fou refuse correctement le no-op. Deux manques : (a) `implement.cjs` ne conservait que **stdout**, alors que le CLI OpenCode écrit les **appels d'outils sur stderr** et la réponse du modèle sur stdout → la trace ne contenait que des lignes `[local-agent] …` ; (b) le motif de parcage ne mentionnait jamais l'agent. Correctif : `agentLog` conserve stdout **et** stderr, et le motif de parcage porte un extrait de la trace. **Le garde-fou n'est pas assoupli** : ce qu'il refuse reste refusé, seul le diagnostic change.
+  - **Limite honnête du modèle local (à signaler, pas à contourner)** : le modèle installé sur ce PC (`tripolskypetr/qwen3.5-uncensored-aggressive:9b`) est un fine-tune « uncensored aggressive » dont la tokenisation corrompt les chemins. Le routeur local **préfère déjà** `qwen3-coder:30b` > `qwen2.5-coder:32b` > `*-coder` : installer un modèle `*-coder` sur la machine suffit à ce que le routeur le choisisse, sans modification de code. Aucune invention de workaround dans le dépôt.
+  - **Neutralité production** : `scripts/autopilot/runner.cjs`, `orchestrator.cjs` et `implement.cjs` sont **déjà** exclus fichier par fichier du `paths-ignore` de `cloudflare-production.yml` → ce handoff ne redeploie rien.
+
+### Fichiers modifiés
+- `scripts/autopilot/runner.cjs` — `writeStatusSnapshot()` factorisé + gardien de vie par cycle (heartbeat, instantané, ping healthchecks toutes les 60 s), arrêté en `finally`.
+- `scripts/autopilot/orchestrator.cjs` — extrait de la trace de l'agent joint au motif de parcage quand le scope-guard échoue.
+- `scripts/autopilot/implement.cjs` — `agentLog` conserve stdout **et** stderr (les appels d'outils du CLI sont sur stderr).
+- `tests/unit/autopilot-clean-checkout-runnable.test.cjs` — invariant « le heartbeat bat pendant le cycle » (6 assertions).
+- `tests/unit/autopilot-local-agent-contract.test.cjs` — invariant « un agent sans changement reste diagnostiquable » (3 assertions).
+
+### Tests réalisés
+- [ ] `npm run build` → N/A (outillage local uniquement, aucun bundle applicatif touché)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (idem)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée)
+- [x] `node --check` sur chaque `.cjs` touché → exit 0
+- [x] `npm test` → **179/183** fichiers OK ; **4 échecs PRÉEXISTANTS** (identiques à `origin/main`) : `tests/sitemap-guard-beach-pages.test.cjs`, `tests/unit/b2b-outreach-proof-freshness.test.cjs`, `tests/unit/generate-og-beaches-freshness.test.cjs`, `tests/unit/regional-homepage-freshness-copy.test.cjs`
+- [x] Garde-fous dédiés : `autopilot-clean-checkout-runnable` (OK), `autopilot-queue-persistence-loop` (OK), `autopilot-local-agent-contract` (OK), `autopilot-runner-multirepo-wiring` (OK), `autopilot-bridge-paths-ignore` (OK), `autopilot-live-single-runner` (56 checks OK), `workflows-yaml-syntax` (42 workflows OK), `ai-docs-paths-ignore` (OK) ; `multi-repo-bridge.test.cjs`, `ci-certification-audit.cjs`, `deploy-audit.cjs` → exit 0
+- [x] **Preuve que le garde du heartbeat détecte sa régression** : le dépôt est recopié dans une arborescence temporaire, `runner.cjs` est amputé de son gardien, et le **vrai test** est rejoué → il échoue sur l'assertion exacte « must install a periodic guardian during the cycle ». (Preuve non destructive : le dépôt n'est pas modifié.)
+- [x] **Preuves d'exécution réelle** (pas simulées) : runner vivant + lock + heartbeat ; `status.json` avec `cycleSuccess: true` et `autoMergeEnabled: false` ; `imported/started/blocked` publiés sur #1357, #1345, #1338, #1362, #1341 ; agent local `exit 0` avec réponse du modèle ; boucle convergente (4 candidats tentés une fois puis `blocked`) ; **rejeu réel de la mission `DRYRUN-SARGASS-001` (#1341)** : statut `started` publié sur l'issue à 06:12:48, agent lancé (pid 22772), parcage à 06:19 avec le **nouveau diagnostic** « scope violation: FAIL_TARGET_UNCHANGED: no files modified by agent [agent: → Read .ai/current_state.md / → Read .ai/tasks.md / → Read README.md] » — la trace **manquait** auparavant.
+- [x] **Heartbeat prouvé en conditions réelles** : échantillonnage de `status.json` pendant un cycle agent de 5 min → **36 échantillons, âge max 46 s** (contre **674 s** mesurés avant le correctif, sur le même cycle). Le cycle long est le pire cas : sans le gardien, le runner paraissait mort pendant tout son travail.
+- [x] **Garde du heartbeat prouvé capable de détecter sa régression** : le dépôt est recopié dans une arborescence temporaire, `runner.cjs` est amputé de son gardien, et le **vrai test** est rejoué → il échoue sur l'assertion exacte « must install a periodic guardian during the cycle ». (Preuve non destructive.)
+- [x] `git diff --check` → OK
+- [x] **Diff confinementné** : 23 fichiers, **+1998/-51**, tous dans `.ai/`, `scripts/autopilot/`, `tests/unit/` et le `paths-ignore` de `cloudflare-production.yml`. Aucun Worker, `public/api/`, `regions/`, `src/`, `package.json`, fichier paiement ou prix touché. **Aucun secret** dans le diff (scan des motifs `sk-`/`ghp_`/`AKIA`/clé privée).
+- [x] **Neutralité production confirmée après tous les commits** : `cloudflare-production.yml` → `total_count = 443` (inchangé), derniers runs toujours sur les SHA d'avant la branche → **aucun déploiement déclenché**.
+
+### Problèmes restants
+- [ ] **PR #1364 non mergée** (CI en cours sur le head `5cc35f23b`) → le checkout runner reste épinglé sur la branche. Après fusion : `git -C C:\Users\user\sargagame-runner fetch origin main && git -C C:\Users\user\sargagame-runner checkout origin/main -- scripts/autopilot/ .ai/ux-agent/` puis redémarrage via `C:\Users\user\local-tools\sargagame-autopilot.cmd`. — sévérité P1 — action : `coding_agent` après merge.
+- [ ] **Le modèle local corrompt les chemins** → l'agent écrit à côté de la cible et le scope-guard refuse le no-op (correctement). Le code est désormais **diagnostiquable**, mais la production de PR reste bloquée par la qualité du modèle. — sévérité P1 — action : installer un modèle `*-coder` sur le PC (le routeur le choisira seul) ou passer le runner sur un modèle cloud dédié.
+- [ ] **Missions parquées « Scope fichiers manquant »** (#1345, #1338, #1337, #1336) : le pont n'invente pas de périmètre. — sévérité P1 — action : compléter les missions ou définir une inférence prudente.
+- [ ] **`pngjs` + `pixelmatch` absents de `package.json`** alors que `scripts/autopilot/visual-qa.cjs` les requiert → sur un `npm ci` propre, le gate visuel devient un toujours-pass. — sévérité P1 — action : PR dédiée (les ajouter déclencherait le déploiement production au merge).
+- [ ] **Mission B2B P0/P1 non commencée** (endpoint `/api/b2b-lead.php`, complétion PR #1358, retrait du `no-cors`, diagnostic NOAA/MCI #1338, runbook Mollie). Worktree prêt : `C:\Users\user\AppData\Local\Temp\opencode\sg-p0-b2b`. — sévérité P0 — action : `security_agent`.
+
+### Prochaine action recommandée
+1. Merger la PR **#1364** puis rebasculer le checkout runner sur `origin/main` et redémarrer — Rôle : `coding_agent`.
+2. Reprendre la mission **B2B P0/P1** — Rôle : `security_agent`.
+3. Installer un modèle `*-coder` local pour rendre l'agent productif — Rôle : `devops_agent` / fondateur.
+
+### Branche / PR
+- Branche : `agent/coding/factory-multirepo-bridge-20261107`
+- PR : **#1364** — OPEN, non mergée
+- Commit head : `5cc35f23b`
+
+---
+
+## 2026-11-08 05:25 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : la boucle Factory V3 est **réellement branchée, activée en persistance sur le PC du fondateur et capable de produire du travail** — le pont multi-dépôt est câblé (PR #1364), l'activation persistante est prouvée (clé de registre `HKCU\...\Run`, runner vivant, lock, heartbeat, kill-switch), et **10 défauts d'exécution** découverts en conditions réelles ont été corrigés et verrouillés par des garde-fous.
+- **Détails** :
+  - **Activation persistante (prouvée sur le PC réel, pas simulée en CI)** :
+    - `scripts/autopilot/install-scheduler.ps1` **échoue** : `Register-ScheduledTask` → « Accès refusé » et `schtasks /create` → refus également (session **non élevée**). La tâche planifiée `SargagameAutopilot` **n'existe pas** sur ce PC (constaté : absent de `Get-ScheduledTask`).
+    - Mécanisme de remplacement **sans droit admin** : clé de registre **`HKCU\Software\Microsoft\Windows\CurrentVersion\Run` → `SargagameAutopilot`** pointant sur `wscript.exe //nologo "C:\Users\user\local-tools\run-hidden.vbs" "C:\Users\user\sargagame-runner" "C:\Windows\System32\cmd.exe" /c "C:\Users\user\local-tools\sargagame-autopilot.cmd"` → `scripts\autopilot\autopilot-live.cmd` → `run.cjs --live --continuous` → `runner.cjs`. Déclenchement à **chaque ouverture de session**, sans fenêtre visible, sans élévation.
+    - **Kill-switch** : `C:\Users\user\local-tools\sargagame-autopilot-disable.cmd` retire la clé de registre **et** pose `.ai\autopilot\STOP` ; `sargagame-autopilot.cmd` vérifie le `STOP` avant de lancer. **Testé** : arrêt propre (lock rendu), redémarrage OK.
+    - **Checkout runner dédié** : `C:\Users\user\sargagame-runner` (worktree de `C:\Users\user\Documents\Backup\sargagame`, branche `runner/factory-local`) — épinglé sur la branche de la PR #1364, car celle-ci n'est **pas mergée** et je ne la merge pas.
+    - **Preuves d'exécution** : runner vivant (PID), lock `.ai\autopilot\orchestrator.lock` détenu avec heartbeat frais, `.ai\autopilot/status.json` écrit (`alive: true`, `modelRouting.mode: perf`, `nvidiaKey: SET`, `healthchecks: SET`, `discord: SET`), `runner.log` renseigné (11 Ko+), kill-switch → arrêt propre → redémarrage OK.
+    - **Boucle prouvée bout-en-bout sur GitHub** : #1362 `imported` ; #1357, #1345, #1338 `imported → blocked → started → blocked` ; #1341 `imported → started → completed` (historique du 2026-11-06). 10 missions importées, 12 opportunités en queue locale.
+  - **Défauts d'exécution trouvés en conditions réelles (tous corrigés + garde-fous)** — aucun n'était visible avant l'activation, le runner étant mort depuis le 2026-10-22 :
+    1. **`scripts/autopilot/lib/notify.cjs` n'existait pas dans le dépôt.** Le commit `efdcde9da` (2026-10-22) a ajouté `require('./lib/notify.cjs')` **sans ajouter le fichier** → tout checkout propre mourait en `MODULE_NOT_FOUND` **avant le premier cycle**. Restauré à l'identique (sha256 `BAD699A3…`), sans secret en dur (URLs lues dans `HC_PING_URL` / `DISCORD_WEBHOOK_URL`).
+    2. **Trace du runner perdue.** `autopilot-live.cmd` redirigeait stdout vers `runner.log` ; sous Windows, `cmd.exe` ouvre la cible de son `>>` en mode **exclusif** → les appends concurrents de `runner.cjs` échouaient en `EBUSY` et le `catch` vide de `rlog()` les avalait. La factory tournait **sans trace observable**. Séparation `runner.log` (trace runner) / `runner-console.log` (sortie wrapper) + repli explicite.
+    3. **`C.paths.statusFile` n'existait pas** → chaque écriture d'instantané levait `ERR_INVALID_ARG_TYPE` dans un `catch` vide : l'état n'était **jamais** écrit. Clé ajoutée (+ `runnerConsoleLog`), échec désormais journalisé.
+    4. **`manualOpencodeSessionActive()` était appelé par `runner.cjs` mais n'existait pas** dans `local-model-router.cjs` → `TypeError` à chaque cycle. Implémentée (env `SARGA_MANUAL_SESSION=1` ou marqueur `.ai/autopilot/manual-session.json` avec PID vivant), jamais d'exception.
+    5. **Contrat de mission non normalisé** : le pont importait les missions **sans `type`** → l'orchestrateur les parquait « contrat invalide : type manquant » **avant tout dispatch**. Le pont est l'adaptateur : il normalise (`type` déclaré, sinon `agent-task`/`auto-task`, sans déclencher le routage browser-recon).
+    6. **AHA inutilisable** : le pont posait `expectedImpact: 'n/a'` (3 caractères) alors que la validation exige ≥ 20 → missions parquées « AHA insuffisamment défini ». Dérivé de l'`acceptance` de la mission.
+    7. **Instantané d'état mensonger** : `autoMergeEnabled` codé en dur à `true` alors que la config porte `false` (et `lib/policy.cjs` refuse l'auto-merge) ; `cycleSuccess` **structurellement toujours `false`** (variable réinitialisée à chaque tour alors que l'instantané est écrit en début de cycle). Les deux reflètent maintenant l'état réel.
+    8. **Angle mort de supervision** : un code de sortie non nul de l'orchestrateur n'incrémentait pas `consecutiveErrors` → ni l'alerte Discord (seuil 2) ni la pause de sécurité (seuil 5) ne pouvaient jamais se déclencher.
+    9. **Boucle infinie** : les opportunités issues de l'analyse et de la découverte autonome n'étaient **jamais écrites** dans `queue.json` → `parkTask()` → `mem.updateOpportunity()` → `null` (NO-OP) → le même candidat était re-sélectionné et re-parqué **tous les 30 s, sans jamais produire de travail**. `mem.upsertOpportunity()` + persistance avant parcage (jamais en `--dry`) : la boucle **converge** (prouvé : 4 candidats distincts tentés puis mis en `blocked`).
+    10. **L'agent local ne démarrait jamais** (`agent exit 3`). Deux causes cumulées : (a) `implement.cjs` lançait l'agent **sans nettoyer l'env** → l'env du runner porte `NVIDIA_API_KEY` (portée User) et l'adaptateur local-only refuse les credentials cloud (`exit 3`) ; (b) OpenCode 1.18.34 n'expose **aucun** provider `ollama` intégré sur cette machine (`Provider not found: ollama`) → erreur opaque « Unexpected server error », alors que le modèle local répondait parfaitement. Correctif : nettoyage d'env identique à `local-agent-executor.cjs` + **déclaration à l'exécution** du provider local (`@ai-sdk/openai-compatible` sur `OLLAMA_BASE/v1`) exportée via `OPENCODE_CONFIG` — **fusionnée** avec la config globale (permissions `edit`/`bash: allow` conservées), **jamais** écrasée. **Prouvé** : `exit 0`, le modèle local répond.
+  - **Neutralité production** : chaque fichier local touché est ajouté au `paths-ignore` **strict fichier par fichier** de `cloudflare-production.yml` (`runner.cjs`, `orchestrator.cjs`, `analyze.cjs`, `discover.cjs`, `implement.cjs`, `lib/{notify,common,memory}.cjs`, `local-model-router.cjs`, `autopilot*.cmd`, `prune.cjs`) + les garde-fous. `.ai/**` est déjà exclu. `scripts/autopilot/**` et `scripts/autopilot/lib/**` restent **non** exclus en bloc (la production appelle `check-predeploy-satellite-freshness.cjs`, `check-prepared-html.cjs`, `html-integrity.cjs`, `post-deploy-verify.cjs`) — un garde-fou interdit explicitement cette régression.
+  - **Périmètre respecté** : aucun Worker, binding, secret, paiement, prix, donnée scientifique, seuil, contenu de page ou interface touché. Aucune donnée inventée. `autoMergeEnabled` reste `false`.
+
+### Fichiers modifiés
+- `scripts/autopilot/runner.cjs` — pont multi-dépôt, compteurs, journalisation avec repli, instantané d'état honnête, `consecutiveErrors` sur code de sortie non nul.
+- `scripts/autopilot/orchestrator.cjs` — publication des statuts de cycle de vie sur l'issue source ; persistance de l'opportunité avant parcage.
+- `scripts/autopilot/multi-repo-bridge.cjs` — déduplication durable des relais, normalisation du `type`, AHA dérivé de l'`acceptance`.
+- `scripts/autopilot/lib/notify.cjs` — **restauré** (module jamais commité).
+- `scripts/autopilot/lib/common.cjs` — `paths.statusFile`, `paths.runnerConsoleLog`.
+- `scripts/autopilot/lib/memory.cjs` — `upsertOpportunity()`.
+- `scripts/autopilot/local-model-router.cjs` — `manualOpencodeSessionActive()`.
+- `scripts/autopilot/implement.cjs` — env nettoyé pour l'agent local.
+- `scripts/autopilot/analyze.cjs`, `scripts/autopilot/discover.cjs` — AHA / métriques honnêtes et assez longs.
+- `scripts/autopilot/autopilot-live.cmd`, `scripts/autopilot/autopilot.cmd`, `scripts/autopilot/prune.cjs` — séparation des journaux, rotation du nouveau fichier.
+- `.ai/ux-agent/opencode-auto.cjs` — déclaration du provider local (`OPENCODE_CONFIG`).
+- `tests/unit/autopilot-clean-checkout-runnable.test.cjs` — **nouveau** : requires relatifs, API `notify`, absence de secret, neutralité production, trace non muette, exports du routeur, honnêteté de l'instantané.
+- `tests/unit/autopilot-queue-persistence-loop.test.cjs` — **nouveau** : persistance avant parcage (test fonctionnel sur queue isolée), idempotence, `--dry` non mutant.
+- `tests/unit/autopilot-local-agent-contract.test.cjs` — **nouveau** : contrat de l'agent local sur les deux chemins.
+- `tests/unit/autopilot-runner-multirepo-wiring.test.cjs` — étendu (44 assertions).
+- `.github/workflows/cloudflare-production.yml` — `paths-ignore` strict étendu.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/bugs.md` — ce handoff.
+
+### Tests réalisés
+- [ ] `npm run build` → N/A (aucun bundle applicatif touché : outillage local uniquement)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (idem)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée) ; dry-run orchestrateur réel → exit 0, « health OK (6 domains 2xx) »
+- [x] `npm test` → **179/183** fichiers OK ; **4 échecs PRÉEXISTANTS** (reproduits à l'identique sur `origin/main`) : `tests/sitemap-guard-beach-pages.test.cjs`, `tests/unit/b2b-outreach-proof-freshness.test.cjs`, `tests/unit/generate-og-beaches-freshness.test.cjs`, `tests/unit/regional-homepage-freshness-copy.test.cjs` → ce sont les feux rouges de la mission **#1362**.
+- [x] Garde-fous dédiés : `autopilot-clean-checkout-runnable` (OK), `autopilot-queue-persistence-loop` (OK), `autopilot-local-agent-contract` (OK), `autopilot-runner-multirepo-wiring` (44 assertions OK), `autopilot-bridge-paths-ignore` (OK), `autopilot-live-single-runner` (56 checks OK), `workflows-yaml-syntax` (42 workflows OK), `ai-docs-paths-ignore` (OK)
+- [x] `scripts/autopilot/multi-repo-bridge.test.cjs` → OK (0 échec) ; `ci-certification-audit.cjs` → OK ; `deploy-audit.cjs` → OK
+- [x] `node --check` sur chaque `.cjs` touché → exit 0
+- [x] **Preuves d'exécution réelle** (pas simulées) : runner vivant + lock + heartbeat ; `status.json` avec `cycleSuccess: true` et `autoMergeEnabled: false` ; `imported/started/blocked` publiés sur #1357, #1345, #1338, #1362 ; agent local `exit 0` avec réponse du modèle ; boucle convergente (4 candidats tentés une fois puis `blocked`)
+- [x] `git diff --check` → OK
+
+### Problèmes restants
+- [ ] **PR #1364 non mergée** → le checkout runner reste épinglé sur `runner/factory-local`. Après fusion : `git -C C:\Users\user\sargagame-runner fetch origin main && git -C C:\Users\user\sargagame-runner checkout origin/main -- scripts/autopilot/ .ai/ux-agent/` puis redémarrer via `C:\Users\user\local-tools\sargagame-autopilot.cmd`. — sévérité P1 — action : `coding_agent` après merge.
+- [ ] **Missions parquées « Scope fichiers manquant »** (#1345, #1338, #1337, #1336) : la mission ne déclare pas `filesToModify`. Le pont **n'invente pas** de périmètre (c'est la base de la denylist et du scope-guard) → le parcage est délibérément conservé. — sévérité P1 — action : compléter les missions (ChatGPT) ou définir une inférence de périmètre prudente.
+- [ ] **`pngjs` + `pixelmatch` absents de `package.json`** alors que `scripts/autopilot/visual-qa.cjs` les requiert dans un script fils (`cwd = racine`) → sur un `npm ci` propre, la comparaison visuelle échoue en silence et le gate visuel devient un toujours-pass. Contourné localement par `npm install pngjs pixelmatch --no-save` (package.json/lock intouchés). — sévérité P1 — action : PR dédiée (ajouter les dépendances déclencherait le déploiement production au merge → à isoler).
+- [ ] **`DRYRUN-SARGASS-001` (#1341) : « impl failed after 4 attempts: agent exit 3 »** — **cause corrigée** dans ce handoff ; l'opportunité reste `blocked` en base (les statuts publiés sont historiques). Passer la mission à `new` pour rejouer. — sévérité P2 — action : `coding_agent`.
+- [ ] **Échec `git worktree add`** sur `C:\Users\user\sargagame-autopilot-wt` (« already exists ») : le dossier orphelin ne pouvait pas être renommé (verrou Windows). Nettoyé manuellement (`git worktree remove --force`) ; la cause (dossier résiduel non enregistré) n'est pas traitée dans le code. — sévérité P2 — action : `devops_agent`.
+- [ ] **4 tests rouges préexistants** (fraîcheur/copy) → hors périmètre, ce sont les feux rouges de la mission **#1362** désormais importable. — sévérité P1 — action : `coding_agent`.
+- [ ] **Mission B2B P0/P1 non commencée dans ce cycle** : endpoint `/api/b2b-lead.php`, complétion PR #1358, retrait du `no-cors` des formulaires, diagnostic NOAA/MCI (#1338), runbook Mollie. Worktree prêt : `C:\Users\user\AppData\Local\Temp\opencode\sg-p0-b2b` (branche `agent/security/p0-b2b-api-review-20261107`, base `4f9fed472`). — sévérité P0 — action : `security_agent`.
+
+### Prochaine action recommandée
+1. Merger la PR **#1364** (CI 4/4 verte) puis rebasculer le checkout runner sur `origin/main` et redémarrer — Rôle : `coding_agent`.
+2. Reprendre la mission **B2B P0/P1** (endpoint, PR #1358, formulaires, diagnostic NOAA/MCI, runbook Mollie) — Rôle : `security_agent`.
+3. Traiter les missions bloquées « Scope fichiers manquant » et la dépendance `pngjs`/`pixelmatch` — Rôle : `coding_agent` / `devops_agent`.
+
+### Branche / PR
+- Branche : `agent/coding/factory-multirepo-bridge-20261107` (base `origin/main` = `4c24b562f5ca83951eb676f0c20213fb2a6ff28e`)
+- PR : **#1364** (https://github.com/aveca/sargagame/pull/1364) — OPEN, CI 4/4 verte, **non mergée**
+- Commit head : `3635a72c3`
+
+---
+
+## 2026-11-07 22:55 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : le pont multi-dépôt livré par la PR #1349 est **réellement branché** dans la boucle Factory locale (`runner.cjs` charge désormais `multi-repo-bridge.cjs` et appelle `ingestMultiRepo()`), l'orchestrateur publie les statuts de cycle de vie sur l'issue source, et un **défaut d'idempotence des missions relayées** (commentaires republiés à chaque cycle) est corrigé.
+- **Détails** :
+  - **Le gap était réel et vérifié dans le code** : sur `origin/main` (`4c24b562f`), `scripts/autopilot/runner.cjs:28` faisait `require('./bridge.cjs')` et `:158` appelait `bridge.ingestOpenIssues(...)`. Le module `scripts/autopilot/multi-repo-bridge.cjs` (PR #1349, merge `87702066a79c03ff930500a2bad524df58c1f6f7`) était donc **présent mais jamais exécuté** par la boucle : l'allowlist fermée, le routage strict et les statuts corrélés n'existaient que sur le papier.
+  - **Câblage** : `runner.cjs` appelle désormais `multiRepoBridge.ingestMultiRepo({ dry, log })` et journalise `imported / relayed / ignored / rejected` + `localRepo` ; les échecs de publication de statut sont **comptés et signalés** (`statusFailures`), jamais avalés ; l'étape reste **non bloquante** (`bridge failed (non-fatal)`).
+  - **Statuts de cycle de vie** : `orchestrator.cjs` publie désormais `started` (mission prise en charge), `completed` (PR prête à merge humain / tâche terminée), `blocked` (tâche parquée) et `failed` (erreur d'exécution) **sur l'issue source de la mission**, via `multiRepoBridge.publishStatus()`. Garde-fous : publication **jamais bloquante**, **jamais en mode `--dry`**, dépôt hors allowlist **refusé**, silence explicite pour les opportunités sans issue GitHub.
+  - **Défaut corrigé (démontré par test)** : une mission d'un dépôt autorisé relayée n'était **jamais mémorisée** → elle était **re-relayée à chaque cycle** (donc republished un commentaire `imported` sur l'issue du dépôt d'origine toutes les ~60 s en mode continu). Correctif : trace durable `queue.relayed` (clé canonique `repo|issue|task_id`), bornée à 200 entrées, et `saveQueue()` déclenché aussi quand il n'y a eu qu'un relay.
+  - **Neutralité production** : `scripts/autopilot/runner.cjs` et `scripts/autopilot/orchestrator.cjs` sont ajoutés au `paths-ignore` **strict fichier par fichier** de `cloudflare-production.yml` (aucun workflow ne les exécute) → un push sur `main` **ne peut pas** redeployer le Worker ni réécrire les secrets Mollie. `scripts/autopilot/**` reste **non** exclu en bloc (les scripts critiques de la production restent déployables) et le garde-fou existant est étendu au nouveau fichier de test.
+  - **État réel du PC (lecture seule, vérifié)** : le runner du dépôt est **mort depuis le 2026-10-22** (`runner.log` : « MAX_RESTARTS atteint — abandon, intervention requise ») ; la tâche planifiée `SargagameAutopilot` (celle qu'installe `scripts/autopilot/install-scheduler.ps1`) **n'existe pas** sur ce PC ; le lock `orchestrator.lock` pointe encore vers le pid `9404` (mort, donc repris par la preuve de stale-lock) ; **PID `15072` est vivant mais c'est `pythonw.exe C:\factory-service\v3\f3.py supervise`** (superviseur Python Factory V3, `mode=INTERACTIVE`/`interactive_lock` sont SES états) — `f3.py` ne référence **ni** `runner.cjs` **ni** `bridge.cjs` **ni** `sargagame` : ce n'est pas le poller de ce dépôt ; `Factory-Control-Runner` lance `C:\factory\control\github-bridge.cjs` (pont **par labels** `factory:*` sur le canal privé `aveca/factory-control`, pas le contrat `[AUTOPILOT]`, et qui n'utilise pas le module du dépôt) ; `SargaFactory-Supervisor` pointe l'ancienne stack `scripts/local-factory/` (dernier résultat `0xC000013A` = arrêté).
+  - **Conséquence** : le poller multi-dépôt n'était **actif nulle part** sur ce PC — ce qui explique l'absence d'accusé `imported` sur #1362 (0 commentaire au moment du contrôle).
+
+### Fichiers modifiés
+- `scripts/autopilot/runner.cjs` — charge `multi-repo-bridge.cjs`, appelle `ingestMultiRepo()`, journalise les compteurs et les échecs de publication.
+- `scripts/autopilot/orchestrator.cjs` — `publishMissionStatus()` + `missionStatusForPark()` + `dispatchOpportunity()` : statuts `started` / `completed` / `blocked` / `failed` sur l'issue source.
+- `scripts/autopilot/multi-repo-bridge.cjs` — déduplication **durable** des missions relayées (`queue.relayed`, borné à 200) + `saveQueue()` sur relay.
+- `tests/unit/autopilot-runner-multirepo-wiring.test.cjs` — **nouveau** : 37 assertions déterministes (câblage, non-blocance, statuts, import de #1362, idempotence, relay, rejets).
+- `.github/workflows/cloudflare-production.yml` — `paths-ignore` strict : `runner.cjs`, `orchestrator.cjs` + le nouveau test.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — ce handoff.
+
+### Tests réalisés
+- [x] `node tests/unit/autopilot-runner-multirepo-wiring.test.cjs` → **OK, 37 assertions**
+- [x] `node scripts/autopilot/multi-repo-bridge.test.cjs` → **OK (0 échec)** (non-régression du pont livré en #1349)
+- [x] `npm test` → **176/180** fichiers de test OK ; **4 échecs PRÉEXISTANTS** (reproduits à l'identique sur `origin/main` après `git stash` de mes changements) : `tests/sitemap-guard-beach-pages.test.cjs`, `tests/unit/b2b-outreach-proof-freshness.test.cjs`, `tests/unit/generate-og-beaches-freshness.test.cjs`, `tests/unit/regional-homepage-freshness-copy.test.cjs` — ce sont les feux rouges de fraîcheur que la mission **#1362** doit traiter.
+- [x] `node --check` sur `runner.cjs`, `orchestrator.cjs`, `multi-repo-bridge.cjs`, le nouveau test → exit 0
+- [x] `git diff --check` → OK
+- [ ] `npm run build` → N/A (aucun bundle applicatif touché : outillage local uniquement)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (idem)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée)
+- [ ] CI PR → **en cours** (4 checks attendus : `test-frontend`, `perf`, `lighthouse-report`, GitGuardian)
+
+### Problèmes restants
+- [ ] **4 tests rouges préexistants** (fraîcheur/copy) — hors périmètre de cette mission, ils sont précisément le contenu de la mission #1362. — sévérité P1 — action : rôle `coding_agent` via le runner (la mission est maintenant importable).
+- [ ] **PR à merger** : la fusion déclenchera `cloudflare-production.yml` ? **Non** — `paths-ignore` étendu (runner/orchestrator/test). À revérifier par le compteur de runs `cloudflare-production.yml` (attendu : inchangé).
+
+### Prochaine action recommandée
+1. Merger la PR de câblage (CI verte) puis **basculer le checkout runner sur `main`** — Rôle : `coding_agent`.
+2. **Re-vérifier l'activation persistante** : la tâche `SargagameAutopilot` doit pointer sur le checkout runner et repartir au boot — Rôle : `devops_agent`.
+3. Mission **#1362** (copy de fraîcheur honnête) désormais importable par le poller — Rôle : `coding_agent`.
+
+### Branche / PR
+- Branche : `agent/coding/factory-multirepo-bridge-20261107` (base `origin/main` = `4c24b562f5ca83951eb676f0c20213fb2a6ff28e`)
+- PR : (voir rapport de fin de mission)
+- Commit head : (voir rapport de fin de mission)
+
+---
+## 2026-11-06 18:35 UTC · Agent: Factory V3 bridge operator (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : mission AUTOPILOT #1337 (`FACTORY-MULTIREPO-MISSION-RELAY-20261106`) exécutée et **terminée en `completed`** — pont autopilot multi-dépôt livré, fusionné (PR #1349), testé, mutationally vérifié et **neutre pour la production**.
+- **Détails** :
+  - **Livrable** : PR **#1349** fusionnée dans `main` (`87702066a79c03ff930500a2bad524df58c1f6f7`, head `8c34d6ce9e1bbfa0742fb476c194a3a07f779511`, 2026-11-06T18:10:59Z). Fichiers : `scripts/autopilot/multi-repo-bridge.cjs` (632 l.), `scripts/autopilot/multi-repo-bridge.test.cjs` (424 l.), `tests/unit/autopilot-bridge-paths-ignore.test.cjs` (186 l.), `.github/workflows/cloudflare-production.yml` (+12 l. d'exclusion `paths-ignore`). CI **4/4 verte** : `test-frontend`, `perf`, `lighthouse-report`, GitGuardian.
+  - **Allowlist fermée** : `ALLOWED_REPOS = ['aveca/bot-wow', 'aveca/sargagame']`. Tout autre dépôt est rejeté à l'import, jamais lu, jamais exécuté.
+  - **Routage strict (exigence « BOT-WOW missions stay in BOT-WOW »)** : une mission d'un dépôt autorisé qui n'est pas le dépôt local est **relayée** (statut publié sur son issue) et **jamais** enfilée dans la queue locale. **Symétrie prouvée** : le même module, dans le checkout BOT-WOW, détecte `aveca/bot-wow` comme dépôt local et y enfile les missions BOT-WOW tout en relayant les missions sargagame.
+  - **Idempotence** : clé canonique `chatgpt-issue|<repo>|<issue>|<task_id>`, **plus** reconnaissance de la clé historique de `bridge.cjs` (`chatgpt-issue|<issue>|<task_id>`) **et** de son `id` → pas de double import entre les deux ponts. Vérifié contre la **queue vivante du runner** (26 opportunités) : #1336 et #1337 correctement ignorés, **aucun doublon**.
+  - **Statuts corrélés** : `imported` / `started` / `heartbeat` / `blocked` / `completed` / `failed`, publiés sur l'issue de la mission, dans son dépôt, avec dépôt + issue + task ID + clé. CLI : `--status <s> --repo <r> --issue <n> --task <id> --detail <d>`. Les échecs de publication sont **comptés** (`statusFailures`), jamais avalés. Le statut `completed` de cette mission a été publié **par la CLI livrée**, exécutée depuis `main` fusionné.
+  - **Reprise de la PR #1342** (fermée **sans merge**, supersedée) : 7 défauts corrigés, dont trois bloquants — **85 octets UTF-8 invalides** ; **`requiredContract` rejetait les missions réelles** (#1336/#1337 ne portent que `id` → elles auraient été rejetées à l'import) ; **clé de dédup incompatible** avec `bridge.cjs` (double import) ; **missions `bot-wow` enfilées dans la queue sargagame** ; dry-run qui **mutait la queue** ; absence de CLI de statut avec erreurs avalées ; `repository_full_name` incohérent non rejeté.
+  - **Neutralité production (vérifiée, pas supposée)** : `cloudflare-production.yml` est le seul workflow qui exécute `Deploy Worker` + `Configure Worker secrets`. Aucun run créé par la fusion : **`total_count` 437 → 437**. Exclusion `paths-ignore` **stricte fichier par fichier** du pont — `scripts/autopilot/**` **n'est PAS** exclu en bloc, car la production appelle elle-même `check-predeploy-satellite-freshness.cjs`, `check-prepared-html.cjs`, `html-integrity.cjs` et `post-deploy-verify.cjs` ; une exclusion large empêcherait le déploiement de leurs correctifs. Le garde-fou **interdit explicitement** cette régression (mutation vérifiée → `exit=1`).
+  - **Dry-run bout-en-bout réel** : `imported=5 relayed=2 ignored=0 rejected=0 statusFailures=0 local=aveca/sargagame` (les 2 missions bot-wow relayées, les 5 sargagame candidates locales), queue locale intacte. **Chaînes E2E réelles dans les deux dépôts** : bot-wow #125 (`imported` 13:31:55Z → `started` 13:33:55Z → `completed` 13:36:26Z, PR #126 ouverte/non fusionnée) et sargagame #1341 (`imported` 13:37:06Z → `started` 13:39:48Z → `completed` 13:44:24Z, PR #1343 ouverte/non fusionnée).
+  - **Contrôle live après fusion** : 6/6 domaines HTTP 200, `b: df18df5d` (18:28:12Z) ; audit Playwright live 12 parcours / 12 défauts **tous** `stale-current-decision` → le **défaut d'honnêteté préexistant**, **aucun nouveau type** introduit (cette PR ne touche aucune interface).
+  - **Runner** : Factory V3 local **existant**, **inchangé** — PID `15072`, lock `15072`, `mode=INTERACTIVE`, `interactive_lock=true`, heartbeat vivant. **Aucun redémarrage, aucun nouveau runner, aucun runner cloud, aucune API LLM payante.**
+  - **Acks #1337** : `imported` (6684377579) → `started` (6690440198) → `completed` (6692370601, via la CLI livrée) → rapport de preuves (6692456511).
+
+### Fichiers modifiés
+- `scripts/autopilot/multi-repo-bridge.cjs` — pont multi-dépôt (allowlist, routage strict, dédup inter-ponts, statuts, CLI).
+- `scripts/autopilot/multi-repo-bridge.test.cjs` — 57 assertions déterministes sans réseau ni écriture.
+- `tests/unit/autopilot-bridge-paths-ignore.test.cjs` — garde-fou : neutralité production du pont + interdiction d'exclure `scripts/autopilot/**` en bloc.
+- `.github/workflows/cloudflare-production.yml` — exclusion `paths-ignore` stricte du pont (PR #1349).
+- `.ai/current_state.md` — ce handoff.
+- `.ai/changelog.md` — entrée de changelog.
+- `.ai/tasks.md` — entrées `[x]` pour #1336 et #1337.
+
+### Tests réalisés
+- [x] `npm test` → **169/169 fichier(s) de test OK**
+- [x] `node scripts/autopilot/multi-repo-bridge.test.cjs` → **OK (0 échec)**, 57 assertions
+- [x] Mutation check du pont (5 garde-fous) → **MUTATION CHECK : OK**
+- [x] Mutation check du garde-fou `paths-ignore` (exclusion large) → **détectée** (`exit=1`)
+- [x] `node tests/unit/autopilot-bridge-paths-ignore.test.cjs` → PASS
+- [x] `node tests/unit/workflows-yaml-syntax.test.cjs` → PASS (41 workflows)
+- [x] `node scripts/check-production-trigger-scope.cjs` → OK
+- [x] `git diff --check` → OK
+- [ ] `npm run build` → N/A (aucun changement de bundle applicatif)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (aucun changement de bundle)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée ; l'audit Playwright live a été exécuté à la place)
+- [x] CI PR #1349 → **4/4 verte** (`test-frontend` 1m56s, `perf` 23s, `lighthouse-report` 3m24s, GitGuardian)
+- [x] Neutralité production → **aucun run `cloudflare-production.yml` créé** (437 → 437)
+- [x] HTTP live 6/6 (18:28:12Z) → HTTP 200, `b: df18df5d`
+- [x] Audit Playwright live → 12 parcours, 12 défauts bloquants, **tous** `stale-current-decision` (préexistant, inchangé)
+
+### Problèmes restants / Blockers
+- [ ] **Défaut d'honnêteté live, préexistant et inchangé** : les six domaines affichent encore « SWIM OK » + score + prévision 7 jours sur une observation de ~10 jours (`erddapTimestamp: 2026-10-27T12:00:00Z`, `stale: false` déclaré alors que l'âge réel ≈ 14 500 min). Le build fail-closed de `main` le corrige, mais il n'atteint les domaines publics que via l'option A ou B. — sévérité **P0** — action : arbitrage fondateur (inchangé depuis #1336).
+- [ ] `P0.67 §2/§3` : **autorisation fondateur requise** — arbitrer l'option A ou B de la release, et autoriser la densification de la cadence Copernicus (ou le dispatch `cloudflare-production.yml` pour les publications de données). — sévérité **P0** — action : décision du fondateur (inchangé depuis #1336).
+- [ ] PR #1335 (`ops/factory-v3-github-actions-connection-20261106`) : laissée **ouverte** — la fusionner déclencherait un déploiement production.
+- [ ] PR #1343 (`p0/dryrun-test-sargagame-001`) : laissée **ouverte** comme preuve de dry-run — **à ne pas merger** (mention conservée dans le README).
+
+### Prochaine action recommandée
+1. Arbitrer l'option A ou B de la release code-only et la densification de la cadence Copernicus — Rôle : fondateur + devops_agent
+2. Faire adopter le pont multi-dépôt par le checkout BOT-WOW (le module est symétrique : le même fichier, exécuté là-bas, y enfile les missions BOT-WOW) — Rôle : coding_agent + founder
+3. Reprendre la mission `SARG-DATA-FRESHNESS-ALTERNATIVE-SOURCE-20261106` (#1338) et `SARG-B2B-LEAD-ENDPOINT-READONLY-20261106` (#1345), désormais importables par le pont — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/multi-repo-bridge-handoff-20261106` (base `origin/main` = `a88099dc546bb5c793c82d41ec437c12b1bd2842`)
+- PR : **#1350** → `main` (PR #1349 déjà fusionnée : `87702066a79c03ff930500a2bad524df58c1f6f7`)
+- Commit head : `b7aee224a` (handoff) — le livrable de code est la PR #1349, head `8c34d6ce9e1bbfa0742fb476c194a3a07f779511`
+
+---
+
+## 2026-11-06 16:50 UTC · Agent: Factory V3 bridge operator (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : mission AUTOPILOT #1336 (`SARG-PAGES-CODE-ONLY-RELEASE-20261106`) exécutée et **terminée en `failed`** — la release code-only des six domaines est impossible via Pages ; cause racine Copernicus **recorrectée** (cadence de sonde, pas latence de source) et publiée.
+- **Détails** :
+  - **Release code-only : échec terminal, cause racine architecturale.** Les six domaines publics sont servis par les **Workers** Cloudflare `sargagame-<region>` (routes catch-all `<domaine>/*` + binding `ASSETS`), **pas** par les projets Pages. Les six projets Pages n'ont **aucun domaine personnalisé** et ne servent que `*.pages.dev`. Une release Pages-only ne peut donc jamais atteindre les six domaines publics.
+  - Deux PRs de correction du gate ont été livrées et fusionnées : **#1339** (`7974ccff1`, isolement du workflow Pages dans `paths-ignore` de `cloudflare-production.yml`) et **#1340** (`3f60d84b2`, `npm run build` avant `npm test` dans le job `gate`). Aucune n'a créé de run `cloudflare-production.yml`.
+  - Re-déploiement|Pages-only (run **42227027205**, `main` @ `0571cdad`) : `gate` ✅, `prepare` ×6 ✅, `deploy-pages` ×6 ✅, **`verify` ❌** (12 défauts bloquants `stale-current-decision` : les six domaines servaient encore `b: df18df5d` alors que `pages.dev` servait `b: ac1b6d69`), **rollback automatique ✅**.
+  - **Production vérifiée intacte** après rollback : 6/6 domaines HTTP 200, `b: df18df5d`, payload scientifique identique (SHA-256), aucun Worker redéployé (`modified_on` inchangé), bindings et secrets inchangés (5 par Worker). Deux runs `cloudflare-production.yml` ultérieurs et sans rapport (`42237657408`, `42238639868`, poussées d'autres sessions) ont échoué au job `build` **avant** tout déploiement → `deploy` skipped, aucune variation de production.
+  - **Phase Copernicus : diagnostic RECORRECTÉ.** L'hypothèse antérieure (« latence de source risenue à ≈ 26 h ») est **infirmée**. Mesure : la cellule ERDDAP du jour D est publiée **avant** l'échéance SLA (D+1 03:00Z), **prouvé 10 fois sur 10** (19→27 oct, âge observé 840–900 min ≤ 900). La rupture vient de la **cadence de sonde** : plus aucune livraison planifiée n'est tombée dans la fenêtre `D+1 00:00Z–03:00Z` du 28 oct au 6 nov (1 seule exception le 3 nov à 00:49Z, âge 771 min → `FRESH_AND_PUBLISHED`, commit `1583c36d4`) → **14 échecs consécutifs**. Correctif proposé : densifier les crons sur `00:00Z–03:00Z` (`*/15 0-2 * * *`) + élargir l'observabilité à `03:00Z–06:00Z` (coût mesuré : 1 min de CI par run hors SLA). **SLA 900 min inchangé, gate fail-closed, aucune publication hors SLA, ERDDAP = source unique jamais remplacée.** Correctif **non mergé** : une publication réussie dispatche `cloudflare-production.yml` en `workflow_dispatch` (non filtré par `paths-ignore`) → `Deploy Worker` + `Configure Worker secrets`, hors périmètre de la mission.
+  - **Deux options d'arbitrage fondateur** pour la release : **A)** attacher les six domaines personnalisés aux six projets Pages **et** supprimer les six routes catch-all Workers ; **B)** déployer les Workers régionaux via le job `deploy` de `cloudflare-production.yml` (chemin qui atteint réellement les six domaines, mais rejoue les secrets de paiement).
+  - **Bridge Factory V3** : runner vérifié vivant (PID 15072, heartbeat `f3_control.json` qui avance) — **non redémarré** ; bridge sargagame : import **sans doublon** de #1336 et #1337 (`imported=2`, second passage `imported=0`), ack `imported` publié sur les deux issues. #1337 **non démarré** tant que #1336 n'était pas terminé ; sa livraison (PR #1342) est **en revue** et ne sera pas fusionnée en l'état (voir « Problèmes restants »).
+
+### Fichiers modifiés
+- `.github/workflows/cloudflare-production.yml` — `.ai/**` + son garde-fou ajoutés à `on.push.paths-ignore` (PR #1346, fusionné `877730677`).
+- `tests/unit/ai-docs-paths-ignore.test.cjs` — garde-fou de non-regression de cette exclusion (nouveau).
+- `.ai/current_state.md` — ce handoff.
+- `.ai/changelog.md` — entrée de changelog.
+- `.ai/tasks.md` — entrée P0.67 §2/§3 mise à jour avec la cause racine mesurée.
+
+### Tests réalisés
+- [x] `npm test` → **167/167 fichier(s) de test OK**
+- [x] `node tests/unit/ai-docs-paths-ignore.test.cjs` → PASS
+- [x] `node tests/unit/workflows-yaml-syntax.test.cjs` → PASS (41 workflows)
+- [x] `node scripts/check-production-trigger-scope.cjs` → OK
+- [x] `node tests/unit/pages-code-only-workflow.test.cjs` → PASS (non-regression)
+- [x] `git diff --check` → OK
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (aucun changement de bundle)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucun changement d'UI dans ce lot)
+- [x] Vérification production après merge : **aucun run `cloudflare-production.yml` créé** (`total_count` inchangé : 437 → 437)
+- [x] Vérification live 6 domaines (2026-11-06T16:13Z) : HTTP 200, `b: df18df5d` sur les six
+
+### Problèmes restants / Blockers
+- [ ] `P0.67 §2/§3` : **autorisation fondateur requise** — arbitrer l'option A ou B de la release, et autoriser la densification de la cadence Copernicus (ou le dispatch `cloudflare-production.yml` pour les publications de données). — sévérité **P0** — action : décision du fondateur.
+- [ ] **Défaut d'honnêteté live, préexistant et inchangé** : les six domaines affichent encore « SWIM OK » + score + prévision 7 jours sur une observation de ~10 jours (`erddapTimestamp: 2026-10-27T12:00:00Z`, `stale: false` déclaré alors que l'âge réel ≈ 14 500 min). Le build fail-closed de `main` le corrige, mais il n'atteint les domaines publics que via l'option A ou B. — sévérité **P0** — action : même arbitrage.
+- [ ] PR #1342 (`feat(bridge): support multi-repo`) : **ne pas fusionner en l'état** — 85 octets UTF-8 invalides dans le fichier source, clé de déduplication incompatible avec `bridge.cjs` (donc risque de double import), et les missions `bot-wow` seraient enfilées dans la queue **sargagame** (violation « BOT-WOW missions stay in BOT-WOW »). — sévérité **P1** — action : reprise du PR avant merge.
+- [ ] PR #1335 (`ops/factory-v3-github-actions-connection-20261106`) : laissée **ouverte** — la fusionner déclencherait un déploiement production.
+
+### Prochaine action recommandée
+1. Arbitrer l'option A ou B de la release code-only et la densification de la cadence Copernicus — Rôle : fondateur + devops_agent
+2. Reprendre PR #1342 (UTF-8, clé de déduplication canonique, routage strict BOT-WOW, CLI de statuts) et le fusionner — Rôle : coding_agent
+3. Démarrer la mission #1337 (`FACTORY-MULTIREPO-MISSION-RELAY-20261106`) une fois #1336 arbitré — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/devops/ai-docs-handoff-20261106` (base `origin/main` = `87773067786619ffba2e5477ce576efe5a7fcc82`)
+- PR : #<à créer> → `main`
+- Commit head : `<à remplir>`
+
+---
+
+> **Correction d'état — 2026-11-04 04:40 UTC (référence à cette date).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
 
@@ -527,3 +1298,43 @@ La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique 
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
 | 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |
+
+---
+
+## 2026-11-11 15:20 UTC · Agent: OpenCode (coding) — PR #1412 : les captures B2B ne s'annoncent plus « réussies » sans confirmation serveur
+
+> *(Entrée **appendée en fin de fichier** et non en tête : la PR #1411 insère son propre handoff en tête du même fichier, et un conflit de merge obligerait le fondateur — qui travaille sur mobile — à arbitrer un fichier de mémoire projet. Les deux PR restent donc fusionnables sans intervention.)*
+
+### Travail effectué
+- **Résumé 1 ligne** : les **20 blocs de capture B2B** (hotels, collectivités, brief gratuit, landing `/for-hotels/`) affichaient **« merci / you're in / listo » SANS confirmation serveur** — un prospect perdu se voyait comme un succès (0 signal, 0 relance, 0 vente). Corrigé : le succès n'est plus affiché que si le serveur confirme `{ok:true}`.
+- **Détails** :
+  - **Défaut mesuré sur le LIVE** : le POST partait en `mode:'no-cors'` (ou en `sendBeacon` sur `/for-hotels/`, sans réponse possible) → le navigateur ne pouvait **pas savoir** si la demande avait été enregistrée. Le sink, lui, répond très bien : `POST https://script.google.com/macros/s/AKfycb…/exec` (Content-Type `text/plain` + `Origin`) → **200**, `Access-Control-Allow-Origin: *`, corps `{"ok":true,"action":"email_saved"}` → le défaut était **côté client**, pas côté serveur.
+  - **Correctif** : `public/b2b-capture.js` (nouveau, partagé par les 12 pages) — POST en `mode:'cors'` + `Content-Type: text/plain` → **requête simple** (CORS-safelisted) → **aucun preflight** ; succès affiché **uniquement** sur `{ok:true}` ; en cas d'échec : formulaire **resté visible**, message d'erreur FR/EN/ES, bouton **réactivé** (réessai possible — l'Apps Script **déduplique par email** → pas de doublon), événement **`sg_b2b_capture_failed`** (les CTA en échec deviennent mesurables, ils ne l'étaient pas).
+  - **Les 20 blocs** : le panneau de succès est **déplacé dans `onSuccess`** (il ne peut plus s'exécuter sans confirmation) ; l'**événement d'intention** (`sg_b2b_signup` / `sg_b2b_leadmagnet`) reste émis au submit → **aucun dashboard cassé**, mesure d'intention inchangée ; `/for-hotels/` passe de `sendBeacon` à la voie confirmée.
+  - **Aucun état serveur nouveau** : le sink reste l'Apps Script existante (destination des prospects) ; aucun secret, aucun prix, aucune donnée inventée.
+- **Preuve** : `tests/unit/b2b-capture-ack.test.cjs` → **84 assertions PASS** (contrat de source sur les 12 pages + **comportement** du helper : succès confirmé → `onSuccess` ; erreur HTTP / `{ok:false}` / **réseau coupé** → **aucun** `onSuccess`, message d'erreur, bouton réactivé, échec mesuré).
+
+### Fichiers modifiés
+- `public/b2b-capture.js` — **nouveau**, helper d'accusé serveur (partagé).
+- `public/for-hotels/index.html`, `public/pro/**/index.html` (11 pages) — 20 blocs de capture passés par le helper.
+- `tests/unit/b2b-capture-ack.test.cjs` — **nouveau**, 84 assertions.
+
+### Tests réalisés
+- [x] `npm test` → **190/190 OK**
+- [x] `npm run build` → exit 0 · `node scripts/check-bundle-budget.cjs` → **206,3 Ko ≤ 210 Ko**
+- [x] 12 scripts inline des pages patchées vérifiés (`node --check`) → 0 erreur · `dist/b2b-capture.js` présent (4 710 o)
+
+### Problèmes restants
+- [ ] **Contexte du prospect perdu (action fondateur)** : la sheet `emails` ne conserve que `[date, email, island, source]` (`scripts/automation/fetch-subscribers.cjs` : plage `emails!A:E`) → **l'hôtel, la zone et la langue d'une demande sont perdus** à l'écriture. Corriger exige de modifier l'Apps Script (`scripts/appscript/Code.js`) → **clasp push = fondateur mobile** (bloqué par AGENTS.md). PR D possible : route Worker → Supabase, mais le **DDL de `b2b_leads` n'est pas dans le dépôt** (RLS active, anon révoqué) → aucun schéma vérifiable, donc rien n'a été écrit.
+- [ ] **URL ES Punta Cana en 404 sur le domaine PC** : `https://sargassumpuntacana.com/pro/es/pronostico-sargazo-punta-cana-hotels/` → **404** (3/3 mesures) ; la version ES vit sur le domaine Martinique (`…/pro/es/pronostico-sargazo-punta-cana-hoteles/` → 200). La landing `https://sargassumpuntacana.com/es/sargazo-para-hoteles/` (200) **n'a aucun formulaire** (0 `<form>`, 0 `<input>`) → le visiteur espagnol de Punta Cana n'a **aucune capture** sur son propre domaine.
+- [ ] **Post-déploiement (PR #1412)** : vérifier `GET /b2b-capture.js` → **200** sur les 6 domaines (l'asset est dans le même arbre que les pages).
+
+### Prochaine action recommandée
+1. **Fondateur** — merger #1412 (risque faible, aucun paiement touché) et vérifier `/b2b-capture.js` en 200 sur les 6 domaines → Rôle : fondateur
+2. **Fondateur** — décider du sort du contexte prospect perdu (Apps Script `clasp push` vs route Worker + schéma Supabase) → Rôle : fondateur
+3. **DevOps** — rollout #1411 (chemin argent) après pose de la clé Mollie LIVE → Rôle : devops
+
+### Branche / PR
+- Branche : `agent/coding/b2b-capture-ack-20261111`
+- PR : **#1412** (https://github.com/aveca/sargagame/pull/1412) — ouverte, **NON mergée**, aucun déploiement
+- Commit head : `5e742758a`

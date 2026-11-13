@@ -30,7 +30,7 @@ const LOG_MAX_BYTES = Number(process.env.SARGA_PRUNE_LOG_MAX || 8 * 1024 * 1024)
 const LOG_KEEP_BYTES = Number(process.env.SARGA_PRUNE_LOG_KEEP || 2 * 1024 * 1024); // 2 Mo
 
 const REPORT_RE = /^20\d{2}-\d{2}-\d{2}-.*\.md$/; // rapports horodatés uniquement
-const ROTATE_FILES = new Set(['runner.log', 'log.txt']);
+const ROTATE_FILES = new Set(['runner.log', 'runner-console.log', 'service-console.log', 'log.txt']);
 
 function logFn(quiet) {
   return (m) => { if (!quiet) console.log('[prune] ' + m); };

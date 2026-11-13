@@ -231,6 +231,62 @@ Découvert pendant la mesure de BOT-WOW (2026-11-04T16:45Z–17:10Z) et
 > `mollie-mrr.cjs`. Ce n’est pas une amélioration : c’est une condition de
 > mesurabilité.
 
+### ✅ R18 — **CORRIGÉ** le 2026-11-04T18:01:55Z (PR #1277, commit `df01afd9`)
+
+La seconde branche (« coder explicitement la règle d’attribution ») a été
+**exécutée**. `scripts/automation/mollie-mrr.cjs` ne compte plus comme revenu
+Sargasses que les enregistrements portant **la marque Sargasses/Sargassum**
+**et** un marqueur de pass ou de plan B2B connu :
+
+| Règle | Détail |
+|---|---|
+| Pass B2C | `metadata.pass ∈ {p7, p30, trip7, season, sos}` **ou** description contenant un mot-clé de pass |
+| B2B | `metadata.plan ∈ {pro_monthly, brief_monthly, brief_annual, pro_annual, territory_annual, …}` **ou** description contenant « pro »/« brief »/« territoire » |
+| Abonnements | **uniquement** `pro_monthly` et `brief_monthly` (les deux plans récurrents du dépôt) **et** description marquée |
+| Ce qui est exclu | tout paiement non marqué (BOT-WOW, autre produit, ambigu) → compté dans **`unattributed`**, jamais dans les totaux Sargasses |
+| Monnaies | EUR, USD et UNKNOWN restent séparés ; **aucune conversion FX** introduite |
+| Historique | schéma de rapport/history porté en **v3** ; l’historique v2 (non scopé) est **exclu** des tendances |
+
+**[V] Vérification par EXÉCUTION (20 cas)** — formes réelles de paiement :
+
+| Cas | Attendu | Mesuré |
+|---|---|---|
+| 6 paiements B2C historiques reconstitués (`p7`/`p30`, EUR/USD) | attribués | ✅ |
+| `trip7`, `season` (tarifs actuels) | attribués | ✅ |
+| `pro_monthly`, `brief_monthly` | attribués | ✅ |
+| paylinks B2B annuels (`pro_annual`, `brief_annual`, `territory_annual`, `pro_annual_usd`) — **sans `metadata`** | attribués | ✅ |
+| paylinks B2C (`trip`, `stay`, `season` USD) — **sans `metadata`** | attribués | ✅ |
+| **BOT-WOW 20,00 €** | **exclu** | ✅ |
+| BOT-WOW avec `metadata.pass` (hypothétique) | **exclu** | ✅ |
+| paiement sans marque / vide | **exclu** | ✅ |
+| abonnement BOT-WOW | **exclu** | ✅ |
+
+**[V] Vérification END-TO-END du calcul** sur un compte partagé reconstitué
+(6 paiements Sargasses + 1 abonnement B2B + 1 paiement BOT-WOW + 1 paiement
+sans marque) :
+
+```json
+"passes_month_eur": 38.96,          // = le brut EUR mesuré des 6 paiements réels
+"by_currency": { "EUR": { "payments": 4, "revenue_month": 38.96 },
+                 "USD": { "payments": 2, "revenue_month": 17.98 } },
+"payments_this_month": 6,            // Sargasses uniquement
+"account_payments_this_month": 8,    // tout le compte Mollie partagé
+"unattributed_payments_this_month": 2,
+"unattributed_revenue_this_month_by_currency": { "EUR": 29.99 }   // = 20,00 BOT-WOW + 9,99 non marqué
+```
+
+→ Le tracker **reproduit exactement** le revenu Sargasses mesuré (38,96 €
++ 17,98 $) **et** isole BOT-WOW sans le compter. C'est la preuve que la
+correction **ne supprime pas** de revenu réel : elle le sépare.
+
+> ⚠️ **Ce que R18 ne corrige pas.** La règle d'attribution repose sur une
+> **convention** (marque dans la `description`), pas sur un identifiant
+> cryptographique de produit. Elle est **fiable pour les enregistrements
+> produits par ce dépôt** (marque vérifiée sur chaque chemin de création) mais
+> reste une convention. La **séparation des comptes Mollie** (profil + clé
+> BOT-WOW dédiés) demeure la seule solution structurelle et reste demandée
+> côté BOT-WOW (PR #80, B13).
+
 ---
 
 ## 3. Funnel - census et limites de mesure
@@ -311,6 +367,64 @@ plus pour que le pipeline de publication se débloque.
 
 ---
 
+## 4bis. Le trou de fulfillment est **corrigé dans le code** (PR #1274)
+
+Le trou de fulfillment de R7 (« 6/6 paiements payés sans accès ») a une
+**cause racine identifiée** : l'ancien code de pass 7 jours (`p7`) n'est pas
+reconnu par `validateMollieAmount` → `unknown_pass` → **aucun accès émis**.
+
+### La preuve que 4 des 6 paiements sont justement des `p7`
+
+**[V] Décomposition unique des montants mesurés.** Le brut mesuré est
+**38,96 €** sur 4 paiements EUR et **17,98 $** sur 2 paiements USD. La
+seule combinaison compatible avec les tarifs historiques est :
+
+| Devise | Décomposition | Total |
+|---|---|---|
+| EUR | 3 × `p7` (7,99 €) + 1 × `p30` (14,99 €) | **38,96 €** ✅ |
+| USD | 1 × `p7` (5,99 $) + 1 × `p30` (11,99 $) | **17,98 $** ✅ |
+
+→ **4 des 6 paiements encaissés sont des `p7`**, exactement ce que la
+branche legacy du correctif sait servir, et exactement ce que le code
+actuel rejetait. Le correctif ne sert donc pas un cas théorique : il sert
+**les paiements réels**.
+
+### Ce que la PR #1274 change (3 points, aucun prix modifié)
+
+| # | Correction | Effet |
+|---|---|---|
+| **P0-2** | Fenêtre historique `p7` : date **unique** `LEGACY_CUTOFF_DATE = 2026-08-01T00:00:00Z`, `payment.createdAt` lu **côté serveur**, fuseau explicite **exigé** ; refus `legacy_expired` si date absente/invalide/sans fuseau/≥ coupure. `create_payment` **refuse** `p7` (400) | Les 4 paiements `p7` historiques deviennent servables ; **aucun nouveau** prix legacy n'est créable |
+| **P0-3** | Logs : identifiant de corrélation **aléatoire** par requête (`crypto.getRandomValues`), **sans lien dérivé** du `paymentId` ; whitelist stricte des champs journalisés (`status`, `code`, `reason`) | Le `paymentId`, un email ou un secret passé par erreur sont **ignorés**, pas journalisés |
+| **P0-4/5/6** | Nouveau `scripts/automation/backfill-mollie-grants.cjs` : HTTP 200 **obligatoire** sur payment / refunds / chargebacks / grant ; toute lecture en échec → contrôle `indeterminate` (**jamais** converti en « rien à grant ») ; rapport **sans PII** ; **DRY RUN par défaut** ; `--apply` exige une confirmation explicite **et** re-vérifie les 4 lectures avant chaque RPC | Le backfill ne peut **pas** accorder un accès sur une donnée illisible |
+
+### **[V] Contrat vérifié par EXÉCUTION RÉELLE du Worker** (7/7)
+
+| # | Cas | Attendu | Mesuré |
+|---|---|---|---|
+| 1 | `create_payment` avec `p7` | refus | ✅ HTTP 400 `{"error":"Prix invalide"}` |
+| 2 | webhook `p7` créé **avant** la coupure | grant | ✅ `granted:true` |
+| 3 | webhook `p7` créé **après** la coupure | **aucun** grant | ✅ `granted:false, reason:"legacy_expired"` |
+| 4 | `p7` avec une date **sans fuseau explicite** | **aucun** grant | ✅ `granted:false` |
+| 5 | `p7` payé au tarif **courant** (4,99 €) | **aucun** grant | ✅ `granted:false, reason:"amount_mismatch"` |
+| 6 | le log de refus contient-il le `paymentId` ? | **non** | ✅ log = `[mollie-grant] grant_granted {"cid":"req_448661046…"}` — identifiant aléatoire, aucun lien avec `tr_…` |
+| 7 | `p30` au tarif courant (14,99 €) | grant | ✅ `granted:true` — **pas de régression** sur les paiements non legacy |
+
+> Les refus (cas 3-5) sont **fail-closed** : HTTP 200 avec `granted:false`
+> et un motif explicite — le webhook acquitte, mais **aucun accès n'est
+> délivré**. C'est le comportement attendu et testé.
+
+### Ce qui reste bloqué (et pourquoi ce n'est pas un détail)
+
+1. **Le code mergé n'est pas en production** : le déploiement est bloqué
+   par la garde de fraîcheur satellite (§10). Rien n'a été publié.
+2. **Le chemin de paiement live n'est pas ce Worker** : c'est `sg-payments`,
+   dont la **source est absente du dépôt** (R17). Le correctif est donc
+   **préparé pour la bascule**, pas encore actif.
+3. **Le backfill n'a pas été exécuté** : c'est une **écriture en
+   production** (RPC `sg_upsert_payment_grant`) → **autorisation requise**.
+
+---
+
 ## 5. P0 trouvé et corrigé : l'essai B2B 30 jours était mort
 
 `public/api/b2b-trial.php` appelait `sg_analytics_event()`, **fonction supprimée de
@@ -381,7 +495,7 @@ récupérable : commit `af8408e4`).
 | R4 | Clés i18n mortes `premiumPrice` (« 4,99 €/mois ») dans `Sargasses_PROD.jsx` | Non rendues sur les surfaces publiques actuelles. |
 | R5 | `public/themes-lab/*` (maquettes) | Hors production. |
 | R6 | Bascule de mois serveur/navigateur autour du 1er juin et du 1er décembre | La surcharge USD est calculée par le serveur (fuseau serveur) alors que l'affichage suit le navigateur. Fenêtre de quelques jours par an. **Désormais mesuré** (`sg_price_mismatch`) au lieu d'être invisible ; correction durable = endpoint de prix serveur (non ajouté ici). |
-| R7 | 6/6 paiements payés sans accès (`paid_no_grant`) | Ré-accusation = écriture en production + le correctif racine (alias `p7`) élargirait les montants acceptés → autorisation + arbitrage prix. |
+| R7 | 6/6 paiements payés sans accès (`paid_no_grant`) | **Le code correctif est désormais PRÊT** (PR #1274, `9a10faa3`, mergée 2026-11-04T17:52:43Z) : alias `p7` + fenêtre historique fail-closed, logarithmes sans identifiant, script de backfill fail-closed en DRY RUN par défaut. **Reste à** : l'**exécution** du backfill = écriture en production → **autorisation requise**. Voir §4bis. |
 | R8 | `mol_b2b_trial_email()` absent → email de l'essai non envoyé | Changement d'email client → autorisation requise. |
 | R9 | `b2b_subscriptions` vide, `sg_b2b_trial_activated` jamais observé | Conséquence du P0 §5 : le tunnel B2B n'a jamais pu s'activer. Confirmé indépendamment par l'API Mollie (0 subscription active, MRR 0 €). |
 | R10 | Palier B2B affiché **avant** le moteur récurrent (Brief 29 € avant Pro 79 €) | **Corrigé (PR #1098, `393dc7a7`)** : Pro 79 € passe en tête. Aucun prix modifié. |
@@ -392,7 +506,7 @@ récupérable : commit `af8408e4`).
 | **R15** | `mol_b2b_grant_once()` / `mol_b2c_pass_grant()` renvoient `['granted'=>false,'reason'=>'already_granted']` **sans** `mirror_ok` → le webhook fait `$mirrorOk = $grant['mirror_ok'] ?? false` → **HTTP 500** sur chaque rejeu, et le mirror Supabase **n'est jamais re-tenté**. | Un rejeu de webhook Mollie (5xx) tombe dans une **boucle morte** : 500 → rejeu → 500. Le mirror ne se répare jamais tout seul. Correctif = 1 branche → **change un code HTTP de webhook** → autorisation requise. |
 | **R16** | **Dérive de prix sur la grille des liens de paiement** : `sejour_eur` 12,99 €, `sejour_usd` 9,99 $, `saison_usd` 14,99 $ — alors que la vérité canonique est `trip7` 4,99 € / 5,99 $ et `season` USD **`null`**. Les deux grilles sont désormais **parity-lockées** par test (11/11) : la divergence est désormais **visible**, pas silencieuse. | Ce sont des **prix** → décision commerciale explicite requise. **Aucun prix affiché n'est modifié** par ce rapport. |
 | **R17** | **Le chemin de paiement live n'est pas versionné dans le dépôt.** `/api/mollie*`, `/api/b2b-*`, `/api/create-checkout*` → Worker `sg-payments`, **source absente du dépôt** (10 versions, toutes du 2026-10-01/02). Symptômes mesurés : `POST /api/mollie.php` → **500 / CF 1101** ; `POST /api/create-checkout.php` → **404**. | **Changement de chemin de paiement** → autorisation requise. Et la bascule **n'est pas un simple réglage** : `workers/sargagame/index.js` ne livre **que** le B2C (ids `tr_…` seulement, pas `sub_…`, pas de cron) → il faut **porter** le fulfillment B2B de `sg-payments` d'abord. |
-| **R18** | **La mesure de revenu n'est pas scopée par produit.** `scripts/automation/mollie-mrr.cjs:175-192` cumule dans `revenue_month` **tous** les paiements payés du compte Mollie ; or BOT-WOW encaisse dans la **même organisation** que Sargasses (`profileId pfl_t8KCk4Cm2C`, `org_19554425`, §2ter). | Un paiement BOT-WOW payé (20,00 €) serait compté comme revenu Sargasses. **Impact mesuré aujourd’hui : 0 €** (11 paiements BOT-WOW expirés impayés ; 6 paiements Sargasses de juin–juillet, BOT-WOW d’octobre+). Corriger = **séparer les comptes Mollie** (profil + clé dédiés) ou **coder la règle d’attribution** → décision commerciale + secrets → autorisation requise. |
+| **R18** | **La mesure de revenu n'est pas scopée par produit.** `scripts/automation/mollie-mrr.cjs:175-192` cumule dans `revenue_month` **tous** les paiements payés du compte Mollie ; or BOT-WOW encaisse dans la **même organisation** que Sargasses (`profileId pfl_t8KCk4Cm2C`, `org_19554425`, §2ter). | ✅ **CORRIGÉ (PR #1277, `df01afd9`, 2026-11-04T18:01:55Z)** : attribution stricte par marque + marqueur de pass/plan ; les enregistrements non attribués sont isolés sous `unattributed` et **exclus** des totaux. Vérifié par exécution (20/20 cas + calcul end-to-end reproduisant 38,96 € / 17,98 $). **Reste demandé** (BOT-WOW) : la **séparation physique des comptes** (profil + clé dédiés) — la règle d'attribution reste une convention, pas un identifiant de produit. |
 
 ---
 
@@ -422,19 +536,27 @@ ailleurs : archives CI, session wrangler, backup) et la versionner, ou
 la **bascule de route est une décision séparée** et exige l'autorisation
 explicite.
 
-### 2) Fermer la boucle « payé → accès » — les 6 `paid_no_grant` (R13 + R14)
+### 2) Fermer la boucle « payé → accès » — les 6 `paid_no_grant` (R7 + R13 + R14)
 **Potentiel : élevé** (6 clients ont payé sans service ; remboursement
 actuellement 0/6 — risque juridique et réputationnel ; 56,94 € encaissés) ·
-**Preuve : forte** (cause racine **prouvée par exécution PHP réelle** sur le
-code livré : 4 formes de paiement, 4 refus ; R14 : l'absence de `metadata`
-sur les liens de paiement est **structurelle**, pas un oubli) · **Effort : faible
+**Preuve : forte et désormais adossée au code** (cause racine **prouvée par
+exécution** : 4 des 6 paiements sont des `p7` (§4bis) ; R13 : refus PHP
+reproduit sur 4 formes de paiement ; R14 : l'absence de `metadata` sur les
+liens de paiement est **structurelle**, pas un oubli) · **Effort : faible
 pour R13** (2 lignes) **à moyen pour R14** (reconnaissance par montant+devise
 puis octroi du token).
 
+**Avancement au 2026-11-04T18:05Z :** le **code** du correctif d'alias `p7`
+et de fenêtre historique est **mergé et vérifié par exécution** (PR #1274,
+`9a10faa3`, §4bis), et le **backfill fail-closed** est prêt (DRY RUN par
+défaut). Ce qui manque est **l'exécution** : c'est une **écriture en
+production** (RPC `sg_upsert_payment_grant`) → **autorisation requise**.
+
 ⚠️ Ces deux correctifs **touchent le chemin de paiement** et **ne sont pas
-appliqués** dans ce rapport. R13 seul rendrait acceptables **100 %** des
-paiements signés — y compris des montants qui ne doivent pas l'être si R14
-n'est pas traité dans le même lot : **les traiter ensemble ou pas du tout.**
+appliqués en production** dans ce rapport. R13 seul rendrait acceptables
+**100 %** des paiements signés — y compris des montants qui ne doivent pas
+l'être si R14 n'est pas traité dans le même lot : **les traiter ensemble ou
+pas du tout.** R13 et R14 restent donc **non appliqués**.
 
 ### 3) Activer l'essai B2B 30 jours et prouver une conversion (R8 + instrumentation)
 **Potentiel : moyen à élevé** (le moteur récurrent Pro n'a jamais produit une
@@ -1062,12 +1184,15 @@ transaction initiée.
 > juin–juillet 2026, donc que les 6 ventes non livrées ont été traitées par le
 > chemin PHP — celui dont la validation est prouvée cassée (R13).
 
-#### Fusion des PR de revenu + état du déploiement (2026-11-04T17:05Z–17:15Z)
+#### Fusion des PR de revenu + état du déploiement (2026-11-04T17:05Z–18:10Z)
 
 | PR | Commit | État |
 |---|---|---|
 | **#1272** — rapport de revenu (§2bis, R13→R17, actions recalibrées) | `2d134a9ff83cb903cad48064031705884edea8cc` | **MERGED** 2026-11-04T16:27:46Z |
 | **#1275** — instrumentation du funnel B2B (écriture / lecture / dédoublonnage) | `02582af96a529c044521b7e16cbe56dc8bdfc596` | **MERGED** 2026-11-04T17:05:04Z |
+| **#1274** — fulfillment : alias `p7` + fenêtre historique, logs sans identifiant, backfill fail-closed | `9a10faa3466950fda0f843f2a9955e446b17a323` | **MERGED** 2026-11-04T17:52:43Z |
+| **#1277** — **[P1] scope MRR sur les enregistrements attribués à Sargasses** (corrige R18) | `df01afd9753994d23f683f1841bba41dccff79ac` | **MERGED** 2026-11-04T18:01:55Z |
+| **#1276** — état final du rapport de revenu (§2ter, R18, NOAA, déploiement) | `a7c15774a92cba526d69f021f661cad0117eb680` | **MERGED** 2026-11-04T18:03:42Z |
 
 CI **sur le SHA exact** (aucun échec restant) :
 
@@ -1078,12 +1203,14 @@ CI **sur le SHA exact** (aucun échec restant) :
 | #1275 (1er run) | `41861559188` | `test-frontend` | **failure** — 149/150 : la CI Linux a `ext-curl`, les stubs du harness n’étaient pas installés |
 | #1275 (après `331ec218`) | `41865005969` | `test-frontend` | **success** |
 | #1275 | `41865005931` | `perf` · `lighthouse-report` | **success** · **success** |
+| #1274 | `41853860648` / `41853860685` | `test-frontend` · `perf`+`lighthouse` | **success** · **success** · **success** |
+| #1277 | `41880603266` / `41880603347` | `test-frontend` · `perf`+`lighthouse` | **success** · **success** · **success** |
+| #1276 | `41877047614` / `41877047297` | `test-frontend` · `perf`+`lighthouse` | **success** · **success** · **success** |
 
-> Cause de l’échec initial **établie et corrigée** : `disable_functions` rend
-> la fonction native **redéfinissable** par l’utilisateur (vérifié : sans le
-> flag → `Fatal error: Cannot redeclare function` ; avec → le stub gagne).
-> Repli `-n`. Si aucune stratégie ne permet la capture, le test **échoue**
-> plutôt que de passer à vide.
+> **Vérification locale de #1274 et #1277** (en plus de la CI) :
+> - #1274 : `mollie-fulfillment-review` **29/29**, `mollie-backfill-failclosed` **42/42**, suite complète **`exit_code = 0`** (151 fichiers ; les 4 échecs initiaux étaient **environnementaux** — worktree frais sans `node_modules` ni `dist` — reproduits puis éliminés).
+> - #1274 : **contrat vérifié par exécution réelle du Worker** (7/7), cf. §4bis.
+> - #1277 : **attribution vérifiée par exécution** (20/20) + **calcul end-to-end** reproduisant 38,96 € / 17,98 $, cf. §2ter.
 
 **Runs déclenchés par les pushes sur `main` (lecture seule) :**
 
@@ -1091,8 +1218,12 @@ CI **sur le SHA exact** (aucun échec restant) :
 |---|---|---|---|
 | `41867453289` | **Cloudflare Production** | `2d134a9f` | **failure** — `scope` ✅, `mollie-live-gate` ✅, `certification-gate` ✅, puis `build (rivieramaya)` ❌ et 5 legs annulées → `deploy`, `deploy-pages`, `verify-fleet`, `post-deploy-verify` **skipped** → **rien n’a été publié** |
 | `41867453365` | Daily Copernicus + Deploy | `2d134a9f` | **success** — 6 builds régionaux ✅, `health-check` ✅ ; `fetch-data` **skipped** (`if: github.event_name != 'push'`), `revenue-metrics` **skipped** (`if: github.event_name == 'schedule'`) |
-| `41867453332` | CI Tests | `2d134a9f` | **success** |
-| `41867453359` | Perf Budget + Lighthouse | `2d134a9f` | **success** |
+| `41881571937` | **Cloudflare Production** | `9a10faa3` | **failure** — refus **fail-closed** : `FAIL SATELLITE_PREDEPLOY region=gp limit=900min reason=observation hors SLA (3234.55 min > 900 min)` → `deploy`, `deploy-pages`, `verify-fleet`, `post-deploy-verify` **skipped** → **rien n’a été publié** |
+| `41881571984` | Daily Copernicus + Deploy | `9a10faa3` | **success** — 6 builds ✅ ; `fetch-data` **skipped**, `revenue-metrics` **skipped** (événement `push`) |
+| `41881571916` / `41881571851` | CI Tests / Perf Budget | `9a10faa3` | **success** / **success** |
+| `41883581617` | **Cloudflare Production** | `df01afd9` | **failure** — même refus fail-closed satellite → **rien publié** |
+| `41883581566` | Daily Copernicus + Deploy | `df01afd9` | **success** — `fetch-data` et `revenue-metrics` **skipped** |
+| `41883581553` / `41883582217` | CI Tests / Perf Budget | `df01afd9` | **success** / **cancelled** (concurrence perf, run suivant déclenché) |
 
 Message exact du refus (run `41867453289`, job `build (rivieramaya)`, étape 8) :
 

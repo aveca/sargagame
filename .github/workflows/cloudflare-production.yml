@@ -34,6 +34,112 @@ on:
       - 'AGENTS.md'
       - '.github/workflows/daily-copernicus.yml'
       - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/erddap-capture-window-monitor.yml'
+      - 'scripts/probe-erddap-capture-window.cjs'
+      - 'tests/unit/erddap-capture-window-monitor.test.cjs'
+      # Isolement de l'outillage de release Pages : la publication des six
+      # domaines passe par `pages-code-only-release.yml`, qui possede sa propre
+      # porte (build + tests + budget gzip + payload preserve + audit Playwright
+      # + rollback automatique). Un changement de CE workflow (ou de son
+      # garde-fou de non-regression) ne doit donc pas redeployer le Worker ni
+      # reconfigurer les secrets de paiement : sans cette exclusion, corriger
+      # le gate de la release Pages declencherait un deploiement production
+      # Workers depuis un simple push sur `main`.
+      # Garde-fou de non-regression : tests/unit/pages-code-only-workflow.test.cjs
+      - '.github/workflows/pages-code-only-release.yml'
+      - 'tests/unit/pages-code-only-workflow.test.cjs'
+      # Memoire des agents (handoff, backlog, changelog) : une mise a jour de
+      # documentation NE doit jamais redployer le Worker ni reecrire les
+      # secrets de paiement. Cette exclusion rend le chemin de handoff
+      # document-only neutre pour la production.
+      - '.ai/**'
+      # Garde-fou de non-regression de cette exclusion.
+      - 'tests/unit/ai-docs-paths-ignore.test.cjs'
+      # Pont autopilot multi-depot : OUTILLAGE pur (CLI du runner Factory V3
+      # existant), reference par AUCUN workflow. Modifier le pont ne doit donc
+      # pas redeployer le Worker ni reecrire les secrets de paiement.
+      # Exclusion STRICTE fichier par fichier : `scripts/autopilot/**` contient
+      # des scripts CRITIQUES pour la production (check-predeploy-satellite-
+      # freshness.cjs, check-prepared-html.cjs, html-integrity.cjs,
+      # post-deploy-verify.cjs) — les exclure wholesale desactiverait leur
+      # deploiement. Le garde-fou ci-dessous interdit cette regression.
+      - 'scripts/autopilot/multi-repo-bridge.cjs'
+      - 'scripts/autopilot/multi-repo-bridge.test.cjs'
+      # Runner + orchestrateur Factory : outillage LOCAL du PC du fondateur
+      # (boucle 24/7 qui importe les missions AUTOPILOT et exécute une
+      # opportunité par cycle). Aucun workflow ne les execute — ils ne font
+      # donc partie ni du contenu deploye ni des secrets de paiement.
+      # Modifier le câblage du runner ne doit surtout pas redeployer le Worker
+      # ni reecrire les secrets Mollie depuis un simple push sur `main`.
+      - 'scripts/autopilot/runner.cjs'
+      - 'scripts/autopilot/orchestrator.cjs'
+      # Module de notifications du runner LOCAL (Discord + healthchecks).
+      # Il n'etait pas commite : le runner ne pouvait pas demarrer depuis un
+      # checkout propre (MODULE_NOT_FOUND avant le premier cycle). Aucun
+      # workflow ne l'execute -> exclusion fichier par fichier (jamais
+      # `scripts/autopilot/lib/**` en bloc : des helpers critiques de la
+      # production vivent dans ce dossier).
+      - 'scripts/autopilot/lib/notify.cjs'
+      # Wrappers Windows du runner LOCAL + helpers de journalisation/pruning.
+      # Aucun workflow ne les execute : les corriger ne doit pas redeployer le
+      # Worker. `scripts/autopilot/lib/common.cjs` n'est utilise QUE par
+      # l'outillage local du runner (verifie : aucun workflow ne l'importe) —
+      # garde-fou dans tests/unit/autopilot-clean-checkout-runnable.test.cjs.
+      - 'scripts/autopilot/autopilot-live.cmd'
+      - 'scripts/autopilot/autopilot.cmd'
+      - 'scripts/autopilot/prune.cjs'
+      - 'scripts/autopilot/lib/common.cjs'
+      - 'scripts/autopilot/local-model-router.cjs'
+      # Boucle de selection/decouverte de l'orchestrateur (outillage LOCAL).
+      # Aucun workflow ne les execute ni ne les importe : les corriger ne doit
+      # pas redeployer le Worker. `lib/memory.cjs` est la persistance de la
+      # queue de l'autopilot local — il ne touche ni aux secrets ni au build.
+      - 'scripts/autopilot/analyze.cjs'
+      - 'scripts/autopilot/discover.cjs'
+      - 'scripts/autopilot/lib/memory.cjs'
+      # Execution de l'opportunite par l'agent local (outillage LOCAL).
+      # Aucun workflow ne l'execute : le corriger ne doit pas redeployer le
+      # Worker. L'adaptateur d'agent est sous `.ai/**`, deja exclu.
+      - 'scripts/autopilot/implement.cjs'
+      - 'tests/unit/autopilot-local-agent-contract.test.cjs'
+      # Garde-fou de non-regression de cette exclusion.
+      - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
+      - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
+      - 'tests/unit/autopilot-clean-checkout-runnable.test.cjs'
+      - 'tests/unit/autopilot-queue-persistence-loop.test.cjs'
+      # ── Pont autonome GitHub <-> Factory V3 <-> OpenCode (2026-11-09) ──────
+      # Modules du cycle de vie des missions [AUTOPILOT] (outillage LOCAL du
+      # PC du fondateur). Aucun workflow ne les execute ni ne les importe :
+      # les corriger ne doit surtout pas redeployer le Worker ni reecrire les
+      # secrets de paiement (MOLLIE_API_KEY, SUPABASE_SERVICE_KEY).
+      # Exclusion STRICTE fichier par fichier — `scripts/autopilot/lib/**`
+      # contient des helpers CRITIQUES pour la production, jamais de glob.
+      - 'scripts/autopilot/lib/agent-prompt.cjs'
+      - 'scripts/autopilot/lib/agent-prompt.probe.cjs'
+      - 'scripts/autopilot/lib/agent-router.cjs'
+      - 'scripts/autopilot/lib/agent-router.test.cjs'
+      - 'scripts/autopilot/lib/final-scope.cjs'
+      - 'scripts/autopilot/lib/final-scope.test.cjs'
+      - 'scripts/autopilot/lib/mission-lifecycle.cjs'
+      - 'scripts/autopilot/lib/mission-lifecycle.test.cjs'
+      - 'scripts/autopilot/lib/mission-publisher.cjs'
+      - 'scripts/autopilot/lib/mission-watchdog.cjs'
+      - 'scripts/autopilot/lib/orchestrator-scope.test.cjs'
+      - 'scripts/autopilot/lib/restore-scope.test.cjs'
+      - 'scripts/autopilot/lib/safety-guard.cjs'
+      - 'scripts/autopilot/lib/safety-guard.test.cjs'
+      - 'scripts/autopilot/lib/gitops.cjs'
+      - 'scripts/autopilot/status.cjs'
+      - 'scripts/autopilot/multi-repo-bridge-e2e.test.cjs'
+      # Persistance + exploitation du service 24/7 (tache planifiee Windows,
+      # arret propre, installation). Aucun workflow ne les execute.
+      - 'scripts/autopilot/autopilot-service.cmd'
+      - 'scripts/autopilot/autopilot-stop.cmd'
+      - 'scripts/autopilot/autopilot-stop.ps1'
+      - 'scripts/autopilot/install-service.ps1'
+      # Runbook d'exploitation du pont autonome : documentation pure, jamais
+      # deployee. Fichier par fichier (pas de `docs/**` wholesale).
+      - 'docs/AUTOPILOT-RUNBOOK.md'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
@@ -188,6 +294,10 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      - name: Verify localized beach indexes in prepared package
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/verify-regional-beach-index.cjs
       - name: Pre-deploy satellite freshness gate (all six regions)
         if: github.ref == 'refs/heads/main'
         env:
@@ -345,7 +455,12 @@ jobs:
           VITE_REGION: ${{ matrix.id }}
         run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Deploy Worker
-        run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
+        # `--strict` abandonne le déploiement dès que le Worker a été modifié
+        # via l'API script (le `secret put` de l'étape suivante, ou un réglage
+        # dashboard). Depuis ce blocage, aucun asset ne part, y compris le JSON
+        # satellite. On déploie le Worker du dépôt puis on réécrit les secrets.
+        # workers/sg-payments n'est pas ce Worker et n'est pas modifié ici.
+        run: npx --yes wrangler@latest deploy --config wrangler.jsonc
       - name: Configure Worker secrets
         run: |
           printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
@@ -450,8 +565,9 @@ jobs:
   # CONTRÔLE POST-DÉPLOIEMENT RÉEL — s'exécute UNIQUEMENT après un déploiement
   # autorisé et réussi. Vérifications HTTP réelles sur chaque domaine live :
   # accessibilité, identité artefact (version.json), fraîcheur données,
-  # cohérence région↔plages, params régionaux (canonical, GA4), ?sos=1,
-  # contrat API paiement (POST __payment_smoke__ => 400, backend configuré).
+  # cohérence région↔plages, params régionaux (canonical, GA4), ABSENCE de
+  # la surface SOS publique, contrat API paiement (POST __payment_smoke__ => 400,
+  # backend configuré).
   # Tout contrôle non réalisable reste NOT_VERIFIED ; tout échec => job rouge.
   post-deploy-verify:
     needs: [deploy, scope]

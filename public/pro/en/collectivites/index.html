@@ -383,11 +383,12 @@
     var zone=fd.get('zone')||'';
     var island=zone==='Guadeloupe'?'GP':'MQ';
     var payload={email:(fd.get('email')||'').trim(),island:island,source:'b2b_collectivite_request',hotel_name:(fd.get('hotel_name')||'').trim(),note:(fd.get('note')||'').trim(),zone:zone,lang:'en',date:new Date().toISOString()};
-    fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
     try{if(window.gtag)gtag('event','sg_b2b_signup',{vertical:'collectivites',zone:zone,lang:'en'});}catch(_){}
-    form.style.display='none';
-    document.getElementById('form-ok').style.display='block';
-    document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    sgB2BCapture(ENDPOINT,payload,{form:form,lang:'en',source:'b2b',onSuccess:function(){
+      form.style.display='none';
+      document.getElementById('form-ok').style.display='block';
+      document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    }});
   });
 
   // --- Lead magnet: free brief by email (low-friction capture, SAME B2B
@@ -409,15 +410,17 @@
         zone:mIsland==='GP'?'Guadeloupe':'Martinique',
         capture:'leadmagnet_brief',date:new Date().toISOString()
       };
-      fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
       try{if(window.gtag)gtag('event','sg_b2b_leadmagnet',{vertical:'collectivites',beach:QB||'',org:QH||'',lang:'en'});}catch(_){}
-      mform.style.display='none';
-      var mtr=document.getElementById('m-trust');if(mtr)mtr.style.display='none';
-      var mok=document.getElementById('magnet-ok');mok.style.display='block';
-      mok.scrollIntoView({behavior:'smooth',block:'center'});
+      sgB2BCapture(ENDPOINT,payload,{form:mform,lang:'en',source:'leadmagnet',onSuccess:function(){
+        mform.style.display='none';
+        var mtr=document.getElementById('m-trust');if(mtr)mtr.style.display='none';
+        var mok=document.getElementById('magnet-ok');mok.style.display='block';
+        mok.scrollIntoView({behavior:'smooth',block:'center'});
+      }});
     });
   }
 })();
 </script>
+  <script src="/b2b-capture.js"></script>
 </body>
 </html>

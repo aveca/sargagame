@@ -1,22 +1,18 @@
 /**
- * funnel-b2b-from-supabase.cjs — VISIBILITÉ du funnel B2B (le seul qui rapporte).
+ * funnel-b2b-from-supabase.cjs — fail-closed, auditable B2B funnel snapshot.
  *
- * Lit public.analytics_events (écrit best-effort par public/api/b2b-trial.php et
- * public/api/mollie-webhook.php via sg_analytics_event() de mollie-lib.php — MÊME
- * table que le front logAnalyticsEvent) sur une fenêtre glissante, et sort les
- * chiffres qui comptent : essais démarrés / widgets activés / essais→payés, + le
- * taux essai→payé. C'est le tableau de bord du SEUL funnel qui produit du revenu
- * (1 Pro/an = 690€ ≈ 86 pass à 7,99€). Panel revenue 2026-07-02 : « tu pilotes le
- * seul funnel qui rapporte SANS instruments » — ceci comble ce trou.
+ * Reads public.analytics_events through Supabase REST. A snapshot is written
+ * only after every page has been fetched and validated. Synthetic CI rows are
+ * excluded by their exact historical IDs; unknown islands remain UNKNOWN and
+ * are never silently attributed to MQ.
+ * b2b_widget_activated n'est PAS encore émis: it remains zero until the
+ * widget sends a consent-safe host integration event.
  *
- * b2b_widget_activated n'est PAS encore émis (le widget est une iframe même-origine :
- * le host de l'hôtel n'est pas visible côté serveur) → compté ici, à 0 jusqu'à ce
- * que le widget passe son host d'intégration. Voir docs/B2B_DELIVERABILITY.md.
- *
- * Ne crashe jamais ; skip propre si SUPABASE_SERVICE_KEY absent.
- * Usage : node scripts/automation/funnel-b2b-from-supabase.cjs [--days=90]
- * Env   : SUPABASE_SERVICE_KEY (GH secret), SUPABASE_URL (optionnel).
+ * Usage: node scripts/automation/funnel-b2b-from-supabase.cjs [--days=90]
+ * Env: SUPABASE_SERVICE_KEY, optional SUPABASE_URL.
  */
+
+'use strict'
 
 const fs = require('fs')
 const path = require('path')
@@ -24,107 +20,253 @@ const path = require('path')
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || ''
 const OUT_PATH = path.join(__dirname, 'data', 'funnel-b2b-snapshot.json')
-const DAYS = (() => { const a = process.argv.find((x) => x.startsWith('--days=')); const n = a ? parseInt(a.slice(7), 10) : 90; return Number.isFinite(n) && n > 0 ? n : 90 })()
-const PAGE = 1000 // cap REST Supabase par requête → pagination par Range
+const DAYS = (() => {
+  const arg = process.argv.find((x) => x.startsWith('--days='))
+  const n = arg ? parseInt(arg.slice(7), 10) : 90
+  return Number.isFinite(n) && n > 0 ? n : 90
+})()
+const PAGE = 1000
 
 const B2B_KEYS = ['b2b_trial_started', 'b2b_widget_activated', 'b2b_trial_to_paid', 'payment_rejected']
 
-function svcHeaders(extra) {
-  return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})
+// These two rows were inserted by the historical CI fixture and have no
+// production payment provenance. Keep the exact IDs auditable and never count
+// them as paid conversions. Do not delete or mutate the production rows.
+const EXCLUDED_SYNTHETIC_IDS = new Set([488769, 488770])
+
+function hasValidRowId(row) {
+  return !!row && row.id !== null && row.id !== undefined && String(row.id).trim() !== '' &&
+    Number.isSafeInteger(Number(row.id))
 }
 
-async function fetchAll(cutoffIso) {
+function svcHeaders(extra, serviceKey = SERVICE_KEY) {
+  return Object.assign({
+    apikey: serviceKey,
+    Authorization: 'Bearer ' + serviceKey,
+    'Range-Unit': 'items',
+    Prefer: 'count=exact',
+  }, extra || {})
+}
+
+function parseContentRange(value) {
+  const match = /^(?:(\d+)-(\d+)|\*)\/(\d+|\*)$/.exec(String(value || '').trim())
+  if (!match) throw new Error('Supabase analytics response missing a valid Content-Range header')
+  return {
+    start: match[1] === undefined ? null : Number(match[1]),
+    end: match[2] === undefined ? null : Number(match[2]),
+    total: match[3] === '*' ? null : Number(match[3]),
+  }
+}
+
+async function fetchAll(cutoffIso, options = {}) {
+  const fetchImpl = options.fetchImpl || global.fetch
+  const supabaseUrl = String(options.supabaseUrl || SUPABASE_URL).replace(/\/+$/, '')
+  const serviceKey = options.serviceKey === undefined ? SERVICE_KEY : options.serviceKey
+  const pageSize = Number.isInteger(options.pageSize) && options.pageSize > 0 ? options.pageSize : PAGE
+  if (typeof fetchImpl !== 'function') throw new Error('Fetch implementation unavailable')
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_KEY is required for a complete B2B funnel snapshot')
+
   const rows = []
-  const inList = B2B_KEYS.join(',') // noms alphanum → pas de guillemets requis pour PostgREST in.()
-  for (let from = 0; ; from += PAGE) {
-    const q = `select=event,params,island,ts&event=in.(${inList})&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
-    let res
+  let expectedTotal = null
+
+  for (let from = 0; ; from += pageSize) {
+    const params = new URLSearchParams({
+      select: 'id,event,params,island,ts',
+      event: 'in.(' + B2B_KEYS.join(',') + ')',
+      ts: 'gte.' + cutoffIso,
+      order: 'ts.asc,id.asc',
+    })
+    const url = supabaseUrl + '/rest/v1/analytics_events?' + params.toString()
+    let response
     try {
-      res = await fetch(`${SUPABASE_URL}/rest/v1/analytics_events?${q}`, {
-        headers: svcHeaders({ Range: `${from}-${from + PAGE - 1}` }),
+      response = await fetchImpl(url, {
+        headers: svcHeaders({ Range: from + '-' + (from + pageSize - 1) }, serviceKey),
         signal: AbortSignal.timeout(30000),
       })
-    } catch (e) { console.error('[funnel-b2b] fetch error:', e && e.message); break }
-    if (!res.ok) { console.error(`[funnel-b2b] HTTP ${res.status}: ${await res.text().catch(() => '')}`); break }
-    const batch = await res.json().catch(() => [])
-    if (!Array.isArray(batch) || !batch.length) break
+    } catch (error) {
+      throw new Error('Supabase analytics fetch failed at offset ' + from + ': ' + (error?.message || 'network error'))
+    }
+
+    if (!response || !response.ok) {
+      const detail = response && typeof response.text === 'function'
+        ? await response.text().catch(() => '')
+        : ''
+      throw new Error('Supabase analytics HTTP failure at offset ' + from + ': ' +
+        (response ? response.status : 'no response') + (detail ? ' ' + detail.slice(0, 300) : ''))
+    }
+
+    let batch
+    try {
+      batch = await response.json()
+    } catch (error) {
+      throw new Error('Supabase analytics returned invalid JSON at offset ' + from + ': ' + (error?.message || 'parse error'))
+    }
+    if (!Array.isArray(batch)) throw new Error('Supabase analytics returned a non-array page at offset ' + from)
+
+    const range = parseContentRange(response.headers?.get?.('content-range'))
+    if (range.start !== null && range.start !== from) {
+      throw new Error('Supabase analytics page offset mismatch: requested ' + from + ', received ' + range.start)
+    }
+    if (range.start !== null && batch.length !== (range.end - range.start + 1)) {
+      throw new Error('Supabase analytics page length does not match Content-Range at offset ' + from)
+    }
+    if (range.total !== null) {
+      if (expectedTotal !== null && range.total !== expectedTotal) {
+        throw new Error('Supabase analytics total changed during pagination; refusing partial snapshot')
+      }
+      expectedTotal = range.total
+    }
+
     rows.push(...batch)
-    if (batch.length < PAGE) break
+
+    if (expectedTotal !== null) {
+      if (rows.length > expectedTotal) throw new Error('Supabase analytics returned more rows than Content-Range total')
+      if (rows.length === expectedTotal) break
+      if (!batch.length || batch.length !== pageSize) {
+        throw new Error('Supabase analytics pagination ended before the reported total')
+      }
+    } else if (batch.length < pageSize) {
+      break
+    }
+  }
+
+  if (rows.some((row) => !hasValidRowId(row))) {
+    throw new Error('Supabase analytics page contains a row without a valid numeric id')
   }
   return rows
 }
 
 function compute(rows) {
+  if (!Array.isArray(rows)) throw new TypeError('B2B funnel rows must be an array')
+  if (rows.some((row) => !hasValidRowId(row))) {
+    throw new Error('B2B funnel rows must include a valid numeric id')
+  }
+
+  const excluded = rows.filter((row) => EXCLUDED_SYNTHETIC_IDS.has(Number(row.id)))
+  const included = rows.filter((row) => !EXCLUDED_SYNTHETIC_IDS.has(Number(row.id)))
   const counts = { trials: 0, activated: 0, paid: 0, rejected: 0 }
   const byIsland = {}
   const paidByPlan = {}
-  // Paiements SIGNÉS par Mollie mais REFUSÉS par la validation du webhook :
-  // de l'argent encaissé sans accès servi. C'est le trou de fulfillment.
   const rejectedByTier = {}
   const rejectedByKind = {}
   const rejectedExamples = []
-  for (const r of rows) {
-    const evt = String(r.event || '')
-    const isl = (r.island || 'MQ').toUpperCase()
-    byIsland[isl] = byIsland[isl] || { trials: 0, activated: 0, paid: 0 }
-    if (evt === 'b2b_trial_started') { counts.trials++; byIsland[isl].trials++ }
-    else if (evt === 'b2b_widget_activated') { counts.activated++; byIsland[isl].activated++ }
-    else if (evt === 'b2b_trial_to_paid') {
-      counts.paid++; byIsland[isl].paid++
-      const plan = (r.params && r.params.plan) || 'unknown'
+
+  for (const row of included) {
+    const event = String(row.event || '')
+    const island = String(row.island || '').trim().toUpperCase() || 'UNKNOWN'
+    byIsland[island] = byIsland[island] || { trials: 0, activated: 0, paid: 0 }
+
+    if (event === 'b2b_trial_started') {
+      counts.trials++
+      byIsland[island].trials++
+    } else if (event === 'b2b_widget_activated') {
+      counts.activated++
+      byIsland[island].activated++
+    } else if (event === 'b2b_trial_to_paid') {
+      counts.paid++
+      byIsland[island].paid++
+      const plan = (row.params && row.params.plan) || 'unknown'
       paidByPlan[plan] = (paidByPlan[plan] || 0) + 1
-    }
-    else if (evt === 'payment_rejected') {
+    } else if (event === 'payment_rejected') {
       counts.rejected++
-      const p = r.params || {}
-      const tier = p.tier || 'unknown'
-      const kind = p.kind || 'unknown'
+      const params = row.params || {}
+      const tier = params.tier || 'unknown'
+      const kind = params.kind || 'unknown'
       rejectedByTier[tier] = (rejectedByTier[tier] || 0) + 1
       rejectedByKind[kind] = (rejectedByKind[kind] || 0) + 1
-      // Garde-fou : on ne conserve QUE les agrégats (montant/devise/palier),
-      // jamais d'identifiant de paiement ni d'email.
       if (rejectedExamples.length < 20) {
         rejectedExamples.push({
-          error: p.error || null,
-          value: p.value || null,
-          currency: p.currency || null,
+          error: params.error || null,
+          value: params.value || null,
+          currency: params.currency || null,
           tier,
           kind,
         })
       }
     }
   }
-  const pct = (n, d) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0)
+
+  const percentage = (numerator, denominator) =>
+    denominator > 0 ? Math.round((numerator / denominator) * 1000) / 10 : 0
+
   return {
     counts,
     rates: {
-      trial_to_paid: pct(counts.paid, counts.trials),
-      trial_to_activated: pct(counts.activated, counts.trials),
-      activated_to_paid: pct(counts.paid, counts.activated),
+      trial_to_paid: percentage(counts.paid, counts.trials),
+      trial_to_activated: percentage(counts.activated, counts.trials),
+      activated_to_paid: percentage(counts.paid, counts.activated),
     },
     paid_by_plan: paidByPlan,
     rejected_by_tier: rejectedByTier,
     rejected_by_kind: rejectedByKind,
     rejected_examples: rejectedExamples,
     by_island: byIsland,
+    excluded_synthetic_rows: excluded.length,
   }
 }
 
-async function main() {
-  if (!SERVICE_KEY) { console.log('[funnel-b2b] SUPABASE_SERVICE_KEY manquant — skip (aucune agrégation).'); return }
-  const cutoff = new Date(Date.now() - DAYS * 86400000).toISOString()
-  const rows = await fetchAll(cutoff)
-  const f = compute(rows)
-  const snapshot = { window_days: DAYS, since: cutoff, total_rows: rows.length, ...f }
+function buildSnapshot(rows, cutoff, days) {
+  const computed = compute(rows)
+  return {
+    window_days: days,
+    since: cutoff,
+    total_rows: rows.length,
+    included_rows: rows.length - computed.excluded_synthetic_rows,
+    ...computed,
+  }
+}
+
+async function main(options = {}) {
+  const serviceKey = options.serviceKey === undefined ? SERVICE_KEY : options.serviceKey
+  if (!serviceKey) throw new Error('SUPABASE_SERVICE_KEY is missing; refusing to publish a stale or empty snapshot')
+
+  const days = options.days || DAYS
+  const now = options.now || new Date()
+  const cutoff = new Date(now.getTime() - days * 86400000).toISOString()
+  const rows = await fetchAll(cutoff, {
+    fetchImpl: options.fetchImpl,
+    supabaseUrl: options.supabaseUrl,
+    serviceKey,
+    pageSize: options.pageSize,
+  })
+  const snapshot = buildSnapshot(rows, cutoff, days)
+  const outPath = options.outPath || OUT_PATH
+  fs.mkdirSync(path.dirname(outPath), { recursive: true })
+  const tempPath = outPath + '.' + process.pid + '.tmp'
   try {
-    fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
-    fs.writeFileSync(OUT_PATH, JSON.stringify(snapshot, null, 2))
-    console.log(`[funnel-b2b] écrit ${OUT_PATH}`)
-  } catch (e) { console.error('[funnel-b2b] write error:', e && e.message) }
-  console.log(`[funnel-b2b] ${DAYS}j · essais ${f.counts.trials} · activés ${f.counts.activated} · payés ${f.counts.paid} · essai→payé ${f.rates.trial_to_paid}%`)
-  if (f.counts.rejected) {
-    console.log(`[funnel-b2b] ⚠ ${f.counts.rejected} paiement(s) REFUSÉ(s) par le webhook → encaissés sans accès servi : ${JSON.stringify(f.rejected_by_tier)}`)
+    fs.writeFileSync(tempPath, JSON.stringify(snapshot, null, 2) + '\n')
+    fs.renameSync(tempPath, outPath)
+  } catch (error) {
+    try { fs.unlinkSync(tempPath) } catch {}
+    throw new Error('Unable to publish complete B2B funnel snapshot: ' + (error?.message || 'write error'))
   }
+
+  console.log('[funnel-b2b] écrit ' + outPath)
+  console.log('[funnel-b2b] ' + days + 'j · essais ' + snapshot.counts.trials +
+    ' · activés ' + snapshot.counts.activated + ' · payés ' + snapshot.counts.paid +
+    ' · exclus synthétiques ' + snapshot.excluded_synthetic_rows +
+    ' · essai→payé ' + snapshot.rates.trial_to_paid + '%')
+  if (snapshot.counts.rejected) {
+    console.log('[funnel-b2b] ⚠ ' + snapshot.counts.rejected +
+      ' paiement(s) refusé(s) par le webhook → à réconcilier : ' +
+      JSON.stringify(snapshot.rejected_by_tier))
+  }
+  return snapshot
 }
 
-main().catch((e) => { console.error('[funnel-b2b] erreur non fatale:', e && e.message); process.exit(0) })
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('[funnel-b2b] échec — aucun snapshot partiel publié:', error?.message || error)
+    process.exitCode = 1
+  })
+}
+
+module.exports = {
+  B2B_KEYS,
+  EXCLUDED_SYNTHETIC_IDS,
+  parseContentRange,
+  fetchAll,
+  compute,
+  buildSnapshot,
+  main,
+}

@@ -10,6 +10,8 @@ const frResearch = fs.readFileSync(path.join(ROOT, 'public', 'recherche', 'index
 const esResearch = fs.readFileSync(path.join(ROOT, 'public', 'investigacion', 'index.html'), 'utf8')
 const apiDocs = fs.readFileSync(path.join(ROOT, 'public', 'api', 'index.html'), 'utf8')
 const regionalSeo = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'region-seo-pages.cjs'), 'utf8')
+const reliabilityPage = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'reliability-page.cjs'), 'utf8')
+const ftpFreshnessGate = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-ftp-ready.cjs'), 'utf8')
 
 assert.equal(research.includes('3.5-day</b> half-life'), false,
   'the obsolete 3.5-day half-life claim must not return')
@@ -49,6 +51,21 @@ assert.doesNotMatch(apiDocs, /Sentinel-3 \/ MODIS \(Copernicus Marine\)|Mise à 
 assert.doesNotMatch(regionalSeo, /Copernicus\/NOAA AFAI|NOAA\/Copernicus imagery/i,
   'regional SEO copy must distinguish NOAA/AOML AFAI from Copernicus current inputs')
 
+assert.ok(reliabilityPage.includes('Floating mats use a ${HL_NUM}-day persistence half-life'),
+  'reliability methodology must scope the five-day half-life to floating mats')
+assert.ok(reliabilityPage.includes('material already beached remains a provisional prior'),
+  'reliability methodology must disclose that beach persistence remains provisional')
+assert.ok(reliabilityPage.includes('Observations AFAI NOAA/AOML ERDDAP')
+  && reliabilityPage.includes('NOAA/AOML ERDDAP AFAI observations')
+  && reliabilityPage.includes('Observaciones AFAI de NOAA/AOML ERDDAP'),
+  'reliability methodology must identify the actual NOAA/AOML ERDDAP AFAI source in all languages')
+assert.doesNotMatch(reliabilityPage, /Beaching persistence \(\$\{HL_NUM\}-day half-life\)|Persistance des échouages \(demi-vie \$\{HL_FR\} jours\)|persistencia de los recales \(vida media de \$\{HL_FR\} días\)/i,
+  'the five-day floating-mat half-life must never be mislabeled as beaching persistence')
+assert.doesNotMatch(ftpFreshnessGate, /demi-vie ~3,5j|half-life ~3\.5d/i,
+  'the operational green-spike gate must not present its threshold as a calibrated physical half-life')
+assert.match(ftpFreshnessGate, /anomalie d'intégrité/i,
+  'the green-spike gate must be described as a data-integrity check')
+
 const widget = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 assert.ok(widget.includes('NOAA/AOML ERDDAP'),
   'hotel widget landing must identify the verified distribution source')
@@ -61,5 +78,51 @@ assert.doesNotMatch(widgetDescription, /en direct/i, 'widget description must no
 assert.match(widgetTitle + widgetDescription, /dernière observation disponible/i)
 assert.doesNotMatch(widget, /Copernicus Marine|4× par jour|4×.{0,8}jour|quatre fois par jour/i,
   'hotel widget landing must not claim an unverified source or satellite cadence')
+
+
+
+const regionalScienceFiles = [
+  'regions/tulum.json',
+  'regions/rivieramaya.json',
+  'regions/seo-content/florida.json',
+  'regions/seo-content/puntacana.json',
+  'regions/seo-content/rivieramaya.en.json',
+  'regions/seo-content/tulum.en.json',
+  'regions/seo-content/barbados.json',
+  'regions/_staging/seo-content/bahamas.json',
+]
+for (const relative of regionalScienceFiles) {
+  const raw = fs.readFileSync(path.join(ROOT, relative), 'utf8')
+  const data = JSON.parse(raw)
+  assert.doesNotMatch(raw, /3\.5-day half-life/i, relative + ' must not publish the obsolete beach half-life')
+  assert.doesNotMatch(raw, /4× daily|4× a day|4x daily|four times a day|four times daily/i, relative + ' must not promise a fixed AFAI refresh cadence')
+  assert.doesNotMatch(raw, /updated daily from satellite|four satellite reads a day|every morning the model|latest Copernicus satellite pass|Copernicus and NOAA satellites use|every few hours|refreshed four times a day|4×\s*(?:a day|\/day)|four times (?:a day|daily)|measured this morning from satellite|updated today|record belt year|essentially seaweed-free|almost always clear|almost never|seaweed-proof|record Atlantic bloom|always clear|winter(?:\\s+months)?\\s+(?:is\\s+|are\\s+)?essentially seaweed-free|winter months nearly seaweed-free/i, relative + ' must not publish an unsupported cadence or source claim')
+assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'regions/_staging/seo-content/bahamas.json'), 'utf8'), /lower-exposure region|low-exposure destination|almost never see it|seaweed-proof|essentially seaweed-free|record (?:Atlantic )?bloom|clean through most of the season|daily tracking|updated 4 times a day/i, 'Bahamas staging copy must not invent regional or seasonal certainty')
+  assert.doesNotMatch(raw, /Copernicus\/NOAA AFAI|Copernicus and NOAA satellite programs|Copernicus satellite imagery/i, relative + ' must identify NOAA/AOML ERDDAP as the AFAI distribution source')
+  assert.doesNotMatch(raw, /Accuracy is highest|Days 1–3 are the most accurate|Days 1–3 are the most reliable|days 1–3 verify best|publish our accuracy/i, relative + ' must not claim unvalidated regional accuracy')
+  assert.doesNotMatch(raw, /community reports (?:from beachgoers )?correct the satellite/i, relative + ' must not imply reports replace satellite observations')
+  if (/2\.5%/.test(raw)) assert.match(raw, /2\.5% windage parameter.*modeling assumption|model uses a 2\.5% windage parameter/i, relative + ' must identify 2.5% windage as a model assumption')
+  if (data.press) {
+    const validation = data.press.sections?.find(section => section.h2 === 'Validation scope')
+    assert.ok(validation, relative + ' must state the regional validation scope')
+    assert.match(validation.text, /Martinique and Guadeloupe/)
+    assert.match(validation.text, /does not establish forecast accuracy for/i)
+    assert.doesNotMatch(JSON.stringify(data.press), /\{accuracyJ1Pct\}|\{accuracyJ3Pct\}/, relative + ' must not inject out-of-region accuracy percentages')
+  }
+}
+
+const puntaCanaSeason = JSON.parse(fs.readFileSync(path.join(ROOT, 'regions', 'seo-content', 'puntacana.json'), 'utf8')).pages.season
+const puntaCanaSeasonCopy = JSON.stringify(puntaCanaSeason)
+assert.doesNotMatch(puntaCanaSeasonCopy, /reliably clean|almost every beach.{0,50}stays clean|skip the question entirely|daily satellite tracking/i,
+  'Punta Cana seasonal SEO copy must not promise clean beaches or a fixed satellite cadence')
+assert.match(puntaCanaSeason.intro, /generally a lower-risk period/i)
+assert.match(puntaCanaSeason.intro, /no month or beach is guaranteed clear/i)
+assert.match(puntaCanaSeason.tips, /timestamp and confidence/i)
+assert.match(puntaCanaSeason.tips, /treat the status as unknown/i)
+
+const hotelsLanding = fs.readFileSync(path.join(ROOT, 'public', 'for-hotels', 'index.html'), 'utf8')
+assert.ok(hotelsLanding.includes('NOAA/AOML ERDDAP'), 'B2B landing must identify the actual AFAI distribution source')
+assert.doesNotMatch(hotelsLanding, /4× a day|4× daily|four times a day|4x a day/i, 'B2B landing must not promise a fixed AFAI cadence')
+assert.doesNotMatch(hotelsLanding, /accuracy score we publish/i, 'B2B landing must not imply a universal accuracy score')
 
 console.log('PASS: research and B2B widget source/cadence copy matches NOAA/AOML AFAI provenance')

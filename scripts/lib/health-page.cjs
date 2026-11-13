@@ -24,6 +24,7 @@ const AUTHORITY = {
   florida: { en: 'the Florida Department of Health', es: 'el Departamento de Salud de Florida' },
   puntacana: { en: "the Dominican Republic's Ministry of Public Health (Ministerio de Salud Pública)", es: 'el Ministerio de Salud Pública de República Dominicana' },
   rivieramaya: { en: 'the Quintana Roo health authorities', es: 'las autoridades de salud de Quintana Roo' },
+  tulum: { en: 'the Quintana Roo health authorities', es: 'las autoridades de salud de Quintana Roo' },
 }
 
 /**
@@ -130,8 +131,14 @@ function buildContent(lang, regionName, authority) {
   }
 }
 
-function buildMeta(lang, regionName) {
+function buildMeta(lang, regionName, regionId) {
   if (lang === 'es') {
+    if (regionId === 'rivieramaya') {
+      return {
+        title: '¿El sargazo es peligroso? Riesgos y H2S en Cancún',
+        desc: 'El sargazo fresco no suele ser dañino al tacto; las grandes acumulaciones pueden liberar H2S. Precauciones en Cancún y Riviera Maya. No es consejo médico.',
+      }
+    }
     return {
       title: `¿El sargazo es peligroso? Salud y seguridad en la playa — ${regionName}`,
       desc: `¿El sargazo es dañino? El olor a huevo podrido (H2S), nadar, niños, mascotas e irritación de la piel ("pica-pica") — respuestas claras y prudentes y qué recomiendan las autoridades de salud en ${regionName}.`,
@@ -270,7 +277,7 @@ function generateHealthPages(region, distDir) {
   const authority = authMap[lang] || authMap.en
   const siteName = lang === 'es' ? `Sargazo ${region.name}` : `Sargassum ${region.name}`
   const content = buildContent(lang, region.name, authority)
-  const meta = buildMeta(lang, region.name)
+  const meta = buildMeta(lang, region.name, region.id)
   writePage(distDir, slug, renderPage({
     lang, domain: region.domain, siteName, slug, title: meta.title, desc: meta.desc, content,
   }))

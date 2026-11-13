@@ -11,7 +11,7 @@
 
 - **La douleur, en langage d'exploitant.** Une plage envahie un matin = des clients déçus, des avis négatifs, parfois des remboursements — et vous l'apprenez souvent en même temps qu'eux. Le déclic : avec Le Veilleur, vous devenez celui qui connaît la fin de l'histoire avant ses clients. L'alerte arrive AVANT les sargasses.
 - **Un projet né ici, pas un SaaS hors-sol.** Le Veilleur est indépendant, opéré depuis la Martinique, sur des données publiques et auditables (Copernicus Marine, NOAA). Le même satellite qui veille la mer pour le voyageur peut veiller votre rivage — et il regarde la mer, jamais vos visiteurs.
-- **La donnée existe déjà.** Indice AFAI par plage, croisé 4×/jour, prévision J+1→J+7, 136+ plages sur 5 régions, infra de diffusion en place. Le coût marginal d'un rivage de plus est proche de zéro.
+- **La donnée existe déjà.** Indice AFAI par plage fondé sur les dernières observations NOAA/AOML ERDDAP disponibles ; prévision J+1→J+7 lorsque la fraîcheur et la couverture de la source le permettent. Le coût marginal d'un rivage de plus est proche de zéro.
 - **La demande s'est montrée seule.** Un hôtel a installé le widget public sans qu'on le lui demande — le besoin existe ; reste à le servir proprement, une fois le produit câblé.
 
 ## Les 3 paliers (pricing arrêté 2026-06-29)
@@ -69,7 +69,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > La première question d'un client avant de réserver chez vous, c'est souvent : « est-ce qu'il y a des sargasses sur la plage ? ». Et une plage envahie un matin, vous l'apprenez parfois en même temps que lui : avis négatif, déception, parfois remboursement.
 >
-> On ne va pas vous le promettre, on va vous le montrer. Le Veilleur est un satellite qui veille la mer (données publiques Copernicus Marine + NOAA, indice par plage, croisé 4×/jour) — il regarde la mer, jamais vos visiteurs. Voici l'état réel des plages autour de chez vous aujourd'hui, daté : [aperçu]. Avec la prévision J+1→J+7, vous prévenez le client AVANT l'arrivée des algues.
+> On ne va pas vous le promettre, on va vous le montrer. Le Veilleur est un satellite qui veille la mer (observations AFAI distribuées par NOAA/AOML ERDDAP, avec l’heure réelle de l’observation) — il regarde la mer, jamais vos visiteurs. Voici l'état réel des plages autour de chez vous aujourd'hui, daté : [aperçu]. Avec la prévision J+1→J+7, vous prévenez le client AVANT l'arrivée des algues.
 >
 > Et on est honnêtes jusqu'au bout : notre taux d'erreur est publié et audité chaque jour, par régime. En saison calme, 100 % de nos prévisions « mer propre » se sont vérifiées (2 805 contrôles, 2026-05-19 → 2026-06-18) ; tous régimes confondus on tourne autour de 75-78 %, et les rares alertes de saison calme sont affichées en faible confiance. Vous voyez nos réussites comme nos limites — c'est précisément ce que les outils gratuits ne publient pas.
 >
@@ -86,7 +86,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > The first question a guest asks before booking is often: "is there sargassum on the beach right now?" And when a beach gets buried overnight, you often find out at the same time they do — a bad review, a let-down guest, sometimes a refund.
 >
-> We won't promise it, we'll show it. Le Veilleur is a satellite that watches the sea (public Copernicus Marine + NOAA data, per-beach index, cross-checked 4×/day) — it watches the sea, never your guests. Here's the real, dated state of the beaches near you today: [preview]. With the J+1→J+7 forecast, you warn the guest BEFORE the seaweed lands.
+> We won't promise it, we'll show it. Le Veilleur is a satellite that watches the sea (NOAA/AOML ERDDAP AFAI observations, with the actual observation time) — it watches the sea, never your guests. Here's the real, dated state of the beaches near you today: [preview]. With the J+1→J+7 forecast, you warn the guest BEFORE the seaweed lands.
 >
 > And we stay honest all the way: our miss rate is published and audited every day, by regime. In calm season, 100% of our "clean water" forecasts proved correct (2,805 checks, 2026-05-19 → 2026-06-18); across all regimes we run ~75-78%, and the rare calm-season alerts are flagged low-confidence. You see our wins and our limits — exactly what the free tools don't publish.
 >

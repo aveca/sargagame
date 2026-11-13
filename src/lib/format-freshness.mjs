@@ -254,6 +254,85 @@ export function formatObservationTimestamp(raw, lang = "fr") {
 }
 
 /**
+ * BUG-2026-015 — contrat de découplage commercial.
+ *
+ * Trois notions à ne JAMAIS confondre :
+ *   1. l'OFFRE commerciale (pass B2C) reste disponible même quand l'observation
+ *      satellite est ancienne : la présence du bouton d'achat ne prouve rien
+ *      sur la fraîcheur, et son absence ne doit pas fermer le tunnel ;
+ *   2. l'OBSERVATION (erddapTimestamp) décide ce qui peut être affiché comme
+ *      statut actuel ;
+ *   3. le VERDICT (prévision J+1..J+7) reste suspendu sans observation courante.
+ *
+ * Règle d'honnêteté : hors verdict courant, le CTA ne promet PAS une prévision ;
+ * il promet l'accès (pass + alertes) et affiche la date de la dernière observation.
+ */
+const OFFER_CTA_COPY = {
+  fr: {
+    forecastCta: "VOIR LES 7 PROCHAINS JOURS →",
+    pausedCta: "PRÉPARER MES ALERTES →",
+    pausedNote: "Prévision en pause tant que le satellite n'est pas à jour. L'offre reste ouverte : ton pass démarre maintenant et tes alertes reprennent avec la donnée.",
+  },
+  en: {
+    forecastCta: "SEE THE NEXT 7 DAYS →",
+    pausedCta: "SET UP MY ALERTS →",
+    pausedNote: "Forecast paused until the satellite is current. The offer stays open: your pass starts now and your alerts resume with the data.",
+  },
+  es: {
+    forecastCta: "VER LOS 7 DÍAS →",
+    pausedCta: "ACTIVAR MIS AVISOS →",
+    pausedNote: "Pronóstico en pausa hasta que el satélite esté al día. La oferta sigue abierta: tu pase empieza ahora y tus avisos se reanudan con el dato.",
+  },
+};
+
+/**
+ * Décide du libellé du CTA commercial selon l'état du verdict, SANS jamais
+ * conditionner la disponibilité de l'offre à la fraîcheur satellite.
+ *
+ * @param {object} sargData   payload satellite (source/stale/erddapTimestamp)
+ * @param {string} lang       fr | en | es
+ * @param {number} now        horloge de rendu (jamais figée)
+ * @param {boolean|null} verdictCurrent  contrat local du verdict (ex. statut de
+ *        plage valide). null => déduit de la provenance + fraîcheur 12 h.
+ * @returns {{offerAvailable: boolean, forecastCurrent: boolean, label: string, note: string}}
+ */
+export function lcOfferCtaCopy(sargData, lang = 'fr', now = Date.now(), verdictCurrent = null) {
+  const locale = lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'fr';
+  const copy = OFFER_CTA_COPY[locale];
+  const current = verdictCurrent == null
+    ? (sargData?.source === 'erddap-live' && sargData?.stale === false && isSatelliteFresh12h(sargData, now))
+    : !!verdictCurrent;
+  return {
+    offerAvailable: true,
+    forecastCurrent: current,
+    label: current ? copy.forecastCta : copy.pausedCta,
+    note: current ? '' : copy.pausedNote,
+  };
+}
+
+/**
+ * Date explicite de la dernière observation satellite (UTC) — exigence produit
+ * BUG-2026-015 : « afficher clairement la date de la dernière observation ».
+ * Jamais de date inventée : un horodatage absent/invalide reste « à vérifier ».
+ */
+export function lcLastObservationLabel(sargData, lang = 'fr', now = Date.now()) {
+  const locale = lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'fr';
+  const prefix = locale === 'es' ? 'Última observación satelital'
+    : locale === 'en' ? 'Last satellite observation'
+    : 'Dernière observation satellite';
+  const raw = sargData?.erddapTimestamp;
+  const timestamp = typeof raw === 'number' ? raw : Date.parse(String(raw ?? ''));
+  /* Fail-closed : horodatage absent, invalide ou FUTUR => « à vérifier ».
+     On n'affiche jamais une date qui n'a pas de preuve. */
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || timestamp > now) {
+    return locale === 'es' ? `${prefix}: hora por verificar (sin dato inventado).`
+      : locale === 'en' ? `${prefix}: timestamp needs checking (no data invented).`
+      : `${prefix}: horodatage à vérifier (aucune donnée inventée).`;
+  }
+  return `${prefix} : ${formatObservationTimestamp(timestamp, locale)}`;
+}
+
+/**
  * Milliseconds until the next HomeAZ freshness transition (12h or 15h).
  * A small 50ms margin avoids evaluating just before a boundary due to timer
  * scheduling precision. Invalid/future timestamps and terminal stale state

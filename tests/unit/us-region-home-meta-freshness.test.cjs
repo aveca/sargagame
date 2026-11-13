@@ -12,7 +12,7 @@ const cases = [
     id: 'florida',
     domain: 'sargassummiami.com',
     beachCount: 20,
-    title: 'Florida Sargassum Map — Satellite Beach Observations',
+    title: 'Miami & Florida Sargassum Map — Satellite Observations',
     description: 'Latest available satellite observations for Florida beaches, from Miami to Key West. Check each observation date and confidence before planning a visit.',
     routes: {
       season: 'sargassum-season-florida',

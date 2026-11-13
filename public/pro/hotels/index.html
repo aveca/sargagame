@@ -458,11 +458,12 @@
       zone:zone,
       date:new Date().toISOString()
     };
-    fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
     try{if(window.gtag)gtag('event','sg_b2b_signup',{vertical:'hotels',zone:zone});}catch(_){}
-    form.style.display='none';
-    document.getElementById('form-ok').style.display='block';
-    document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    sgB2BCapture(ENDPOINT,payload,{form:form,lang:'fr',source:'b2b',onSuccess:function(){
+      form.style.display='none';
+      document.getElementById('form-ok').style.display='block';
+      document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    }});
   });
 
   // --- Lead magnet : brief gratuit par email (capture bas-friction, MÊME source B2B
@@ -484,15 +485,17 @@
         zone:mIsland==='GP'?'Guadeloupe':'Martinique',
         capture:'leadmagnet_brief',date:new Date().toISOString()
       };
-      fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
       try{if(window.gtag)gtag('event','sg_b2b_leadmagnet',{vertical:'hotels',beach:QB||'',hotel:QH||''});}catch(_){}
-      mform.style.display='none';
-      var mtr=document.getElementById('m-trust');if(mtr)mtr.style.display='none';
-      var mok=document.getElementById('magnet-ok');mok.style.display='block';
-      mok.scrollIntoView({behavior:'smooth',block:'center'});
+      sgB2BCapture(ENDPOINT,payload,{form:mform,lang:'fr',source:'leadmagnet',onSuccess:function(){
+        mform.style.display='none';
+        var mtr=document.getElementById('m-trust');if(mtr)mtr.style.display='none';
+        var mok=document.getElementById('magnet-ok');mok.style.display='block';
+        mok.scrollIntoView({behavior:'smooth',block:'center'});
+      }});
     });
   }
 })();
 </script>
+  <script src="/b2b-capture.js"></script>
 </body>
 </html>

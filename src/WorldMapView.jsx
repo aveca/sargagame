@@ -1242,7 +1242,7 @@ export default function WorldMapView({
   const dayStatus = summarizeBeachStatuses(beachList, day)
   const cleanCnt  = dayStatus.clean // rendu uniquement si la source permet une décision
   const avoidCnt  = dayStatus.avoid
-  const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
+  const dayLbl = wmDecisionAvailable ? (day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)) : _t(lang,"à vérifier","needs checking","por verificar")
   const vant      = wmDecisionAvailable ? vantColor(beachList,day) : "#9aa0a8"
   const sunPos = useMemo(()=>{const h=new Date(),hr=h.getHours()+h.getMinutes()/60,a=((hr-6)/12)*Math.PI;return{x:400+Math.cos(a)*280,y:300+Math.sin(a)*160,visible:hr>=6&&hr<=18}},[])
 
@@ -1257,6 +1257,10 @@ export default function WorldMapView({
       <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#74D89E"/><stop offset=".3" stopColor="#41BE7B"/>
         <stop offset=".62" stopColor="#2BAE66"/><stop offset="1" stopColor="#157F49"/>
+      </linearGradient>
+      <linearGradient id="wmLandStale" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#D7DCE3"/><stop offset=".3" stopColor="#B9C0CA"/>
+        <stop offset=".62" stopColor="#9AA4B2"/><stop offset="1" stopColor="#7C8796"/>
       </linearGradient>
       <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
         <stop offset="0" stopColor="#FFD27A" stopOpacity=".55"/>
@@ -1316,7 +1320,7 @@ export default function WorldMapView({
         <path d={outline.path} fill="#062033" opacity=".5" filter="url(#wmSoft)" transform="translate(7 13)"/>
         <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".38"/>
         <path d={outline.path} fill="url(#wmSand)" stroke="none"/>
-        <path d={outline.path} fill="url(#wmLand)" stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
+        <path d={outline.path} fill={wmDecisionAvailable ? "url(#wmLand)" : "url(#wmLandStale)"} stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
         <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
         <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
       </g>}
@@ -1439,7 +1443,7 @@ export default function WorldMapView({
         viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label={_t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`)}
+        aria-label={wmDecisionAvailable ? _t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`) : _t(lang,`Carte ${regionName} — observation satellite à vérifier, aucun verdict actuel disponible.`,`Map ${regionName} — satellite observation needs checking; no current verdict is available.`,`Mapa ${regionName} — observación satelital por verificar; no hay veredicto actual disponible.`)}
         data-sg-live="1"
         onClick={onMapBgClick}
       >
@@ -1913,7 +1917,7 @@ export default function WorldMapView({
           position:"absolute",left:16,bottom:`calc(${mapPremium&&!mapDecideOff?210:164}px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))`,
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
-          {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
+          {wmDecisionAvailable && [["#22C55E",_t(lang,"Propre","Clean","Limpia")],
             ["#B87A00",_t(lang,"Modéré","Moderate","Moderado")],
             ["#E8522A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
             <div key={c} style={{display:"flex",alignItems:"center",gap:7,
@@ -1939,8 +1943,8 @@ export default function WorldMapView({
 
         {/* CTA PRINCIPAL « Trouve ta plage » (mission P0 refonte UX 2026-10-14) — une seule
             action dominante sur l'accueil : ouvre le parcours TrouvePlage IN-APP via onFind
-            (plus d'URL « secrète » ?recommend=1). La peinture (gradient teal = action libre,
-            distincte du SOS doré payant) vit dans la classe .sg-mapfind (app-runtime.css,
+            (plus d'URL « secrète » ?recommend=1). La peinture (gradient or = action
+            libre, unique CTA dominant) vit dans la classe .sg-mapfind (app-runtime.css,
             triple-classe + !important pour survivre au skin .theme-comic/.sg-onink-scope
             qui sinon strippe fond/bordure, cf. note sg-mapchip). Pleine largeur mobile,
             max 380, au-dessus de la frise des jours : bande 76-120px (frise 120-156,

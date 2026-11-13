@@ -12,7 +12,7 @@
   "pricing": {
     "monthly": "$9.99",
     "yearly": "$79",
-    "tripPass": "$5.99"
+    "tripPass": "$8.99"
   },
   "stripeProducts": {
     "monthly": "price_1Tgc8SP9RK8Orx51I3pK41W7",
@@ -51,7 +51,7 @@
     "weekly": "sargassum-florida-this-week"
   },
   "seo": {
-    "homeTitle": "Florida Sargassum Map — Satellite Beach Observations",
+    "homeTitle": "Miami & Florida Sargassum Map — Satellite Observations",
     "homeDesc": "Latest available satellite observations for Florida beaches, from Miami to Key West. Check each observation date and confidence before planning a visit.",
     "freshTitles": true,
     "dateModifiedFromPipeline": true

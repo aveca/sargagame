@@ -14,15 +14,21 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 
 const CUTOFF = '2026-08-01T00:00:00Z';
 const BEFORE_CUTOFF = '2026-07-31T23:59:59Z';
+// Secret de webhook de TEST : le handler vérifie désormais la signature
+// Mollie (fail-closed). Sans secret → 503 ; signature invalide → 403.
+const WEBHOOK_SECRET = 'test_only_webhook_secret';
+const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex');
 
 (async () => {
   const { default: worker } = await import('../../workers/sargagame/index.js');
 
   const env = {
     MOLLIE_API_KEY: 'test_only_key',
+    MOLLIE_WEBHOOK_SECRET: WEBHOOK_SECRET,
     SUPABASE_URL: 'https://supabase.test',
     SUPABASE_SERVICE_KEY: 'test_only_service_key',
   };
@@ -113,10 +119,11 @@ const BEFORE_CUTOFF = '2026-07-31T23:59:59Z';
   }
 
   function classicRequest(id = 'tr_legacy01', contentType = 'application/x-www-form-urlencoded') {
+    const body = 'id=' + encodeURIComponent(id);
     return new Request('https://worker.test/api/mollie-webhook', {
       method: 'POST',
-      headers: { 'content-type': contentType },
-      body: 'id=' + encodeURIComponent(id),
+      headers: { 'content-type': contentType, 'X-Mollie-Signature': 'sha256=' + sign(body) },
+      body,
     });
   }
 
@@ -301,12 +308,11 @@ const BEFORE_CUTOFF = '2026-07-31T23:59:59Z';
       assert.equal(state.createCalls.length, 0);
     });
 
-    await test('prix publics inchangés : p30 EUR 14,99 / trip7 EUR 4,99 / season 19,99 / sos 1,00', async () => {
+    await test('prix publics alignés sur l’offre validée : p30 EUR 14,99 / trip7 EUR 7,99 / season 24,99', async () => {
       const cases = [
         { pass: 'p30', cents: 1499, cur: 'EUR' },
-        { pass: 'trip7', cents: 499, cur: 'EUR' },
-        { pass: 'season', cents: 1999, cur: 'EUR' },
-        { pass: 'sos', cents: 100, cur: 'EUR' },
+        { pass: 'trip7', cents: 799, cur: 'EUR' },
+        { pass: 'season', cents: 2499, cur: 'EUR' },
       ];
       for (const c of cases) {
         state.createCalls = [];
@@ -323,6 +329,108 @@ const BEFORE_CUTOFF = '2026-07-31T23:59:59Z';
         assert.equal(state.createCalls[0].amount.value, (c.cents / 100).toFixed(2));
         assert.equal(state.createCalls[0].metadata.pass, c.pass);
       }
+    });
+
+    await test('create_payment avec sos → 410 (offre retirée du parcours client)', async () => {
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'create_payment', pass: 'sos', cents: 100, cur: 'EUR', email: 'x@example.com' }),
+        }),
+        env,
+      );
+      assert.equal(response.status, 410);
+      assert.equal((await response.json()).error, 'offre_indisponible');
+      assert.equal(state.createCalls.length, 0, 'aucun paiement ne doit être créé');
+    });
+
+    await test('create_payment avec un ANCIEN tarif → 400 (pas de nouvelle vente à l’ancien prix)', async () => {
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'create_payment', pass: 'trip7', cents: 499, cur: 'EUR', email: 'x@example.com' }),
+        }),
+        env,
+      );
+      assert.equal(response.status, 400);
+      assert.equal(state.createCalls.length, 0);
+    });
+
+    await test('create_payment avec un pass INCONNU → 400 (fail-closed, aucun montant libre)', async () => {
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'create_payment', pass: 'pirate', cents: 1, cur: 'EUR', email: 'x@example.com' }),
+        }),
+        env,
+      );
+      assert.equal(response.status, 400);
+      assert.equal((await response.json()).error, 'Prix invalide');
+      assert.equal(state.createCalls.length, 0, 'aucun montant libre ne doit passer');
+    });
+
+    console.log('Sécurité — signature du webhook (fail-closed)');
+
+    await test('webhook SANS signature → 403, aucun grant', async () => {
+      const p = legacyPayment('tr_nosig');
+      state.payments[p.id] = p;
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie-webhook', {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: 'id=' + p.id,
+        }),
+        env,
+      );
+      assert.equal(response.status, 403);
+      assert.equal((await response.json()).error, 'invalid_signature');
+      assert.equal(state.rpcCalls.length, 0);
+    });
+
+    await test('webhook avec signature INVALIDE → 403, aucun grant', async () => {
+      const p = legacyPayment('tr_badsig');
+      state.payments[p.id] = p;
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie-webhook', {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded', 'X-Mollie-Signature': 'sha256=' + '0'.repeat(64) },
+          body: 'id=' + p.id,
+        }),
+        env,
+      );
+      assert.equal(response.status, 403);
+      assert.equal(state.rpcCalls.length, 0);
+    });
+
+    await test('webhook SANS secret configuré → 503 (fail-closed)', async () => {
+      const p = legacyPayment('tr_nosecret');
+      state.payments[p.id] = p;
+      const noSecretEnv = Object.assign({}, env);
+      delete noSecretEnv.MOLLIE_WEBHOOK_SECRET;
+      const response = await worker.fetch(classicRequest(p.id), noSecretEnv);
+      assert.equal(response.status, 503);
+      assert.equal(state.rpcCalls.length, 0);
+    });
+
+    await test('webhook Next-gen (JSON event) signé → grant depuis l\'état relu chez Mollie', async () => {
+      const p = legacyPayment('tr_nextgen');
+      state.payments[p.id] = p;
+      const body = JSON.stringify({ resource: 'event', id: 'event_nextgen01', type: 'payment.paid', entityId: p.id });
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie-webhook', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'X-Mollie-Signature': 'sha256=' + sign(body) },
+          body,
+        }),
+        env,
+      );
+      assert.equal(response.status, 200);
+      assert.equal((await response.json()).granted, true);
+      assert.equal(state.rpcCalls.length, 1);
+      assert.equal(state.rpcCalls[0].body.p_payment_id, p.id);
     });
 
     console.log('Régression — erreurs Mollie et RPC');

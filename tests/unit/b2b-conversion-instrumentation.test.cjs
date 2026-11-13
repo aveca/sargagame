@@ -79,6 +79,8 @@ check(/sg_b2b_emit_conversion\(\$id, 'pro_annual', 'annual'\)/.test(hook),
 check(/sg_b2b_emit_conversion\(\$subscription->id, \$planKey, 'monthly'\)/.test(hook),
   'le mensuel émet la conversion (déduplonnée par identifiant d\'abonnement)')
 check(/in_array\(\$source, \['b2b_annual'\], true\)/.test(hook) &&
+      /mol_paylink_classify/.test(hook) &&
+      /\$isApprovedAnnual\s*&&\s*!\$pass/.test(hook) &&
       /in_array\(\$planKey, \['pro_monthly', 'brief_monthly'\], true\)/.test(hook),
   'les deux plans B2B payables sont couverts')
 
@@ -273,19 +275,26 @@ if (!php) {
   check(r2.s2.available === true,
     'validateMollieAmountPHP() a pu être extraite et exécutée')
   const s2 = r2.s2.cases
-  // Un pass B2C payé 14,99 € avec le metadata `pass` correct : le runtime lit
-  // le montant via `$payment->amount->currency` alors que le client Mollie
-  // renvoie un TABLEAU → la lecture vaut null → le paiement est refusé.
-  check(s2.b2c_p30_eur.ok === false,
-    'un paiement B2C p30 à 14,99 € est REFUSÉ par la validation (montant illisible)')
+  // ⚠️ CORRECTIF P0 2026-11-09 — le montant se lit désormais CORRECTEMENT.
+  // AVANT : le runtime renvoie `amount` en TABLEAU → `$payment->amount->currency`
+  // valait null → le montant était lu à 0 → TOUT pass B2C payé était refusé
+  // (`amount_mismatch`) → argent encaissé, accès jamais délivré. Le test
+  // verrouillait ce bug comme un comportement « attendu ».
+  // MAINTENANT : un pass B2C payé au bon montant est ACCEPTÉ, et un montant
+  // faux est toujours refusé (anti-tampering intact).
+  check(s2.b2c_p30_eur.ok === true,
+    'un paiement B2C p30 à 14,99 € est ACCEPTÉ (montant lisible)')
+  check(s2.b2c_p30_eur.pass === 'p30' && s2.b2c_p30_eur.currency === 'EUR',
+    'le pass et la devise sont correctement lus')
+  check(s2.b2c_p30_eur_wrong_amount.ok === false &&
+    s2.b2c_p30_eur_wrong_amount.error === 'amount_mismatch',
+    'un paiement B2C p30 à 1,00 € reste REFUSÉ (anti-tampering)')
   check(s2.b2b_monthly_79.ok === false,
     'un paiement B2B mensuel à 79 € est REFUSÉ (aucun `pass` dans le metadata)')
   check(s2.b2b_annual_paylink_690.ok === false,
     'un paiement B2B annuel (paylink 690 €) est REFUSÉ (aucun metadata possible)')
   check(s2.b2c_paylink_season_1999.ok === false,
     'un paiement B2C par paylink (19,99 €) est REFUSÉ (aucun metadata possible)')
-  check(s2.b2c_p30_eur.error === 'amount_out_of_range',
-    'le code d\'erreur attendu est `amount_out_of_range` (montant lu à null)')
 
   // ── La classification des paylinks ────────────────────────────────────────
   console.log('\n9. Classification des paylinks (montant + devise)')

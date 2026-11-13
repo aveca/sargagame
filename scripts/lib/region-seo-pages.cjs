@@ -717,7 +717,7 @@ function buildSlugMap(region, lang, content, primary) {
     best: routes.best || null,
     weekly: routes.weekly || null,
     press: (content.press && content.press.slug) || null,
-    semaforo: lang === 'es' ? 'semaforo-del-sargazo' : null,
+    semaforo: primary === 'es' ? 'semaforo-del-sargazo' : null,
   }
 }
 
@@ -773,6 +773,11 @@ function emitLangPages(ctx) {
     if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
     // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
     if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
+    // La page santé est générée séparément après ce générateur. Sans ce lien,
+    // elle n'est découverte que par le sitemap malgré une demande organique réelle.
+    if (region.id === 'rivieramaya' && lang === 'es') {
+      items.push(['health', `${prefix}/sargazo-salud-riesgos/`, '¿A qué huele el sargazo y es peligroso?'])
+    }
     // Cluster hub↔spoke : les pages éditoriales programmatiques (content.extraPages)
     // sont liées depuis chaque hub ET entre elles → aucune orpheline, autorité
     // concentrée sur le cluster. Filtre par langue (slug propre à la langue).
@@ -925,19 +930,29 @@ ${hubLinks('season')}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
-  // semáforo (ES uniquement) — ne montre que les décisions publiables.
-  if (lang === 'es') {
-    const sem = { clean: '🟢 Verde — sin sargazo', moderate: '🟡 Amarillo — recale moderado', avoid: '🔴 Rojo — recale abundante' }
+  // semáforo — émis pour ES (primaire) et ses secondaires (en),
+  // jamais pour les régions EN primaires (page intrinsèquement espagnole).
+  if (!slugIndex[lang].semaforo) { /* skip: semáforo slug non défini pour cette langue */ }
+  else {
+    const sem = lang === 'es'
+      ? { clean: '🟢 Verde — sin sargazo', moderate: '🟡 Amarillo — recale moderado', avoid: '🔴 Rojo — recale abundante' }
+      : { clean: '🟢 Green — no sargassum', moderate: '🟡 Yellow — moderate landing', avoid: '🔴 Red — abundant landing' }
     const semRowsHtml = hasPublishableRows
       ? '<ul>' + publishableRows.map(({ beach, decision }) => '<li>' + (sem[decision.status] || '⚪') + ' — ' + beachLink(beach) + ' (' + (decision.score ?? '—') + '/100)</li>').join('') + '</ul>'
       : freshnessUnavailableHtml
-    const semTitle = smartTrim('Semáforo del sargazo — ' + region.name + ' — ' + (hasPublishableRows ? 'última observación disponible' : unavailableQualifier), 68)
+    const semTitle = smartTrim((lang === 'es' ? 'Semáforo del sargazo — ' : 'Sargassum Traffic Light — ') + region.name + ' — ' + (hasPublishableRows ? (lang === 'es' ? 'última observación disponible' : 'latest observation available') : unavailableQualifier), 68)
     const semDesc = hasPublishableRows
-      ? 'Semáforo del sargazo por playa en ' + region.name + ', según la última observación satelital disponible; pronóstico de 7 días y alertas cuando hay datos.'
+      ? (lang === 'es'
+          ? 'Semáforo del sargazo por playa en ' + region.name + ', según la última observación satelital disponible; pronóstico de 7 días y alertas cuando hay datos.'
+          : 'Sargassum traffic light by beach in ' + region.name + ', based on the latest available satellite observation; 7-day forecast and alerts when data are available.')
       : trimDesc(todayState.desc)
-    const semH1 = hasPublishableRows ? 'Semáforo del sargazo — ' + region.name : 'Semáforo del sargazo — ' + unavailableQualifier
+    const semH1 = hasPublishableRows
+      ? (lang === 'es' ? 'Semáforo del sargazo — ' : 'Sargassum Traffic Light — ') + region.name
+      : (lang === 'es' ? 'Semáforo del sargazo — ' : 'Sargassum Traffic Light — ') + unavailableQualifier
     const semIntro = hasPublishableRows
-      ? 'El semáforo independiente del sargazo: estados respaldados por la última observación satelital disponible.'
+      ? (lang === 'es'
+          ? 'El semáforo independiente del sargazo: estados respaldados por la última observación satelital disponible.'
+          : 'The independent sargassum traffic light: states backed by the latest available satellite observation.')
       : todayState.intro
     hubs.push({
       kind: 'semaforo', sm: { daily: true, priority: '0.5' },

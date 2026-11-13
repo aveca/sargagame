@@ -298,7 +298,7 @@
         },
         {
           "h2": "Qué hacer y cómo decidir antes de salir",
-          "text": "El plan que funciona: la mañana de tu día de playa, abre el mapa, mira el estado de hoy y el Beach Score de varias playas, y elige la mejor. Si tu hotel está en un tramo afectado, muchas veces basta con moverte 20-30 minutos a una bahía más resguardada o tomar el ferry a una isla del norte. Con el PASS único —sin suscripción— desbloqueas el mapa completo, el pronóstico de 7 días por playa y las alertas, para no abrir la app cada hora. Es un pago único: USD 5.99 / 11.99 / 19.99 según el plan. Publicamos también nuestra precisión de backtest para que juzgues el modelo con datos, no con promesas. El Veilleur vigila el mar mientras duermes y te dice cada mañana dónde está el agua limpia."
+          "text": "El plan que funciona: la mañana de tu día de playa, abre el mapa, mira el estado de hoy y el Beach Score de varias playas, y elige la mejor. Si tu hotel está en un tramo afectado, muchas veces basta con moverte 20-30 minutos a una bahía más resguardada o tomar el ferry a una isla del norte. Con el PASS único —sin suscripción— desbloqueas el mapa completo, el pronóstico de 7 días por playa y las alertas, para no abrir la app cada hora. Es un pago único: USD 8.99 / 16.99 / 27.99 según el plan. Publicamos también nuestra precisión de backtest para que juzgues el modelo con datos, no con promesas. El Veilleur vigila el mar mientras duermes y te dice cada mañana dónde está el agua limpia."
         }
       ],
       "faq": [
@@ -324,7 +324,7 @@
         },
         {
           "q": "¿Hay que pagar suscripción para ver el mapa?",
-          "a": "No. Es un PASS de pago único, sin suscripción: USD 5.99 / 11.99 / 19.99 según el plan. Desbloquea el mapa completo, el pronóstico de 7 días por playa y las alertas. El estado básico del día puedes consultarlo sin compromiso antes de decidir."
+          "a": "No. Es un PASS de pago único, sin suscripción: USD 8.99 / 16.99 / 27.99 según el plan. Desbloquea el mapa completo, el pronóstico de 7 días por playa y las alertas. El estado básico del día puedes consultarlo sin compromiso antes de decidir."
         }
       ],
       "priority": "0.7",
@@ -370,7 +370,7 @@
         },
         {
           "q": "¿Cómo accedo a todas las playas y al pronóstico?",
-          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 5.99) desbloqueas el detalle por playa, el Beach Score completo y el pronóstico a 7 días, sin suscripción."
+          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 8.99) desbloqueas el detalle por playa, el Beach Score completo y el pronóstico a 7 días, sin suscripción."
         }
       ],
       "priority": "0.7",
@@ -416,7 +416,7 @@
         },
         {
           "q": "¿Es gratis o de pago?",
-          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 5.99, sin suscripción) desbloqueas el detalle por playa de Tulum, el Beach Score completo y el pronóstico a 7 días."
+          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 8.99, sin suscripción) desbloqueas el detalle por playa de Tulum, el Beach Score completo y el pronóstico a 7 días."
         }
       ],
       "priority": "0.7",
@@ -462,7 +462,7 @@
         },
         {
           "q": "¿Cómo veo todas las playas y el pronóstico?",
-          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 5.99, sin suscripción) desbloqueas el detalle por playa, el Beach Score completo y el pronóstico a 7 días."
+          "a": "El mapa básico es gratuito. Con un PASS único (desde USD 8.99, sin suscripción) desbloqueas el detalle por playa, el Beach Score completo y el pronóstico a 7 días."
         }
       ],
       "priority": "0.7",
@@ -646,7 +646,7 @@
         },
         {
           "q": "¿Puedo ver Cozumel sin pagar?",
-          "a": "Sí, puedes consultar el mapa y el estado general de la zona. El PASS de pago único (desde USD 5.99) desbloquea el Beach Score detallado por punto y el pronóstico a 7 días para cada arrecife, sin suscripción. Es un solo pago para tu viaje."
+          "a": "Sí, puedes consultar el mapa y el estado general de la zona. El PASS de pago único (desde USD 8.99) desbloquea el Beach Score detallado por punto y el pronóstico a 7 días para cada arrecife, sin suscripción. Es un solo pago para tu viaje."
         }
       ],
       "priority": "0.7",
@@ -696,7 +696,7 @@
         },
         {
           "q": "¿Cuánto cuesta ver la lista completa?",
-          "a": "Consultar el mapa y el estado general es gratis. El PASS de pago único (desde USD 5.99, sin suscripción) desbloquea el Beach Score detallado por playa y el pronóstico a 7 días. Un solo pago cubre todo tu viaje."
+          "a": "Consultar el mapa y el estado general es gratis. El PASS de pago único (desde USD 8.99, sin suscripción) desbloquea el Beach Score detallado por playa y el pronóstico a 7 días. Un solo pago cubre todo tu viaje."
         }
       ],
       "priority": "0.7",
@@ -766,7 +766,7 @@
         },
         {
           "h2": "Si Playa Norte no esta limpia, a donde ir",
-          "text": "Si el Beach Score de Playa Norte hoy marca moderado o evitar, el mapa te muestra al instante que playas cercanas estan mejor: otras calas del lado oeste de Isla Mujeres, o puntos protegidos de la costa que el satelite ve limpios en la misma pasada. Comparas Beach Scores reales lado a lado y eliges sin recorrer la isla a ciegas. Un PASS unico (desde USD 5.99) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones del dia, sin suscripcion. Es la diferencia entre llegar y descubrir el sargazo, o saberlo antes de salir del hotel."
+          "text": "Si el Beach Score de Playa Norte hoy marca moderado o evitar, el mapa te muestra al instante que playas cercanas estan mejor: otras calas del lado oeste de Isla Mujeres, o puntos protegidos de la costa que el satelite ve limpios en la misma pasada. Comparas Beach Scores reales lado a lado y eliges sin recorrer la isla a ciegas. Un PASS unico (desde USD 8.99) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones del dia, sin suscripcion. Es la diferencia entre llegar y descubrir el sargazo, o saberlo antes de salir del hotel."
         }
       ],
       "faq": [
@@ -788,7 +788,7 @@
         },
         {
           "q": "Cuanto cuesta ver todas las playas?",
-          "a": "Un PASS unico desde USD 5.99, sin suscripcion. Desbloquea el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones de hoy."
+          "a": "Un PASS unico desde USD 8.99, sin suscripcion. Desbloquea el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones de hoy."
         }
       ],
       "priority": "0.7",
@@ -812,7 +812,7 @@
         },
         {
           "h2": "Si Puerto Morelos no esta limpio hoy",
-          "text": "Si el Beach Score de Puerto Morelos marca moderado o evitar, el mapa te enseña al instante que playas cercanas estan mejor en la misma pasada de satelite. Comparas estados reales lado a lado, desde Cancun hasta la Riviera Maya, y eliges con datos en lugar de manejar al azar. Un PASS unico (desde USD 5.99, sin suscripcion) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones de hoy. Es la diferencia entre llegar y toparte con el sargazo, o saber por la manana exactamente donde el agua esta limpia."
+          "text": "Si el Beach Score de Puerto Morelos marca moderado o evitar, el mapa te enseña al instante que playas cercanas estan mejor en la misma pasada de satelite. Comparas estados reales lado a lado, desde Cancun hasta la Riviera Maya, y eliges con datos en lugar de manejar al azar. Un PASS unico (desde USD 8.99, sin suscripcion) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones de hoy. Es la diferencia entre llegar y toparte con el sargazo, o saber por la manana exactamente donde el agua esta limpia."
         }
       ],
       "faq": [
@@ -834,7 +834,7 @@
         },
         {
           "q": "Que incluye el PASS y cuanto cuesta?",
-          "a": "Un pago unico desde USD 5.99, sin suscripcion. Incluye el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones de hoy."
+          "a": "Un pago unico desde USD 8.99, sin suscripcion. Incluye el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones de hoy."
         }
       ],
       "priority": "0.7",
@@ -858,7 +858,7 @@
         },
         {
           "h2": "Si la bahia no esta clara, a donde ir",
-          "text": "Si el Beach Score de Akumal marca moderado o evitar hoy, el mapa te muestra al instante que playas y calas cercanas estan mejor en la misma pasada de satelite, para que no pierdas el dia de snorkel. Comparas estados reales lado a lado a lo largo de la Riviera Maya y eliges con datos. Un PASS unico (desde USD 5.99, sin suscripcion) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones de hoy. Es la diferencia entre llegar a la bahia y encontrarla cargada, o saber por la manana exactamente donde el agua esta clara para las tortugas."
+          "text": "Si el Beach Score de Akumal marca moderado o evitar hoy, el mapa te muestra al instante que playas y calas cercanas estan mejor en la misma pasada de satelite, para que no pierdas el dia de snorkel. Comparas estados reales lado a lado a lo largo de la Riviera Maya y eliges con datos. Un PASS unico (desde USD 8.99, sin suscripcion) desbloquea el estado de todas las playas, el pronostico a 7 dias y las actualizaciones de hoy. Es la diferencia entre llegar a la bahia y encontrarla cargada, o saber por la manana exactamente donde el agua esta clara para las tortugas."
         }
       ],
       "faq": [
@@ -880,7 +880,7 @@
         },
         {
           "q": "Cuanto cuesta y que incluye el PASS?",
-          "a": "Un pago unico desde USD 5.99, sin suscripcion. Incluye el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones del dia."
+          "a": "Un pago unico desde USD 8.99, sin suscripcion. Incluye el estado de todas las playas, el pronostico por playa a 7 dias y las actualizaciones del dia."
         }
       ],
       "priority": "0.7",

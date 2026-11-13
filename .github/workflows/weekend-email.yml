@@ -44,7 +44,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    timeout-minutes: 15   # généreux : l'envoi est rapide ; marge pour la latence Apps Script
+    timeout-minutes: 40   # 15 min faisait cancel le job (runs du vendredi 09/10→06/11)
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -63,6 +63,7 @@ jobs:
       # Récupère la liste d'abonnés (Sheet via service account) → data/subscribers.json
       # (gitignored, RGPD). Déjà filtrée des désabonnés + bounces. Requis avant l'envoi.
       - name: Fetch subscriber list
+        timeout-minutes: 10
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/fetch-subscribers.cjs
@@ -74,6 +75,7 @@ jobs:
       # Pas de fallback gmail : si SMTP échoue, le run échoue (alerté). Pas de
       # retry-on-failure ici (workflow_dispatch reste sûr).
       - name: Send weekend bulletin (SMTP alerte@ → MQ + GP)
+        timeout-minutes: 15
         env:
           SMTP_HOST: premium115.web-hosting.com
           SMTP_PORT: '465'

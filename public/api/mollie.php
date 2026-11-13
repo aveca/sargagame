@@ -40,7 +40,7 @@ try {
         $pass = $data['pass'] ?? null;
         $email = $data['email'] ?? '';
         $source = $data['source'] ?? 'unknown';
-        $description = $data['description'] ?? ($pass ? "Sargasses Pass $pass" : 'Sargasses');
+        $description = $pass ? "Sargasses Pass $pass" : 'Sargasses';
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null);
         $cardToken = $data['cardToken'] ?? null;
 
@@ -66,43 +66,70 @@ try {
 
         // ── Validation prix côté serveur (anti-tampering) ─────────────────────
         // Allowlist complète : pass -> {EUR: montant, USD: montant|null}
-        // USD null = montant variable par région (trip7) → fallback plausibilité
+        // USD null = montant variable par région → fallback plausibilité
+        //
+        // ⚠️ 2026-11-09 — Le pass `sos` (1 €, rapport 24 h) a été RETIRÉ du
+        // parcours client : il n'est PLUS dans l'allowlist de CRÉATION. Un
+        // `create_payment` avec pass=sos est donc refusé (« Prix invalide »).
+        // Sa LIVRAISON (paiements déjà encaissés) reste gérée par le webhook et
+        // par le backfill contrôlé — encaisser sans livrer serait un trou de
+        // confiance. Tout pass inconnu est refusé (fail-closed).
+        //
+        // OFFRE VALIDÉE 2026-11-09 (miroir EXACT de workers/sg-payments, qui
+        // est le serveur de paiement EN PRODUCTION) :
+        //   trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99 · season = 24,99 € / $27.99
         $passPrices = [
-            'sos'    => ['EUR' => 1.00,  'USD' => null],
-            'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
-            'trip7'  => ['EUR' => 4.99,  'USD' => null],
-            'season' => ['EUR' => 19.99, 'USD' => null],
+            'p30'    => ['EUR' => 14.99, 'USD' => 16.99],
+            'trip7'  => ['EUR' => 7.99,  'USD' => 8.99],
+            'season' => ['EUR' => 24.99, 'USD' => 27.99],
         ];
         $priceValid = false;
         if ($pass && isset($passPrices[$pass])) {
             $expected = $passPrices[$pass][$currency] ?? null;
             if ($expected !== null) {
                 $priceValid = (abs($amountVal - $expected) < 0.02);
-            } else {
-                // Prix USD variable (trip7/season) : plausibilité
-                $priceValid = ($amountVal > 0.50 && $amountVal < 50);
             }
-        } elseif (!$pass) {
-            // Subscription (B2B monthly) — montants defined in mol_b2b_plans()
-            $priceValid = ($amountVal > 0 && $amountVal < 300);
         }
+        // ⚠️ P0 money path 2026-11-10 — un `pass` ABSENT ou INCONNU est
+        // désormais REFUSÉ (fail-closed). AVANT, la branche « Subscription
+        // (B2B monthly) » acceptait TOUT montant entre 0 € et 300 € : de
+        // l'argent était encaissé sans aucun service livrable. Les abonnements
+        // B2B passent par `create_subscription` (action dédiée, plan validé).
         if (!$priceValid) {
             error_log("[mollie.php] price tamper: pass=$pass amount=$amountVal currency=$currency");
             throw new Exception('Prix invalide');
         }
 
-        // ── Surcharge USD peak season (juin-novembre, hors trip7) ─────────────
-        if ($currency === 'USD' && $pass && $pass !== 'trip7') {
-            $month = (int)date('n');
-            if ($month >= 6 && $month <= 11) {
-                $amount['value'] = (string)round((float)$amount['value'] * 1.15, 2);
-            }
+        // ── Email obligatoire ────────────────────────────────────────────────
+        // Sans email, le grant durable ne peut être rattaché à personne :
+        // argent payé sans accès livré (trou de confiance).
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            error_log("[mollie.php] invalid email on create_payment");
+            throw new Exception('Email invalide');
         }
 
-        // ── Metadata : pass + email pour webhook + audit ──────────────────────
-        $metadata = $data['metadata'] ?? [];
-        $metadata['source'] = $source;
-        $metadata['pass'] = $pass ?? '';
+        // ⚠️ 2026-11-09 — PLUS de surcharge USD de haute saison (+15 %).
+        // Le worker live (sg-payments) facture le montant affiché : appliquer
+        // un surcoût ici créerait une divergence affichage/débit (16,99 $ affiché
+        // mais 19,54 $ débité). Le montant validé ci-dessus EST le montant débité.
+
+        // ── Metadata : la CLASSIFICATION est écrite par le serveur ────────────
+        // `offer_kind` détermine la classe de livraison côté webhook. Le client
+        // ne peut plus l'usurper (ni `offer_kind`, ni `source`, ni `plan`, ni
+        // `pass`, ni `email`) : AVANT, `source:"b2b_annual"` suffisait à
+        // obtenir 365 JOURS d'accès Pro pour un pass B2C à 14,99 €.
+        $reservedMeta = ['offer_kind', 'pass', 'plan', 'source', 'email', 'customerId', 'interval', 'return_ref', 'mode'];
+        $rawMeta = $data['metadata'] ?? [];
+        if (!is_array($rawMeta)) $rawMeta = [];
+        $metadata = [];
+        foreach ($rawMeta as $mk => $mv) {
+            if (in_array($mk, $reservedMeta, true)) continue;
+            $metadata[$mk] = $mv;
+        }
+        $metadata['source'] = substr((string)$source, 0, 40);
+        $metadata['offer_kind'] = 'b2c_pass';
+        $metadata['pass'] = $pass;
         $metadata['email'] = $email;
         $metadata['lang'] = $data['lang'] ?? 'fr';
         if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
@@ -113,10 +140,26 @@ try {
         // (payment->id n'existe pas encore). Le handler utilise le sessionStorage
         // ou localStorage (sg_email) pour retrouver le contexte. Sur iOS Safari
         // où sessionStorage est effacé, le fallback email vérifie via sgVerifySub.
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'sargasses-martinique.com';
-        $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
-        $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
+        //
+        // ⚠️ P0 money path 2026-11-10 — `redirectUrl` / `webhookUrl` étaient
+        // 100 % client : open redirect après paiement + exfiltration des
+        // métadonnées vers un hôte arbitraire. Les deux URL sont désormais
+        // construites par le serveur, sur un domaine de la flotte (#1406).
+        //
+        // RÉSOLUTION DU CONFLIT #1406 + #1411 :
+        //   - on garde la construction SERVEUR de #1406 (le client ne peut plus
+        //     imposer un hôte de redirection ni un webhook vers un tiers) ;
+        //   - on garde la correction de chemin de #1411 : le dossier `public/`
+        //     est la RACINE du site déployé, donc le webhook public est
+        //     `/api/mollie-webhook.php` (et NON `/public/api/...`, qui
+        //     répond 404 — vérifié en production le 2026-11-12).
+        $scheme = 'https';
+        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+        $host = explode(':', $host)[0];
+        $fleet = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassumpuntacana.com', 'sargassummiami.com', 'sargassumcancun.com', 'sargazotulum.com'];
+        if (!in_array($host, $fleet, true)) $host = 'sargasses-martinique.com';
+        $redirectUrl = "$scheme://$host/?mollie_return=1";
+        $webhookUrl = "$scheme://$host/api/mollie-webhook.php";
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────
         if ($pass && $email) {
@@ -165,12 +208,35 @@ try {
         // Hosted checkout for B2B monthly subscriptions
         $planKey = $data['plan'] ?? '';          // 'pro_monthly' | 'brief_monthly'
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
-        $redirectUrl = $data['redirectUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/pro/espace/';
-        $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/public/api/mollie-webhook.php';
+        // RÉSOLUTION DU CONFLIT #1406 + #1411 : les URL de retour et de webhook
+        // de l'abonnement sont construites par le SERVEUR plus bas (allowlist
+        // flotte, anti open-redirect). On écarte donc la variante #1411 qui
+        // laissait le client fournir `redirectUrl` / `webhookUrl`.
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
-        $metadata = $data['metadata'] ?? [];
-        $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';
+        // ⚠️ P0 money path 2026-11-10 — `offer_kind` est écrit par le serveur
+        // (à partir du catalogue de plans) ; le client ne peut plus choisir la
+        // classe de livraison d'un abonnement.
+        $reservedMeta = ['offer_kind', 'pass', 'plan', 'source', 'email', 'customerId', 'interval', 'return_ref', 'mode'];
+        $rawMeta = $data['metadata'] ?? [];
+        if (!is_array($rawMeta)) $rawMeta = [];
+        $metadata = [];
+        foreach ($rawMeta as $mk => $mv) {
+            if (in_array($mk, $reservedMeta, true)) continue;
+            $metadata[$mk] = $mv;
+        }
+        $metadata['source'] = 'b2b_monthly';
+        $metadata['offer_kind'] = 'b2b_monthly';
         $metadata['plan'] = $planKey;
+        // URL de retour et webhook : construits par le serveur (jamais client).
+        $scheme = 'https';
+        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+        $host = explode(':', $host)[0];
+        $fleet = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassumpuntacana.com', 'sargassummiami.com', 'sargassumcancun.com', 'sargazotulum.com'];
+        if (!in_array($host, $fleet, true)) $host = 'sargasses-martinique.com';
+        $redirectUrl = "$scheme://$host/pro/espace/";
+        // Chemin réel du webhook public : `/api/mollie-webhook.php`
+        // (`public/` est la racine du site déployé — voir #1411).
+        $webhookUrl = "$scheme://$host/api/mollie-webhook.php";
 
         $plans = mol_b2b_plans();
         if (!isset($plans[$planKey])) {
@@ -266,8 +332,11 @@ try {
     }
 
     if ($action === 'payment_status') {
-        $paymentId = $data['paymentId'] ?? '';
+        $paymentId = trim((string)($data['paymentId'] ?? ''));
         if (!$paymentId) throw new Exception('paymentId requis');
+        // Format d'identifiant Mollie : évite d'utiliser l'endpoint comme
+        // oracle de son existence pour un identifiant arbitraire.
+        if (!preg_match('/^tr_[A-Za-z0-9]+$/', $paymentId)) throw new Exception('paymentId invalide');
         $payment = $mollie->payments->get($paymentId);
         $status = $payment->status ?? 'unknown';
         // Terminal statuses (canceled, expired, failed) indicate final failure
@@ -275,7 +344,44 @@ try {
         // Seul "paid" = payé. "pending" = en attente (virement, 3DS non terminé).
         // "settled" = payé + viré (plus tardif, couvert par paid).
         $paid = in_array($status, ['paid', 'settled'], true);
-        echo json_encode(['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId, 'terminal' => $terminal]);
+        $out = ['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId, 'terminal' => $terminal];
+
+        // ── Confirmation serveur + attribution des droits (P0 2026-11-09) ─────
+        // La redirection navigateur ne vaut RIEN : l'état ci-dessus est relu
+        // auprès de l'API Mollie. Le droit n'est délivré que si le montant, la
+        // devise et le propriétaire correspondent, et l'écriture est
+        // idempotente (RPC sg_upsert_payment_grant) → un rejeu ne double pas.
+        // C'est la même règle que le Worker sg-payments (cohérence des anciens
+        // callbacks) : le webhook seul ne doit pas être le point unique de
+        // délivrance, sinon un webhook perdu = argent encaissé sans accès.
+        if ($paid) {
+            $rawMeta = $payment->metadata ?? [];
+            if (is_object($rawMeta)) $rawMeta = (array)$rawMeta;
+            if (!is_array($rawMeta)) $rawMeta = [];
+            $pass = (string)($rawMeta['pass'] ?? '');
+            $email = (string)($rawMeta['email'] ?? '');
+            $requestedEmail = strtolower(trim((string)($data['email'] ?? '')));
+            if ($requestedEmail !== '' && $email !== '' && strtolower(trim($email)) !== $requestedEmail) {
+                // Le paiement appartient à une autre adresse : on ne délivre rien.
+                http_response_code(403);
+                echo json_encode(['error' => 'payment_owner_mismatch', 'paid' => false, 'status' => $status]);
+                exit;
+            }
+            $check = mol_validate_pass_amount($payment);
+            $aliases = mol_legacy_pass_aliases();
+            $canonical = $aliases[$pass] ?? $pass;
+            if ($check['ok'] && $canonical !== '' && in_array($canonical, ['p30', 'trip7', 'season', 'sos'], true)) {
+                $grant = mol_b2c_pass_grant($paymentId, $canonical, $email, $rawMeta);
+                $out['granted'] = !empty($grant['granted']);
+                $out['pass'] = $canonical;
+                if (!empty($grant['expires_at'])) $out['passEnd'] = ((int)$grant['expires_at']) * 1000;
+                if (empty($grant['mirror_ok'])) $out['grantPending'] = true;
+            } else {
+                $out['granted'] = false;
+                $out['reason'] = $check['ok'] ? 'no_eligible_pass' : ($check['error'] ?? 'invalid');
+            }
+        }
+        echo json_encode($out);
         exit;
     }
 
@@ -401,7 +507,12 @@ try {
     http_response_code(400);
     echo json_encode(['error' => "Action inconnue: $action"]);
 } catch (Throwable $e) {
-    http_response_code(500);
-    error_log('[mollie.php] ' . $e->getMessage());
-    echo json_encode(['error' => $e->getMessage()]);
+    $msg = $e->getMessage();
+    // Un refus de PRIX ou un identifiant de paiement mal formé est une erreur
+    // CLIENT (400), pas une panne serveur (500) : un 500 ferait croire à un
+    // incident et déclencherait des reprises. Même sémantique que
+    // workers/sargagame (400 « Prix invalide ») et workers/sg-payments.
+    http_response_code(($msg === 'Prix invalide' || $msg === 'paymentId invalide') ? 400 : 500);
+    error_log('[mollie.php] ' . $msg);
+    echo json_encode(['error' => $msg]);
 }

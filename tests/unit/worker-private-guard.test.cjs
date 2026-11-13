@@ -1,9 +1,11 @@
 // tests/unit/worker-private-guard.test.cjs — garde _private fail-closed
 // Contexte : /api/copernicus/_private/forecast-full.json (premium J+2-7) a été
-// servi en clair sur *.workers.dev (constaté 2026-10-04). Les assets privés
-// restent asset-first et doivent être exclus par .assetsignore ; le Worker ne
-// protège que les routes configurées Worker-first. L'API Copernicus publique
-// est maintenant la seule route Worker-first pour recalculer ses métadonnées.
+// servi en clair sur *.workers.dev (constaté 2026-10-04). Cause racine : avec
+// run_worker_first=false (défaut actuel) : les assets statiques compatibles sont
+// servis directement par Cloudflare sans invocation Worker. Les chemins
+// dynamiques (API, Apple Pay, guards) sont toujours traités par le code Worker
+// car ils ne correspondent pas aux assets statiques. La garde _private/dotfiles/php
+// s'exécute uniquement quand le Worker est invoqué (req non-asset).
 // Lancement : node tests/unit/worker-private-guard.test.cjs
 
 const fs = require('fs');
@@ -60,4 +62,4 @@ const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filt
 const REQUIRED_IGNORE_RULES = ['**/*.php', '**/*.php.*', '**/.env*', '**/.htaccess', '**/.htpasswd', '**/_private/'];
 for (const rule of REQUIRED_IGNORE_RULES) check('.assetsignore contient la règle exacte ' + rule, IGNORE_RULES.has(rule));
 
-console.log('\n' + passed + ' checks passed — private endpoint fail-closed, public paths intact.');
+console.log('\n' + passed + ' checks passed — private endpoint fail-closed, Copernicus freshness route, public paths intact.');

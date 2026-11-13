@@ -1,0 +1,3147 @@
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+
+// src/index.ts
+var ALLOWED_ORIGINS = [
+  "https://sargasses-martinique.com",
+  "https://sargasses-guadeloupe.com",
+  "https://sargassumpuntacana.com",
+  "https://sargassummiami.com",
+  "https://sargassumcancun.com",
+  "https://sargazotulum.com"
+];
+var ALLOWED_HOSTS = [
+  "sargasses-martinique.com",
+  "sargasses-guadeloupe.com",
+  "sargassumpuntacana.com",
+  "sargassummiami.com",
+  "sargassumcancun.com",
+  "sargazotulum.com"
+];
+// Grille de CRÉATION — les passes commercialement ouverts.
+// OFFRE VALIDÉE 2026-11-09 (miroir EXACT du serveur live et de
+// public/api/mollie.php $passPrices) :
+//   trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99 · season = 24,99 € / $27.99
+// `monthly` / `annual` = abonnements B2C legacy (4,99 €/mois, 49 €/an).
+// Le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du parcours client
+// (2026-11-09) : il n'est plus vendable, donc plus créable (410).
+var PASS_PRICES = {
+  p30: { EUR: 14.99, USD: 16.99 },
+  trip7: { EUR: 7.99, USD: 8.99 },
+  season: { EUR: 24.99, USD: 27.99 },
+  monthly: { EUR: 4.99, USD: 4.99 },
+  annual: { EUR: 49, USD: 49 }
+};
+// Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
+// sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
+// La CRÉATION reste interdite (cf. PASS_PRICES ci-dessus).
+var FULFILL_PRICES = {
+  p30: { EUR: 14.99, USD: 16.99 },
+  trip7: { EUR: 7.99, USD: 8.99 },
+  season: { EUR: 24.99, USD: 27.99 },
+  monthly: { EUR: 4.99, USD: 4.99 },
+  annual: { EUR: 49, USD: 49 },
+  sos: { EUR: 1.00, USD: null }
+};
+// Montants de l'ANCIENNE offre B2C — acceptés UNIQUEMENT pour un paiement
+// DÉJÀ encaissé avant le changement d'offre du 2026-11-09 (date de création
+// vérifiable). Un paiement NOUVEL au tarif ancien reste refusé.
+var HISTORICAL_PASS_PRICES = {
+  p30: { EUR: [14.99], USD: [11.99] },
+  trip7: { EUR: [4.99], USD: [5.99] },
+  season: { EUR: [19.99], USD: [] }
+};
+var OFFER_CUTOFF_DATE = "2026-11-09T00:00:00Z";
+var B2C_SUB_PLANS = {
+  monthly: { pass: "monthly", amount: 4.99, currency: "EUR", description: "Sargasses Premium \u2014 mensuel (4,99 \u20AC)", interval: "1 month" },
+  annual: { pass: "annual", amount: 49, currency: "EUR", description: "Sargasses Premium \u2014 annuel (49 \u20AC)", interval: "12 months" }
+};
+var B2B_PLANS = {
+  pro_monthly: { amount: 79, currency: "EUR", description: "Sargasses Pro \u2014 mensuel (79 \u20AC/mois)", interval: "1 month" },
+  brief_monthly: { amount: 29, currency: "EUR", description: "Sargasses Brief \u2014 mensuel (29 \u20AC/mois)", interval: "1 month" },
+  pro_monthly_usd: { amount: 89, currency: "USD", description: "Sargassum Pro \u2014 monthly ($89/mo)", interval: "1 month" },
+  brief_monthly_usd: { amount: 39, currency: "USD", description: "Sargassum Brief \u2014 monthly ($39/mo)", interval: "1 month" },
+  pro_annual: { amount: 690, currency: "EUR", description: "Sargasses Pro \u2014 annuel (690 \u20AC/an)", interval: null },
+  pro_annual_usd: { amount: 790, currency: "USD", description: "Sargassum Pro \u2014 yearly ($790/yr)", interval: null }
+};
+// Read-only verified live b2b_subscriptions.plan CHECK: free, alert, dashboard, enterprise.
+// No approved mapping currently exists from B2B_PLANS keys to this schema contract.
+var B2B_SUBSCRIPTION_SCHEMA_PLANS = new Set(["free", "alert", "dashboard", "enterprise"]);
+var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210, monthly: 30, annual: 365, sos: 1 };
+var PLAN_ALIASES = {
+  premium_monthly: "monthly",
+  premium_mo: "monthly",
+  premium_yearly: "annual",
+  premium_yr: "annual",
+  yearly: "annual",
+  pro: "pro_monthly",
+  pro_yearly: "pro_annual"
+};
+function normalizePlanKey(raw) {
+  const k = String(raw || "").trim();
+  return PLAN_ALIASES[k] || k;
+}
+__name(normalizePlanKey, "normalizePlanKey");
+// ── P0 money path (2026-11-10) ─────────────────────────────────────────────
+// Le SERVEUR décide de l'offre, du montant, de la devise et de la cible.
+// Défauts PROUVÉS sur la version live de cette Worker, corrigés ici :
+//   E1 `Host` client → URL du webhook Mollie (exfiltration des métadonnées).
+//   E2 `metadata.source` / `metadata.plan` choisis par le client → 29 € pour
+//      365 JOURS d'accès B2B (l'offre annuelle approuvée coûte 690 €).
+//   E3 `redirectUrl` 100 % client → open redirect après paiement.
+//   E4 `MOLLIE_PROFILE_ID` lu puis JAMAIS utilisé, avec un `pfl_…` codé en dur.
+//   E5 SKU inconnu / absent → montant libre accepté (argent sans service).
+// Ces règles ne modifient AUCUN prix : le catalogue reste `PASS_PRICES`.
+
+// Host de la requête : seul un domaine de la flotte est accepté. L'en-tête
+// `Host` est fourni par le client — sans ce filtre il devenait l'URL du
+// webhook Mollie et l'URL de retour.
+function requestHost(request) {
+  const raw = String((request && request.headers && request.headers.get("Host")) || "").toLowerCase();
+  const host = raw.split(":")[0];
+  if (ALLOWED_HOSTS.includes(host)) return host;
+  try {
+    const urlHost = new URL(request.url).hostname.toLowerCase();
+    if (ALLOWED_HOSTS.includes(urlHost)) return urlHost;
+  } catch (_) {
+  }
+  return ALLOWED_HOSTS[0];
+}
+__name(requestHost, "requestHost");
+
+// URL de retour : acceptée uniquement si son origine est un domaine de la
+// flotte (sinon open redirect / phishing après paiement).
+function safeRedirectUrl(candidate, fallback) {
+  try {
+    const u = new URL(String(candidate || ""));
+    if (ALLOWED_ORIGINS.includes(u.origin)) return u.toString();
+  } catch (_) {
+  }
+  return fallback;
+}
+__name(safeRedirectUrl, "safeRedirectUrl");
+
+// Identifiant de profil marchand Mollie : uniquement s'il vient du binding
+// `MOLLIE_PROFILE_ID`. La valeur codée en dur (`pfl_…`) était lue mais JAMAIS
+// utilisée — un identifiant de profil en dur dans le dépôt est une fuite
+// d'information marchande et une source de divergence entre comptes.
+function mollieProfileId(env) {
+  const raw = String((env && env.MOLLIE_PROFILE_ID) || "").trim();
+  return /^pfl_[A-Za-z0-9]+$/.test(raw) ? raw : "";
+}
+__name(mollieProfileId, "mollieProfileId");
+
+// Résolution SERVEUR d'une offre B2C : le catalogue de CRÉATION est la seule
+// autorité. `sos` est ABSENT de PASS_PRICES (offre retirée du parcours) : il
+// n'est donc pas créable — la LIVRAISON d'un paiement `sos` déjà encaissé
+// reste possible via FULFILL_PRICES (argent pris, accès dû).
+// Retourne null si le SKU est inconnu ou si la devise n'est pas vendue.
+function resolvePassOffer(pass, currency) {
+  const key = String(pass || "").trim();
+  if (!key || !Object.prototype.hasOwnProperty.call(PASS_PRICES, key)) return null;
+  const row = PASS_PRICES[key];
+  const cur = String(currency || "EUR").toUpperCase();
+  if (!Object.prototype.hasOwnProperty.call(row, cur)) return null;
+  const value = row[cur];
+  if (value === null || value === undefined) return null;
+  const cents = Math.round(Number(value) * 100);
+  if (!Number.isFinite(cents) || cents <= 0) return null;
+  return { pass: key, currency: cur, cents, amount: cents / 100, days: PASS_DURATIONS[key] || 30 };
+}
+__name(resolvePassOffer, "resolvePassOffer");
+
+// Allowlist de centimes PAR SKU, DÉRIVÉE du catalogue (source unique).
+// Une seconde table de prix écrite à la main serait une divergence de plus —
+// c'est exactement le défaut qui rendait l'ancien `trip7` USD incohérent
+// entre le front, le PHP et la Worker.
+function passCentsAllowlist(sku) {
+  const row = PASS_PRICES[String(sku || "")] || null;
+  const out = {};
+  if (!row) return out;
+  for (const [cur, value] of Object.entries(row)) {
+    if (value === null || value === undefined) continue;
+    const cents = Math.round(Number(value) * 100);
+    if (Number.isFinite(cents) && cents > 0) out[cur] = [cents];
+  }
+  return out;
+}
+__name(passCentsAllowlist, "passCentsAllowlist");
+
+// Clés de métadonnées RÉSERVÉES au SERVEUR : le client ne peut ni écrire ni
+// usurper la classification d'une offre (`offer_kind`), le SKU (`pass`), le
+// plan (`plan`), l'email, l'attribution (`source`) ni les champs de
+// souscription (`customerId`, `interval`) — ces derniers déclenchaient la
+// création d'un abonnement de suivi.
+var RESERVED_METADATA_KEYS = new Set([
+  "offer_kind",
+  "pass",
+  "plan",
+  "source",
+  "email",
+  "customerId",
+  "interval",
+  "subscriptionId",
+  "return_ref",
+  "mode"
+]);
+
+// Copie filtrée des métadonnées client : aucune clé réservée ne survit.
+function stripReservedMetadata(userMeta) {
+  const out = {};
+  if (userMeta && typeof userMeta === "object" && !Array.isArray(userMeta)) {
+    for (const [k, v] of Object.entries(userMeta)) {
+      if (RESERVED_METADATA_KEYS.has(k)) continue;
+      out[k] = v;
+    }
+  }
+  return out;
+}
+__name(stripReservedMetadata, "stripReservedMetadata");
+var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com", "sargazotulum.com"];
+var COLLECT_HOSTS = [
+  "sargasses-martinique.com",
+  "sargasses-guadeloupe.com",
+  "sargassumpuntacana.com",
+  "sargassummiami.com",
+  "sargassumcancun.com",
+  "sargazotulum.com"
+];
+var PIXEL_GIF = Uint8Array.from(atob("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"), (c) => c.charCodeAt(0));
+async function mollieReq(method, path, apiKey, body) {
+  const resp = await fetch(`https://api.mollie.com/${path}`, {
+    method,
+    headers: { "Authorization": `Bearer ${apiKey}`, "Accept": "application/json", "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : void 0
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(`Mollie: ${data?.detail || data?.title || resp.status}`);
+  return data;
+}
+__name(mollieReq, "mollieReq");
+function cors(request) {
+  const origin2 = request.headers.get("Origin") || "";
+  const h = { "Content-Type": "application/json; charset=utf-8" };
+  if (ALLOWED_ORIGINS.includes(origin2)) h["Access-Control-Allow-Origin"] = origin2;
+  return h;
+}
+__name(cors, "cors");
+function kv(env) {
+  const k = env.TRANSIENTS;
+  return {
+    async get(key) {
+      if (!k) return null;
+      try {
+        return await k.get(key);
+      } catch (e) {
+        console.log("KV get KO:", e?.message);
+        return null;
+      }
+    },
+    async put(key, value, opts) {
+      if (!k) return;
+      try {
+        await k.put(key, value, opts);
+      } catch (e) {
+        console.log("KV put KO:", e?.message);
+      }
+    },
+    async delete(key) {
+      if (!k) return;
+      try {
+        await k.delete(key);
+      } catch (e) {
+        console.log("KV del KO:", e?.message);
+      }
+    }
+  };
+}
+__name(kv, "kv");
+// ─────────────────────────────────────────────────────────────────────────────
+// P0.7 — revocation B2C : helpers STRICTS.
+//
+// Le wrapper `kv()` ci-dessus avale volontairement les erreurs (lecture
+// best-effort). Une revocation ne peut PAS etre best-effort : si la
+// suppression du jeton ou l'ecriture Supabase echoue, on doit le savoir et
+// laisser Mollie rejouer, jamais repondre `revoked: true` a tort.
+// ─────────────────────────────────────────────────────────────────────────────
+function sanitizeMarkerPart(value) {
+  return String(value || "").replace(/[^A-Za-z0-9_.-]/g, "_");
+}
+__name(sanitizeMarkerPart, "sanitizeMarkerPart");
+async function kvGetChecked(env, key) {
+  const binding = env?.TRANSIENTS;
+  // Absence de binding = environnement sans KV (tests historiques). La
+  // production lie toujours TRANSIENTS ; on ne transforme pas cette absence
+  // en erreur de lecture pour ne pas casser les parcours sans KV.
+  if (!binding) return { ok: true, value: null };
+  try {
+    return { ok: true, value: await binding.get(key) };
+  } catch (e) {
+    return { ok: false, value: null, error: String(e?.message || e).slice(0, 120) };
+  }
+}
+__name(kvGetChecked, "kvGetChecked");
+async function kvPutChecked(env, key, value, opts) {
+  const binding = env?.TRANSIENTS;
+  if (!binding) return { ok: false, error: "kv_binding_absent" };
+  try {
+    await binding.put(key, value, opts);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e).slice(0, 120) };
+  }
+}
+__name(kvPutChecked, "kvPutChecked");
+async function kvDeleteChecked(env, key) {
+  const binding = env?.TRANSIENTS;
+  if (!binding) return { ok: false, error: "kv_binding_absent" };
+  try {
+    await binding.delete(key);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e).slice(0, 120) };
+  }
+}
+__name(kvDeleteChecked, "kvDeleteChecked");
+function amountToCents(amount) {
+  if (!amount || typeof amount !== "object") return 0;
+  const n = Math.round(Number.parseFloat(String(amount.value == null ? "" : amount.value)) * 100);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+__name(amountToCents, "amountToCents");
+function isNegativePaymentState(payment) {
+  return amountToCents(payment?.amountRefunded) > 0 || amountToCents(payment?.amountChargedBack) > 0;
+}
+__name(isNegativePaymentState, "isNegativePaymentState");
+var REVOKING_EVENTS = /* @__PURE__ */ new Set(["payment.refunded", "refund.refunded", "chargeback.received"]);
+function isRevokingWebhookEvent(event) {
+  return REVOKING_EVENTS.has(String(event || ""));
+}
+__name(isRevokingWebhookEvent, "isRevokingWebhookEvent");
+var RATE_LIMIT_CACHE = /* @__PURE__ */ new Map();
+var FLUSH_INTERVAL_MS = 6e4;
+var FLUSH_THRESHOLD = 100;
+async function rateLimit(env, key, limit, windowSec = 86400) {
+  const day = Math.floor(Date.now() / 864e5);
+  const bucketKey = `ratelimit:${key}:${day}`;
+  let entry = RATE_LIMIT_CACHE.get(bucketKey);
+  if (!entry || entry.day !== day) {
+    try {
+      const kvVal = await kv(env).get(bucketKey);
+      const count = kvVal ? parseInt(kvVal, 10) : 0;
+      entry = { count, lastFlush: Date.now(), day };
+      RATE_LIMIT_CACHE.set(bucketKey, entry);
+    } catch (e) {
+      console.log("rateLimit KV init KO \u2014 fail-open:", e?.message);
+      entry = { count: 0, lastFlush: Date.now(), day };
+      RATE_LIMIT_CACHE.set(bucketKey, entry);
+    }
+  }
+  if (entry.count >= limit) return false;
+  entry.count++;
+  const now = Date.now();
+  const shouldFlush = entry.count % FLUSH_THRESHOLD === 0 || now - entry.lastFlush > FLUSH_INTERVAL_MS;
+  if (shouldFlush) {
+    entry.lastFlush = now;
+    kv(env).put(bucketKey, String(entry.count), { expirationTtl: 86400 * 2 }).catch((e) => {
+      console.log("rateLimit KV flush KO:", e?.message);
+    });
+  }
+  return true;
+}
+__name(rateLimit, "rateLimit");
+function cleanupRateLimitCache() {
+  const now = Date.now();
+  const day = Math.floor(now / 864e5);
+  for (const [key, entry] of RATE_LIMIT_CACHE.entries()) {
+    if (entry.day !== day || now - entry.lastFlush > 3e5) {
+      RATE_LIMIT_CACHE.delete(key);
+    }
+  }
+}
+__name(cleanupRateLimitCache, "cleanupRateLimitCache");
+function normalizeMollieSignature(sig) {
+  // P0.118 §6 — normalisation de la signature Mollie.
+  //   Next-gen : en-tete "X-Mollie-Signature: sha256=<hex 64>"
+  //   Classique: hex 64 nu
+  // La version live comparait la signature BRUTE : toute requete Next-gen
+  // officielle etait donc rejetee en 403 (le prefixe "sha256=" n'etait pas
+  // retire). On normalise, on refuse tout ce qui n'est pas 64 hex, et on
+  // compare a temps constant.
+  const v = String(sig || "").trim();
+  const prefixed = /^sha256=([0-9a-fA-F]{64})$/.exec(v);
+  if (prefixed) return prefixed[1].toLowerCase();
+  if (/^[0-9a-fA-F]{64}$/.test(v)) return v.toLowerCase();
+  return "";
+}
+__name(normalizeMollieSignature, "normalizeMollieSignature");
+async function verifyHmac(body, sig, secret) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const s = await crypto.subtle.sign("HMAC", key, enc.encode(body));
+  const expected = Array.from(new Uint8Array(s)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const provided = normalizeMollieSignature(sig);
+  if (!provided) return false;
+  const a = enc.encode(expected);
+  const b = enc.encode(provided);
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a[i] ^ b[i];
+  return r === 0;
+}
+__name(verifyHmac, "verifyHmac");
+async function supa(env, table, method, body, query = "") {
+  if (!env.SUPABASE_SERVICE_KEY) return method === "GET" ? [] : null;
+  const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
+  const opts = { method, headers: {
+    "apikey": env.SUPABASE_SERVICE_KEY,
+    "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": method === "GET" ? "return=representation" : "return=minimal"
+  } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  if (!r.ok) return method === "GET" ? [] : null;
+  if (r.status === 204) return [];
+  return await r.json();
+}
+__name(supa, "supa");
+async function widgetSign(env, payload) {
+  const data = btoa(JSON.stringify(payload));
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(env.MOLLIE_WEBHOOK_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  return `${data}.${Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("")}`;
+}
+__name(widgetSign, "widgetSign");
+async function widgetVerify(env, k) {
+  const parts = k.split(".");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(env.MOLLIE_WEBHOOK_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const s = await crypto.subtle.sign("HMAC", key, enc.encode(parts[0]));
+  const expected = Array.from(new Uint8Array(s)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (expected !== parts[1]) return null;
+  const payload = JSON.parse(atob(parts[0].replace(/-/g, "+").replace(/_/g, "/")));
+  if (payload.exp && payload.exp < Math.floor(Date.now() / 1e3)) return null;
+  return payload;
+}
+__name(widgetVerify, "widgetVerify");
+async function supaQ(env, table, method, body, query = "") {
+  if (!env.SUPABASE_SERVICE_KEY) return method === "GET" ? [] : null;
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
+    const r = await fetch(url, {
+      method,
+      headers: {
+        "apikey": env.SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      body: body !== void 0 ? JSON.stringify(body) : void 0
+    });
+    if (!r.ok) return method === "GET" ? [] : null;
+    const t = await r.text();
+    if (!t) return [];
+    try {
+      return JSON.parse(t);
+    } catch {
+      return [];
+    }
+  } catch {
+    return method === "GET" ? [] : null;
+  }
+}
+__name(supaQ, "supaQ");
+function authSecret(env) {
+  return env.AUTH_SECRET || (env.MOLLIE_WEBHOOK_SECRET || "") + "|sg-auth-v1";
+}
+__name(authSecret, "authSecret");
+async function authSign(env, payload) {
+  const data = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(authSecret(env)), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  return `${data}.${Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("")}`;
+}
+__name(authSign, "authSign");
+async function authVerify(env, token) {
+  const parts = String(token || "").split(".");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey("raw", enc.encode(authSecret(env)), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const s = await crypto.subtle.sign("HMAC", key, enc.encode(parts[0]));
+    const expected = Array.from(new Uint8Array(s)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    if (expected.length !== parts[1].length) return null;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ parts[1].charCodeAt(i);
+    if (diff !== 0) return null;
+    const b64 = parts[0].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(decodeURIComponent(escape(atob(b64 + "=".repeat((4 - b64.length % 4) % 4)))));
+    if (payload.type !== "sg_session") return null;
+    if (!payload.exp || payload.exp < Math.floor(Date.now() / 1e3)) return null;
+    if (!payload.uid) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+__name(authVerify, "authVerify");
+var JWKS_CACHE = null;
+function b64urlDecode(s) {
+  const b = s.replace(/-/g, "+").replace(/_/g, "/");
+  return atob(b + "=".repeat((4 - b.length % 4) % 4));
+}
+__name(b64urlDecode, "b64urlDecode");
+async function verifyGoogleIdToken(env, credential) {
+  if (!env.GOOGLE_CLIENT_ID) return null;
+  const parts = String(credential || "").split(".");
+  if (parts.length !== 3) return null;
+  let header, payload;
+  try {
+    header = JSON.parse(b64urlDecode(parts[0]));
+    payload = JSON.parse(b64urlDecode(parts[1]));
+  } catch {
+    return null;
+  }
+  if (header?.alg !== "RS256" || !header.kid) return null;
+  if (payload.iss !== "accounts.google.com" && payload.iss !== "https://accounts.google.com") return null;
+  if (payload.aud !== env.GOOGLE_CLIENT_ID) return null;
+  if (!payload.exp || payload.exp < Math.floor(Date.now() / 1e3)) return null;
+  if (!payload.email || payload.email_verified === false) return null;
+  try {
+    if (!JWKS_CACHE || Date.now() - JWKS_CACHE.at > 6 * 36e5) {
+      const r = await fetch("https://www.googleapis.com/oauth2/v3/certs");
+      const j = await r.json();
+      if (!j?.keys?.length) return null;
+      JWKS_CACHE = { at: Date.now(), keys: j.keys };
+    }
+    const jwk = JWKS_CACHE.keys.find((k) => k.kid === header.kid);
+    if (!jwk) return null;
+    const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+    const sigBytes = Uint8Array.from(b64urlDecode(parts[2]), (c) => c.charCodeAt(0));
+    const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, sigBytes, new TextEncoder().encode(parts[0] + "." + parts[1]));
+    if (!ok) return null;
+  } catch {
+    return null;
+  }
+  return { email: String(payload.email).toLowerCase().trim(), sub: String(payload.sub), name: String(payload.name || "") };
+}
+__name(verifyGoogleIdToken, "verifyGoogleIdToken");
+async function userUpsert(env, email, provider, providerUserId) {
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  if (providerUserId) {
+    const bySub = await supaQ(env, "sg_users", "GET", null, `?provider=eq.google&provider_user_id=eq.${encodeURIComponent(providerUserId)}&select=id,email&limit=1`);
+    if (bySub?.[0]) {
+      await supaQ(env, "sg_users", "PATCH", { email, updated_at: now }, `?id=eq.${bySub[0].id}`);
+      return bySub[0];
+    }
+  }
+  const byEmail = await supaQ(env, "sg_users", "GET", null, `?email=eq.${encodeURIComponent(email)}&select=id,email&limit=1`);
+  if (byEmail?.[0]) {
+    if (providerUserId) await supaQ(env, "sg_users", "PATCH", { provider: "google", provider_user_id: providerUserId, updated_at: now }, `?id=eq.${byEmail[0].id}`);
+    return byEmail[0];
+  }
+  const created = await supaQ(env, "sg_users", "POST", { email, provider, provider_user_id: providerUserId }, "?select=id,email");
+  if (created?.[0]) return created[0];
+  const again = await supaQ(env, "sg_users", "GET", null, `?email=eq.${encodeURIComponent(email)}&select=id,email&limit=1`);
+  return again?.[0] || null;
+}
+__name(userUpsert, "userUpsert");
+async function userEntitlements(env, userId, email) {
+  const filters = [];
+  // P0.118 §7 — `public.payment_grants` n'a PAS de colonne `user_id`
+  // (cf. supabase/schema.sql) : le filtre `user_id.eq.` faisait echouer la
+  // requete (400 PostgREST) et les droits n'etaient jamais lus. Le user_id
+  // est stocke dans metadata (jsonb).
+  if (userId) filters.push(`metadata->>user_id.eq.${userId}`);
+  if (email) filters.push(`email.eq.${encodeURIComponent(email)}`);
+  if (!filters.length) return { entitlements: [], premium: { active: false } };
+  const q = `?select=type,pass,plan,expires_at,payment_id&expires_at=gt.now()&${filters.length > 1 ? "or=(" + filters.join(",") + ")" : filters[0]}&order=expires_at.desc&limit=10`;
+  const rows = await supaQ(env, "payment_grants", "GET", null, q) || [];
+  const passRow = rows.find((r) => r.type === "b2c_pass");
+  const passEnd = passRow ? new Date(passRow.expires_at).getTime() : 0;
+  return {
+    entitlements: rows,
+    premium: {
+      active: !!passRow && passEnd > Date.now(),
+      kind: passRow ? "pass" : null,
+      pass: passRow?.pass || null,
+      passEnd: passEnd > Date.now() ? passEnd : null
+    }
+  };
+}
+__name(userEntitlements, "userEntitlements");
+async function resendEmail(env, from, to, subject, html) {
+  if (!env.RESEND_API_KEY) return;
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from, to, subject, html })
+  });
+}
+__name(resendEmail, "resendEmail");
+class EmailDeliveryOutcomeError extends Error {
+  constructor(message, deliveryOutcome = "unknown") {
+    super(message);
+    this.name = "EmailDeliveryOutcomeError";
+    this.deliveryOutcome = deliveryOutcome;
+  }
+}
+__name(EmailDeliveryOutcomeError, "EmailDeliveryOutcomeError");
+async function sendProviderRequest(url, init, provider) {
+  let response;
+  try {
+    response = await fetch(url, init);
+  } catch (_) {
+    // The provider may have accepted the message before the connection failed.
+    throw new EmailDeliveryOutcomeError(provider + " transport outcome unknown", "unknown");
+  }
+  if (response.status === 408 || response.status >= 500) {
+    // A 5xx/timeout is ambiguous: never send the same message through another provider.
+    throw new EmailDeliveryOutcomeError(provider + " response outcome unknown", "unknown");
+  }
+  if (!response.ok) {
+    // Explicit 4xx rejection is safe to fail over from: the request was rejected.
+    throw new EmailDeliveryOutcomeError(provider + " rejected request", "rejected");
+  }
+  return response;
+}
+__name(sendProviderRequest, "sendProviderRequest");
+async function sendViaNamecheap(to, subject, html, domain, env) {
+  // No credential is embedded in source. Missing binding is an explicit
+  // pre-send rejection, so the next provider may be tried safely.
+  const token = env.NAMECHEAP_MAIL_TOKEN;
+  if (!token) throw new EmailDeliveryOutcomeError("NAMECHEAP_MAIL_TOKEN absent", "rejected");
+  const res = await sendProviderRequest(`https://${domain}/send-email.php`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    body: JSON.stringify({ to, subject, html, from: `alerte@${domain}`, fromName: "SargaGame" })
+  }, "Namecheap");
+  let data;
+  try {
+    data = await res.json();
+  } catch (_) {
+    throw new EmailDeliveryOutcomeError("Namecheap response could not confirm delivery", "unknown");
+  }
+  if (!data || data.success !== true) {
+    throw new EmailDeliveryOutcomeError("Namecheap delivery outcome unconfirmed", "unknown");
+  }
+  return true;
+}
+__name(sendViaNamecheap, "sendViaNamecheap");
+async function sendViaSendPulse(to, subject, html, domain, env) {
+  if (!env.SENDPULSE_CLIENT_ID || !env.SENDPULSE_CLIENT_SECRET) {
+    throw new EmailDeliveryOutcomeError("SendPulse credentials missing", "rejected");
+  }
+  let tokenRes;
+  try {
+    tokenRes = await fetch("https://api.sendpulse.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ grant_type: "client_credentials", client_id: env.SENDPULSE_CLIENT_ID, client_secret: env.SENDPULSE_CLIENT_SECRET })
+    });
+  } catch (_) {
+    // Authentication did not submit an email; trying another provider is safe.
+    throw new EmailDeliveryOutcomeError("SendPulse authentication unavailable", "rejected");
+  }
+  if (!tokenRes.ok) throw new EmailDeliveryOutcomeError("SendPulse authentication rejected", "rejected");
+  let tokenData;
+  try { tokenData = await tokenRes.json(); } catch (_) {
+    throw new EmailDeliveryOutcomeError("SendPulse authentication response invalid", "rejected");
+  }
+  const token = tokenData && tokenData.access_token;
+  if (!token) throw new EmailDeliveryOutcomeError("SendPulse auth failed", "rejected");
+  await sendProviderRequest("https://api.sendpulse.com/smtp/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: { from: { name: "SargaGame", email: `alerte@${domain}` }, to: [{ email: to }], subject, html } })
+  }, "SendPulse");
+  return true;
+}
+__name(sendViaSendPulse, "sendViaSendPulse");
+async function sendViaBrevo(to, subject, html, domain, env) {
+  if (!env.BREVO_API_KEY) throw new EmailDeliveryOutcomeError("Brevo key missing", "rejected");
+  await sendProviderRequest("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": env.BREVO_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ sender: { name: "SargaGame", email: `alerte@${domain}` }, to: [{ email: to }], subject, htmlContent: html })
+  }, "Brevo");
+  return true;
+}
+__name(sendViaBrevo, "sendViaBrevo");
+async function sendViaResend(to, subject, html, domain, env) {
+  if (!env.RESEND_API_KEY) throw new EmailDeliveryOutcomeError("Resend key missing", "rejected");
+  await sendProviderRequest("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: `SargaGame <alerte@${domain}>`, to: [to], subject, html })
+  }, "Resend");
+  return true;
+}
+__name(sendViaResend, "sendViaResend");
+async function sendEmail(to, subject, html, domain, env) {
+  const providers = [
+    { name: "namecheap", fn: sendViaNamecheap },
+    { name: "sendpulse", fn: sendViaSendPulse },
+    { name: "brevo", fn: sendViaBrevo },
+    { name: "resend", fn: sendViaResend }
+  ];
+  for (const p of providers) {
+    try {
+      const result = await p.fn(to, subject, html, domain, env);
+      if (result) {
+        console.log(`Email provider accepted message via ${p.name}`);
+        return { success: true, provider: p.name };
+      }
+    } catch (e) {
+      if (e && e.deliveryOutcome === "unknown") {
+        // The message may already have been accepted. Stop: a second provider
+        // could create a duplicate. The caller records manual review/failure.
+        console.log(`Email provider ${p.name} outcome unknown; stopping fallback`);
+        return { success: false, provider: p.name, ambiguous: true, error: "provider_delivery_unconfirmed" };
+      }
+      console.log(`Email provider ${p.name} unavailable or explicitly rejected; trying next provider`);
+    }
+  }
+  return { success: false, ambiguous: false, error: "all_providers_rejected" };
+}
+__name(sendEmail, "sendEmail");
+async function hashString(s) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(h)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+__name(hashString, "hashString");
+async function b2bProspects(env, request) {
+  const h = cors(request);
+  const url = new URL(request.url);
+  const method = request.method;
+  if (method === "POST") {
+    const input = await request.json();
+    if (!input.name) return new Response(JSON.stringify({ error: "name required" }), { status: 400, headers: h });
+    const rows = await supa(env, "b2b_prospects", "POST", { name: input.name, beach: input.beach, island: input.island, phone: input.phone, email: input.email, grade: input.grade || "A" });
+    const p = rows?.[0];
+    if (p) await supa(env, "b2b_events", "POST", { prospect_id: p.id, type: "PROSPECT_CREATED", actor: "system", metadata: { name: p.name } });
+    return new Response(JSON.stringify(p || { error: "create_failed" }), { status: p ? 200 : 500, headers: h });
+  }
+  if (method === "GET") {
+    const id = url.searchParams.get("id");
+    if (id) {
+      const rows2 = await supa(env, "b2b_prospects", "GET", null, `?id=eq.${id}&select=*`);
+      return new Response(JSON.stringify(rows2?.[0] || { error: "not_found" }), { status: rows2?.[0] ? 200 : 404, headers: h });
+    }
+    const status = url.searchParams.get("status");
+    let q = "?select=*&order=created_at.desc";
+    if (status) q += `&status=eq.${status}`;
+    const rows = await supa(env, "b2b_prospects", "GET", null, q);
+    return new Response(JSON.stringify(rows), { headers: h });
+  }
+  if (method === "PATCH") {
+    const id = url.searchParams.get("id");
+    if (!id) return new Response(JSON.stringify({ error: "id required" }), { status: 400, headers: h });
+    const input = await request.json();
+    const rows = await supa(env, "b2b_prospects", "PATCH", input, `?id=eq.${id}&select=*`);
+    return new Response(JSON.stringify(rows?.[0] || { error: "not_found" }), { status: rows?.[0] ? 200 : 404, headers: h });
+  }
+  return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
+}
+__name(b2bProspects, "b2bProspects");
+async function b2bConcierge(env, request) {
+  const h = cors(request);
+  const url = new URL(request.url);
+  const method = request.method;
+  if (method === "POST") {
+    const input = await request.json();
+    if (!input.prospect_id) return new Response(JSON.stringify({ error: "prospect_id required" }), { status: 400, headers: h });
+    const existing = await supa(env, "b2b_concierge", "GET", null, `?prospect_id=eq.${input.prospect_id}&status=eq.active&select=*&limit=1`);
+    if (existing?.[0]) return new Response(JSON.stringify({ error: "active_exists", concierge: existing[0] }), { status: 409, headers: h });
+    const start = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const end = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+    const rows = await supa(env, "b2b_concierge", "POST", { prospect_id: input.prospect_id, start_date: start, end_date: end, status: "active", current_day: 0 });
+    return new Response(JSON.stringify(rows?.[0] || { error: "failed" }), { status: rows?.[0] ? 200 : 500, headers: h });
+  }
+  if (method === "GET") {
+    const pid = url.searchParams.get("prospect_id");
+    if (!pid) return new Response(JSON.stringify({ error: "prospect_id required" }), { status: 400, headers: h });
+    const rows = await supa(env, "b2b_concierge", "GET", null, `?prospect_id=eq.${pid}&status=eq.active&select=*&limit=1`);
+    return new Response(JSON.stringify(rows?.[0] || null), { headers: h });
+  }
+  if (method === "PATCH") {
+    const id = url.searchParams.get("id");
+    if (!id) return new Response(JSON.stringify({ error: "id required" }), { status: 400, headers: h });
+    const input = await request.json();
+    const action = input.action;
+    if (action === "advance_day") {
+      const rows = await supa(env, "b2b_concierge", "PATCH", { current_day: input.day }, `?id=eq.${id}&select=*`);
+      return new Response(JSON.stringify(rows?.[0]), { headers: h });
+    }
+    if (action === "payment_requested") {
+      const rows = await supa(env, "b2b_concierge", "PATCH", { payment_requested: true }, `?id=eq.${id}&select=*`);
+      return new Response(JSON.stringify(rows?.[0]), { headers: h });
+    }
+    if (action === "payment_confirmed") {
+      const rows = await supa(env, "b2b_concierge", "PATCH", { payment_confirmed: true, status: "completed" }, `?id=eq.${id}&select=*`);
+      return new Response(JSON.stringify(rows?.[0]), { headers: h });
+    }
+  }
+  return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
+}
+__name(b2bConcierge, "b2bConcierge");
+var JEV_INTENTS = ["today_verdict", "when_later", "trip_planning", "which_beach", "avoid_seaweed", "b2b", "off_topic"];
+async function handleJevIntent(request, env) {
+  const J = { "Content-Type": "application/json" };
+  const fb = /* @__PURE__ */ __name(() => new Response(JSON.stringify({ ok: false, fallback: true }), { headers: J }), "fb");
+  const key = (env.TYPESAFE_API_KEY || "").trim();
+  if (!key || key.startsWith("test")) return fb();
+  let body = null;
+  try {
+    body = await request.json();
+  } catch {
+    return fb();
+  }
+  const text = String(body?.text || "").trim();
+  if (text.length < 6 || text.length > 220) return fb();
+  const lang = ["fr", "en", "es"].includes(body?.lang) ? body.lang : "fr";
+  const region = String(body?.region || "").replace(/[^a-z_]/gi, "").slice(0, 24);
+  const payload = {
+    model: "jev-latest",
+    state: {
+      user_text: text,
+      lang,
+      region,
+      context: "Beach decision app (sargassum/seaweed forecast per beach). The typed text was NOT recognized as a beach name by the deterministic search."
+    },
+    questions: {
+      intent: {
+        type: "choice",
+        instructions: "Classify what this app visitor most wants right now. They could not find a beach by name search.",
+        criteria: {
+          today_verdict: "Wants to know where to swim / which beach is clean TODAY (implicit location ok)",
+          when_later: 'Asks about tomorrow, the weekend, "when", or a future moment',
+          trip_planning: 'Planning a stay/trip: several days, accommodation, "I am staying\u2026", itinerary',
+          which_beach: 'Undecided between beaches / asks "which beach should I choose" without a day',
+          avoid_seaweed: "Fears seaweed (sargasses) ruining a plan \u2014 wants reassurance or a safe option",
+          b2b: "Speaks as a business: hotel, villa, tour operator, concierge, agency",
+          off_topic: "Unrelated to beaches / sargassum / travel decision"
+        }
+      }
+    }
+  };
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 4e3);
+  try {
+    const r = await fetch("https://api.typesafe.ai/v1/systemone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + key },
+      body: JSON.stringify(payload),
+      signal: ctl.signal
+    });
+    if (!r.ok) return fb();
+    const j = await r.json();
+    const a = j?.answers?.intent;
+    if (!a || a.type !== "choice" || !a.choice || !JEV_INTENTS.includes(a.choice)) return fb();
+    return new Response(JSON.stringify({ ok: true, intent: a.choice, confidence: typeof a.confidence === "number" ? Math.round(a.confidence * 1e3) / 1e3 : null }), { headers: J });
+  } catch {
+    return fb();
+  } finally {
+    clearTimeout(to);
+  }
+}
+__name(handleJevIntent, "handleJevIntent");
+var index_default = {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname === "/_cron/drip") {
+      ctx.waitUntil(runDripEmails(env));
+      return new Response(JSON.stringify({ ok: true, cron: "drip" }), { headers: { "Content-Type": "application/json" } });
+    }
+    if (url.pathname === "/_cron/b2c") {
+      // No authenticated manual-cron contract or secret binding exists.
+      // Keep the scheduled() trigger; deny public/manual invocation by default.
+      return new Response(JSON.stringify({ error: "Not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+      });
+    }
+    const path = url.pathname;
+    if (path === "/api/jev-intent" || path === "/api/jev-intent.php") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
+      return handleJevIntent(request, env);
+    }
+    if (path === "/api/mollie" || path === "/api/mollie.php") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
+      return handleMollie(request, env);
+    }
+    if (path === "/api/mollie-webhook" || path === "/api/mollie-webhook.php") {
+      if (request.method === "GET") return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
+      return handleWebhook(request, env, ctx);
+    }
+    if (path === "/api/mollie-return") {
+      return handleMollieReturn(request, env, ctx);
+    }
+    if (path === "/api/mollie-pay" || path === "/api/mollie-pay/") {
+      return handleMolliePayPage(request, env);
+    }
+    if (path === "/api/widget-token.php") {
+      const k = url.searchParams.get("k") || "";
+      const payload = await widgetVerify(env, k);
+      return new Response(JSON.stringify(payload ? { pro: true, host: payload.h } : { pro: false }), {
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+      });
+    }
+    if (path === "/b2b" || path === "/b2b/" || path.startsWith("/b2b/")) {
+      const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sargasses Pro \u2014 B2B</title><meta http-equiv="refresh" content="0;url=/pro/"><link rel="canonical" href="https://${url.hostname}/pro/"><style>body{font-family:system-ui;padding:40px;text-align:center;color:#0d1117} a{color:#0d7f63;font-weight:700}</style><h1>Sargasses Pro</h1><p>Redirection vers <a href="/pro/">/pro/</a> \u2014 pr\xE9vision satellite pour h\xF4tels & collectivit\xE9s.</p><p><a href="/pro/">Voir les offres Pro \u2192</a> \xB7 <a href="/pro/pricing/">Tarifs</a> \xB7 <a href="/pro/widget-sargasses-hotel/">Widget gratuit</a></p>`;
+      return new Response(html, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+    }
+    if (path === "/dashboard" || path === "/dashboard/") {
+      const url2 = new URL(request.url);
+      const token = url2.searchParams.get("token") || "";
+      const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SargaGame Dashboard</title><link rel="stylesheet" href="/app-runtime.css"></head><body><div id="root"></div><script>window.__DASHBOARD_TOKEN__="${token}"<\/script><script src="/assets/index-B7MZ2uBf.js"><\/script></body></html>`;
+      return new Response(html, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    if (path === "/widget") {
+      const url2 = new URL(request.url);
+      const token = url2.searchParams.get("token") || "";
+      if (!token) return new Response(`<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token manquant</h2><p>Ajoutez ?token=XXX \xE0 l'URL.</p></body>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      const rows = await supa(env, "b2b_subscriptions", "GET", null, `?widget_token=eq.${token}&select=*&limit=1`);
+      if (!rows?.length) return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token invalide</h2><p>Aucun abonnement trouv\xE9 pour ce widget token.</p></body>', { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      const sub = rows[0];
+      const region = String(sub.region || "").trim();
+      const regionInfo = resolveB2BWidgetRegion(region);
+      if (!regionInfo) {
+        return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Widget indisponible</h2><p>Région non configurée.</p></body>', {
+          status: 404,
+          headers: { "Content-Type": "text/html; charset=utf-8" }
+        });
+      }
+      const lang = regionInfo.lang;
+      const domain = regionInfo.domain;
+      let sargStatus = "unknown";
+      let forecast3j = "";
+      try {
+        const c = await fetch(`${origin}/api/copernicus/sargassum.json`).then((r) => r.ok ? r.json() : null);
+        if (c) {
+          const wk = c.weekly;
+          if (wk) {
+            const firstKey = Object.keys(wk)[0];
+            const fc = wk[firstKey]?.forecast?.slice(0, 3) || [];
+            sargStatus = fc.length > 0 ? fc[0].status || "unknown" : "unknown";
+            forecast3j = fc.slice(1, 4).map((d) => `<p>J+${fc.indexOf(d) + 1}: ${d.status}</p>`).join("");
+          }
+        }
+      } catch {
+      }
+      const statusColors = { clean: "#16a34a", moderate: "#eab308", avoid: "#dc2626", high: "#dc2626", unknown: "#6b7280" };
+      const statusEmoji = { clean: "\u{1F7E2}", moderate: "\u{1F7E1}", avoid: "\u{1F534}", high: "\u{1F534}", unknown: "\u26AA" };
+      const html = lang === "en" ? `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui;margin:0;padding:20px;color:#0d1117} .card{max-width:600px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px} h1{color:#0D1E1C;margin-top:0} .btn{display:inline-block;background:#FFC72C;color:#0d1117;padding:12px 24px;border-radius:999px;font-weight:700;text-decoration:none;margin:8px}</style></head><body><div class="card"><h1>SargaGame Widget</h1><p><strong>Region:</strong> ${region}</p><p><strong>Status:</strong> <span style="color:${statusColors[sargStatus] || "#6b7280"}">${statusEmoji[sargStatus] || "\u26A0\uFE0F"} ${sargStatus}</span></p>${forecast3j ? `<div style="margin-top:16px"><h3>3-day forecast</h3>${forecast3j}</div>` : ""}<p><iframe src="https://${domain}/widget?token=${token}" width="100%" height="320" style="border:none; margin:16px 0;" frameborder="0"></iframe></p><p>Powered by SargaGame \u2022 <a href="https://${domain}/b2b?token=${token}" class="btn">Manage subscription \u2192</a> <a href="https://${domain}/" class="btn" style="background:#0d7f63;color:white">Back to map \u2192</a></p></div></body></html>` : `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui;margin:0;padding:20px;color:#0d1117} .card{max-width:600px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px} h1{color:#0D1E1C;margin-top:0}</style></head><body><div class="card"><h1>Widget SargaGame</h1><p><strong>R\xE9gion:</strong> ${region}</p><p><strong>Niveau:</strong> <span style="color:${statusColors[sargStatus] || "#6b7280"}">${statusEmoji[sargStatus] || "\u26A0\uFE0F"} ${sargStatus}</span></p>${forecast3j ? `<div style="margin-top:16px"><h3>Pr\xE9visions 3 jours</h3>${forecast3j}</div>` : ""}<p><iframe src="https://${domain}/widget?token=${token}" width="100%" height="320" style="border:none; margin:16px 0;" frameborder="0"></iframe></p><p>Powered by SargaGame \u2022 <a href="https://${domain}/b2b?token=${token}" class="btn" style="background:#0d7f63;color:white">G\xE9rer l'abonnement \u2192</a> <a href="https://${domain}/" class="btn">Retour \xE0 la carte \u2192</a></p></div></body></html>`;
+      return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    if (path === "/unsubscribe") {
+      return handleUnsubscribe(request, env);
+    }
+    if (path === "/api/mollie-health") {
+      return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "payfix-20261110-b2c", routes: 48 }), { headers: { "Content-Type": "application/json" } });
+    }
+    if (path === "/api/mollie-mode") {
+      // DIAGNOSTIC DU MODE DU BACKEND MOLLIE — LECTURE SEULE.
+      // - ne cree AUCUNE transaction : aucun POST vers api.mollie.com ;
+      // - ne retourne JAMAIS la cle ni un fragment de cle (un mode, rien de plus) ;
+      // - `mode` = contrat Mollie sur le prefixe de la cle (`live_` / `test_`) ;
+      // - `api_mode` = champ `mode` renvoye par l'API Mollie elle-meme
+      //   (GET /v2/payments?limit=1 : lecture seule, aucune creation) ;
+      // - sert a verifier le mode LIVE sur les six domaines SANS transaction.
+      const key = String(env.MOLLIE_API_KEY || "");
+      const mode = key.startsWith("live_") ? "live" : key.startsWith("test_") ? "test" : "unknown";
+      let apiMode = "not_checked";
+      if (key) {
+        try {
+          const r = await fetch("https://api.mollie.com/v2/payments?limit=1", {
+            headers: { Authorization: "Bearer " + key },
+          });
+          if (r.status === 401) apiMode = "unauthorized";
+          else if (r.ok) {
+            const j = await r.json();
+            const p = j && j._embedded && j._embedded.payments && j._embedded.payments[0];
+            apiMode = p && p.mode ? String(p.mode) : "no_payment_yet";
+          } else apiMode = "http_" + r.status;
+        } catch {
+          apiMode = "unreachable";
+        }
+      }
+      return new Response(JSON.stringify({ ok: true, mode, api_mode: apiMode }), {
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      });
+    }
+    if (path === "/api/mollie-kv-test") {
+      const k = env.TRANSIENTS;
+      const hasBinding = !!k;
+      let testResult = "no-test";
+      if (k) {
+        try {
+          await k.put("diag-test", "ok", { expirationTtl: 60 });
+          const val = await k.get("diag-test");
+          testResult = val === "ok" ? "ok" : "mismatch";
+        } catch (e) {
+          testResult = `error: ${e?.message?.slice(0, 80) || "unknown"}`;
+        }
+      }
+      return new Response(JSON.stringify({
+        ok: true,
+        kv_binding: hasBinding,
+        test: testResult,
+        kv_id: "528c05c792e046029a84e2fdb84f4ae6"
+      }), { headers: { "Content-Type": "application/json" } });
+    }
+    if (path === "/api/mollie-health") {
+      return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "payfix-20261110-noso", routes: 48 }), { headers: { "Content-Type": "application/json" } });
+    }
+    if (path === "/collect.php") {
+      return handleCollect(request, env, ctx);
+    }
+    if (path === "/api/track-click.php") {
+      const id = (url.searchParams.get("id") || "").replace(/[^a-zA-Z0-9_-]/g, "");
+      let redirectUrl = url.searchParams.get("url") || "/";
+      redirectUrl = decodeURIComponent(redirectUrl).replace(/[\r\n]/g, "");
+      if (!/^https?:\/\//i.test(redirectUrl)) redirectUrl = "/";
+      const parsed = new URL(redirectUrl, "https://dummy");
+      const host = parsed.hostname.replace(/^www\./, "");
+      if (!CLICK_REDIRECT_HOSTS.some((h) => host === h || host.endsWith("." + h))) redirectUrl = "/";
+      ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "email_clicked", params: { email_id: id, url: redirectUrl } }));
+      return Response.redirect(redirectUrl, 302);
+    }
+    if (path === "/api/track-open.php") {
+      const id = (url.searchParams.get("id") || "").replace(/[^a-zA-Z0-9_-]/g, "");
+      if (id) ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "email_opened", params: { email_id: id } }));
+      return new Response(PIXEL_GIF, {
+        headers: { "Content-Type": "image/gif", "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0" }
+      });
+    }
+    if (path.startsWith("/api/copernicus/forecast")) {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+      const daysParam = parseInt(url.searchParams.get("days") || "7", 10);
+      const isFree = !isNaN(daysParam) && daysParam <= 3;
+      if (!isFree) {
+        const k = url.searchParams.get("k") || "";
+        let authorized = false;
+        if (k) {
+          const payload = await widgetVerify(env, k);
+          if (payload) authorized = true;
+        }
+        if (!authorized && request.method === "POST") {
+          try {
+            const body = await request.json();
+            const email = (body.email || "").trim();
+            if (email) {
+              const rows = await supa(env, "payment_grants", "GET", null, `?email=eq.${email}&expires_at=gt.now()&select=type&limit=1`);
+              if (rows?.length) authorized = true;
+            }
+          } catch {
+          }
+        }
+        if (!authorized) return new Response(JSON.stringify({ ok: false, error: "Premium required for days>3" }), { status: 403, headers: { "Content-Type": "application/json" } });
+      }
+      const sargData = await fetch(`${url.origin}/api/copernicus/sargassum.json`).then((r) => r.json()).catch(() => null);
+      if (!sargData) return new Response(JSON.stringify({ ok: false, reason: "no_data" }), { status: 503, headers: { "Content-Type": "application/json" } });
+      let weekly = sargData.weekly;
+      if (!isNaN(daysParam) && weekly && typeof weekly === "object") {
+        const sliced = {};
+        for (const [bid, wk] of Object.entries(weekly)) {
+          const w = wk;
+          if (w?.forecast?.length) sliced[bid] = { ...w, forecast: w.forecast.slice(0, daysParam) };
+          else sliced[bid] = w;
+        }
+        weekly = sliced;
+      }
+      return new Response(JSON.stringify({ ok: true, updatedAt: sargData.updatedAt, weekly, days: daysParam, free: isFree }), {
+        headers: { "Content-Type": "application/json", "Cache-Control": isFree ? "public, max-age=1800" : "no-store" }
+      });
+    }
+    if (path === "/api/b2b-prospects.php" || path === "/api/b2b-concierge.php") {
+      return new Response(JSON.stringify({ error: "endpoint_retired" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
+    }
+    if (path === "/api/b2b-trial.php") {
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: cors(request) });
+      if (!await rateLimit(env, "b2b_trial", 50)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
+      const input = await request.json();
+      const email = (input.email || "").trim();
+      if (!email || !email.includes("@")) return new Response(JSON.stringify({ error: "invalid_email" }), { status: 400, headers: cors(request) });
+      const name = (input.name || "").replace(/[<>"]/g, "").slice(0, 60);
+      const beach = (input.beach || "").replace(/[^A-Za-z0-9-]/g, "").toLowerCase().slice(0, 60);
+      const island = (input.island || "mq").replace(/[^A-Za-z]/g, "").toLowerCase();
+      const ISLAND_MAP = { mq: "MQ", gp: "GP", florida: "florida", puntacana: "puntacana", rivieramaya: "rivieramaya" };
+      const islandNorm = ISLAND_MAP[island] || "MQ";
+      // ── CONSENTEMENT MARKETING (optionnel, JAMAIS pré-coché) ────────────────
+      // Aligné sur public/api/b2b-trial.php : version + horodatage + source
+      // sont conservés avec le lead. L'essai reste TRANSACTIONNEL : cet
+      // endpoint n'envoie AUCUNE campagne marketing (email d'essai seul).
+      const CONSENT_VERSION = "2026-11-04";
+      const rawConsent = input.marketingConsent;
+      const marketingConsent = rawConsent === true || rawConsent === 1 || rawConsent === "1" || rawConsent === "true" || rawConsent === "on";
+      const consentSource = String(input.consentSource || "b2b_trial_form").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40).toLowerCase() || "b2b_trial_form";
+      const consentTs = marketingConsent ? new Date().toISOString() : "";
+      const domainMap = { MQ: "sargasses-martinique.com", GP: "sargasses-guadeloupe.com", florida: "sargassummiami.com", puntacana: "sargassumpuntacana.com", rivieramaya: "sargassumcancun.com" };
+      const domain = domainMap[islandNorm] || "sargasses-martinique.com";
+      const lang = ["florida", "puntacana", "rivieramaya"].includes(islandNorm) ? "en" : "fr";
+      // ── PERSISTANCE ATTENDUE (accusé serveur) ────────────────────────────────
+      // AVANT, les 3 écritures étaient en ctx.waitUntil (fire-and-forget) :
+      // `{ok:true}` ne prouvait RIEN — un lead perdu se voyait quand même
+      // activé (faux succès, issue #1273). Ici l'écriture du lead est ATTENDUE
+      // et son accusé est exigé : sans `{ok:true}` du sink, PAS de token et
+      // PAS de succès (fail-closed). Le sink déduplique par email → un
+      // réessai de l'hôtelier ne crée jamais de doublon.
+      const leadPayload = {
+        type: "email_signup",
+        email,
+        source: "b2b_trial",
+        island: islandNorm,
+        org: name,
+        marketing_consent: marketingConsent ? 1 : 0,
+        consent_v: marketingConsent ? CONSENT_VERSION : "",
+        consent_ts: consentTs,
+        consent_source: marketingConsent ? consentSource : ""
+      };
+      let leadSaved = false;
+      try {
+        const r = await fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(leadPayload) });
+        const j = r.ok ? await r.json().catch(() => null) : null;
+        leadSaved = !!(j && j.ok === true);
+      } catch (e) {
+        leadSaved = false;
+      }
+      if (!leadSaved) {
+        // Aucun accusé → aucun token, aucun faux succès (message sans PII).
+        console.log("b2b_trial: lead non confirmé par le sink — refus fail-closed");
+        return new Response(JSON.stringify({ ok: false, error: "lead_not_persisted" }), { status: 503, headers: cors(request) });
+      }
+      const token = await widgetSign(env, { exp: Math.floor(Date.now() / 1e3) + 30 * 86400, type: "b2b_pro" });
+      const accessUrl = `https://${domain}/?k=${token}${beach ? `&beach=${beach}` : ""}${name ? `&name=${encodeURIComponent(name)}` : ""}`;
+      const title = lang === "en" ? "Your PRO trial is active" : "Ton essai PRO est actif";
+      const bodyText = lang === "en" ? `Hi ${name} Your 30-day PRO trial is ready.` : `Bonjour ${name} Ton essai PRO de 30 jours est actif.`;
+      const cta = lang === "en" ? "Open my dashboard" : "Ouvrir mon espace";
+      const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${bodyText}</p><p><a href="${accessUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px">${cta} &rarr;</a></p></div>`;
+      // Email TRANSACTIONNEL + télémétrie : best-effort (ce ne sont pas la
+      // preuve de persistance — c'est l'écriture du lead ci-dessus qui l'est).
+      ctx.waitUntil(resendEmail(env, `Sargasses Pro <alerte@${domain}>`, [email], title, html).catch(() => {
+      }));
+      ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_trial_started", params: { org: name, beach }, island: islandNorm }).catch(() => {
+      }));
+      // Consentement marketing : on ne trace QUE l'opt-in explicite (sans envoi).
+      if (marketingConsent) {
+        ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_marketing_consent", params: { consent: 1, v: CONSENT_VERSION, ts: consentTs, src: consentSource }, island: islandNorm }).catch(() => {
+        }));
+      }
+      return new Response(JSON.stringify({ ok: true, token, days: 30, persisted: true }), { headers: cors(request) });
+    }
+    if (path === "/api/b2b-meeting.php") {
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: cors(request) });
+      if (!await rateLimit(env, "b2b_meeting", 50)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
+      const input = await request.json();
+      const email = (input.email || "").trim();
+      if (!email || !email.includes("@")) return new Response(JSON.stringify({ error: "invalid_email" }), { status: 400, headers: cors(request) });
+      const org = (input.org || "").replace(/[<>"]/g, "").slice(0, 80);
+      const littoral = (input.littoral || "").replace(/[<>"]/g, "").slice(0, 120);
+      const phone = (input.phone || "").replace(/[^0-9 +().-]/g, "").slice(0, 30);
+      const island = (input.island || "").replace(/[^A-Za-z]/g, "").toUpperCase();
+      const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><h2>Nouvelle demande B2B \u2014 ${org}</h2><table style="width:100%;border-collapse:collapse"><tr><td style="padding:6px 0;font-weight:700;width:100px">Email</td><td>${email}</td></tr><tr><td style="padding:6px 0;font-weight:700">Organisation</td><td>${org}</td></tr><tr><td style="padding:6px 0;font-weight:700">Littoral</td><td>${littoral}</td></tr><tr><td style="padding:6px 0;font-weight:700">T\xE9l\xE9phone</td><td>${phone}</td></tr><tr><td style="padding:6px 0;font-weight:700">\xCEle</td><td>${island}</td></tr></table></div>`;
+      ctx.waitUntil(resendEmail(env, "Sargasses B2B <alerte@sargasses-martinique.com>", ["contact@sargasses-martinique.com"], `Nouvelle demande B2B \u2014 ${org}`, html).catch(() => {
+      }));
+      // PERSISTANCE ATTENDUE : la demande de RDV doit être enregistrée dans le
+      // sink AVANT d'accuser réception (sinon `{ok:true}` = faux succès et le
+      // prospect est perdu — issue #1273). Échec → 503, le front réessaie.
+      let meetingSaved = false;
+      try {
+        const r = await fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "email_signup", email, source: "b2b_territoire_meeting", island: island || "MQ", org }) });
+        const j = r.ok ? await r.json().catch(() => null) : null;
+        meetingSaved = !!(j && j.ok === true);
+      } catch (e) {
+        meetingSaved = false;
+      }
+      if (!meetingSaved) {
+        console.log("b2b_meeting: demande non confirmée par le sink — refus fail-closed");
+        return new Response(JSON.stringify({ ok: false, error: "lead_not_persisted" }), { status: 503, headers: cors(request) });
+      }
+      return new Response(JSON.stringify({ ok: true, persisted: true }), { headers: cors(request) });
+    }
+    if (path === "/api/b2b-create-checkout.php") {
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
+      if (!await rateLimit(env, "b2b_checkout", 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
+      const input = await request.json();
+      if (!input.prospect_id || !input.concierge_id || !input.email) {
+        return new Response(JSON.stringify({ error: "prospect_id, concierge_id, email required" }), { status: 400, headers: cors(request) });
+      }
+      try {
+        const apiKey = env.MOLLIE_API_KEY;
+        const plan = B2B_PLANS.brief_monthly;
+        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
+        let cid = null;
+        for (const c of customers._embedded?.customers || []) {
+          if (c.email === input.email) {
+            cid = c.id;
+            break;
+          }
+        }
+        if (!cid) {
+          const nc = await mollieReq("POST", "v2/customers", apiKey, { email: input.email, name: input.name || "", metadata: { source: "b2b_concierge_checkout" } });
+          cid = nc.id;
+        }
+        const host = requestHost(request);
+        const subscription = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
+          amount: { value: plan.amount.toFixed(2), currency: plan.currency },
+          description: plan.description,
+          webhookUrl: `https://${host}/api/mollie-webhook`,
+          metadata: { source: "b2b_concierge", prospect_id: input.prospect_id, concierge_id: input.concierge_id, plan: "brief_monthly" },
+          interval: plan.interval
+        });
+        const checkoutUrl = subscription._links?.checkout?.href || null;
+        await supa(env, "b2b_payments", "POST", { prospect_id: input.prospect_id, concierge_id: input.concierge_id, amount: plan.amount, status: "pending", mollie_payment_id: subscription.id });
+        return new Response(JSON.stringify({ checkoutUrl, customerId: cid, subscriptionId: subscription.id }), { headers: cors(request) });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: cors(request) });
+      }
+    }
+    if (path === "/api/b2b-contacts.php" || path === "/api/b2b-events.php" || path === "/api/b2b-scores.php" || path === "/api/b2b-forecast-delivery.php") {
+      return new Response(JSON.stringify({ error: "endpoint_retired" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
+    }
+    if (path.startsWith("/api/partner/")) {
+      return handlePartnerCommerce(request, env, ctx, path);
+    }
+    if (path === "/api/create-checkout.php" || path === "/api/paypal.php") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only", provider: "mollie" }), { status: 405, headers: cors(request) });
+      return handleLegacyCheckout(request, env);
+    }
+    if (path.endsWith(".php")) {
+      return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { "Content-Type": "application/json", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" } });
+    }
+    if (request.method === "GET" && path === "/api/b2b-paylinks.json") {
+      const host = requestHost(request);
+      return new Response(JSON.stringify({
+        links: {
+          pro_annual: { url: `https://${host}/api/mollie-pay?plan=pro_annual`, amount: 690, currency: "EUR" },
+          pro_annual_usd: { url: `https://${host}/api/mollie-pay?plan=pro_annual_usd`, amount: 790, currency: "USD" }
+        }
+      }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...cors(request) } });
+    }
+    return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+  },
+  async scheduled(event, env, ctx) {
+    console.log(`Cron triggered: ${event.cron}`);
+    cleanupRateLimitCache();
+    ctx.waitUntil(runDripEmails(env));
+    if (event.cron === "0 6,18 * * *") {
+      ctx.waitUntil(runB2CAlerts(env));
+    }
+  }
+};
+async function runDripEmails(env) {
+  console.log("Drip: starting runDripEmails");
+  const now = Date.now();
+  const cutoff = new Date(now - 36e5).toISOString();
+  const staleClaimCutoff = new Date(now - 30 * 60 * 1000).toISOString();
+
+  // A claim older than 30 minutes is never resent automatically: delivery
+  // may have been accepted before a Worker/database interruption.
+  const staleClaims = await supaQ(
+    env,
+    "b2b_leads",
+    "GET",
+    null,
+    "?status=eq.processing&claimed_at=lt." + encodeURIComponent(staleClaimCutoff) + "&select=id,claimed_at"
+  );
+  for (const stale of Array.isArray(staleClaims) ? staleClaims : []) {
+    const recovered = await supaQ(
+      env,
+      "b2b_leads",
+      "PATCH",
+      { status: "manual_review", claimed_at: null, last_contact_error: "stale_claim_requires_manual_review" },
+      "?id=eq." + encodeURIComponent(stale.id) + "&status=eq.processing&claimed_at=lt." + encodeURIComponent(staleClaimCutoff) + "&select=id,status"
+    );
+    if (Array.isArray(recovered) && recovered.length === 1) {
+      console.log("Drip: stale claim moved to manual_review lead=" + String(stale.id || "unknown"));
+    } else {
+      console.log("Drip: stale claim recovery not persisted lead=" + String(stale.id || "unknown"));
+    }
+  }
+
+  const leads = await supa(
+    env,
+    "b2b_leads",
+    "GET",
+    null,
+    "?status=eq.new&created_at=lt." + encodeURIComponent(cutoff) + "&select=*"
+  );
+  if (!Array.isArray(leads) || leads.length === 0) {
+    console.log("Drip: no eligible leads");
+    return;
+  }
+
+  const domainByRegion = {
+    do: "sargassumpuntacana.com",
+    puntacana: "sargassumpuntacana.com",
+    punta_cana: "sargassumpuntacana.com",
+    florida: "sargassummiami.com",
+    gp: "sargasses-guadeloupe.com",
+    guadeloupe: "sargasses-guadeloupe.com",
+    mq: "sargasses-martinique.com",
+    martinique: "sargasses-martinique.com",
+    rivieramaya: "sargassumcancun.com",
+    riviera_maya: "sargassumcancun.com",
+    tulum: "sargazotulum.com"
+  };
+
+  for (const lead of leads) {
+    const claimAt = new Date().toISOString();
+    const claim = await supaQ(
+      env,
+      "b2b_leads",
+      "PATCH",
+      {
+        status: "processing",
+        claimed_at: claimAt,
+        contact_attempts: Math.max(0, Number(lead.contact_attempts) || 0) + 1,
+        last_contact_error: null
+      },
+      "?id=eq." + encodeURIComponent(lead.id) +
+        "&status=eq.new&created_at=lt." + encodeURIComponent(cutoff) +
+        "&select=id,email,domain,region,created_at,status,claimed_at,contact_attempts"
+    );
+
+    // PostgREST PATCH + status=eq.new is the atomic claim. A concurrent
+    // Worker receives zero rows and cannot send the same lead.
+    if (!Array.isArray(claim) || claim.length !== 1) {
+      console.log("Drip: lead not claimed; skip id=" + String(lead.id || "unknown"));
+      continue;
+    }
+
+    const claimedLead = claim[0];
+    const regionKey = String(claimedLead.region || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    const domain = String(claimedLead.domain || "").trim().toLowerCase();
+    const expectedDomain = domainByRegion[regionKey];
+    const email = String(claimedLead.email || "").trim();
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    const markManualReview = async (reason) => {
+      const rows = await supaQ(
+        env,
+        "b2b_leads",
+        "PATCH",
+        { status: "manual_review", claimed_at: null, last_contact_error: reason },
+        "?id=eq." + encodeURIComponent(claimedLead.id) +
+          "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) +
+          "&select=id,status"
+      );
+      return Array.isArray(rows) && rows.length === 1;
+    };
+
+    if (!validEmail || !expectedDomain || domain !== expectedDomain) {
+      const persisted = await markManualReview(!validEmail ? "invalid_email" : "unsupported_region_domain");
+      console.log("Drip: lead requires manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
+      continue;
+    }
+
+    const lang = ["mq", "martinique", "gp", "guadeloupe"].includes(regionKey)
+      ? "fr"
+      : ["do", "puntacana", "punta_cana", "rivieramaya", "riviera_maya", "tulum"].includes(regionKey)
+        ? "es"
+        : "en";
+    const subject = lang === "fr"
+      ? "Prévisions sargasses " + regionKey + " — observation datée"
+      : lang === "es"
+        ? "Previsión de sargazo " + regionKey + " — observación fechada"
+        : "Sargassum forecast " + regionKey + " — timestamped observation";
+    const html = lang === "fr"
+      ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Dernière observation disponible — ' + regionKey + '</h2><p>Consultez la carte et vérifiez l’heure réelle de la dernière observation AFAI avant de prendre une décision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Voir la carte et l’heure de mesure</a></p><p><a href="https://' + domain + '/fiabilite/">Méthode et fiabilité</a></p></div>'
+      : lang === "es"
+        ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Última observación disponible — ' + regionKey + '</h2><p>Consulta el mapa y comprueba la hora real de la última observación AFAI antes de decidir.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Ver mapa y hora de medición</a></p><p><a href="https://' + domain + '/fiabilite/">Método y fiabilidad</a></p></div>'
+        : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Latest available observation — ' + regionKey + '</h2><p>Check the map and the actual timestamp of the latest AFAI observation before making a decision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">View map and observation time</a></p><p><a href="https://' + domain + '/fiabilite/">Method and reliability</a></p></div>';
+
+    try {
+      const result = await sendEmail(email, subject, html, domain, env);
+      if (!result || !result.success) {
+        const persisted = await markManualReview("provider_delivery_unconfirmed");
+        console.log("Drip: delivery unconfirmed; manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
+        continue;
+      }
+
+      const contactedAt = new Date().toISOString();
+      const saved = await supaQ(
+        env,
+        "b2b_leads",
+        "PATCH",
+        { status: "contacted", contacted_at: contactedAt, claimed_at: null, last_contact_error: null },
+        "?id=eq." + encodeURIComponent(claimedLead.id) +
+          "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) +
+          "&select=id,status,contacted_at"
+      );
+      if (!Array.isArray(saved) || saved.length !== 1) {
+        // Do not release the claim or resend: the provider may already have
+        // accepted the message. Stale claims move to manual_review above.
+        console.log("Drip: provider accepted but contacted_at persistence failed; claim retained lead=" + String(claimedLead.id || "unknown"));
+        continue;
+      }
+      console.log("Drip: provider accepted and contacted_at persisted lead=" + String(claimedLead.id || "unknown") + " via " + result.provider);
+    } catch (_) {
+      const persisted = await markManualReview("processing_exception");
+      console.log("Drip: processing exception; manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
+    }
+  }
+}
+__name(runDripEmails, "runDripEmails");
+var B2C_REGION_CONFIG = {
+  mq: { domain: "sargasses-martinique.com", label: "Martinique", lang: "fr" },
+  martinique: { domain: "sargasses-martinique.com", label: "Martinique", lang: "fr" },
+  gp: { domain: "sargasses-guadeloupe.com", label: "Guadeloupe", lang: "fr" },
+  guadeloupe: { domain: "sargasses-guadeloupe.com", label: "Guadeloupe", lang: "fr" },
+  us: { domain: "sargassummiami.com", label: "Florida", lang: "en" },
+  florida: { domain: "sargassummiami.com", label: "Florida", lang: "en" },
+  do: { domain: "sargassumpuntacana.com", label: "Punta Cana", lang: "en" },
+  puntacana: { domain: "sargassumpuntacana.com", label: "Punta Cana", lang: "en" },
+  mx: { domain: "sargassumcancun.com", label: "Riviera Maya", lang: "en" },
+  rivieramaya: { domain: "sargassumcancun.com", label: "Riviera Maya", lang: "en" },
+  tulum: { domain: "sargazotulum.com", label: "Tulum", lang: "en" }
+};
+function resolveB2BWidgetRegion(region) {
+  const key = String(region || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return B2C_REGION_CONFIG[key] || null;
+}
+var B2C_ALERT_STATUSES = ["moderate", "avoid", "high"];
+function b2cObservationIsFresh(payload, now = Date.now()) {
+  // P0.46 §4 — PORTE SCIENTIFIQUE (fail-closed).
+  // L'unique horodatage autorise est `erddapTimestamp` (l'instant REEL de
+  // l'observation satellite) :
+  //   • `updatedAt` = date de republication du JSON -> jamais un substitut ;
+  //   • `dataAgeMinutes` = valeur stockee, potentiellement perimee -> jamais
+  //     un substitut ;
+  //   • `stale` doit etre EXACTEMENT false (un champ absent ou non booleen
+  //     est traite comme stale).
+  // Exigences cumulees : payload present, `levels` non vide, `stale === false`,
+  // `erddapTimestamp` valide, non futur, age reel <= 900 minutes.
+  if (!payload || payload.stale !== false || !Array.isArray(payload.levels) || payload.levels.length === 0) return false;
+  const observedAt = Date.parse(payload.erddapTimestamp);
+  if (!Number.isFinite(observedAt) || observedAt > now) return false;
+  return now - observedAt <= 900 * 60 * 1000;
+}
+__name(b2cObservationIsFresh, "b2cObservationIsFresh");
+function b2cSelectedAlertLevels(subscription, payload) {
+  if (!Array.isArray(subscription.beaches) || subscription.beaches.length === 0) return [];
+  const selectedIds = subscription.beaches.map((id) => typeof id === "string" ? id.trim() : "");
+  if (selectedIds.some((id) => !id) || new Set(selectedIds).size !== selectedIds.length) return [];
+  const byId = new Map();
+  for (const level of payload.levels) {
+    if (!level || typeof level.id !== "string" || !level.id.trim() || byId.has(level.id)) return [];
+    byId.set(level.id, level);
+  }
+  if (selectedIds.some((id) => !byId.has(id))) return [];
+  return selectedIds.map((id) => byId.get(id)).filter((level) => B2C_ALERT_STATUSES.includes(String(level.status || "").toLowerCase()));
+}
+__name(b2cSelectedAlertLevels, "b2cSelectedAlertLevels");
+function escapeB2CHtml(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+__name(escapeB2CHtml, "escapeB2CHtml");
+var B2C_ALERT_DELIVERY_RPC = "sg_claim_b2c_alert_delivery";
+var B2C_ALERT_DELIVERY_TABLE = "b2c_alert_deliveries";
+async function b2cDeliveryFingerprint(subscription, payload, selectedAlerts) {
+  // P0.46 §6 — Identite d'une alerte : (abonne, observation satellite, ensemble
+  // des plages). Une NOUVELLE observation = une NOUVELLE alerte (autorisee) ;
+  // la MEME observation rejouee = MEME cle => doublon supprime.
+  // Aucune PII : ni email, ni nom — id d'abonnement, region, timestamp et une
+  // empreinte SHA-256 des IDs de plage.
+  const subscriptionId = typeof subscription.id === "string" ? subscription.id.trim() : "";
+  if (!subscriptionId) return null;
+  const observedAt = Date.parse(payload.erddapTimestamp);
+  if (!Number.isFinite(observedAt)) return null;
+  const beachIds = Array.from(new Set(selectedAlerts.map((beach) => String(beach?.id || "").trim()).filter(Boolean))).sort();
+  if (beachIds.length === 0) return null;
+  const beachesHash = await hashString(beachIds.join("|"));
+  return {
+    subscriptionId,
+    observationTs: new Date(observedAt).toISOString(),
+    beachesHash,
+    region: String(subscription.region || "").trim().toLowerCase() || null
+  };
+}
+__name(b2cDeliveryFingerprint, "b2cDeliveryFingerprint");
+async function claimB2cAlertDelivery(env, fingerprint) {
+  // P0.46 §6 — RECLAMATION ATOMIQUE du marqueur de livraison.
+  // La fonction SQL `public.sg_claim_b2c_alert_delivery(...)` fait
+  // `INSERT ... ON CONFLICT DO NOTHING` sur la cle primaire
+  // (subscription_id, observation_ts, beaches_hash) : deux invocations
+  // concurrentes du cron ne peuvent obtenir le marqueur qu'une seule fois.
+  // Contrat : {claimed:true} = envoi autorise, {claimed:false} = doublon
+  // (supprime), {error} = marqueur indisponible => FAIL-CLOSED (aucun envoi).
+  if (!env.SUPABASE_SERVICE_KEY) return { claimed: false, error: "SUPABASE_SERVICE_KEY absent" };
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/rpc/${B2C_ALERT_DELIVERY_RPC}`;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "apikey": env.SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      body: JSON.stringify({
+        p_subscription_id: fingerprint.subscriptionId,
+        p_observation_ts: fingerprint.observationTs,
+        p_beaches_hash: fingerprint.beachesHash,
+        p_region: fingerprint.region
+      })
+    });
+    const text = await r.text();
+    if (!r.ok) return { claimed: false, error: `http_${r.status}:${text.slice(0, 160)}` };
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+    const claimed = data === true || data === "true" || (Array.isArray(data) && (data[0] === true || data[0] === "true"));
+    return { claimed: claimed === true, error: null };
+  } catch (e) {
+    return { claimed: false, error: String(e?.message || e).slice(0, 160) };
+  }
+}
+__name(claimB2cAlertDelivery, "claimB2cAlertDelivery");
+async function markB2cAlertDelivery(env, fingerprint, status, provider) {
+  // Mise a jour BEST EFFORT du marqueur (statut 'sent'/'failed' + provider).
+  // Un echec ici n'annule PAS l'envoi : le marqueur existe deja, donc le
+  // doublon reste impossible (le sens de securite est preserve).
+  const query = "?subscription_id=eq." + encodeURIComponent(fingerprint.subscriptionId) +
+    "&observation_ts=eq." + encodeURIComponent(fingerprint.observationTs) +
+    "&beaches_hash=eq." + encodeURIComponent(fingerprint.beachesHash);
+  const result = await supaExec(env, B2C_ALERT_DELIVERY_TABLE, "PATCH", {
+    status,
+    provider: provider || null,
+    updated_at: new Date().toISOString()
+  }, query);
+  return result.ok;
+}
+__name(markB2cAlertDelivery, "markB2cAlertDelivery");
+async function runB2CAlerts(env) {
+  console.log("B2C: starting runB2CAlerts");
+  const alerts = await supa(env, "b2c_alerts", "GET", null, "?status=eq.active&select=*");
+  if (!Array.isArray(alerts) || alerts.length === 0) {
+    console.log("B2C: 0 active subscribers");
+    return;
+  }
+  console.log("B2C: active subscriber count=" + alerts.length);
+  for (const sub of alerts) {
+    try {
+      const region = String(sub.region || "").trim().toLowerCase();
+      const regionInfo = B2C_REGION_CONFIG[region];
+      const domain = String(sub.domain || "").trim().toLowerCase();
+      if (!regionInfo || !domain || domain !== regionInfo.domain) {
+        console.log("B2C: invalid region/domain contract subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      if (typeof sub.email !== "string" || !sub.email.includes("@") || /\s/.test(sub.email) ||
+          typeof sub.unsubscribe_token !== "string" || !sub.unsubscribe_token.trim()) {
+        console.log("B2C: invalid subscriber contact subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      // PostgreSQL text[] is expected. Empty, NULL, display-name or unknown selections never imply consent for all beaches.
+      if (!Array.isArray(sub.beaches) || sub.beaches.length === 0) {
+        console.log("B2C: no explicit beach selection subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      let payload;
+      try {
+        const response = await fetch("https://" + domain + "/api/copernicus/sargassum.json", { cf: { cacheTtl: 300 } });
+        if (!response.ok) {
+          console.log("B2C: forecast HTTP failure subscription=" + String(sub.id || "unknown"));
+          continue;
+        }
+        payload = await response.json();
+      } catch (e) {
+        console.log("B2C: forecast fetch failed subscription=" + String(sub.id || "unknown") + ": " + e.message);
+        continue;
+      }
+      if (!b2cObservationIsFresh(payload)) {
+        console.log("B2C: observation missing, stale, future or older than 900m subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      const selectedAlerts = b2cSelectedAlertLevels(sub, payload);
+      if (selectedAlerts.length === 0) {
+        console.log("B2C: no exact selected-beach alert subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      // P0.46 §6 — Idempotence DURABLE : le marqueur de livraison est
+      // RECLAME AVANT l'envoi (ecriture atomique en base).
+      //   • marqueur indisponible (migration 005 non appliquee, reseau HS)
+      //     => FAIL-CLOSED : aucune alerte n'est envoyee ;
+      //   • marqueur deja pris (meme observation rejouee) => doublon supprime.
+      // Le marqueur vit dans une table DEDICEE : public.b2c_alerts (les
+      // abonnements) n'est JAMAIS modifie par le moteur d'alertes.
+      const fingerprint = await b2cDeliveryFingerprint(sub, payload, selectedAlerts);
+      if (!fingerprint) {
+        console.log("B2C: delivery fingerprint unavailable subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      const claim = await claimB2cAlertDelivery(env, fingerprint);
+      if (claim.error) {
+        console.log("B2C: delivery marker unavailable (fail-closed) subscription=" + String(sub.id || "unknown") + ": " + claim.error);
+        continue;
+      }
+      if (!claim.claimed) {
+        console.log("B2C: duplicate alert suppressed subscription=" + String(sub.id || "unknown") + " observation=" + fingerprint.observationTs);
+        continue;
+      }
+      const severity = { moderate: 1, avoid: 2, high: 3 };
+      const level = selectedAlerts.reduce((worst, beach) => {
+        const status = String(beach.status).toLowerCase();
+        return severity[status] > severity[worst] ? status : worst;
+      }, "moderate");
+      const forecastDate = new Date(payload.erddapTimestamp).toISOString().slice(0, 10);
+      const token = sub.unsubscribe_token;
+      const unsubUrl = "https://" + domain + "/unsubscribe?token=" + encodeURIComponent(token);
+      const lang = regionInfo.lang;
+      const regionLabel = regionInfo.label;
+      const levelEmoji = { clean: "🟢", moderate: "🟡", avoid: "🔴", high: "🔴", unknown: "⚪" };
+      const levelColor = { clean: "#16a34a", moderate: "#eab308", avoid: "#dc2626", high: "#dc2626", unknown: "#6b7280" };
+      const emoji = levelEmoji[level] || "⚠️";
+      const color = levelColor[level] || "#c0392b";
+      const beachesList = selectedAlerts.map((beach) => escapeB2CHtml(beach.id)).join(", ");
+      const weekly = payload.weekly && typeof payload.weekly === "object" ? payload.weekly : {};
+      const forecastRows = [];
+      for (const beach of selectedAlerts) {
+        const beachForecast = weekly[beach.id] && weekly[beach.id].forecast;
+        if (!Array.isArray(beachForecast)) continue;
+        for (let i = 1; i < Math.min(beachForecast.length, 4); i++) {
+          const day = beachForecast[i];
+          if (!day || typeof day.status !== "string") continue;
+          const dayStatus = String(day.status).toLowerCase();
+          forecastRows.push("<tr><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
+            escapeB2CHtml(beach.id) + "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>J+" + i +
+            "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
+            (levelEmoji[dayStatus] || "") + " " + escapeB2CHtml(dayStatus) +
+            "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
+            escapeB2CHtml(day.date || "") + "</td></tr>");
+        }
+      }
+      const forecastHtml = forecastRows.length
+        ? "<table style='width:100%;border-collapse:collapse;margin:12px 0;font-size:13px'><tr><th>Plage</th><th>Jour</th><th>Niveau</th><th>Date</th></tr>" + forecastRows.join("") + "</table>"
+        : "";
+      const subject = lang === "en"
+        ? "⚠️ Sargassum alert — " + regionLabel + " — " + forecastDate
+        : "⚠️ Alerte sargassum — " + regionLabel + " — " + forecastDate;
+      const html = lang === "en"
+        ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Sargassum alert — ' + escapeB2CHtml(regionLabel) + '</h2><p>Hello,</p><p>The sargassum level is <strong style="color:' + color + '">' + emoji + " " + level + '</strong> in <strong>' + escapeB2CHtml(regionLabel) + '</strong> today.</p><p>Beaches concerned: <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts →</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="' + unsubUrl + '">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>'
+        : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Alerte sargassum — ' + escapeB2CHtml(regionLabel) + '</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:' + color + '">' + emoji + " " + level + '</strong> sur <strong>' + escapeB2CHtml(regionLabel) + '</strong> aujourd’hui.</p><p>Plages concernées : <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les prévisions complètes →</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous êtes abonné aux alertes SargaGame.<br><a href="' + unsubUrl + '">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>';
+      // Le marqueur de livraison est deja reclame (atomique) : un rejeu de la
+      // meme observation est supprime par la cle primaire, pas par un KV
+      // best-effort. Aucune ligne de public.b2c_alerts n'est modifiee.
+      const result = await sendEmail(sub.email, subject, html, domain, env);
+      if (result.success) {
+        await markB2cAlertDelivery(env, fingerprint, "sent", result.provider);
+        console.log("B2C: alert sent subscription=" + String(sub.id || "unknown") + " provider=" + result.provider);
+      } else {
+        // Le marqueur reste en place : la MEME observation ne sera pas
+        // rejouee (pas de doublon possible). L'observation suivante, elle, a
+        // une cle differente et reste autorisee.
+        await markB2cAlertDelivery(env, fingerprint, "failed", result.provider || null);
+        console.log("B2C: email delivery not confirmed subscription=" + String(sub.id || "unknown") +
+          " provider=" + String(result.provider || "none") +
+          " ambiguous=" + String(Boolean(result.ambiguous)));
+      }
+    } catch (e) {
+      console.log("B2C: error subscription=" + String(sub.id || "unknown") + ": " + e.message);
+    }
+  }
+}
+__name(runB2CAlerts, "runB2CAlerts");
+async function handleUnsubscribe(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token") || "";
+  if (!token) {
+    return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token manquant</h2><p>Lien invalide.</p></body>', { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  }
+  try {
+    await supa(env, "b2c_alerts", "PATCH", { status: "unsubscribed" }, `?unsubscribe_token=eq.${token}&select=*`);
+  } catch {
+  }
+  const lang = url.pathname.includes("/en") ? "en" : "fr";
+  const html = lang === "en" ? `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center;max-width:520px;margin:0 auto"><h2 style="color:#0D1E1C">You are unsubscribed \u2713</h2><p>You will no longer receive sargassum alerts.</p><p><a href="/" style="color:#0d7f63">Back to map</a></p></body>` : `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center;max-width:520px;margin:0 auto"><h2 style="color:#0D1E1C">Vous \xEAtes d\xE9sabonn\xE9 \u2713</h2><p>Vous ne recevrez plus d'alertes sargasses.</p><p><a href="/" style="color:#0d7f63">Retour \xE0 la carte</a></p></body>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+__name(handleUnsubscribe, "handleUnsubscribe");
+async function handleCollect(request, env, ctx) {
+  const noSniff = { "X-Content-Type-Options": "nosniff" };
+  if (request.method !== "POST") return new Response(null, { status: 405, headers: noSniff });
+  const hostOk = /* @__PURE__ */ __name((u) => {
+    if (!u) return null;
+    try {
+      const h = new URL(u).hostname.toLowerCase();
+      return COLLECT_HOSTS.some((d) => h === d || h.endsWith("." + d));
+    } catch {
+      return false;
+    }
+  }, "hostOk");
+  let ok = hostOk(request.headers.get("Origin"));
+  if (ok === null) ok = hostOk(request.headers.get("Referer"));
+  if (ok === false) return new Response(null, { status: 403, headers: noSniff });
+  const raw2 = await request.text().catch(() => "");
+  if (raw2.length > 65536 || raw2.length < 2) return new Response(null, { status: 204, headers: noSniff });
+  let data = null;
+  try {
+    data = JSON.parse(raw2);
+  } catch {
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) return new Response(null, { status: 204, headers: noSniff });
+  const day = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const ip = request.headers.get("CF-Connecting-IP") || "";
+  const ua = (request.headers.get("User-Agent") || "").slice(0, 120);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${day}|${ip}|${ua}`));
+  const vh = Array.from(new Uint8Array(digest)).slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
+  if (!await rateLimit(env, `collect:global`, 5e3)) return new Response(null, { status: 204, headers: noSniff });
+  if (!await rateLimit(env, `collect:${vh}`, 100)) return new Response(null, { status: 204, headers: noSniff });
+  const region = typeof data.region === "string" ? data.region.slice(0, 20) : "";
+  ctx.waitUntil(supa(env, "analytics_events", "POST", {
+    event: "sg_session",
+    params: { vh, d: data },
+    island: region || new URL(request.url).hostname
+  }));
+  return new Response(null, { status: 204, headers: noSniff });
+}
+__name(handleCollect, "handleCollect");
+async function handleMollie(request, env) {
+  const h = cors(request);
+  let body;
+  try {
+    const raw2 = await request.text();
+    body = raw2 ? JSON.parse(raw2) : {};
+  } catch {
+    return new Response(JSON.stringify({ error: "invalid_json", raw_preview: raw?.slice(0, 100) || "empty" }), { status: 400, headers: { ...h, "X-Diag-Source": "worker" } });
+  }
+  const action = body.action || "";
+  if (!await rateLimit(env, `mol_${action}`, 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: h });
+  try {
+    const apiKey = env.MOLLIE_API_KEY;
+    const profileId = mollieProfileId(env);
+    const host = requestHost(request);
+    if (action === "create_payment") {
+      if (String(body.pass || "") === "sos" || String(body.source || "") === "sos_plage") {
+        return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: h });
+      }
+      const { email, source, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
+      // ── P0 money path : le SERVEUR décide du SKU, de la devise et du montant ──
+      // AVANT : un `pass` inconnu (ou ABSENT) court-circuitait l'allowlist
+      // (montant libre accepté jusqu'à 300 €) et le montant DÉBITÉ pouvait être
+      // dicté par le client. Le catalogue serveur est la seule autorité :
+      // SKU inconnu ou devise non vendue => 400, AUCUN appel Mollie.
+      const pass = String(body.pass || "").trim();
+      // Garde explicite (fail-closed) : un SKU inconnu n'atteint jamais la
+      // résolution d'offre, ni un appel Mollie, ni une écriture de metadata.
+      if (!Object.prototype.hasOwnProperty.call(PASS_PRICES, pass)) {
+        return new Response(JSON.stringify({ error: "Prix invalide", reason: "unknown_offer" }), { status: 400, headers: h });
+      }
+      const requestedCurrency = String(body.cur || body.currency || amountObj?.currency || "EUR").toUpperCase();
+      const offer = resolvePassOffer(pass, requestedCurrency);
+      // Le message d'erreur public reste « Prix invalide » (contrat affiché au
+      // client et déjà vérifié par les tests) ; `reason` porte le diagnostic
+      // technique pour les logs et la mesure.
+      if (!offer) return new Response(JSON.stringify({ error: "Prix invalide", reason: "unknown_offer" }), { status: 400, headers: h });
+      // Montant ANNONCÉ par le client : il doit concorder avec le catalogue.
+      // Le montant DÉBITÉ est celui du serveur, jamais celui du client.
+      let announcedCents = null;
+      if (cents != null) {
+        const c = parseInt(cents, 10);
+        if (!Number.isFinite(c) || c <= 0) return new Response(JSON.stringify({ error: "Prix invalide", reason: "invalid_amount" }), { status: 400, headers: h });
+        announcedCents = c;
+      } else if (amountObj && amountObj.value != null) {
+        const v = Number.parseFloat(amountObj.value);
+        if (!Number.isFinite(v)) return new Response(JSON.stringify({ error: "Prix invalide", reason: "invalid_amount" }), { status: 400, headers: h });
+        announcedCents = Math.round(v * 100);
+      }
+      const allowedCents = passCentsAllowlist(pass)[offer.currency] || [];
+      if (announcedCents != null && !allowedCents.some((n) => Math.abs(announcedCents - n) <= 2)) {
+        return new Response(JSON.stringify({ error: "Prix invalide", reason: "price_mismatch" }), { status: 400, headers: h });
+      }
+      // Email obligatoire : sans email, le grant durable ne peut être rattaché
+      // à personne => argent payé sans accès livré (trou de confiance).
+      const normalizedEmail = String(email || "").trim().toLowerCase();
+      if (!EMAIL_RE.test(normalizedEmail)) {
+        return new Response(JSON.stringify({ error: "Email invalide", reason: "invalid_email" }), { status: 400, headers: h });
+      }
+      const amount = { value: offer.amount.toFixed(2), currency: offer.currency };
+      // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais par
+      // le client. `source` reste l'attribution de canal (réconciliation des
+      // ventes) mais ne sélectionne plus aucun chemin de livraison.
+      const metadata = stripReservedMetadata(userMeta);
+      metadata.source = String(source || "unknown").slice(0, 40);
+      metadata.offer_kind = "b2c_pass";
+      metadata.pass = pass;
+      metadata.email = normalizedEmail;
+      metadata.lang = lang || "fr";
+      if (referredBy) metadata.referredBy = referredBy;
+      if (myReferralCode) metadata.myReferralCode = myReferralCode;
+      let userId = null;
+      if (body.authToken) {
+        const sess = await authVerify(env, String(body.authToken));
+        if (sess) userId = String(sess.uid);
+      }
+      if (!userId && email && String(email).includes("@")) {
+        const u = await userUpsert(env, String(email).toLowerCase().trim(), "email", null);
+        if (u) userId = u.id;
+      }
+      if (userId) metadata.user_id = userId;
+      const kind = "pass";
+      const returnRef = crypto.randomUUID();
+      const backUrl = safeRedirectUrl(userRedirect, `https://${host}/?paid=1&kind=${kind}&email=${encodeURIComponent(normalizedEmail)}&plan=${encodeURIComponent(pass)}`);
+      metadata.return_ref = returnRef;
+      const redirectUrl = `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`;
+      if (normalizedEmail) {
+        const idemKey = `mol_${await hashString(normalizedEmail + "|" + pass)}`;
+        const ex = await kv(env).get(idemKey);
+        if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
+        await kv(env).put(idemKey, "1", { expirationTtl: 60 });
+      }
+      const pd = { amount, description: `Sargasses Pass ${pass}`, redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (offer.currency === "USD" ? "en_US" : "fr_FR") };
+      if (profileId) pd.profileId = profileId;
+      if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
+      if (cardToken) pd.cardToken = cardToken;
+      if (payMethod) pd.method = payMethod;
+      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
+      // `amount` = montant EFFECTIF que le serveur va débiter. Le front
+      // (src/PremiumModal.jsx) compare ce champ à l'affichage et émet
+      // `sg_price_mismatch` en cas d'écart : sans lui, l'écart
+      // affichage/débit resterait invisible.
+      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null, amount: { value: amount.value, currency: amount.currency }, pass, days: offer.days }), { headers: h });
+    }
+    if (action === "create_subscription") {
+      const { plan: rawPlan, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
+      const planKey = normalizePlanKey(rawPlan);
+      const b2c = B2C_SUB_PLANS[planKey];
+      const b2b = B2B_PLANS[planKey];
+      if (!b2c && !b2b) throw new Error(`Plan inconnu: ${rawPlan || ""}`);
+      const plan = b2c || b2b;
+      let cid = customerId;
+      if (!cid && email) {
+        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
+        const existing = (customers._embedded?.customers || []).find((c) => c.email === email);
+        if (existing) cid = existing.id;
+        else {
+          const nc = await mollieReq("POST", "v2/customers", apiKey, { email, name: name || "", metadata: { source: b2c ? "b2c_premium_signup" : "b2b_monthly_signup" } });
+          cid = nc.id;
+        }
+      }
+      if (!cid) throw new Error("customerId ou email requis");
+      if (mandateId) {
+        const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
+          amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
+          description: plan.description,
+          webhookUrl: `https://${host}/api/mollie-webhook`,
+          // `offer_kind` est écrit par le SERVEUR à partir du catalogue : le
+          // client ne peut plus choisir la classe de livraison d'un abonnement.
+          metadata: { ...stripReservedMetadata(userMeta), source: b2c ? "premium_subscription" : "b2b_monthly", offer_kind: b2c ? "b2c_subscription" : "b2b_subscription", plan: planKey, email: email || "", pass: b2c ? b2c.pass : "" },
+          interval: plan.interval || "1 month",
+          mandateId,
+          ...payMethod ? { method: payMethod } : {}
+        });
+        const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
+        if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
+        return new Response(JSON.stringify(result), { headers: h });
+      }
+      const isAnnualB2B = !!(b2b && !b2b.interval);
+      const returnRef = crypto.randomUUID();
+      const metadata = {
+        ...stripReservedMetadata(userMeta),
+        source: b2c ? String(body.source || "premium_subscription").slice(0, 40) : isAnnualB2B ? "b2b_annual" : "b2b_first",
+        offer_kind: b2c ? "b2c_subscription" : isAnnualB2B ? "b2b_annual" : "b2b_first",
+        plan: planKey,
+        email: email || "",
+        pass: b2c ? b2c.pass : "",
+        lang: body.lang || "fr",
+        customerId: cid,
+        interval: plan.interval || "",
+        return_ref: returnRef
+      };
+      const backUrl = `https://${host}/?paid=1&kind=${b2c ? "pass" : "pro"}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(planKey)}`;
+      const pd = {
+        amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
+        description: plan.description,
+        redirectUrl: `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`,
+        webhookUrl: `https://${host}/api/mollie-webhook`,
+        metadata,
+        locale: body.locale || "fr_FR",
+        customerId: cid
+      };
+      if (!isAnnualB2B) pd.sequenceType = "first";
+      if (payMethod) pd.method = payMethod;
+      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
+      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, customerId: cid, user_id: null }), { headers: h });
+    }
+    if (action === "payment_status") {
+      const paymentId = String(body.paymentId || "").trim();
+      if (!paymentId) throw new Error("paymentId requis");
+      // Format d'identifiant Mollie : l'endpoint ne doit pas servir d'oracle
+      // d'existence pour un identifiant arbitraire.
+      if (!/^tr_[A-Za-z0-9]+$/.test(paymentId)) return new Response(JSON.stringify({ error: "invalid_payment_id" }), { status: 400, headers: h });
+      const p = await mollieReq("GET", `v2/payments/${paymentId}`, apiKey);
+      const status = p.status || "unknown";
+      // Un paiement de TEST (`mode:"test"`) ne débloque JAMAIS Premium : le
+      // front déverrouille sur `paid` (src/PremiumModal.jsx). L'état
+      // autoritatif est relu auprès de l'API Mollie, jamais pris du client.
+      const isTestMode = String(p.mode || "") === "test";
+      const paid = !isTestMode && ["paid", "settled"].includes(status);
+      // ── Contrôle du PROPRIÉTAIRE (P0 2026-11-09) ─────────────────────────
+      // La redirection navigateur ne vaut RIEN : l'état est relu auprès de
+      // l'API Mollie. Mais `payment_status` ne doit pas devenir une source de
+      // fuite : si l'appelant fournit un email, il doit être celui du
+      // paiement. Sans ce contrôle, un identifiant deviné suffit à lire le
+      // pass et l'email d'un client.
+      const metadata = p.metadata && typeof p.metadata === "object" && !Array.isArray(p.metadata) ? p.metadata : {};
+      const requestedEmail = String(body.email || "").trim().toLowerCase();
+      const ownerEmail = String(metadata.email || "").trim().toLowerCase();
+      if (requestedEmail && ownerEmail && ownerEmail !== requestedEmail) {
+        return new Response(JSON.stringify({ error: "payment_owner_mismatch", paid: false, status }), { status: 403, headers: h });
+      }
+      let granted = false;
+      let grant = null;
+      if (paid) {
+        try {
+          grant = await fulfillPaidPayment(env, p, null, host);
+          granted = !!grant?.granted;
+        } catch (err) {
+          grant = { granted: false, error: String(err?.message || err).slice(0, 80) };
+        }
+      }
+      const out = { paid, status, paymentId, mode: p.mode || null, terminal: ["canceled", "expired", "failed"].includes(status), granted, grant };
+      // Fin d'accès servie au client : la durée vient de la grille serveur.
+      const passKey = String(metadata.pass || "");
+      if (granted && passKey && PASS_DURATIONS[passKey]) {
+        out.pass = passKey;
+        out.passEnd = (Math.floor(Date.now() / 1e3) + PASS_DURATIONS[passKey] * 86400) * 1000;
+      }
+      return new Response(JSON.stringify(out), { headers: h });
+    }
+    if (action === "verify_subscription") {
+      const email = (body.email || "").trim();
+      if (!email || !email.includes("@")) return new Response(JSON.stringify({ error: "Missing email" }), { status: 400, headers: h });
+      // P0.118 §7 — `user_id` n'est pas une colonne de public.payment_grants :
+      // il est lu dans metadata (jsonb), ou create_payment l'a depose.
+      const rows = await supa(env, "payment_grants", "GET", null, `?select=pass,expires_at,payment_id,metadata&type=eq.b2c_pass&email=eq.${email}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
+      if (!rows?.length) return new Response(JSON.stringify({ active: false, reason: "no_pass_grant" }), { headers: h });
+      const passEnd = new Date(rows[0].expires_at).getTime();
+      if (!passEnd || passEnd <= Date.now()) return new Response(JSON.stringify({ active: false, reason: "no_pass_grant" }), { headers: h });
+      const grantUserId = rows[0].metadata?.user_id || null;
+      return new Response(JSON.stringify({ active: true, kind: "pass", pass: rows[0].pass, passEnd, status: "paid", user_id: grantUserId }), { headers: h });
+    }
+    if (action === "auth_google") {
+      if (!env.GOOGLE_CLIENT_ID) return new Response(JSON.stringify({ error: "google_not_configured" }), { status: 501, headers: h });
+      const credential = String(body.credential || "");
+      if (!credential || credential.length > 8192) return new Response(JSON.stringify({ error: "invalid_credential" }), { status: 400, headers: h });
+      const g = await verifyGoogleIdToken(env, credential);
+      if (!g) return new Response(JSON.stringify({ error: "google_auth_invalid" }), { status: 401, headers: h });
+      const user = await userUpsert(env, g.email, "google", g.sub);
+      if (!user) return new Response(JSON.stringify({ error: "user_unavailable" }), { status: 503, headers: h });
+      const token = await authSign(env, { uid: user.id, email: g.email, type: "sg_session", exp: Math.floor(Date.now() / 1e3) + 90 * 86400 });
+      const ent = await userEntitlements(env, user.id, g.email);
+      return new Response(JSON.stringify({ ok: true, user_id: user.id, email: g.email, name: g.name, provider: "google", token, ...ent }), { headers: h });
+    }
+    if (action === "auth_email") {
+      const email = String(body.email || "").toLowerCase().trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return new Response(JSON.stringify({ error: "invalid_email" }), { status: 400, headers: h });
+      const user = await userUpsert(env, email, "email", null);
+      const ent = await userEntitlements(env, user?.id || null, email);
+      return new Response(JSON.stringify({ ok: true, user_id: user?.id || null, email, provider: "email", ...ent }), { headers: h });
+    }
+    if (action === "auth_session") {
+      const payload = await authVerify(env, String(body.token || ""));
+      if (!payload) return new Response(JSON.stringify({ ok: false, error: "invalid_session" }), { status: 401, headers: h });
+      const users = await supaQ(env, "sg_users", "GET", null, `?id=eq.${payload.uid}&select=id,email&limit=1`);
+      const email = users?.[0]?.email || String(payload.email || "");
+      const ent = await userEntitlements(env, String(payload.uid), email || null);
+      return new Response(JSON.stringify({ ok: true, user_id: payload.uid, email, ...ent }), { headers: h });
+    }
+    if (action === "applepay_session" || action === "applepay_merchant_session") {
+      const validationUrl = body.validationUrl || body.validationURL;
+      if (!validationUrl) throw new Error("validationUrl requis");
+      if (!/^https:\/\/(apple|cdn-apple|guzzoni).*\.apple\.com\//i.test(validationUrl)) throw new Error("validationUrl doit provenir d'apple.com");
+      const session = await mollieReq("POST", "v2/wallets/applepay/sessions", apiKey, { validationUrl, domain: body.domain || host });
+      return new Response(JSON.stringify(session), { headers: h });
+    }
+    if (action === "claim_referral_credit") {
+      const code = String(body.code || "");
+      if (!/^REF-[A-Z0-9]{6}$/.test(code)) return new Response(JSON.stringify({ error: "Code de parrainage invalide" }), { status: 400, headers: h });
+      return new Response(JSON.stringify({ days: 0, code, enabled: false }), { headers: h });
+    }
+    return new Response(JSON.stringify({ error: "action_inconnue" }), { status: 400, headers: h });
+  } catch (e) {
+    // Un refus de PRIX est une erreur CLIENT (400), pas une panne serveur :
+    // un 500 ferait croire à un incident et déclencherait des reprises.
+    const msg = String(e?.message || "payment_processing_error").slice(0, 120);
+    const status = /Prix invalide/.test(msg) ? 400 : 500;
+    return new Response(JSON.stringify({ error: msg }), { status, headers: h });
+  }
+}
+__name(handleMollie, "handleMollie");
+// ─────────────────────────────────────────────────────────────────────────────
+// P0.118 §6/§7 — Webhook Mollie : adapters, validation autoritative et
+// fulfillment durable (grant durable VERIFIE avant tout marqueur KV).
+//
+// DEUX generations de webhook coexistent chez Mollie :
+//   CLASSIQUE : POST application/x-www-form-urlencoded, corps
+//               "id=tr_xxx&event=payment.paid". L'identifiant de l'evenement
+//               EST l'identifiant de l'entite. (La version live faisait
+//               JSON.parse() sur ce corps : le webhook Classique levait une
+//               exception et le paiement n'etait jamais honore.)
+//   NEXT-GEN  : POST application/json, corps
+//               { "resource": "payment", "id": "event_xxx",
+//                 "type": "payment.paid", "entityId": "tr_xxx" }.
+//               `id` est l'IDENTIFIANT D'EVENEMENT, `entityId` l'identifiant
+//               de l'ENTITE. Confondre les deux marque un evenement comme
+//               traite alors que l'entite n'a pas ete honoree.
+//
+// REGLES non negociables :
+//   1. Le statut n'est JAMAIS lu dans le corps du webhook : l'etat de
+//      l'entite est recupere depuis l'API Mollie (source autoritative).
+//   2. Un evenement inconnu ne cree AUCUN grant et n'est PAS marque comme
+//      traite (un rejeu ulterieur ne doit pas etre perdu).
+//   3. Le grant durable (RPC / ecriture Supabase) est ecrit ET VERIFIE
+//      AVANT tout marqueur KV. Un marqueur pose sans grant durable = argent
+//      paye sans droit servi, et plus de rejeu possible.
+// ─────────────────────────────────────────────────────────────────────────────
+function deriveSnapshotEvent(resource, snapshot) {
+  if (resource === "refund") {
+    const status = String(snapshot?.status || "").trim();
+    return status ? `refund.${status}` : "";
+  }
+  if (resource === "chargeback") {
+    return snapshot?.reversedAt ? "chargeback.reversed" : "chargeback.received";
+  }
+  return "";
+}
+__name(deriveSnapshotEvent, "deriveSnapshotEvent");
+function parseMollieWebhook(request, raw) {
+  const contentType = String(request.headers.get("content-type") || "").toLowerCase();
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    const params = new URLSearchParams(raw);
+    const id = String(params.get("id") || "").trim();
+    const event = String(params.get("event") || params.get("type") || "").trim();
+    const resource = event.startsWith("subscription.") ? "subscription" : "payment";
+    return {
+      generation: "classic",
+      eventId: id,
+      entityId: id,
+      // Format Classique : le corps ne contient que l'identifiant du
+      // paiement. Un remboursement/chargeback est detecte plus tard sur
+      // l'etat AUTORITATIF du paiement (amountRefunded / amountChargedBack).
+      paymentId: resource === "payment" ? id : "",
+      resource,
+      event,
+      type: event,
+      malformed: !id
+    };
+  }
+  let data = null;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    data = null;
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return { generation: "unknown", eventId: "", entityId: "", paymentId: "", resource: "", event: "", type: "", malformed: true };
+  }
+  const eventId = String(data.id || "").trim();
+  let type = String(data.type || "").trim();
+  const rawResource = String(data.resource || "").trim();
+  let resource = rawResource;
+  let entityId = String(data.entityId || data.entity_id || "").trim();
+  let paymentId = String(data.paymentId || data.payment_id || "").trim();
+  const embedded = data._embedded && typeof data._embedded === "object" && data._embedded.entity && typeof data._embedded.entity === "object"
+    ? data._embedded.entity
+    : null;
+
+  // Enveloppe Next-gen : { resource:"event", id:"event_...", type,
+  // entityId, _embedded.entity }. L'entite embarquee porte le vrai
+  // identifiant et, pour un remboursement/chargeback, le paymentId.
+  if (resource === "event") {
+    const prefix = type.split(".")[0];
+    resource = ["payment", "subscription", "refund", "chargeback"].includes(prefix)
+      ? prefix
+      : String(embedded?.resource || "").trim();
+    if (!entityId && embedded?.id) entityId = String(embedded.id).trim();
+    if (!paymentId && embedded?.paymentId) paymentId = String(embedded.paymentId).trim();
+  } else if (resource === "refund" || resource === "chargeback") {
+    // Snapshot direct (webhook d'entite Refunds/Chargebacks API) : le corps
+    // EST l'entite, sans champ `type`. On derive l'evenement du statut.
+    if (!entityId) entityId = eventId;
+    if (!type) type = deriveSnapshotEvent(resource, data);
+  } else if (!resource) {
+    const prefix = type.split(".")[0];
+    if (["payment", "subscription", "refund", "chargeback"].includes(prefix)) resource = prefix;
+  }
+
+  // Un identifiant d'evenement ("event_xxx") n'est JAMAIS un identifiant
+  // d'entite ("tr_xxx" / "sub_xxx") : on ne confond pas les deux.
+  if (!entityId && /^(tr|sub|re|chb)_/.test(eventId)) entityId = eventId;
+  if (!paymentId && resource === "payment") paymentId = entityId;
+
+  const isNegativeResource = resource === "refund" || resource === "chargeback";
+  return {
+    generation: "nextgen",
+    eventId,
+    entityId,
+    paymentId,
+    resource,
+    event: type,
+    type,
+    malformed: isNegativeResource ? !eventId || !paymentId : !eventId || !type || !entityId
+  };
+}
+__name(parseMollieWebhook, "parseMollieWebhook");
+function classifyPayment(metadata) {
+  // La classification vient EXCLUSIVEMENT de `offer_kind`, écrit par le
+  // SERVEUR à la création du paiement. Avant, elle dérivait de
+  // `metadata.source` / `metadata.plan` — deux champs choisis par le client :
+  // `source:"b2b_annual"` + `plan:"brief_monthly"` + 29 € suffisaient à
+  // obtenir 365 JOURS d'accès B2B (l'offre annuelle approuvée coûte 690 €).
+  const kind = String(metadata?.offer_kind || "");
+  if (kind === "b2b_annual") return "b2b_annual";
+  if (kind === "b2b_first") return "b2b_first";
+  if (kind === "b2b_subscription") return "b2b_subscription_only";
+  if (kind === "b2b_onboarding") return "b2b_onboarding";
+  if (kind === "b2c_subscription" || kind === "b2c_pass") return "b2c";
+  // Paiement créé AVANT le correctif : aucun `offer_kind`. La source ne
+  // sélectionne plus AUCUN chemin de livraison B2B « annuel » ou « premier »
+  // sur la seule foi d'un champ client. On conserve les canaux historiques
+  // pour ne pas laisser de l'argent DÉJÀ encaissé sans accès livré, mais le
+  // droit reste dérivé du CATALOGUE du plan (durée) et le MONTANT reste
+  // validé contre ce même plan : un `offer_kind`/`source` « annuel » sur un
+  // plan MENSUEL est refusé (cf. `offer_kind_plan_mismatch`).
+  // Un pass B2C LÉGITIME reste B2C : une source forgée ne doit pas priver
+  // l'acheteur de l'accès qu'il a payé (ni le transformer en 365 jours).
+  const pass = String(metadata?.pass || "");
+  if (pass && Object.prototype.hasOwnProperty.call(FULFILL_PRICES, pass)) return "b2c";
+  const source = String(metadata?.source || "");
+  if (source === "b2b_annual" || source === "b2b_espace_annual") return "b2b_annual";
+  if (source === "b2b_first" || source === "b2b_espace_monthly") return "b2b_first";
+  if (source === "b2b_subscription") return "b2b_onboarding";
+  if (source === "b2b_monthly" || source === "b2b_concierge") return "b2b_subscription_only";
+  return "b2c";
+}
+__name(classifyPayment, "classifyPayment");
+function validateMollieAmount(payment, pass) {
+  const currency = String(payment?.amount?.currency || "").toUpperCase();
+  const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
+  if (!Number.isFinite(cents) || cents <= 0) return { ok: false, reason: "amount_invalid" };
+  const expected = FULFILL_PRICES[pass];
+  if (!expected) return { ok: false, reason: "unknown_sku" };
+  const base = expected[currency];
+  if (base == null) {
+    const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5000;
+    if (cents <= 50 || cents >= upper) return { ok: false, reason: "amount_out_of_range" };
+    return { ok: true, currency, cents };
+  }
+  const acceptable = [Math.round(base * 100)];
+  // Montant de l'ANCIENNE offre : accepté UNIQUEMENT pour un paiement déjà
+  // encaissé avant la coupure du 2026-11-09 (date de création vérifiable).
+  // Sans cette fenêtre, les ventes payées à l'ancien tarif ne seraient jamais
+  // livrées (argent encaissé, accès jamais délivré). Un paiement NOUVEL au
+  // tarif ancien reste refusé.
+  const historical = HISTORICAL_PASS_PRICES[pass] || {};
+  if (Object.prototype.hasOwnProperty.call(historical, currency)) {
+    const createdRaw = payment?.createdAt;
+    const created = typeof createdRaw === "number" ? createdRaw : Date.parse(String(createdRaw || ""));
+    if (Number.isFinite(created) && created < Date.parse(OFFER_CUTOFF_DATE)) {
+      for (const n of historical[currency]) acceptable.push(Math.round(n * 100));
+    }
+  }
+  if (!acceptable.some((n) => Math.abs(cents - n) <= 2)) return { ok: false, reason: "amount_mismatch" };
+  return { ok: true, currency, cents };
+}
+__name(validateMollieAmount, "validateMollieAmount");
+function validateB2BAmount(payment, planKey) {
+  const currency = String(payment?.amount?.currency || "").toUpperCase();
+  const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
+  if (!Number.isFinite(cents) || cents <= 0) return { ok: false, reason: "amount_invalid" };
+  if (!["EUR", "USD"].includes(currency)) return { ok: false, reason: "currency_invalid" };
+  const plan = B2B_PLANS[planKey];
+  if (!plan) return { ok: false, reason: "unknown_plan" };
+  if (String(plan.currency).toUpperCase() !== currency) return { ok: false, reason: "currency_mismatch" };
+  const base = Math.round(plan.amount * 100);
+  // 1x (periode) .. 12x (prepaiement annuel) : jamais un montant arbitraire.
+  const multiples = [];
+  for (let i = 1; i <= 12; i++) multiples.push(base * i);
+  if (!multiples.some((n) => Math.abs(cents - n) <= 2)) return { ok: false, reason: "amount_mismatch" };
+  return { ok: true, currency, cents };
+}
+__name(validateB2BAmount, "validateB2BAmount");
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+function validatePaymentForFulfillment(payment, metadata) {
+  const problems = [];
+  const mode = String(payment?.mode || "");
+  const status = String(payment?.status || "");
+  const kind = classifyPayment(metadata);
+  const pass = String(metadata?.pass || "");
+  const email = String(metadata?.email || "");
+  const currency = String(payment?.amount?.currency || "").toUpperCase();
+  const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
+
+  if (mode !== "live") problems.push("not_live_mode");
+  if (status !== "paid" && status !== "settled") problems.push("not_paid");
+  if (!payment?.paidAt) problems.push("missing_paid_at");
+  if (!Number.isFinite(cents) || cents <= 0) problems.push("amount_invalid");
+  if (!["EUR", "USD"].includes(currency)) problems.push("currency_invalid");
+
+  if (kind === "b2c") {
+    // Grille de LIVRAISON (pas de CRÉATION) : un paiement `sos` DÉJÀ encaissé
+    // doit pouvoir être livré — encaisser sans livrer serait un trou de
+    // confiance. La CRÉATION de `sos` reste interdite (cf. PASS_PRICES).
+    if (!pass || !FULFILL_PRICES[pass]) problems.push("invalid_sku");
+    else {
+      const amt = validateMollieAmount(payment, pass);
+      if (!amt.ok) problems.push(amt.reason);
+    }
+    if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+  } else if (kind === "b2b_annual" || kind === "b2b_first") {
+    // Le DROIT (durée) est dérivé du CATALOGUE du plan, jamais d'un indicateur
+    // choisi par le client. Un `offer_kind` « annuel » sur un plan MENSUEL
+    // (29 €) est refusé : c'est exactement le forged-metadata qui offrait
+    // 365 jours pour 29 €.
+    const planKey = String(metadata?.plan || "");
+    const plan = B2B_PLANS[planKey];
+    // Un paiement B2B ne porte JAMAIS de pass B2C : la contradiction est un
+    // signe de métadonnées forgées => refus explicite.
+    if (String(metadata?.pass || "")) problems.push("b2b_offer_with_pass");
+    if (!plan) {
+      problems.push("unknown_plan");
+    } else {
+      const annualPlan = !plan.interval;
+      if (annualPlan !== (kind === "b2b_annual")) problems.push("offer_kind_plan_mismatch");
+      const amt = validateB2BAmount(payment, planKey);
+      if (!amt.ok) problems.push(amt.reason);
+    }
+    if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+  } else if (kind === "b2b_onboarding") {
+    if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+    const planKey = String(metadata?.plan || "");
+    if (!B2B_PLANS[planKey]) problems.push("b2b_offer_not_approved");
+    if (!B2B_SUBSCRIPTION_SCHEMA_PLANS.has(planKey)) problems.push("b2b_plan_schema_mismatch");
+  } else {
+    problems.push("unsupported_source");
+  }
+  return { kind, ok: problems.length === 0, problems, mode, status, pass, email, currency, cents };
+}
+__name(validatePaymentForFulfillment, "validatePaymentForFulfillment");
+async function supaExec(env, table, method, body, query = "") {
+  // Ecriture Supabase VERIFIEE : le statut HTTP et le corps sont exposes.
+  // L'ancien helper `supa` renvoyait `null` sur erreur, ce qui rendait TOUTE
+  // ecriture ratsee silencieusement indiscernable d'un succes.
+  if (!env.SUPABASE_SERVICE_KEY) return { ok: false, status: 0, data: null, error: "SUPABASE_SERVICE_KEY absent" };
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
+    const r = await fetch(url, {
+      method,
+      headers: {
+        "apikey": env.SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      body: body !== void 0 ? JSON.stringify(body) : void 0
+    });
+    const text = await r.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+    if (!r.ok) return { ok: false, status: r.status, data, error: `http_${r.status}:${text.slice(0, 160)}` };
+    return { ok: true, status: r.status, data };
+  } catch (e) {
+    return { ok: false, status: 0, data: null, error: String(e?.message || e).slice(0, 160) };
+  }
+}
+__name(supaExec, "supaExec");
+async function supaGetChecked(env, table, query) {
+  if (!env.SUPABASE_SERVICE_KEY) return { ok: false, status: 0, rows: [], error: "SUPABASE_SERVICE_KEY absent" };
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
+    const r = await fetch(url, {
+      method: "GET",
+      headers: {
+        "apikey": env.SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      }
+    });
+    const text = await r.text();
+    if (!r.ok) return { ok: false, status: r.status, rows: [], error: `http_${r.status}:${text.slice(0, 160)}` };
+    let rows = [];
+    try {
+      rows = text ? JSON.parse(text) : [];
+    } catch {
+      rows = [];
+    }
+    return { ok: true, status: r.status, rows: Array.isArray(rows) ? rows : [] };
+  } catch (e) {
+    return { ok: false, status: 0, rows: [], error: String(e?.message || e).slice(0, 160) };
+  }
+}
+__name(supaGetChecked, "supaGetChecked");
+async function revokeB2CAccess(env, paymentId, reason) {
+  // Revocation VERIFIEE du droit B2C :
+  //   1. lire les lignes existantes (un echec Supabase doit etre visible) ;
+  //   2. expirer UNIQUEMENT les grants b2c_pass de CE paiement ;
+  //   3. relire et verifier qu'aucune ligne ne reste active ;
+  //   4. supprimer le jeton KV du pass (echec = echec, pas de faux succes) ;
+  //   5. poser le marqueur de revocation, distinct du marqueur d'attribution.
+  // Les autres paiements et les autres types de grants ne sont jamais touches.
+  const pid = String(paymentId || "").trim();
+  if (!pid) throw new Error("b2c_revoke_missing_payment_id");
+  const nowIso = new Date().toISOString();
+  const filter = `?payment_id=eq.${encodeURIComponent(pid)}&type=eq.b2c_pass`;
+  const select = "&select=payment_id,type,expires_at";
+  const before = await supaGetChecked(env, "payment_grants", `${filter}${select}`);
+  if (!before.ok) throw new Error(`b2c_revoke_read_failed:${before.error}`);
+  const patched = await supaExec(env, "payment_grants", "PATCH", { expires_at: nowIso }, filter);
+  if (!patched.ok) throw new Error(`b2c_revoke_failed:${patched.error}`);
+  const after = await supaGetChecked(env, "payment_grants", `${filter}${select}`);
+  if (!after.ok) throw new Error(`b2c_revoke_verify_read_failed:${after.error}`);
+  const nowMs = Date.now();
+  for (const row of after.rows) {
+    const exp = Date.parse(String(row.expires_at || ""));
+    if (!Number.isFinite(exp) || exp > nowMs + 1e3) throw new Error("b2c_revoke_verify_still_active");
+  }
+  const del = await kvDeleteChecked(env, `mol_b2c_pass_${pid}`);
+  if (!del.ok) throw new Error(`b2c_revoke_kv_failed:${del.error}`);
+  const marker = await kvPutChecked(
+    env,
+    `mollie_rev_${sanitizeMarkerPart(pid)}`,
+    JSON.stringify({ at: nowIso, reason: String(reason || "").slice(0, 80) }),
+    { expirationTtl: 30 * 86400 }
+  );
+  if (!marker.ok) throw new Error(`b2c_revoke_marker_failed:${marker.error}`);
+  return { ok: true, revokedRows: after.rows.length, previousRows: before.rows.length };
+}
+__name(revokeB2CAccess, "revokeB2CAccess");
+async function verifyNegativeMollieEntity(env, apiKey, parsed) {
+  // Un webhook Refunds/Chargebacks est un SNAPSHOT : son statut n'est pas
+  // repris tel quel. On relit l'entite chez Mollie avant de revoquer.
+  const event = String(parsed.event || "");
+  if (parsed.resource === "refund") {
+    if (event && event !== "refund.refunded") return { ok: true, revokes: false, reason: event };
+    if (!parsed.paymentId || !parsed.entityId) return { ok: true, revokes: false, reason: "refund_identifiers_missing" };
+    let refund;
+    try {
+      refund = await mollieReq("GET", `v2/payments/${parsed.paymentId}/refunds/${parsed.entityId}`, apiKey);
+    } catch (e) {
+      throw new Error(`refund_verification_failed:${String(e?.message || e).slice(0, 120)}`);
+    }
+    const status = String(refund?.status || "");
+    if (status !== "refunded") return { ok: true, revokes: false, reason: `refund_${status || "unknown"}` };
+    return { ok: true, revokes: true, paymentId: String(refund?.paymentId || parsed.paymentId) };
+  }
+  if (parsed.resource === "chargeback") {
+    if (event === "chargeback.reversed") return { ok: true, revokes: false, reason: "chargeback_reversed" };
+    if (event && event !== "chargeback.received") return { ok: true, revokes: false, reason: event };
+    if (!parsed.paymentId || !parsed.entityId) return { ok: true, revokes: false, reason: "chargeback_identifiers_missing" };
+    let chargeback;
+    try {
+      chargeback = await mollieReq("GET", `v2/payments/${parsed.paymentId}/chargebacks/${parsed.entityId}`, apiKey);
+    } catch (e) {
+      throw new Error(`chargeback_verification_failed:${String(e?.message || e).slice(0, 120)}`);
+    }
+    if (chargeback?.reversedAt) return { ok: true, revokes: false, reason: "chargeback_reversed" };
+    return { ok: true, revokes: true, paymentId: String(chargeback?.paymentId || parsed.paymentId) };
+  }
+  return { ok: true, revokes: false, reason: "unsupported_resource" };
+}
+__name(verifyNegativeMollieEntity, "verifyNegativeMollieEntity");
+async function callPaymentGrantRpc(env, args) {
+  // P0.118 §7 — le grant B2C passe par la fonction SQL
+  // public.sg_upsert_payment_grant(...) : ecriture idempotente et atomique
+  // (ON CONFLICT (payment_id) DO NOTHING). Les 7 arguments sont EXACTS
+  // (cf. scripts/migrations/001_idempotent_payment_grant.sql).
+  // Les colonnes `session_id` / `user_id` N'EXISTENT PAS dans
+  // public.payment_grants : le POST direct de la version live echouait
+  // silencieusement. Le user_id est conserve dans metadata (jsonb).
+  if (!env.SUPABASE_SERVICE_KEY) return { ok: false, status: 0, error: "SUPABASE_SERVICE_KEY absent" };
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/rpc/sg_upsert_payment_grant`;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "apikey": env.SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        p_payment_id: args.paymentId,
+        p_pass: args.pass,
+        p_email: args.email,
+        p_currency: args.currency,
+        p_expires_at: args.expiresAt,
+        p_granted_at: args.grantedAt,
+        p_metadata: args.metadata
+      })
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      return { ok: false, status: r.status, error: `rpc_http_${r.status}:${t.slice(0, 160)}` };
+    }
+    return { ok: true, status: r.status };
+  } catch (e) {
+    return { ok: false, status: 0, error: String(e?.message || e).slice(0, 160) };
+  }
+}
+__name(callPaymentGrantRpc, "callPaymentGrantRpc");
+async function maybeCreateFollowupSubscription(env, apiKey, payment, metadata, host) {
+  const interval = String(metadata?.interval || "");
+  const customerId = String(metadata?.customerId || "");
+  const planKey = String(metadata?.plan || "");
+  if (!interval || !customerId || !apiKey) return { created: false, reason: "not_recurring" };
+  // GARDE-FOU « PAS DE DOUBLON D'ABONNEMENT » (P0 argent).
+  // Le paiement de RENOUVELLEMENT herite des metadata de l'abonnement, dont
+  // `firstPaymentId` : sans ce garde-fou, chaque renouvellement recraitait un
+  // NOUVEL abonnement pour le meme client → debit 2x, 3x… par mois.
+  if (metadata?.firstPaymentId) return { created: false, reason: "renewal_payment" };
+  const sequenceType = String(payment?.sequenceType || "");
+  if (sequenceType && sequenceType !== "first") return { created: false, reason: "not_first_sequence" };
+  // Marqueur par CLIENT + OFFRE (et non par paiement) : deux premiers
+  // paiements du meme client ne doivent creer qu'UN abonnement. L'ancienne
+  // cle par paiement est conservee en lecture (migration sans risque).
+  const k = `mol_sub_cust_${customerId}_${planKey}`;
+  const legacyKey = `mol_sub_from_${payment.id}`;
+  if (await kv(env).get(k) || await kv(env).get(legacyKey)) return { created: false, reason: "already" };
+  const plan = B2B_PLANS[planKey] || B2C_SUB_PLANS[planKey];
+  if (!plan || !plan.interval) return { created: false, reason: "no_plan_interval" };
+  try {
+    const sub = await mollieReq("POST", `v2/customers/${customerId}/subscriptions`, apiKey, {
+      amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
+      description: plan.description,
+      webhookUrl: `https://${host}/api/mollie-webhook`,
+      metadata: { ...metadata, firstPaymentId: payment.id, plan: planKey },
+      interval: plan.interval
+    });
+    await kv(env).put(k, sub.id, { expirationTtl: 400 * 86400 });
+    await kv(env).put(legacyKey, sub.id, { expirationTtl: 400 * 86400 });
+    return { created: true, subscriptionId: sub.id };
+  } catch (e) {
+    console.log("[sg] followup subscription failed:", String(e?.message || e).slice(0, 160));
+    return { created: false, reason: String(e?.message || e).slice(0, 80) };
+  }
+}
+__name(maybeCreateFollowupSubscription, "maybeCreateFollowupSubscription");
+async function fulfillPaidPayment(env, payment, ctx, host) {
+  const metadata = payment?.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
+  const check = validatePaymentForFulfillment(payment, metadata);
+  if (!check.ok) return { granted: false, reasons: check.problems, kind: check.kind };
+  if (check.kind === "b2b_onboarding") {
+    const onboarding = await grantOnboardingAuto(env, check.email, metadata);
+    return { granted: true, kind: "b2b_onboarding", email: onboarding.email_sent ? "sent" : "failed" };
+  }
+  if (check.kind === "b2b_annual" || check.kind === "b2b_first") {
+    // RÉSOLUTION DU CONFLIT #1406 + #1411 (P0 « chemin argent ») :
+    //   - la DURÉE vient du CATALOGUE du plan (intervalle absent = annuel),
+    //     jamais d'un indicateur de métadonnées : un client ne peut plus
+    //     transformer 29 € de Brief mensuel en 365 jours d'accès (#1406) ;
+    //   - le jeton retourné par grantB2B est UTILISÉ pour LIVRER l'accès par
+    //     email (sinon le client paie et ne reçoit rien) (#1411).
+    // Les deux intentions sont conservées : aucune n'est sacrifiée.
+    const planKey = String(metadata.plan || "");
+    const plan = B2B_PLANS[planKey];
+    const days = plan && !plan.interval ? 365 : 30;
+    const grant = await grantB2B(env, check.email, planKey, payment.id, days, { metadata });
+    // LIVRAISON : l'email qui porte le lien d'acces. AVANT ce correctif, le
+    // droit etait cree SANS email → le client payait et ne recevait rien.
+    const delivery = await deliverProAccessEmail(env, {
+      email: check.email,
+      token: grant.token,
+      planKey,
+      host,
+      subId: payment.id,
+      days,
+    });
+    if (check.kind === "b2b_first") {
+      ctx?.waitUntil?.(maybeCreateFollowupSubscription(env, env.MOLLIE_API_KEY, payment, metadata, host));
+    }
+    return { granted: true, kind: check.kind, plan: planKey, email: check.email, token: grant.token, delivery };
+  }
+  const email = check.email;
+  await grantB2C(env, payment.id, check.pass, email, metadata, check.currency);
+  if (metadata.interval && metadata.customerId) {
+    ctx?.waitUntil?.(maybeCreateFollowupSubscription(env, env.MOLLIE_API_KEY, payment, metadata, host));
+  }
+  return { granted: true, kind: "b2c_pass", pass: check.pass, email };
+}
+__name(fulfillPaidPayment, "fulfillPaidPayment");
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+__name(escapeHtml, "escapeHtml");
+async function handleMollieReturn(request, env, ctx) {
+  const url = new URL(request.url);
+  const ref = String(url.searchParams.get("ref") || "").trim();
+  const recRaw = ref ? await kv(env).get(`mol_return_${ref}`) : null;
+  let rec = null;
+  try {
+    rec = recRaw ? JSON.parse(recRaw) : null;
+  } catch {
+    rec = null;
+  }
+  const paymentId = rec?.paymentId || "";
+  const host = requestHost(request);
+  let status = "unknown";
+  let granted = false;
+  let pass = "";
+  let email = "";
+  let plan = "";
+  let accessToken = "";
+  let reasons = [];
+  if (paymentId && env.MOLLIE_API_KEY) {
+    try {
+      const payment = await mollieReq("GET", `v2/payments/${paymentId}`, env.MOLLIE_API_KEY);
+      status = payment.status || "unknown";
+      email = String(payment.metadata?.email || "");
+      pass = String(payment.metadata?.pass || "");
+      plan = String(payment.metadata?.plan || pass || "");
+      if (["paid", "settled"].includes(status)) {
+        const result = await fulfillPaidPayment(env, payment, ctx, host);
+        granted = !!result.granted;
+        reasons = result.reasons || [];
+        accessToken = String(result.token || "");
+      }
+    } catch (e) {
+      reasons = [String(e?.message || e).slice(0, 80)];
+    }
+  }
+  const paid = status === "paid" || status === "settled";
+  const days = PASS_DURATIONS[pass] || (plan === "pro_annual" || plan === "pro_annual_usd" ? 365 : plan && B2B_PLANS[plan] ? 30 : 0);
+  const home = `https://${host}/`;
+  const espace = `https://${host}/pro/espace/`;
+  // LIVRAISON : le lien jeton est porte par la page de retour (2e canal de
+  // livraison, en plus de l'email). AVANT, le bouton « Espace Pro » menait a
+  // une page SANS jeton → le client payait et ne pouvait pas ouvrir son espace.
+  const espaceUrl = accessToken ? `${espace}?k=${encodeURIComponent(accessToken)}` : espace;
+  const title = paid ? granted ? "Paiement confirmé" : "Paiement reçu" : status === "canceled" || status === "expired" || status === "failed" ? "Paiement non finalisé" : "Vérification du paiement";
+  const lead = paid && granted ? "Votre accès est activé. Merci !" : paid ? "Votre paiement a bien été reçu. L'activation peut prendre quelques instants." : status === "canceled" || status === "expired" || status === "failed" ? "Le paiement n'a pas abouti. Vous pouvez réessayer depuis le site." : "Si vous venez de payer, cette page se met à jour automatiquement.";
+  const deliveryNote = paid && granted
+    ? (accessToken
+      ? "Votre accès Pro est actif. Le bouton ci-dessous ouvre votre Espace Pro avec votre accès — vous l'avez aussi reçu par email."
+      : "Votre accès Pro est actif. Vous l'avez reçu par email.")
+    : "";
+  const showPro = !!(plan && String(plan).startsWith("pro"));
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — Sargasses</title>
+<style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px;text-align:center}.card{max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:32px 24px;box-shadow:0 10px 30px rgba(13,13,13,.08)}h1{margin:0 0 12px;font-size:28px}p{line-height:1.5;color:#5A5A5A}.cta{display:inline-block;margin:10px 6px 0;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 22px;border-radius:999px}.sec{background:#fff;border:2px solid #0D0D0D}</style></head>
+<body><div class="card"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(lead)}</p>
+${deliveryNote ? `<p>${escapeHtml(deliveryNote)}</p>` : ""}
+<p><a class="cta" href="${home}">Retour au site</a>${showPro ? `<a class="cta sec" href="${escapeHtml(espaceUrl)}">${granted ? "Mon Espace Pro" : "Espace Pro"}</a>` : ""}</p></div>
+<script>(function(){try{var e=${JSON.stringify(email)};var d=${Number(days) || 0};var isPaid=${paid ? "true" : "false"};
+if(e) localStorage.setItem("sg_email", e);
+if(isPaid && d){ localStorage.setItem("sg_premium","1"); localStorage.setItem("sg_premium_pass_end", String(Date.now()+d*864e5)); if(e) localStorage.setItem("sg_premium_email", e); }
+}catch(x){}
+var pid=${JSON.stringify(paymentId)};
+if(!${paid ? "true" : "false"} && pid){var n=0;var t=setInterval(function(){n++;fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:pid})}).then(function(r){return r.json()}).then(function(j){if(j&&(j.paid||j.terminal)) location.reload();}).catch(function(){});if(n>=8)clearInterval(t);},2500);}
+})();</script></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+__name(handleMollieReturn, "handleMollieReturn");
+async function handleMolliePayPage(request, env) {
+  const url = new URL(request.url);
+  if (String(url.searchParams.get("pass") || "") === "sos" || String(url.searchParams.get("source") || "") === "sos_plage") {
+    return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+  }
+  const planKey = normalizePlanKey(url.searchParams.get("plan") || "pro_annual");
+  const plan = B2B_PLANS[planKey] || B2C_SUB_PLANS[planKey];
+  if (!plan) return new Response("Plan inconnu", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement — ${escapeHtml(plan.description)}</title>
+<style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px}.card{max-width:480px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:28px 22px}h1{font-size:24px;margin:0 0 8px}p{color:#5A5A5A;line-height:1.45}label{display:block;font-weight:700;margin:16px 0 8px}input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(13,13,13,.2);font:inherit}button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;font:inherit;cursor:pointer}.err{color:#E8522A;font-weight:700;margin-top:12px}</style></head>
+<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Mollie. Entrez votre email pour recevoir l'accès.</p>
+<label for="em">Email</label><input id="em" type="email" autocomplete="email" required placeholder="vous@etablissement.com">
+<button id="go" type="button">Payer maintenant →</button><div class="err" id="err" hidden></div></div>
+<script>document.getElementById("go").onclick=async function(){var em=document.getElementById("em").value.trim();var err=document.getElementById("err");err.hidden=true;if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){err.hidden=false;err.textContent="Email requis.";return;}this.disabled=true;this.textContent="Ouverture du paiement…";
+try{var r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:${JSON.stringify(planKey)},email:em,hosted:true,source:"b2b_espace_annual",lang:"fr"})});
+var d=await r.json();if(d&&d.checkoutUrl){location.href=d.checkoutUrl;return;}err.hidden=false;err.textContent=d&&d.error?d.error:"Paiement indisponible.";this.disabled=false;this.textContent="Payer maintenant →";}
+catch(e){err.hidden=false;err.textContent="Réseau indisponible.";this.disabled=false;this.textContent="Payer maintenant →";}};
+</script></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+__name(handleMolliePayPage, "handleMolliePayPage");
+async function handleLegacyCheckout(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "invalid_json", provider: "mollie" }), { status: 400, headers: cors(request) });
+  }
+  const action = String(body.action || "");
+  if (action === "setup" || action === "portal") {
+    return new Response(JSON.stringify({ error: "stripe_disabled", provider: "mollie" }), { status: 410, headers: cors(request) });
+  }
+  if (action === "pay_once") body.action = "create_payment";
+  else if (action === "subscribe") body.action = "create_subscription";
+  const headers = new Headers(request.headers);
+  headers.set("Content-Type", "application/json");
+  const forwarded = new Request(request.url, { method: "POST", headers, body: JSON.stringify(body) });
+  return handleMollie(forwarded, env);
+}
+__name(handleLegacyCheckout, "handleLegacyCheckout");
+async function handleWebhook(request, env, ctx) {
+  const raw2 = await request.text();
+  const secret = env.MOLLIE_WEBHOOK_SECRET;
+  if (!secret) return new Response(JSON.stringify({ error: "webhook_unavailable" }), { status: 503 });
+  const sig = request.headers.get("X-Mollie-Signature") || request.headers.get("x-mollie-signature") || "";
+  if (!await verifyHmac(raw2, sig, secret)) return new Response(JSON.stringify({ error: "invalid_signature" }), { status: 403 });
+
+  const parsed = parseMollieWebhook(request, raw2);
+  if (parsed.malformed) return new Response(JSON.stringify({ error: "invalid_payload" }), { status: 400 });
+
+  // Idempotence : namespaces separes pour eviter qu'un paiement deja honore
+  // (mollie_<pid>) bloque la revocation d'un remboursement/chargeback sur le
+  // meme paymentId (defaut P0.7).
+  // - Attribution (payment.paid)       : mollie_<pid>
+  // - Revocation (refund/chargeback)   : mollie_rev_<pid> (TTL 30j, pose par revokeB2CAccess)
+  const isRevoking = isRevokingWebhookEvent(parsed.event);
+  const revPid = String(parsed.paymentId || parsed.entityId || "").trim();
+  const markerKey = isRevoking
+    ? `mollie_rev_${sanitizeMarkerPart(revPid)}`
+    : `mollie_${sanitizeMarkerPart(String(parsed.eventId || parsed.entityId || "").trim())}`;
+  const existing = await kvGetChecked(env, markerKey);
+  if (existing.ok && existing.value !== null) return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
+
+  try {
+    const apiKey = env.MOLLIE_API_KEY;
+
+    // ---------- REFUND / CHARGEBACK BRANCH ----------
+    if (parsed.resource === "refund" || parsed.resource === "chargeback") {
+      const attrKey = "mollie_attr_" + (parsed.entityId || parsed.paymentId || "");
+      const attrMarker = await kvGetChecked(env, attrKey);
+      if (attrMarker.ok && attrMarker.value !== null) {
+        // Deja revoke; on repond succes pour idempotence.
+        return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: true, granted: false, revoked: true }), { status: 200 });
+      }
+
+      let verifyResult;
+      if (parsed.resource === "refund") {
+        verifyResult = await verifyNegativeMollieEntity(env, apiKey, parsed);
+      } else {
+        // chargeback
+        if (parsed.event === "chargeback.reversed") {
+          // Etat terminal non-revocateur : on marque pour eviter le rejeu
+          // infini sans revoquer l'acces (defaut P0.7).
+          await kvPutChecked(env, `mollie_rev_${sanitizeMarkerPart(parsed.paymentId || parsed.entityId || "")}`, "1", { expirationTtl: 30 * 86400 });
+          return new Response(JSON.stringify({ received: true, type: "chargeback", event: "chargeback.reversed", processed: true, granted: false, revoked: false, paymentId: parsed.paymentId || parsed.entityId || "" }), { status: 200 });
+        }
+        verifyResult = await verifyNegativeMollieEntity(env, apiKey, parsed);
+      }
+      if (!verifyResult.ok) throw new Error("verify_negative_failed:" + (verifyResult.error || "unknown"));
+
+      if (verifyResult.revokes) {
+        // Revocation effective par autorite Mollie.
+        const rev = await revokeB2CAccess(env, verifyResult.paymentId || parsed.entityId || "", parsed.resource === "refund" ? "refund" : "chargeback");
+        if (!rev.ok) throw new Error("b2c_revoke_failed:" + rev.error);
+        return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: true, granted: false, revoked: true, paymentId: verifyResult.paymentId || parsed.entityId || parsed.paymentId || "" }), { status: 200 });
+      } else {
+        // Evenement non-revocateur (refund.failed, refund.pending, etc.)
+        // : on ne supprime rien, on laisse Mollie rejouer.
+        return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: false, granted: false, revoked: false }), { status: 200 });
+      }
+    }
+
+    // ---------- PAYMENT BRANCH ----------
+    if (parsed.resource === "payment") {
+      // Verifier idempotence par marqueur (Classic utilise entityId, Next-gen
+      // utilise eventId distinct -> pas de collision).
+      // Note: les events non revokeurs comme payment.failed ne marquent pas
+      // comme "traite" sauf quand c'est definitif, mais le handler en dessous
+      // gère cela.
+
+      const payment = await mollieReq("GET", "v2/payments/" + parsed.entityId, apiKey);
+      const status = String(payment.status || "");
+      const metadata = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
+      const event = parsed.event || "";
+      const pass = String(metadata.pass || "");
+
+      // Check if payment already has a negative state (refund/chargeback) in Mollie
+      const hasRefundOrChargeback = isNegativePaymentState(payment);
+
+      // Known events that the classic format supports.
+      const knownEvents = ["payment.paid", "payment.failed", "payment.canceled", "payment.expired", "payment.refunded", "chargeback.received"];
+
+      // Un evenement inconnu ne cree AUCUN grant et n'est PAS marque comme
+      // traite (un rejeu ulterieur ne doit pas etre perdu).
+      if (event && !knownEvents.includes(event) && !parsed.resource.startsWith("subscription.")) {
+        // Pour les ressources payment non connues, on laisse Mollie rejouer
+        // et on ne pose AUCUN marqueur (kvPutChecked n'est pas appele).
+        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: ["unsupported_event"] }));
+      }
+
+      // Remboursement/chargeback detecte via montant authoritaire
+      // (amountRefunded / amountChargedBack) OU event definitif.
+      if (hasRefundOrChargeback || event === "payment.refunded") {
+        if (parsed.generation === "classic") {
+          // Classic: use entityId (tr_xxx) for grant lookups.
+          // Payment may already be paid; revocation is authoritative.
+          await revokeB2CAccess(env, parsed.entityId || "", "refund");
+          if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + parsed.entityId);
+          return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true, paymentId: parsed.entityId || "" }), { status: 200 });
+        } else {
+          // Next-gen: use paymentId for authoritative revocation.
+          await revokeB2CAccess(env, parsed.paymentId || parsed.entityId || "", "refund");
+          if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + (parsed.entityId || parsed.paymentId || ""));
+          return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true, paymentId: parsed.paymentId || parsed.entityId || "" }), { status: 200 });
+        }
+      }
+
+      // Etat terminal negatif : failed / canceled / expired
+      // -> on libere le pass en attente et pose le marqueur definitive.
+      if (status === "failed" || status === "canceled" || status === "expired") {
+        if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + (parsed.entityId || parsed.paymentId || ""));
+        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
+        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false }), { status: 200 });
+      }
+
+      const check = validatePaymentForFulfillment(payment, metadata);
+      if (!check.ok) {
+        // Aucun grant et AUCUN marqueur "traite" : l'evenement reste
+        // rejouable et on ne pretend pas avoir honore le paiement.
+        console.log("[sg] mollie payment non honore " + parsed.entityId + ": " + check.problems.join(","));
+        // Evenement "paye" contredit par l'etat autoritaire : etat
+        // transitoire -> on repond en erreur pour que Mollie rejoue.
+        if (event === "payment.paid" && !check.problems.includes("not_live_mode")) {
+          return new Response(JSON.stringify({ error: "payment_not_settled_yet", reasons: check.problems }), { status: 409 });
+        }
+        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: check.problems }));
+      }
+
+      const host = requestHost(request);
+      const fulfilled = await fulfillPaidPayment(env, payment, ctx, host);
+      if (!fulfilled.granted) {
+        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: fulfilled.reasons || ["fulfillment_failed"] }), { status: fulfilled.retry ? 409 : 200 });
+      }
+      await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
+      return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: fulfilled.kind }));
+    }
+
+    // ---------- SUBSCRIPTION BRANCH ----------
+    if (parsed.resource === "subscription") {
+      const sub = await mollieReq("GET", "v2/subscriptions/" + parsed.entityId, apiKey);
+      const status = String(sub.status || "");
+      const metadata = sub.metadata && typeof sub.metadata === "object" && !Array.isArray(sub.metadata) ? sub.metadata : {};
+      const planKey = String(metadata.plan || "");
+      const cid = String(sub.customerId || "");
+      const event = parsed.event || "";
+
+      if (["subscription.canceled", "subscription.expired"].includes(event)) {
+        await kv(env).delete("mollie_grant_" + sub.id);
+        const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(sub.id) + "&type=eq.b2b_pro");
+        if (!rev.ok) throw new Error("b2b_revoke_failed:" + rev.error);
+        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
+        return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: false, revoked: true }));
+      }
+
+      const knownPlan = !!B2B_PLANS[planKey];
+      const grantable = ["subscription.created", "subscription.updated", "subscription.paid"].includes(event) && knownPlan;
+      if (grantable) {
+        const allowedStatuses = event === "subscription.paid" ? ["active", "pending", "paid"] : ["active", "pending"];
+        if (!allowedStatuses.includes(status)) {
+          return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: ["subscription_not_active"] }));
+        }
+        const amount = validateB2BAmount(sub, planKey);
+        if (!amount.ok) {
+          return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: [amount.reason] }));
+        }
+        await grantB2B(env, cid, planKey, sub.id, 30, { metadata });
+        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
+        if (event === "subscription.created") {
+          try {
+            ctx?.waitUntil(supa(env, "analytics_events", "POST", { event: "subscription_created", params: { plan: planKey, subscription_id: sub.id } }).catch(() => {
+            }));
+          } catch (_) {
+          }
+        }
+        if (event === "subscription.paid") {
+          try {
+            ctx?.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_trial_to_paid", params: { plan: planKey, subscription_id: sub.id } }).catch(() => {
+            }));
+          } catch (_) {
+          }
+        }
+        return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: true, kind: "b2b_subscription" }));
+      }
+      // Evenement inconnu / plan inconnu : AUCUN grant, aucun marqueur (le rejeu
+      // doit rester possible si Mollie rejoue un evenement ulterivement
+      // reconnu).
+      return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: ["unsupported_event"] }));
+    }
+
+    // Ressource inconnue : aucun grant, aucun marqueur "traite" (le rejeu
+    // doit rester possible si Mollie rejoue un evenement ulteriellement
+    // reconnu).
+    return new Response(JSON.stringify({ received: true, type: parsed.resource || "unknown", processed: false, granted: false, reasons: ["unsupported_resource"] }));
+  } catch (error) {
+    console.log("[sg] mollie webhook error:", String(error?.message || error).slice(0, 160));
+    return new Response(JSON.stringify({ error: "webhook_processing_error" }), { status: 500 });
+  }
+}
+__name(handleWebhook, "handleWebhook");
+async function grantB2B(env, customerId, planKey, subId, days = 30, options = {}) {
+  const k = `mollie_grant_${subId}`;
+  // Le jeton d'acces est rendu a l'appelant : c'est lui qui doit pouvoir
+  // LIVRER l'acces au client (email + lien sur la page de retour).
+  const existingToken = await kv(env).get(k);
+  if (existingToken) return { ok: true, already: true, token: existingToken };
+  const exp = Math.floor(Date.now() / 1e3) + days * 86400;
+  const expiresAt = new Date(exp * 1e3).toISOString();
+  const grantedAt = (/* @__PURE__ */ new Date()).toISOString();
+
+  // P0.118 §7 — colonnes REELLES de public.payment_grants (cf.
+  // supabase/schema.sql) : subscription_id, type, plan, customer_id,
+  // expires_at, granted_at (+ metadata jsonb). Aucune colonne inventee.
+  // L'ecriture est VERIFIEE : l'ancien helper `supa` renvoyait `null` sur
+  // erreur, donc un echec d'ecriture etait indiscernable d'un succes.
+  const write = await supaExec(env, "payment_grants", "POST", {
+    subscription_id: subId,
+    type: "b2b_pro",
+    plan: planKey,
+    customer_id: customerId,
+    expires_at: expiresAt,
+    granted_at: grantedAt,
+    metadata: options.metadata || {}
+  });
+  if (!write.ok) throw new Error(`b2b_grant_write_failed:${write.error}`);
+
+  // Verification du grant durable AVANT le marqueur KV.
+  const read = await supaGetChecked(env, "payment_grants", `?subscription_id=eq.${encodeURIComponent(subId)}&type=eq.b2b_pro&select=subscription_id,type,plan,customer_id,expires_at&limit=1`);
+  if (!read.ok) throw new Error(`b2b_grant_verify_read_failed:${read.error}`);
+  const row = read.rows[0];
+  if (!row) throw new Error("b2b_grant_verify_missing_row");
+  if (String(row.plan || "") !== String(planKey)) throw new Error("b2b_grant_verify_plan_mismatch");
+
+  // SEULEMENT maintenant : jeton KV d'acces.
+  const token = await widgetSign(env, { plan: planKey, customer_id: customerId, subscription_id: subId, exp, type: "b2b_pro" });
+  await kv(env).put(k, token, { expirationTtl: (days + 1) * 86400 });
+  return { ok: true, token };
+}
+__name(grantB2B, "grantB2B");
+/**
+ * LIVRAISON de l'acces Pro apres paiement (P0 « chemin argent »).
+ *
+ * DEFAUT CORRIGE : le webhook CREAIT le droit (grant durable + jeton KV) mais
+ * N'ENVOYAIT AUCUN email → le client payait 79 €/mois et ne recevait jamais
+ * son accès. La page de retour ne portait pas non plus de lien jeton.
+ *
+ * REGLES :
+ *   - IDEMPOTENT : un paiement n'envoie qu'UN email de livraison (marqueur KV
+ *     `mollie_pro_access_<id>`). Un rejeu du webhook ne duplique rien.
+ *   - HONNETE : le libelle de l'offre vient de B2B_PLANS (source de verite),
+ *     jamais d'un montant ou d'une date inventee.
+ *   - BEST-EFFORT : un echec d'envoi ne bloque NI le grant NI le webhook, mais il
+ *     est REMONTE (livraison non confirmee) et le marqueur est libere afin
+ *     qu'un rejeu puisse reessayer. En cas de resultat ambigu (le fournisseur a
+ *     PU accepter le message), le marqueur est conserve : on ne reessaie pas
+ *     (risque de doublon) — le lien de la page de retour reste disponible.
+ */
+async function deliverProAccessEmail(env, options) {
+  const opts = options || {};
+  const email = String(opts.email || "").trim();
+  const token = String(opts.token || "");
+  const planKey = String(opts.planKey || "");
+  const subId = String(opts.subId || "").trim();
+  const days = Number(opts.days) > 0 ? Number(opts.days) : 30;
+  if (!email || !token) return { sent: false, reason: "missing_email_or_token" };
+  if (!subId) return { sent: false, reason: "missing_subscription_id" };
+
+  const domain = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
+  const markerKey = `mollie_pro_access_${subId}`;
+  const previous = await kv(env).get(markerKey);
+  if (previous) return { sent: false, reason: "already_delivered", marker: previous };
+  await kv(env).put(markerKey, "pending", { expirationTtl: 400 * 86400 });
+
+  // Langue : MEME regle que la page /pro/espace/ (derivee du domaine).
+  const lang = domain.includes("miami") || domain.includes("puntacana") ? "en" : domain.includes("cancun") ? "es" : "fr";
+  const plan = B2B_PLANS[planKey] || null;
+  const planLabel = plan ? plan.description : planKey;
+  const recurring = !!(plan && plan.interval);
+  const espaceUrl = `https://${domain}/pro/espace/?k=${encodeURIComponent(token)}`;
+  const mapUrl = `https://${domain}/?k=${encodeURIComponent(token)}`;
+  const title = lang === "en" ? "Your Pro access is active" : lang === "es" ? "Tu acceso Pro esta activo" : "Votre acces Pro est actif";
+  const subject = lang === "en" ? "Sargassum Pro — your access is active" : lang === "es" ? "Sargassum Pro — tu acceso esta activo" : "Sargasses Pro — votre acces est actif";
+  const lead = lang === "en" ? `Hello, your <b>${planLabel}</b> subscription is active and paid.`
+    : lang === "es" ? `Hola, tu suscripcion <b>${planLabel}</b> esta activa y pagada.`
+    : `Bonjour, votre abonnement <b>${planLabel}</b> est actif et paye.`;
+  const what = lang === "en" ? "You now have access to your Pro workspace: professional widget, sargassum alerts and beach forecasts, updated from the latest satellite observation."
+    : lang === "es" ? "Ya tienes acceso a tu espacio Pro: widget profesional, avisos de sargazo y pronosticos por playa, actualizados con la ultima observacion satelital."
+    : "Vous avez acces a votre Espace Pro : widget professionnel, alertes sargasses et previsions par plage, mis a jour avec la derniere observation satellite.";
+  const cta = lang === "en" ? "Open my Pro workspace" : lang === "es" ? "Abrir mi espacio Pro" : "Ouvrir mon Espace Pro";
+  const cta2 = lang === "en" ? "View the map with my access" : lang === "es" ? "Ver el mapa con mi acceso" : "Voir la carte avec mon acces";
+  const renewal = recurring
+    ? (lang === "en" ? `Access valid for ${days} days, renewed automatically at each payment.`
+      : lang === "es" ? `Acceso valido ${days} dias, renovado automaticamente en cada pago.`
+      : `Acces valable ${days} jours, renouvele automatiquement a chaque paiement.`)
+    : (lang === "en" ? `Access valid for ${days} days.`
+      : lang === "es" ? `Acceso valido ${days} dias.`
+      : `Acces valable ${days} jours.`);
+  const help = lang === "en" ? "For any question, or to cancel, just reply to this email."
+    : lang === "es" ? "Para cualquier pregunta, o para cancelar, responde a este correo."
+    : "Pour toute question, ou pour resilier, repondez simplement a cet email.";
+  const html = `<div style="font-family:system-ui;max-width:540px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a;line-height:1.5"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${lead}</p><p>${what}</p><p><a href="${espaceUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 30px;border-radius:999px;text-decoration:none;font-size:16px">${cta} &rarr;</a></p><p><a href="${mapUrl}" style="color:#0d7f63;font-weight:700">${cta2}</a></p><p style="font-size:13px;color:#555">${renewal}</p><p style="font-size:13px;color:#555">${help}</p></div>`;
+
+  let result = null;
+  let timer = null;
+  try {
+    result = await Promise.race([
+      sendEmail(email, subject, html, domain, env),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve({ success: false, ambiguous: true, error: "provider_timeout" }), 8000);
+      }),
+    ]);
+  } catch (e) {
+    await kv(env).delete(markerKey);
+    console.log("[sg] pro access email error:", String(e?.message || e).slice(0, 140));
+    return { sent: false, reason: "provider_exception" };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+  if (result && result.success) {
+    await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+    return { sent: true, provider: result.provider || null };
+  }
+  if (result && result.ambiguous) {
+    // Le fournisseur a PU accepter le message : on ne reessaie pas (doublon).
+    await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+    return { sent: false, reason: "provider_delivery_unconfirmed", ambiguous: true, provider: result.provider || null };
+  }
+  await kv(env).delete(markerKey);
+  console.log("[sg] pro access email NOT confirmed:", String(result?.error || result?.provider || "unknown").slice(0, 120));
+  return { sent: false, reason: "provider_delivery_unconfirmed", provider: result?.provider || null };
+}
+__name(deliverProAccessEmail, "deliverProAccessEmail");
+async function grantB2C(env, paymentId, pass, email, meta, currency) {
+  const k = `mol_b2c_pass_${paymentId}`;
+  if (await kv(env).get(k)) return { ok: true, already: true };
+  const days = PASS_DURATIONS[pass] || 30;
+  const exp = Math.floor(Date.now() / 1e3) + days * 86400;
+  const expiresAt = new Date(exp * 1e3).toISOString();
+  const grantedAt = (/* @__PURE__ */ new Date()).toISOString();
+  const cur = String(currency || meta?.currency || "").toUpperCase() || "EUR";
+
+  // P0.118 §7 — le grant durable passe par la fonction SQL
+  // public.sg_upsert_payment_grant(...) : idempotente et atomique
+  // (ON CONFLICT (payment_id) DO NOTHING). Les 7 arguments sont EXACTS
+  // (cf. scripts/migrations/001_idempotent_payment_grant.sql).
+  // Les colonnes `session_id` / `user_id` N'EXISTENT PAS dans
+  // public.payment_grants : le POST direct de la version live echouait
+  // silencieusement. Le user_id reste dans metadata (jsonb).
+  const rpc = await callPaymentGrantRpc(env, {
+    paymentId,
+    pass,
+    email,
+    currency: cur,
+    expiresAt,
+    grantedAt,
+    metadata: meta || {}
+  });
+  if (!rpc.ok) throw new Error(`b2c_grant_rpc_failed:${rpc.error}`);
+
+  // Verification du grant durable AVANT tout marqueur KV.
+  const read = await supaGetChecked(env, "payment_grants", `?payment_id=eq.${encodeURIComponent(paymentId)}&select=payment_id,type,pass,email,currency,expires_at,granted_at&limit=1`);
+  if (!read.ok) throw new Error(`b2c_grant_verify_read_failed:${read.error}`);
+  const row = read.rows[0];
+  if (!row) throw new Error("b2c_grant_verify_missing_row");
+  if (String(row.type || "") !== "b2c_pass") throw new Error("b2c_grant_verify_type_mismatch");
+  if (String(row.pass || "") !== String(pass)) throw new Error("b2c_grant_verify_pass_mismatch");
+  if (String(row.email || "") !== String(email || "")) throw new Error("b2c_grant_verify_email_mismatch");
+  if (String(row.currency || "").toUpperCase() !== cur) throw new Error("b2c_grant_verify_currency_mismatch");
+
+  // SEULEMENT maintenant : marqueur KV (deduplication cote Worker).
+  await kv(env).put(k, JSON.stringify({ pass, email, expires_at: exp }), { expirationTtl: (days + 1) * 86400 });
+  return { ok: true };
+}
+__name(grantB2C, "grantB2C");
+async function grantOnboardingAuto(env, email, meta = {}) {
+  // Fail closed: the live DB CHECK accepts free/alert/dashboard/enterprise,
+  // while the existing payment contract exposes pro_monthly/brief_monthly and USD variants.
+  // No mapping or price is selected without explicit commercial approval.
+  const plan = String(meta.plan || "");
+  if (!B2B_PLANS[plan] || !B2B_SUBSCRIPTION_SCHEMA_PLANS.has(plan)) {
+    throw new Error("b2b_plan_mapping_unapproved");
+  }
+  throw new Error("b2b_onboarding_requires_verified_schema_and_offer_contract");
+}
+__name(grantOnboardingAuto, "grantOnboardingAuto");
+async function handlePartnerCommerce(request, env, ctx, path) {
+  const h = cors(request);
+  const url = new URL(request.url);
+  const subPath = path.replace("/api/partner/", "");
+  if (!await rateLimit(env, "partner_commerce", 200)) {
+    return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: h });
+  }
+  if (request.method === "GET" && subPath === "catalog") {
+    const region = url.searchParams.get("region");
+    const partnerTrackingId = url.searchParams.get("partner");
+    if (!region) return new Response(JSON.stringify({ error: "region required" }), { status: 400, headers: h });
+    return new Response(JSON.stringify({ ok: true, catalog: [], message: "Catalog API not yet implemented for this partner" }), { headers: h });
+  }
+  if (request.method === "POST" && subPath === "quote") {
+    const body = await request.json();
+    const { partner_id, product_id, quantity, variants, beach_context } = body;
+    if (!partner_id || !product_id) return new Response(JSON.stringify({ error: "partner_id, product_id required" }), { status: 400, headers: h });
+    return new Response(JSON.stringify({ ok: false, error: "CAPABILITY_MISSING", capability: "quote", partner: partner_id }), { status: 501, headers: h });
+  }
+  if (request.method === "POST" && subPath === "availability") {
+    const body = await request.json();
+    const { partner_id, product_id, quantity, variants, dates } = body;
+    if (!partner_id || !product_id) return new Response(JSON.stringify({ error: "partner_id, product_id required" }), { status: 400, headers: h });
+    return new Response(JSON.stringify({ ok: false, error: "CAPABILITY_MISSING", capability: "availability", partner: partner_id }), { status: 501, headers: h });
+  }
+  if (request.method === "POST" && subPath === "create-order") {
+    const body = await request.json();
+    const { cart, customer_email, customer_name, region, beach_id, lang = "fr" } = body;
+    if (!cart || !cart.length || !customer_email || !region) {
+      return new Response(JSON.stringify({ error: "cart, customer_email, region required" }), { status: 400, headers: h });
+    }
+    const orderId = `SG-ORDER-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const total_cents = cart.reduce((sum, item) => sum + (item.price_cents || 0) * (item.quantity || 1), 0);
+    const currency = cart[0]?.currency || "EUR";
+    const firstItem = cart[0];
+    await supa(env, "partner_orders", "POST", {
+      order_id: orderId,
+      partner_id: firstItem.partner_id,
+      partner_name: firstItem.partner_name || firstItem.partner_id,
+      product_id: firstItem.product_id,
+      product_name: firstItem.product_name || firstItem.product_id,
+      quantity: firstItem.quantity || 1,
+      unit_price_cents: firstItem.price_cents || 0,
+      total_cents,
+      currency,
+      customer_email,
+      customer_name: customer_name || "",
+      region_id: region,
+      beach_id: beach_id || null,
+      mollie_payment_id: null,
+      partner_reference: null,
+      status: "PENDING",
+      gross_amount_cents: total_cents,
+      partner_cost_cents: null,
+      sargagame_margin_cents: null,
+      created_at: (/* @__PURE__ */ new Date()).toISOString(),
+      updated_at: (/* @__PURE__ */ new Date()).toISOString()
+    }).catch((e) => {
+      console.log("partner_orders insert failed (table may not exist):", e?.message);
+    });
+    const host = requestHost(request);
+    const apiKey = env.MOLLIE_API_KEY;
+    const description = `Commande partenaire ${firstItem.partner_id} \u2014 ${cart.length} article(s)`;
+    const redirectUrl = `https://${host}/?partner_order_success=1&order_id=${orderId}`;
+    const pd = {
+      amount: { value: (total_cents / 100).toFixed(2), currency },
+      description,
+      redirectUrl,
+      webhookUrl: `https://${host}/api/mollie-webhook`,
+      metadata: {
+        source: "partner_commerce",
+        partner_order_id: orderId,
+        partner_id: firstItem.partner_id,
+        product_id: firstItem.product_id,
+        region,
+        beach_id: beach_id || "",
+        customer_name: customer_name || "",
+        cart: JSON.stringify(cart.map((i) => ({
+          partner_id: i.partner_id,
+          product_id: i.product_id,
+          quantity: i.quantity,
+          price_cents: i.price_cents
+        })))
+      },
+      locale: lang === "en" ? "en_US" : lang === "es" ? "es_ES" : "fr_FR"
+    };
+    try {
+      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      const checkoutUrl = payment._links?.checkout?.href || null;
+      const paymentId = payment.id || null;
+      await supa(env, "partner_orders", "PATCH", {
+        mollie_payment_id: paymentId,
+        status: "PAYMENT_PENDING",
+        updated_at: (/* @__PURE__ */ new Date()).toISOString()
+      }, `?order_id=eq.${orderId}`).catch(() => {
+      });
+      ctx.waitUntil(supa(env, "analytics_events", "POST", {
+        event: "sg_checkout_start",
+        params: { order_id: orderId, partner_id: firstItem.partner_id, total_cents, currency },
+        island: region
+      }).catch(() => {
+      }));
+      return new Response(JSON.stringify({ ok: true, order_id: orderId, payment_id: paymentId, checkout_url: checkoutUrl, total_cents, currency }), { headers: h });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: h });
+    }
+  }
+  if (request.method === "POST" && subPath === "confirm-order") {
+    const body = await request.json();
+    const { order_id, payment_id } = body;
+    if (!order_id) return new Response(JSON.stringify({ error: "order_id required" }), { status: 400, headers: h });
+    let paid = false;
+    if (payment_id) {
+      try {
+        const apiKey = env.MOLLIE_API_KEY;
+        const payment = await mollieReq("GET", `v2/payments/${payment_id}`, apiKey);
+        paid = ["paid", "settled"].includes(payment.status || "");
+      } catch {
+      }
+    }
+    const newStatus = paid ? "PAID" : "PAYMENT_PENDING";
+    await supa(env, "partner_orders", "PATCH", {
+      status: newStatus,
+      mollie_payment_id: payment_id || null,
+      updated_at: (/* @__PURE__ */ new Date()).toISOString()
+    }, `?order_id=eq.${order_id}`).catch(() => {
+    });
+    if (paid) {
+      ctx.waitUntil(supa(env, "analytics_events", "POST", {
+        event: "sg_order_paid",
+        params: { order_id, payment_id },
+        island: null
+      }).catch(() => {
+      }));
+    }
+    return new Response(JSON.stringify({ ok: true, order_id, status: newStatus, paid }), { headers: h });
+  }
+  if (request.method === "POST" && subPath === "cancel-order") {
+    const body = await request.json();
+    const { order_id, reason } = body;
+    if (!order_id) return new Response(JSON.stringify({ error: "order_id required" }), { status: 400, headers: h });
+    await supa(env, "partner_orders", "PATCH", {
+      status: "CANCELLED",
+      updated_at: (/* @__PURE__ */ new Date()).toISOString()
+    }, `?order_id=eq.${order_id}`).catch(() => {
+    });
+    ctx.waitUntil(supa(env, "analytics_events", "POST", {
+      event: "sg_order_cancelled",
+      params: { order_id, reason },
+      island: null
+    }).catch(() => {
+    }));
+    return new Response(JSON.stringify({ ok: true, order_id, status: "CANCELLED" }), { headers: h });
+  }
+  return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: h });
+}
+__name(handlePartnerCommerce, "handlePartnerCommerce");
+export {
+  index_default as default,
+  resolveB2BWidgetRegion
+};

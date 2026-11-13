@@ -415,8 +415,52 @@
     "hotelxcaret.com": {
       "date": "2026-11-03T17:44:38.586Z",
       "status": "no-email"
+    },
+    "mahekalbeachresort.com": {
+      "date": "2026-11-10T17:41:00.213Z",
+      "emailHash": "e04df6c89a337b084d7d1d3a41558c4f",
+      "emailDomain": "mahekalbeachresort.com",
+      "island": "rivieramaya",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "eldoradoresorts.com": {
+      "date": "2026-11-10T17:41:01.412Z",
+      "status": "no-email"
+    },
+    "thefives.com": {
+      "date": "2026-11-10T17:41:04.498Z",
+      "emailHash": "23e89331792caa4f503996af1540961b",
+      "emailDomain": "thefives.com",
+      "island": "rivieramaya",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "unico2087.com": {
+      "date": "2026-11-10T17:41:05.417Z",
+      "status": "no-email"
+    },
+    "belmond.com": {
+      "date": "2026-11-10T17:41:09.481Z",
+      "emailHash": "c933497ecff1b4be82ccad93653731e3",
+      "emailDomain": "belmond.com",
+      "island": "rivieramaya",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "playadelcarmen.com": {
+      "date": "2026-11-10T17:41:15.329Z",
+      "status": "no-email"
+    },
+    "tulum.com": {
+      "date": "2026-11-10T17:41:18.531Z",
+      "status": "no-email"
+    },
+    "rivieramaya.com": {
+      "date": "2026-11-10T17:41:19.948Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-11-03T17:44:38.586Z",
+  "lastRun": "2026-11-10T17:41:19.948Z",
   "totalSent": 11
 }

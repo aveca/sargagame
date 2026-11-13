@@ -124,7 +124,6 @@ const SolutionsStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({def
 const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.MapIntroStory})))
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
-const LazySOSPlage=lazyWithRetry(()=>import("./SOSPlage.jsx"))
 // Slugs stations (validation légère côté App ; STATION_BEATS vit dans StoryScenes.jsx).
 const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargasses","danger-sargasses-h2s","nettoyer-sargasses","methode-carte","en/understanding-sargassum","en/satellite-sargassum-detection"])
 
@@ -1852,10 +1851,11 @@ function pricePerDay(){
 // par create-region-payment-links.cjs). Jamais branché sur effectivePlan /
 // stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
 const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
-export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
-// Montant du Trip Pass en cents, dérivé du prix région ("$5.99" → 599). Doit
+// Prix du Trip Pass affiché (offre validée 2026-11-09 : trip7 = 7,99 € / $8.99).
+export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$8.99"):null
+// Montant du Trip Pass en cents, dérivé du prix région ("$8.99" → 899). Doit
 // matcher l'allowlist serveur create-checkout.php action:pay_once ($USD_ISLANDS
-// → [599]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
+// → [899]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
 // avec un montant hors allowlist qui se ferait rejeter 400).
 export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(/[^\d.]/g,""));return Number.isFinite(n)&&n>0?Math.round(n*100):0})()
 // ── Offres EUR (MQ/GP) en MIROIR de l'US — Trip Pass 7j + Annuel ──────────────
@@ -1864,12 +1864,12 @@ export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(
 // n'est lisible que pour les NOUVELLES régions). Les valeurs miroir du bloc
 // `pricing` ajouté à regions/mq.json + gp.json (source de vérité config).
 //
-// TRIP PASS EUR : accès UNIQUE 7 jours, 4,99 € one-time (miroir du tripPass USD
-// $5.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
-// devise EUR. 499¢ DOIT être dans l'allowlist serveur pay_once EUR
-// (create-checkout.php → [499, 799, ...]). EUR uniquement (!IS_NEW_REGION).
-export const EUR_TRIP_CENTS=499
-export const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
+// TRIP PASS EUR : accès UNIQUE 7 jours, 7,99 € one-time (miroir du tripPass USD
+// $8.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
+// devise EUR. 799¢ DOIT être dans l'allowlist serveur pay_once EUR
+// (create-checkout.php → [799, 1499, 2499]). EUR uniquement (!IS_NEW_REGION).
+export const EUR_TRIP_CENTS=799
+export const PRICE_TRIP_EUR=getLang()==="en"?"€7.99":"7,99 €"
 // ANNUEL EUR : 49 €/an (miroir du yearly USD $79). DÉJÀ entièrement câblé côté
 // code (hasAnnual=true pour EUR → toggle annuel, défaut=annuel, serveur 'subscribe'
 // résout prices['annual'] depuis stripe-config.php). Seul l'affichage du prix
@@ -1975,14 +1975,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // les PAID passent par le checkout on-site. sg_checkout_started = début réel
   // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
   "sg_checkout_started",
-  // P0 mesure (2026-10-26) : le paiement SOS 1 € (src/SOSPlage.jsx) émettait
-  // `sg_sos_checkout_start`, ABSENT de cette allowlist → l'événement partait en
-  // GA4/beacon mais JAMAIS vers Supabase (`track()` : if(SG_FUNNEL_EVENTS.has(event))).
-  // Résultat mesuré : checkout.reached = 0 dans daily-metrics.json alors que des
-  // paiements réels avaient lieu — tout le funnel checkout était invisible, donc
-  // aucune optimisation CRO prouvable. `sg_sos_checkout_*` commençant par "sg_sos"
-  // et non "sg_checkout", il était aussi exclu de la file `critical`.
-  "sg_sos_checkout_start","sg_sos_checkout_error",
+  // ⚠️ 2026-11-09 — Le parcours de paiement SOS (1 €) est RETIRÉ du client :
+  // `sg_sos_checkout_start` / `sg_sos_checkout_error` ne sont plus émis et ne
+  // sont donc plus allowlistés (cf. tests/unit/sos-public-surface-removed.test.cjs).
   // Contrôle affichage = débit (2026-11-04) : le serveur renvoie le montant
   // EFFECTIF qu'il débite (champ `amount` de create_payment). Si le client a
   // affiché un autre montant (bascule de mois serveur vs navigateur autour du
@@ -2019,8 +2014,6 @@ export function track(event,params={}){
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
-    // SOS 1 € : même chemin critique que le checkout on-site (voir allowlist).
-    ||event.startsWith("sg_sos_checkout")
   if(remoteEnabled&&critical){
     const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
@@ -11608,7 +11601,6 @@ export default function App(){
   // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
-  const[showSOS,setShowSOS]=useState(false)
   // Parcours « Trouve ta plage » (TrouvePlage) ouvert IN-APP depuis le CTA primaire de la carte —
   // plus besoin du deep-link ?recommend=1 (conservé pour rétro-compatibilité des liens sortants).
   const[showRecommend,setShowRecommend]=useState(RECOMMEND_MODE)
@@ -13752,20 +13744,7 @@ export default function App(){
       try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
       window.history.replaceState({},"",window.location.pathname)}
     else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
-    else if(p.get("sos")==="1"){setShowSOS(true);track("sg_sos_open",{source:"deeplink"});window.history.replaceState({},"",window.location.pathname)}
   }catch(_){}},[openPremium])
-
-  // SOS deep-link handler — separate effect to ensure it runs on mount regardless of openPremium stability
-  useEffect(()=>{
-    try{
-      const p=new URLSearchParams(window.location.search)
-      if(p.get("sos")==="1"){
-        setShowSOS(true)
-        track("sg_sos_open",{source:"deeplink"})
-        window.history.replaceState({},"",window.location.pathname)
-      }
-    }catch(_){}
-  },[])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
@@ -13834,7 +13813,7 @@ export default function App(){
     try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
   })
   // Mission P0 refonte UX (2026-10-14) : la bannière cookies (~100px) recouvrait la chrome basse
-  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/SOS/chat/découverte tant qu'elle est affichée.
+  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/chat/découverte tant qu'elle est affichée.
   useEffect(()=>{try{
     const h=(!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb)?"100px":"0px"
     document.documentElement.style.setProperty("--sg-consent-h",h)
@@ -14700,18 +14679,6 @@ export default function App(){
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
-          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,pointerEvents:"none"}}>
-            <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
-              <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
-                className="sg-soscta"
-                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"9px 16px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:13.5,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
-                <span style={{font:"800 13px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
-              </button>
-            </div>
-          </div>
-        )}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(220px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
@@ -14727,8 +14694,7 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-        {showSOS&&<div style={{position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",WebkitOverflowScrolling:"touch"}}><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
-        
+
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
             onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}

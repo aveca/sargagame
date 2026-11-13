@@ -15,6 +15,9 @@ on:
       - 'AGENTS.md'
       - '.github/workflows/daily-copernicus.yml'
       - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/erddap-capture-window-monitor.yml'
+      - 'scripts/probe-erddap-capture-window.cjs'
+      - 'tests/unit/erddap-capture-window-monitor.test.cjs'
 
 # Gating par événement — un push de code doit être RAPIDE :
 #   • push            → build des 6 régions + health-check UNIQUEMENT.
@@ -94,7 +97,10 @@ jobs:
           set +e
           node scripts/verify-ftp-ready.cjs 2>&1 | tee "$RUNNER_TEMP/verify-ftp-ready.log"
           rc=${PIPESTATUS[0]}
-          if grep -q 'observation hors SLA' "$RUNNER_TEMP/verify-ftp-ready.log"; then
+          # Le code de sortie tranche. Une publication autorisée (observation
+          # plus récente, hors des 900 min) ne doit pas être classée bloquée
+          # juste parce qu'un avertissement mentionne le SLA.
+          if [ "$rc" -ne 0 ] && grep -q 'observation hors SLA' "$RUNNER_TEMP/verify-ftp-ready.log"; then
             echo "gate_status=BLOCKED_STALE_SOURCE" >> "$GITHUB_OUTPUT"
           elif [ "$rc" -ne 0 ]; then
             echo "gate_status=FAILED_VALIDATION" >> "$GITHUB_OUTPUT"
@@ -224,7 +230,7 @@ jobs:
       # un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
         id: dispatch
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.changed == 'true' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le

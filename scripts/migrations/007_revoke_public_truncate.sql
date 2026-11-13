@@ -1,0 +1,23 @@
+-- P0.127 — Remove TRUNCATE from public client roles.
+--
+-- ⚠️ MIGRATION PRÉPARÉE, NON APPLIQUÉE.
+-- Production application requires explicit approval.
+--
+-- Verified production catalog inspection (2026-11-06) found TRUNCATE
+-- granted directly to anon and authenticated on every inspected public
+-- table, including eight RLS-enabled tables with no policies.
+--
+-- PostgreSQL TRUNCATE is not governed by row-level security policies.
+-- Revoking it is therefore necessary even where RLS currently denies
+-- ordinary SELECT/INSERT/UPDATE/DELETE operations.
+--
+-- This deliberately preserves other table privileges and existing
+-- row-level policies for public-facing features (photos, planner_alerts,
+-- beach_reports, analytics_events, etc.). The separate migration 006
+-- removes the three verified PUBLIC ALL policies and all client grants
+-- from b2b_subscriptions, b2c_alerts and payment_grants.
+--
+-- service_role is not listed and retains its existing privileges.
+-- No rows or schema objects are read, inserted, updated or deleted.
+
+REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM PUBLIC, anon, authenticated;

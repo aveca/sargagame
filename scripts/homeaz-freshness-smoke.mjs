@@ -247,9 +247,24 @@ try {
   try {
     await map.page.locator("#mapLink").click({ timeout: 20000 });
     await waitForHomeAzUnmount(map.page);
-    await map.page.waitForFunction(() => document.querySelectorAll(".sg-maplabel").length >= 3,
-      null, { timeout: 15000 });
-    console.log("PASS map CTA dismisses HomeAZ and returns to map");
+    // At 16h the map must now suspend current beach decisions (12h cutoff).
+    // The legacy assertion expected >=3 status labels, which is intentionally
+    // false once wmDecisionAvailable is false and labeledIds is empty.
+    await map.page.waitForFunction(() => {
+      const svg = document.querySelector('svg[data-sg-live="1"]');
+      const label = svg?.getAttribute("aria-label") || "";
+      return /aucun verdict actuel disponible|no current verdict is available|no hay veredicto actual disponible/i.test(label);
+    }, null, { timeout: 15000 });
+    assert.equal(await map.page.locator(".sg-maplabel").count(), 0,
+      "a 16h observation must not render beach labels carrying current decisions");
+    assert.match(await map.page.locator('svg[data-sg-live="1"]').getAttribute("aria-label"),
+      /aucun verdict actuel disponible|no current verdict is available|no hay veredicto actual disponible/i,
+      "the map must explicitly announce that current beach verdicts are unavailable");
+    await map.page.screenshot({
+      path: path.join(OUT, "map-neutral-16h-" + mobile.name + ".png"),
+      animations: "disabled",
+    });
+    console.log("PASS map CTA returns to a neutral map with no stale beach verdicts");
   } finally {
     await map.context.close();
   }

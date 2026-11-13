@@ -21,7 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { chasseMapCtaSummary, isSatelliteFresh12h, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
+import { chasseMapCtaSummary, isSatelliteFresh12h, isSatelliteStale36h, lcDetailFreshnessLabel, lcLastObservationLabel, lcOfferCtaCopy, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
@@ -520,6 +520,10 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const satelliteDecisionCurrent=sargData?.source==="erddap-live"&&sargData?.stale===false&&isSatelliteFresh12h(sargData)&&["clean","moderate","avoid"].includes(beach?.status)
+  /* BUG-2026-015 — l'OFFRE commerciale est découplée de la FRAÎCHEUR satellite :
+     le CTA d'achat reste disponible même quand le verdict est suspendu, avec un
+     libellé honnête (pas de promesse de prévision quand la prévision est en pause). */
+  const offer=lcOfferCtaCopy(sargData,lang,Date.now(),satelliteDecisionCurrent)
   const rel=satelliteDecisionCurrent?(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3):[]
   const planB=useMemo(()=>satelliteDecisionCurrent&&planbOn()?cleanNearby(beach,pool):[],[satelliteDecisionCurrent,beach,pool])
   /* A stale/unknown source cannot authorize a current forecast or recommendation. */
@@ -664,8 +668,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         </div>
 
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
-        {satelliteDecisionCurrent&&v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
-          {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+        {v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+          {offer.label}
         </button>}
         {satelliteDecisionCurrent&&<H2sNote status={beach.status} lang={lang}/>}
 
@@ -760,8 +764,19 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           </div>
         )}
 
-        {satelliteDecisionCurrent&&!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
-          {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+        {/* BUG-2026-015 — PORTE D'OFFRE : l'offre commerciale reste achetable même
+            quand le verdict satellite est suspendu. La copie reste honnête (aucune
+            promesse de prévision quand la prévision est en pause) et la date de la
+            dernière observation satellite est affichée explicitement. */}
+        {!satelliteDecisionCurrent&&(
+          <div className="lc-offer-note" data-testid="lc-detail-offer-note" role="note"
+            style={{margin:"12px 0",padding:"12px 14px",borderRadius:12,background:"#fff8e1",border:"2px solid #1b2522",fontSize:13,fontWeight:700,lineHeight:1.45}}>
+            <p style={{margin:"0 0 6px"}}>{offer.note}</p>
+            <p data-testid="lc-detail-last-observation" style={{margin:0,fontSize:12.5,fontWeight:700}}>{lcLastObservationLabel(sargData,lang)}</p>
+          </div>
+        )}
+        {!isPremium&&<button type="button" className="lc-cta yel" data-testid="lc-detail-offer-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+          {offer.label}
         </button>}
         {/* Premium : CTA détail jour-par-jour proéminent (retour julien neveu). onFull
             ouvre la fiche data complète. Flag ?fulldetail=0 → retombe sur l'ancien
@@ -1447,9 +1462,14 @@ export default function ChasseHome(props){
   // collection/duel previously consumed pickBeaches before opening a detail.
   const sargData = props && props.sargData;
   const lang = props && props.lang || "fr";
+  const onPremium = props && props.onPremium;
+  const track = props && props.track;
   const current = sargData?.source === "erddap-live"
     && sargData?.stale === false
     && isSatelliteFresh12h(sargData);
+  /* BUG-2026-015 — l'offre commerciale ne dépend PAS de la fraîcheur satellite :
+     seule la surface de JEU est suspendue, le tunnel d'achat reste ouvert. */
+  const offer = lcOfferCtaCopy(sargData, lang);
 
   if (!current) {
     const title = lang === "en" ? "CHECK REQUIRED"
@@ -1471,6 +1491,31 @@ export default function ChasseHome(props){
           <p data-testid="chasse-home-stale-age" style={{margin:0,fontSize:13,fontWeight:700}}>
             {lcDetailFreshnessLabel(sargData, lang)}
           </p>
+          {/* BUG-2026-015 — PORTE D'OFFRE : la Chasse est en pause de JEU, mais le
+              tunnel commercial reste ouvert. Copy honnête (aucune promesse de
+              prévision) + date de la dernière observation satellite. Styles inline :
+              le CSS .lc- n'est injecté que dans la branche fraîche, le bouton doit
+              rester peint et lisible ici. */}
+          {onPremium&&(
+            <div className="lc-offer-door" data-testid="chasse-home-offer-door"
+              style={{marginTop:18,padding:"16px 14px",border:"3px solid #0d0b14",borderRadius:14,background:"#fff8e1",textAlign:"left"}}>
+              <p style={{margin:"0 0 4px",fontSize:13,fontWeight:900,letterSpacing:".4px"}}>
+                {lang==="en"?"THE OFFER STAYS OPEN":lang==="es"?"LA OFERTA SIGUE ABIERTA":"L'OFFRE RESTE OUVERTE"}
+              </p>
+              <p style={{margin:"0 0 10px",fontSize:13.5,lineHeight:1.45,fontWeight:600}}>{offer.note}</p>
+              <p data-testid="chasse-home-last-observation" style={{margin:"0 0 14px",fontSize:12.5,fontWeight:700}}>
+                {lcLastObservationLabel(sargData, lang)}
+              </p>
+              <button type="button" data-testid="chasse-home-offer-cta"
+                onClick={()=>{ if(track)try{track("sg_chasse_stale_offer",{source:"chasse_home_stale",forecast_current:0})}catch(_){}; onPremium("chasse_stale_offer") }}
+                style={{width:"100%",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,
+                  font:"800 16px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".5px",textTransform:"uppercase",
+                  padding:"16px 18px",borderRadius:14,border:"3px solid #0d0b14",boxShadow:"4px 4px 0 #0d0b14",
+                  background:"linear-gradient(180deg,#ffe06a,#ffd23f)",color:"#0d0b14",cursor:"pointer"}}>
+                {offer.label}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

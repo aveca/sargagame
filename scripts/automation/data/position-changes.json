@@ -1,63 +1,59 @@
 {
-  "generatedAt": "2026-11-02T21:03:51.081Z",
-  "comparedTo": "2026-10-26",
+  "generatedAt": "2026-11-09T21:42:43.141Z",
+  "comparedTo": "2026-11-02",
   "alerts": {
     "drops": [
       {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/seaweed-map/",
+        "prevPos": 33.9,
+        "currPos": 37.5,
+        "delta": 3.6,
+        "impressions": 152
+      },
+      {
         "site": "florida",
-        "page": "https://sargassummiami.com/es/playas-sin-sargazo-hoy/",
-        "prevPos": 9.7,
-        "currPos": 15.8,
-        "delta": 6.1,
-        "impressions": 35
+        "page": "https://sargassummiami.com/es/playas/fort-lauderdale-beach/",
+        "prevPos": 6.1,
+        "currPos": 11.1,
+        "delta": 5,
+        "impressions": 54
       },
       {
         "site": "mq",
-        "page": "https://sargasses-martinique.com/en/sargassum-map/",
-        "prevPos": 20,
-        "currPos": 25.1,
-        "delta": 5.1,
-        "impressions": 21
-      }
-    ],
-    "gains": [
-      {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
-        "prevPos": 39.2,
-        "currPos": 29.7,
-        "delta": -9.5,
-        "impressions": 55
+        "page": "https://sargasses-martinique.com/plages/pointe-faula/",
+        "prevPos": 4.7,
+        "currPos": 11.2,
+        "delta": 6.5,
+        "impressions": 37
       },
       {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/en/",
-        "prevPos": 32.4,
-        "currPos": 26.6,
-        "delta": -5.8,
-        "impressions": 221
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/es/playas/arena-gorda/",
+        "prevPos": 6.7,
+        "currPos": 12.4,
+        "delta": 5.7,
+        "impressions": 39
       }
     ],
-    "appeared": [],
+    "gains": [],
+    "appeared": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+        "avgPos": 24.8,
+        "clicks": 3,
+        "impressions": 41
+      }
+    ],
     "vanished": [
       {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/plages/plage-de-sinai/",
-        "prevImpressions": 131
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+        "prevImpressions": 53
       }
     ],
     "queryDrops": [],
-    "queryGains": [
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/",
-        "query": "sargasses en martinique",
-        "prevPos": 6,
-        "currPos": 3.8,
-        "delta": -2.2,
-        "impressions": 58,
-        "clicks": 9
-      }
-    ]
+    "queryGains": []
   }
 }
