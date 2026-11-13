@@ -41,9 +41,10 @@ function buildOffersPage(region, iso) {
     paidH: 'De pago — viajeros',
     paidP: 'Un pase es un pago único, sin renovación. Abre el pronóstico de los días siguientes y las alertas en las playas cubiertas de esta región.',
     proH: 'Hoteles, alquileres, clubs de playa',
-    proP: `El widget es gratuito. El ensayo Pro dura 30 días, sin tarjeta. Después: ${pro.month}/mes o ${pro.year} por 12 meses, en un solo pago. No hay un tercer precio «litoral».`,
-    cta: 'Empezar el ensayo Pro de 30 días',
-    formH: 'Pedir el ensayo',
+    proP: `Después de la confirmación del pago, un correo envía el enlace de acceso Pro, el código del widget para pegar en el sitio y la forma de cancelar. Soporte solo por correo.`,
+    ctaMonth: 'Mensual',
+    ctaYear: 'Anual',
+    formH: 'Una pregunta antes de pagar (opcional)',
     hotel: 'Nombre del hotel o de la actividad',
     email: 'Email',
     beach: 'Playa (opcional)',
@@ -58,9 +59,10 @@ function buildOffersPage(region, iso) {
     paidH: 'Paid — travelers',
     paidP: 'A pass is a one-time payment, with no renewal. It opens the forecast for the following days and alerts for the beaches covered in this region.',
     proH: 'Hotels, rentals, beach clubs',
-    proP: `The widget is free. The Pro trial is 30 days, no card. Then: ${pro.month}/month or ${pro.year} for 12 months, paid once. There is no third "coastline" price.`,
-    cta: 'Start the 30-day Pro trial',
-    formH: 'Request the trial',
+    proP: `After the payment is confirmed, an email sends the Pro access link, the widget code to paste on the site, and how to cancel. Support is by email only.`,
+    ctaMonth: 'Monthly',
+    ctaYear: 'Annual',
+    formH: 'A question before you pay (optional)',
     hotel: 'Hotel or activity name',
     email: 'Email',
     beach: 'Beach (optional)',
@@ -75,9 +77,10 @@ function buildOffersPage(region, iso) {
     paidH: 'Payant — voyageurs',
     paidP: 'Un pass est un paiement unique, sans reconduction. Il ouvre la prévision des jours suivants et les alertes sur les plages couvertes de cette région.',
     proH: 'Hôtels, locations, clubs de plage',
-    proP: `Le widget est gratuit. L'essai Pro dure 30 jours, sans carte. Ensuite : ${pro.month}/mois ou ${pro.year} pour 12 mois, en un paiement. Il n'y a pas de troisième prix « littoral ».`,
-    cta: 'Démarrer l\'essai Pro 30 jours',
-    formH: 'Demander l\'essai',
+    proP: `Après confirmation du paiement, un e-mail envoie le lien d'accès Pro, le code du widget à coller sur le site, et le moyen de résilier. Support uniquement par e-mail.`,
+    ctaMonth: 'Mensuel',
+    ctaYear: 'Annuel',
+    formH: 'Une question avant de payer (facultatif)',
     hotel: 'Nom de l\'hôtel ou de l\'activité',
     email: 'Email',
     beach: 'Plage (facultatif)',
@@ -124,8 +127,8 @@ button{min-height:48px;margin-top:12px;width:100%;border:0;border-radius:12px;ba
 <section id="pro">
 <h2>${escapeHtml(copy.proH)}</h2>
 <p>${escapeHtml(copy.proP)}</p>
-<p><a class="btn" href="${escapeHtml(STRIPE_LIVE_LINKS[cur === 'usd' ? 'pro_monthly_usd' : 'pro_monthly_eur'].url)}">${escapeHtml(copy.cta)}</a></p>
-<p><a href="${escapeHtml(STRIPE_LIVE_LINKS[cur === 'usd' ? 'pro_annual_usd' : 'pro_annual_eur'].url)}">${escapeHtml(pro.year)}</a> · <a href="/pro/espace/">${lang === 'es' ? 'O empezar sin tarjeta' : lang === 'en' ? 'Or start without a card' : 'Ou commencer sans carte'}</a></p>
+<p><a class="btn" href="${escapeHtml(STRIPE_LIVE_LINKS[cur === 'usd' ? 'pro_monthly_usd' : 'pro_monthly_eur'].url)}">${escapeHtml(copy.ctaMonth)} · ${escapeHtml(pro.month)}${lang === 'en' ? '/month' : lang === 'es' ? '/mes' : '/mois'}</a></p>
+<p><a class="btn" href="${escapeHtml(STRIPE_LIVE_LINKS[cur === 'usd' ? 'pro_annual_usd' : 'pro_annual_eur'].url)}">${escapeHtml(copy.ctaYear)} · ${escapeHtml(pro.year)}${lang === 'en' ? '/year' : lang === 'es' ? '/año' : '/an'}</a></p>
 <h3>${escapeHtml(copy.formH)}</h3>
 <form data-sg-lead data-region="${escapeHtml(region.id || 'mq')}" data-lang="${lang}">
 <label>${escapeHtml(copy.hotel)}<input name="organization" required maxlength="120"></label>

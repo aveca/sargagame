@@ -1,3 +1,9 @@
+## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
+
+- Les pages `/pro/pricing/` FR, EN et ES ont deux boutons vers les Payment Links Pro. Le script `public/pro/pricing-pay.js` choisit EUR ou USD selon l'un des 6 domaines.
+- L'e-mail Resend part après le webhook, pas avant. Sans clé live Stripe, il dit de résilier en répondant au message.
+- Test : `node tests/unit/pro-self-serve.test.cjs`.
+
 ## 2026-11-13 · Caisse Stripe sans repli Mollie (PR #1427, non mergée)
 
 - La vente publique passe par les 10 Payment Links LIVE. Sans lien : HTTP 503 `no_mollie_fallback`. Les webhooks Mollie des paiements déjà encaissés restent en place.

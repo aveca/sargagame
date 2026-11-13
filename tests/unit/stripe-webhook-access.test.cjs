@@ -113,7 +113,8 @@ async function main() {
   const { default: worker } = await import(pathToFileURL(path.join(ROOT, 'workers/sg-payments/index.js')).href)
   const paySrc = fs.readFileSync(path.join(ROOT, 'workers/sg-payments/index.js'), 'utf8')
   const regional = fs.readFileSync(path.join(ROOT, 'workers/sargagame/index.js'), 'utf8')
-  t(!paySrc.includes('STRIPE_SECRET_KEY') && !paySrc.includes('sk_test') && !regional.includes('sk_test'), 'aucune clé secrète Stripe ni clé TEST dans les workers')
+  t(!paySrc.includes('sk_test') && !regional.includes('sk_test'), 'aucune clé TEST écrite dans les workers')
+  t(/function stripeLiveSecret[\s\S]*sk_live_/.test(paySrc), 'le portail client n\'accepte qu\'une clé live')
   t(regional.includes('no_mollie_fallback') && !regional.includes('v2/payments",{method:"POST"'), 'le worker régional ne crée plus de paiement Mollie')
 
   const merci = fs.readFileSync(path.join(ROOT, 'public/merci/index.html'), 'utf8')

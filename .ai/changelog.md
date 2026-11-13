@@ -1,3 +1,8 @@
+## 2026-11-13 — Parcours Pro hôtel en libre-service
+
+- `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.
+- Après un paiement Pro confirmé, le webhook envoie un e-mail Resend avec le lien d'accès, le code du widget et, si `STRIPE_SECRET_KEY` est une clé live, le portail client. Sinon, la résiliation se fait en répondant à l'e-mail. Une clé TEST n'ouvre pas le portail.
+
 ## 2026-11-13 — Caisse publique Stripe seulement, accès après confirmation serveur
 
 - `create_payment` et `create_subscription` renvoient un Payment Link Stripe ou une erreur `no_mollie_fallback`. Plus d'appel Mollie ni de clé TEST pour une nouvelle vente.

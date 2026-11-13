@@ -2268,6 +2268,65 @@ async function stripeEndAccess(env, grantId) {
   return true;
 }
 __name(stripeEndAccess, "stripeEndAccess");
+function stripeLiveSecret(env) {
+  const key = String(env && env.STRIPE_SECRET_KEY || "");
+  return /^sk_live_|^rk_live_/.test(key) ? key : "";
+}
+__name(stripeLiveSecret, "stripeLiveSecret");
+async function stripePortalUrl(env, customerId, returnUrl) {
+  const key = stripeLiveSecret(env);
+  const customer = String(customerId || "");
+  if (!key || !customer.startsWith("cus_")) return null;
+  const body = new URLSearchParams({ customer, return_url: returnUrl });
+  const response = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + key, "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+  if (!response.ok) return null;
+  const data = await response.json().catch(() => null);
+  return data && typeof data.url === "string" && data.url.startsWith("https://") ? data.url : null;
+}
+__name(stripePortalUrl, "stripePortalUrl");
+function proWidgetSnippet(host, token) {
+  const src = "https://" + host + "/widget/embed/?k=" + encodeURIComponent(token);
+  return '<iframe src="' + src + '" width="100%" height="168" style="border:0;width:100%" title="Sargasses"></iframe>';
+}
+__name(proWidgetSnippet, "proWidgetSnippet");
+async function sendStripeProEmail(env, options) {
+  const opts = options || {};
+  const email = String(opts.email || "").trim();
+  const token = String(opts.token || "");
+  const grantId = String(opts.grantId || "").trim();
+  if (!email || !token || !grantId) return { sent: false, reason: "missing_email_or_token" };
+  if (!env.RESEND_API_KEY) return { sent: false, reason: "resend_key_missing" };
+  const markerKey = "stripe_pro_mail_" + grantId;
+  if (await kv(env).get(markerKey)) return { sent: false, reason: "already_delivered" };
+  const host = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
+  const lang = host.includes("miami") || host.includes("puntacana") ? "en" : host.includes("cancun") || host.includes("tulum") ? "es" : "fr";
+  const accessUrl = "https://" + host + "/pro/espace/?k=" + encodeURIComponent(token);
+  const snippet = proWidgetSnippet(host, token);
+  let portal = null;
+  try { portal = await stripePortalUrl(env, opts.customerId, "https://" + host + "/pro/pricing/"); } catch (_) { portal = null; }
+  const subject = lang === "en" ? "Sargassum Pro — your access" : lang === "es" ? "Sargassum Pro — tu acceso" : "Sargasses Pro — votre accès";
+  const lead = lang === "en" ? "Your Pro payment is confirmed. This email is the access." : lang === "es" ? "Tu pago Pro está confirmado. Este correo es el acceso." : "Votre paiement Pro est confirmé. Cet e-mail est l'accès.";
+  const open = lang === "en" ? "Open Pro access" : lang === "es" ? "Abrir el acceso Pro" : "Ouvrir l'accès Pro";
+  const widgetLabel = lang === "en" ? "Paste this widget code on the hotel website:" : lang === "es" ? "Pega este código del widget en el sitio del hotel:" : "Collez ce code du widget sur le site de l'hôtel :";
+  const manage = portal
+    ? (lang === "en" ? "Manage or cancel the subscription: " : lang === "es" ? "Gestiona o cancela la suscripción: " : "Gérer ou résilier l'abonnement : ")
+    : (lang === "en" ? "To manage or cancel, reply to this email. Support is by email only." : lang === "es" ? "Para gestionar o cancelar, responde a este correo. El soporte es solo por correo." : "Pour gérer ou résilier, répondez à cet e-mail. Le support se fait uniquement par e-mail.");
+  const portalHtml = portal ? `<p>${manage}<a href="${portal}">${portal}</a></p>` : `<p>${manage}</p>`;
+  const html = `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#1a1408;line-height:1.5"><p>${lead}</p><p><a href="${accessUrl}">${open}</a></p><p>${widgetLabel}</p><pre style="white-space:pre-wrap;background:#f6f1e6;padding:12px;border-radius:8px">${snippet.replace(/</g, "&lt;")}</pre>${portalHtml}</div>`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "Sargasses Pro <alerte@" + host + ">", to: [email], subject, html })
+  });
+  if (!response.ok) throw new Error("resend_http_" + response.status);
+  await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+  return { sent: true, portal: !!portal };
+}
+__name(sendStripeProEmail, "sendStripeProEmail");
 async function stripeGrantPaid(env, request, obj, priceKey, spec, livemode) {
   const email = stripeEmail(obj);
   if (!EMAIL_RE.test(email)) return { granted: false, reason: "missing_email" };
@@ -2278,7 +2337,11 @@ async function stripeGrantPaid(env, request, obj, priceKey, spec, livemode) {
     await grantB2C(env, grantId, spec.pass, email, { price_key: priceKey, brand: "sargasses", provider: "stripe_link", livemode }, spec.currency.toUpperCase());
   } else {
     const granted = await grantB2B(env, String(obj.customer || email), spec.plan, grantId, spec.days, { metadata: { price_key: priceKey, brand: "sargasses", email, livemode } });
-    if (granted && granted.token) accessUrl = "https://" + requestHost(request) + "/pro/espace/?k=" + encodeURIComponent(granted.token);
+    if (granted && granted.token) {
+      const host = requestHost(request);
+      accessUrl = "https://" + host + "/pro/espace/?k=" + encodeURIComponent(granted.token);
+      await sendStripeProEmail(env, { email, token: granted.token, grantId, host, customerId: obj.customer, planKey: spec.plan });
+    }
   }
   const record = { state: "paid", livemode: livemode === true, pass: spec.pass || null, plan: spec.plan || null, days: spec.days, accessUrl, price_key: priceKey };
   const keys = ["stripe_session_" + grantId];

@@ -50,7 +50,7 @@ function firstPaintInner(region, iso) {
 <h1 style="margin:0 0 8px;font:800 26px/1.05 system-ui,sans-serif;color:#f4efe4">El estado de cada playa de ${place}, con la hora del satélite.</h1>
 <p style="margin:0 0 12px;font:600 15px/1.45 system-ui,sans-serif;color:#f4efe4">${obs} El veredicto del día es gratis cuando la observación es válida. El pronóstico de los días siguientes es un pase de pago único (${escapeHtml(stay.price)} / 30 días).</p>
 <p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
-<a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Prueba Pro 30 días — luego ${escapeHtml(pro.month)}/mes</a>
+<a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro ${escapeHtml(pro.month)}/mes o ${escapeHtml(pro.year)}/año</a>
 <a href="/?paywall=1&amp;pass=p30" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pase viajero ${escapeHtml(stay.price)}</a>
 </p>`
   }
@@ -59,7 +59,7 @@ function firstPaintInner(region, iso) {
 <h1 style="margin:0 0 8px;font:800 26px/1.05 system-ui,sans-serif;color:#f4efe4">Every ${place} beach, with the satellite time on it.</h1>
 <p style="margin:0 0 12px;font:600 15px/1.45 system-ui,sans-serif;color:#f4efe4">${obs} Today's verdict is free when the observation is valid. Later days are a one-time pass (${escapeHtml(stay.price)} / 30 days).</p>
 <p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
-<a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro trial 30 days — then ${escapeHtml(pro.month)}/mo</a>
+<a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro ${escapeHtml(pro.month)}/mo or ${escapeHtml(pro.year)}/yr</a>
 <a href="/?paywall=1&amp;pass=p30" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Traveler pass ${escapeHtml(stay.price)}</a>
 </p>`
   }
@@ -67,7 +67,7 @@ function firstPaintInner(region, iso) {
 <h1 style="margin:0 0 8px;font:800 26px/1.05 system-ui,sans-serif;color:#f4efe4">L'état de chaque plage de ${place}, avec l'heure du satellite.</h1>
 <p style="margin:0 0 12px;font:600 15px/1.45 system-ui,sans-serif;color:#f4efe4">${obs} Le verdict du jour est gratuit quand l'observation est valide. Les jours suivants sont un pass à paiement unique (${escapeHtml(stay.price)} / 30 jours).</p>
 <p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
-<a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Essai Pro 30 jours — puis ${escapeHtml(pro.month)}/mois</a>
+<a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro ${escapeHtml(pro.month)}/mois ou ${escapeHtml(pro.year)}/an</a>
 <a href="/?paywall=1&amp;pass=p30" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pass voyageur ${escapeHtml(stay.price)}</a>
 </p>`
 }
