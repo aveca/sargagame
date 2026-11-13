@@ -2,8 +2,16 @@ name: Daily Copernicus + Deploy
 
 on:
   schedule:
-    # Refresh 4x/day; persist one canonical daily-metrics snapshot at 18:00 UTC (14:00 MQ).
-    - cron: '0 0 * * *'
+    # Publication DENSE pendant la fenetre de capture ERDDAP (00:00 -> 02:45 UTC) :
+    # un tick toutes les 15 min, pour publier la derniere observation disponible
+    # des sa qu elle tombe (la passe satellite derive dans cette fenetre).
+    # Le SLA produit reste de 900 min : la densification le RESSERRE, elle ne
+    # l elargit pas. Le tick 00:00 UTC reste CANONIQUE (il porte le track-record,
+    # les mesures MRR et les emails) : cf. scripts/lib/copernicus-publication-slot.cjs
+    - cron: '*/15 0-2 * * *'
+    # Creneaux CANONIQUES historiques (track-record, MRR, emails, snapshot 18:00).
+    # 00:00 UTC est fourni par la famille dense ci-dessus : un cron '0 0 * * *'
+    # supplementaire declencherait un SECOND run a 00:00 UTC.
     - cron: '0 6 * * *'
     - cron: '0 12 * * *'
     - cron: '0 18 * * *'
@@ -48,6 +56,10 @@ jobs:
     outputs:
       publication_status: ${{ steps.publication_status.outputs.status }}
       gate_outcome: ${{ steps.verify.outcome }}
+      # Slot de publication du run : true uniquement sur un creneau CANONIQUE
+      # (famille dense 00:00 UTC, creneaux 06/12/18 UTC, ou execution manuelle).
+      # Les jobs LOURDS (track-record, MRR, emails) ne tournent que la.
+      canonical: ${{ steps.slot.outputs.canonical }}
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -64,6 +76,16 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # SLOT DE PUBLICATION : dense (donnees rapides) ou canonique (travaux lourds).
+      # Source unique : scripts/lib/copernicus-publication-slot.cjs.
+      - name: Compute publication slot (dense vs canonical)
+        id: slot
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          node scripts/automation/compute-publication-slot.cjs --event-name "$EVENT_NAME" --schedule "$SCHEDULE"
 
       - name: Parité régions ↔ webhook (paiements)
         run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
@@ -113,7 +135,7 @@ jobs:
       # fresh archive/history are fetched and before the data commit/deploy.
       - name: Backtest forecast accuracy for public track record
         id: public_track_record_backtest
-        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success' && steps.slot.outputs.canonical == 'true'
         continue-on-error: true
         run: node scripts/automation/backtest-forecast.cjs
 
@@ -124,7 +146,7 @@ jobs:
         run: node scripts/automation/build-track-record.cjs
 
       - name: Mark existing track record stale if regeneration fails
-        if: steps.src.outputs.source != 'none' && (steps.verify.outcome != 'success' || steps.public_track_record_backtest.outcome != 'success' || steps.public_track_record_build.outcome != 'success')
+        if: steps.src.outputs.source != 'none' && (steps.verify.outcome != 'success' || steps.public_track_record_backtest.outcome != 'success' || steps.public_track_record_build.outcome != 'success') && steps.slot.outputs.canonical == 'true'
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -375,18 +397,29 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24' }
+      # Slot de publication (le job reste autonome : aucun `needs:`).
+      - name: Compute publication slot (dense vs canonical)
+        id: slot
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          node scripts/automation/compute-publication-slot.cjs --event-name "$EVENT_NAME" --schedule "$SCHEDULE"
+
       - name: Mollie MRR tracker
+        if: steps.slot.outputs.canonical == 'true'
         continue-on-error: true
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
         run: node scripts/automation/mollie-mrr.cjs --send
       - name: B2B funnel snapshot (essais / conversions / paiements refusés)
+        if: steps.slot.outputs.canonical == 'true'
         continue-on-error: true
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/funnel-b2b-from-supabase.cjs --days=90
       - name: Commit measurement reports (les rapports de mesure ne doivent pas se figer)
-        if: always() && github.event_name != 'push'
+        if: always() && github.event_name != 'push' && steps.slot.outputs.canonical == 'true'
         continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
@@ -408,6 +441,7 @@ jobs:
       github.event_name == 'schedule' &&
       needs.fetch-data.result == 'success' &&
       needs.fetch-data.outputs.gate_outcome == 'success' &&
+      needs.fetch-data.outputs.canonical == 'true' &&
       (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' ||
        needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
