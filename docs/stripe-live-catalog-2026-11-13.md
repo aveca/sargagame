@@ -2,7 +2,7 @@
 
 Compte : `acct_1UZv9LDrGo8CQxeJ` (Sargassummiami).
 
-À créer par le propriétaire. Cette liste ne crée rien, ne pose aucune clé, et ne déploie pas le checkout. Le worker live répond aujourd'hui **404** sur `/api/stripe-webhook` : ne pas y envoyer d'événements LIVE tant que le déploiement du handler n'est pas explicitement accepté.
+Les produits et les Payment Links LIVE existent déjà. Les URLs publiques sont dans `scripts/lib/stripe-live-links.cjs`. Le handler `/api/stripe-webhook` n'utilise pas de clé secrète Stripe : seulement `STRIPE_WEBHOOK_SECRET` sur le worker `sg-payments`.
 
 Les montants sont ceux déjà catalogués dans le code (`PASS_PRICES`, `B2B_PLANS`). L'annuel n'est pas « 2 mois offerts » : 79 × 10 = 790 € et 89 × 10 = 890 $, alors que les prix encaissables sont 690 € et 790 $. Aucun produit « Territoire / Coastline » : 199 € et 219 $ ne sont dans aucun catalogue de paiement.
 

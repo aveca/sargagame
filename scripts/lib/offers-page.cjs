@@ -1,6 +1,7 @@
 'use strict'
 
 const { B2C, PRO, offerLang, currencyOf } = require('./commercial-catalog.cjs')
+const { STRIPE_LIVE_LINKS } = require('./stripe-live-links.cjs')
 const { formatObservation } = require('./home-first.cjs')
 
 function escapeHtml(s) {
@@ -86,7 +87,8 @@ function buildOffersPage(region, iso) {
   const choose = lang === 'es' ? 'Elegir este pase' : lang === 'en' ? 'Choose this pass' : 'Choisir ce pass'
   const cards = passes.map((o) => {
     const days = lang === 'es' ? `${o.days} días` : lang === 'en' ? `${o.days} days` : `${o.days} jours`
-    return `<article><h3>${escapeHtml(o.price)}</h3><p>${days}</p><a href="/?paywall=1&amp;pass=${o.pass}">${escapeHtml(choose)}</a></article>`
+    const href = STRIPE_LIVE_LINKS[`${o.pass}_${cur}`].url
+    return `<article><h3>${escapeHtml(o.price)}</h3><p>${days}</p><a href="${escapeHtml(href)}">${escapeHtml(choose)}</a></article>`
   }).join('')
   return `<!DOCTYPE html>
 <html lang="${lang}">
@@ -122,7 +124,8 @@ button{min-height:48px;margin-top:12px;width:100%;border:0;border-radius:12px;ba
 <section id="pro">
 <h2>${escapeHtml(copy.proH)}</h2>
 <p>${escapeHtml(copy.proP)}</p>
-<p><a class="btn" href="/pro/espace/">${escapeHtml(copy.cta)}</a></p>
+<p><a class="btn" href="${escapeHtml(STRIPE_LIVE_LINKS[cur === 'usd' ? 'pro_monthly_usd' : 'pro_monthly_eur'].url)}">${escapeHtml(copy.cta)}</a></p>
+<p><a href="${escapeHtml(STRIPE_LIVE_LINKS[cur === 'usd' ? 'pro_annual_usd' : 'pro_annual_eur'].url)}">${escapeHtml(pro.year)}</a> · <a href="/pro/espace/">${lang === 'es' ? 'O empezar sin tarjeta' : lang === 'en' ? 'Or start without a card' : 'Ou commencer sans carte'}</a></p>
 <h3>${escapeHtml(copy.formH)}</h3>
 <form data-sg-lead data-region="${escapeHtml(region.id || 'mq')}" data-lang="${lang}">
 <label>${escapeHtml(copy.hotel)}<input name="organization" required maxlength="120"></label>

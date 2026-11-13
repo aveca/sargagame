@@ -140,6 +140,14 @@ export default {
       trip7:{EUR:7.99,USD:8.99},
       season:{EUR:24.99,USD:27.99}
     });
+    const STRIPE_LIVE_LINKS = Object.freeze({
+      trip7_eur:"https://buy.stripe.com/8x2dR95oa5S1awpbfiebu00",
+      trip7_usd:"https://buy.stripe.com/28EcN5bMyfsB5c53MQebu01",
+      p30_eur:"https://buy.stripe.com/8x200jg2O6W56g997aebu02",
+      p30_usd:"https://buy.stripe.com/9B69ATbMycgpeMFabeebu03",
+      season_eur:"https://buy.stripe.com/4gMcN55oagwF4816Z2ebu04",
+      season_usd:"https://buy.stripe.com/4gM28r8AmfsB481eruebu05"
+    });
     // Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
     // sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
     const FULFILL_PRICES = Object.freeze({
@@ -475,6 +483,15 @@ export default {
           // rattaché à personne => argent payé sans accès livré.
           const email=String(d.email||"").trim().toLowerCase();
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return out({error:"invalid_email"},400);
+          const stripePassKey=(pass==="trip7"||pass==="p30"||pass==="season")?pass+"_"+(currency==="USD"?"usd":"eur"):"";
+          const stripeHref=STRIPE_LIVE_LINKS[stripePassKey];
+          if(stripeHref){
+            const orderId=crypto.randomUUID();
+            const payUrl=new URL(stripeHref);
+            payUrl.searchParams.set("client_reference_id", orderId);
+            payUrl.searchParams.set("prefilled_email", email);
+            return out({checkoutUrl:payUrl.toString(),provider:"stripe_link",orderId,amount:{value:(expected/100).toFixed(2),currency},pass},200);
+          }
           // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) :
           // le serveur live facture le montant affiché (montant validé ci-dessus).
           const base=allowed.includes(u.origin)?u.origin:"https://sargasses-martinique.com";

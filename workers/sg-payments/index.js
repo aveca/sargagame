@@ -876,6 +876,12 @@ var index_default = {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
       return handleMollie(request, env);
     }
+    if (path === "/api/stripe-webhook" || path === "/api/stripe-webhook.php") {
+      return handleStripeWebhook(request, env);
+    }
+    if (path === "/api/stripe-status") {
+      return handleStripeStatus(request, env);
+    }
     if (path === "/api/mollie-webhook" || path === "/api/mollie-webhook.php") {
       if (request.method === "GET") return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
       return handleWebhook(request, env, ctx);
@@ -1782,6 +1788,10 @@ async function handleMollie(request, env) {
       if (!EMAIL_RE.test(normalizedEmail)) {
         return new Response(JSON.stringify({ error: "Email invalide", reason: "invalid_email" }), { status: 400, headers: h });
       }
+      const stripeCheckout = await stripeLinkCheckout(env, { pass, currency: offer.currency, email: normalizedEmail, days: offer.days, amount: offer.amount });
+      if (stripeCheckout) {
+        return new Response(JSON.stringify(stripeCheckout), { headers: h });
+      }
       const amount = { value: offer.amount.toFixed(2), currency: offer.currency };
       // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais par
       // le client. `source` reste l'attribution de canal (réconciliation des
@@ -1835,6 +1845,8 @@ async function handleMollie(request, env) {
       const b2b = B2B_PLANS[planKey];
       if (!b2c && !b2b) throw new Error(`Plan inconnu: ${rawPlan || ""}`);
       const plan = b2c || b2b;
+      const stripePlan = await stripeLinkCheckout(env, { pass: planKey, currency: plan.currency, email: String(email || "").trim().toLowerCase(), days: plan.interval ? 30 : 365, amount: Number(plan.amount) });
+      if (stripePlan) return new Response(JSON.stringify(stripePlan), { headers: h });
       let cid = customerId;
       if (!cid && email) {
         const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
@@ -2214,6 +2226,148 @@ async function handleB2BLead(request, env) {
   return new Response(JSON.stringify({ ok: true, stored: "b2b_leads" }), { headers });
 }
 __name(handleB2BLead, "handleB2BLead");
+const STRIPE_LIVE_LINKS = {
+  trip7_eur: { url: "https://buy.stripe.com/8x2dR95oa5S1awpbfiebu00", amount: 799, currency: "eur", kind: "b2c", pass: "trip7", days: 7 },
+  trip7_usd: { url: "https://buy.stripe.com/28EcN5bMyfsB5c53MQebu01", amount: 899, currency: "usd", kind: "b2c", pass: "trip7", days: 7 },
+  p30_eur: { url: "https://buy.stripe.com/8x200jg2O6W56g997aebu02", amount: 1499, currency: "eur", kind: "b2c", pass: "p30", days: 30 },
+  p30_usd: { url: "https://buy.stripe.com/9B69ATbMycgpeMFabeebu03", amount: 1699, currency: "usd", kind: "b2c", pass: "p30", days: 30 },
+  season_eur: { url: "https://buy.stripe.com/4gMcN55oagwF4816Z2ebu04", amount: 2499, currency: "eur", kind: "b2c", pass: "season", days: 210 },
+  season_usd: { url: "https://buy.stripe.com/4gM28r8AmfsB481eruebu05", amount: 2799, currency: "usd", kind: "b2c", pass: "season", days: 210 },
+  pro_monthly_eur: { url: "https://buy.stripe.com/4gM28rcQCeox7kd6Z2ebu06", amount: 7900, currency: "eur", kind: "b2b", plan: "pro_monthly", days: 30 },
+  pro_monthly_usd: { url: "https://buy.stripe.com/cNi4gzdUGbcl1ZTcjmebu07", amount: 8900, currency: "usd", kind: "b2b", plan: "pro_monthly_usd", days: 30 },
+  pro_annual_eur: { url: "https://buy.stripe.com/cNifZhcQC1BL1ZTbfiebu08", amount: 69000, currency: "eur", kind: "b2b", plan: "pro_annual", days: 365 },
+  pro_annual_usd: { url: "https://buy.stripe.com/cNi8wP4k6gwF33X4QUebu09", amount: 79000, currency: "usd", kind: "b2b", plan: "pro_annual_usd", days: 365 }
+};
+function stripeSpec(pass, currency) {
+  const raw = String(pass || "");
+  if (STRIPE_LIVE_LINKS[raw]) return STRIPE_LIVE_LINKS[raw];
+  const key = raw + "_" + (String(currency || "").toUpperCase() === "USD" ? "usd" : "eur");
+  return STRIPE_LIVE_LINKS[key] || null;
+}
+__name(stripeSpec, "stripeSpec");
+function stripePriceKey(metadata, amount, currency) {
+  const meta = metadata && typeof metadata === "object" ? metadata : {};
+  const fromMeta = typeof meta.price_key === "string" ? meta.price_key : "";
+  const cur = String(currency || "").toLowerCase();
+  const cents = Number(amount);
+  let fromAmount = "";
+  for (const [key, row] of Object.entries(STRIPE_LIVE_LINKS)) {
+    if (row.amount === cents && row.currency === cur) fromAmount = key;
+  }
+  if (fromMeta && !STRIPE_LIVE_LINKS[fromMeta]) return { error: "unknown_price_key" };
+  if (fromMeta && fromAmount && fromMeta !== fromAmount) return { error: "price_key_mismatch" };
+  const priceKey = fromMeta || fromAmount;
+  if (!priceKey) return { error: "unknown_amount" };
+  return { priceKey, spec: STRIPE_LIVE_LINKS[priceKey] };
+}
+__name(stripePriceKey, "stripePriceKey");
+async function stripeLinkCheckout(env, opts) {
+  const spec = stripeSpec(opts.pass, opts.currency);
+  if (!spec) return null;
+  const orderId = crypto.randomUUID();
+  const url = new URL(spec.url);
+  url.searchParams.set("client_reference_id", orderId);
+  if (opts.email && String(opts.email).includes("@")) url.searchParams.set("prefilled_email", String(opts.email).trim());
+  try {
+    await kv(env).put("stripe_order_" + orderId, JSON.stringify({ state: "pending", email: opts.email || "", currency: spec.currency }), { expirationTtl: 14 * 86400 });
+  } catch (_) {}
+  return { checkoutUrl: url.toString(), provider: "stripe_link", orderId, amount: { value: (spec.amount / 100).toFixed(2), currency: spec.currency.toUpperCase() }, pass: spec.pass || spec.plan, days: spec.days };
+}
+__name(stripeLinkCheckout, "stripeLinkCheckout");
+async function stripeSignatureOk(payload, header, secret) {
+  const items = String(header || "").split(",");
+  let t = "";
+  const v1 = [];
+  for (const item of items) {
+    const i = item.indexOf("=");
+    if (i < 0) continue;
+    const k = item.slice(0, i).trim();
+    const v = item.slice(i + 1).trim();
+    if (k === "t") t = v;
+    if (k === "v1") v1.push(v);
+  }
+  if (!t || !v1.length || !secret) return false;
+  const age = Math.abs(Date.now() / 1000 - Number(t));
+  if (!Number.isFinite(age) || age > 300) return false;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = await crypto.subtle.sign("HMAC", key, enc.encode(t + "." + payload));
+  const hex = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return v1.some((sig) => sig.length === hex.length && sig === hex);
+}
+__name(stripeSignatureOk, "stripeSignatureOk");
+async function handleStripeStatus(request, env) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method !== "GET") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
+  const id = new URL(request.url).searchParams.get("session_id") || "";
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return new Response(JSON.stringify({ error: "invalid_session" }), { status: 400, headers });
+  const raw = await kv(env).get("stripe_session_" + id);
+  if (!raw) return new Response(JSON.stringify({ state: "pending" }), { headers });
+  let rec = {};
+  try { rec = JSON.parse(raw); } catch (_) { rec = {}; }
+  return new Response(JSON.stringify({ state: rec.state || "pending", pass: rec.pass || null, plan: rec.plan || null, days: rec.days || null, accessUrl: rec.accessUrl || null }), { headers });
+}
+__name(handleStripeStatus, "handleStripeStatus");
+async function handleStripeWebhook(request, env) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
+  const payload = await request.text();
+  const sig = request.headers.get("Stripe-Signature") || request.headers.get("stripe-signature") || "";
+  if (!sig) return new Response(JSON.stringify({ error: "missing_signature" }), { status: 400, headers });
+  const secret = String(env.STRIPE_WEBHOOK_SECRET || "");
+  if (!secret || !await stripeSignatureOk(payload, sig, secret)) {
+    return new Response(JSON.stringify({ error: "invalid_signature" }), { status: 400, headers });
+  }
+  let event;
+  try { event = JSON.parse(payload); } catch (_) {
+    return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400, headers });
+  }
+  const eventId = String(event.id || "");
+  if (eventId && await kv(env).get("stripe_evt_" + eventId)) {
+    return new Response(JSON.stringify({ ok: true, duplicate: true }), { headers });
+  }
+  const obj = event.data && event.data.object || {};
+  const type = String(event.type || "");
+  try {
+    if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
+      if (String(obj.payment_status || "") !== "paid") {
+        return new Response(JSON.stringify({ ok: true, granted: false, reason: "not_paid" }), { headers });
+      }
+      const resolved = stripePriceKey(obj.metadata, obj.amount_total, obj.currency);
+      if (resolved.error) return new Response(JSON.stringify({ ok: false, error: resolved.error }), { status: 400, headers });
+      const email = String(obj.customer_details && obj.customer_details.email || "").trim().toLowerCase();
+      if (!EMAIL_RE.test(email)) return new Response(JSON.stringify({ ok: false, error: "missing_email" }), { status: 400, headers });
+      const spec = resolved.spec;
+      const sessionId = String(obj.id || "");
+      let accessUrl = null;
+      if (spec.kind === "b2c") {
+        await grantB2C(env, sessionId, spec.pass, email, { price_key: resolved.priceKey, brand: "sargasses", provider: "stripe_link" }, spec.currency.toUpperCase());
+      } else {
+        const granted = await grantB2B(env, String(obj.customer || email), spec.plan, sessionId, spec.days, { metadata: { price_key: resolved.priceKey, brand: "sargasses", email } });
+        if (granted && granted.token) accessUrl = "https://" + requestHost(request) + "/pro/espace/?k=" + encodeURIComponent(granted.token);
+      }
+      const record = { state: "paid", pass: spec.pass || null, plan: spec.plan || null, days: spec.days, accessUrl };
+      await kv(env).put("stripe_session_" + sessionId, JSON.stringify(record), { expirationTtl: 400 * 86400 });
+      if (obj.client_reference_id) await kv(env).put("stripe_order_" + String(obj.client_reference_id).slice(0, 200), JSON.stringify(record), { expirationTtl: 400 * 86400 });
+      if (typeof obj.payment_intent === "string" && obj.payment_intent) await kv(env).put("stripe_pi_" + obj.payment_intent, sessionId, { expirationTtl: 400 * 86400 });
+    } else if (type === "charge.refunded" || type === "charge.dispute.created") {
+      const pi = typeof obj.payment_intent === "string" ? obj.payment_intent : "";
+      const sessionId = pi ? await kv(env).get("stripe_pi_" + pi) : "";
+      if (!sessionId) return new Response(JSON.stringify({ ok: true, revoked: false, reason: "unknown_payment" }), { headers });
+      await revokeB2CAccess(env, sessionId, type);
+      await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(sessionId) + "&type=eq.b2b_pro");
+      const prev = await kv(env).get("stripe_session_" + sessionId);
+      let rec = { state: "revoked" };
+      try { if (prev) rec = Object.assign(JSON.parse(prev), { state: "revoked", accessUrl: null }); } catch (_) {}
+      await kv(env).put("stripe_session_" + sessionId, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
+    }
+    if (eventId) await kv(env).put("stripe_evt_" + eventId, "done", { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify({ ok: true }), { headers });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e).slice(0, 160) }), { status: 500, headers });
+  }
+}
+__name(handleStripeWebhook, "handleStripeWebhook");
 function validatePaymentForFulfillment(payment, metadata) {
   const problems = [];
   const mode = String(payment?.mode || "");
