@@ -111,7 +111,7 @@
 ### TASK-P1-012 Punta Cana ES : URL 404 + landing sans formulaire
 - **Priorité** : P1
 - **Rôle** : coding_agent
-- **Statut** : [ ] à faire
+- **Statut** : [~] TASK-P1-012 — in_progress by coding_agent
 - **Description** : (1) `https://sargassumpuntacana.com/pro/es/pronostico-sargazo-punta-cana-hotels/` → **404** mesuré 3/3 (la version ES est publiée sur le domaine Martinique : `https://sargasses-martinique.com/pro/es/pronostico-sargazo-punta-cana-hoteles/` → 200) → **corriger le lien/canonique** pour que le domaine Punta Cana serve sa version ES ou y renvoie ; (2) la landing commerciale `https://sargassumpuntacana.com/es/sargazo-para-hoteles/` (200) **ne contient aucun formulaire** (0 `<form>`, 0 `<input>`) → le visiteur espagnol de Punta Cana n'a **aucune capture** sur son propre domaine → y brancher le formulaire B2B (mêmes assurances que #1412).
 
 ### TASK-P1-004 Remplacer les routes Cloudflare `DOMAINE/* → sg-noso` (après déploiement)
