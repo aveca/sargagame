@@ -87,7 +87,7 @@ const seasonalAndClearanceCopy = collectStrings([
 ]).join(' ');
 assert.doesNotMatch(
   seasonalAndClearanceCopy,
-  /fiablemente limpio|fiablemente limpia|ventana confiable|se mantienen limpias semanas enteras|olvídate del tema por completo|48\\s*(?:a|[-–])\\s*72\\s*(?:horas|h)|se recalcula con cada actualización satelital|actualizada?\\s*(?:cuatro|4) veces al día/i,
+  /fiablemente limpio|fiablemente limpia|ventana confiable|se mantienen limpias semanas enteras|olvídate del tema por completo|48\s*(?:a|[-–])\s*72\s*(?:horas|h)|se recalcula con cada actualización satelital|actualizada?\s*(?:cuatro|4) veces al día/i,
   'seasonal and clearance copy must not guarantee clean beaches, fixed clearance times, or fixed refresh cadence'
 );
 assert.match(content.pages.season.intro, /no garantizan playas limpias/i);
