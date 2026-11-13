@@ -842,6 +842,18 @@ function writeRegionIndex(region, out) {
 </html>
 `
   fs.writeFileSync(path.join(out, 'index.html'), gpIndex, 'utf-8')
+  try {
+    const gpRegion = JSON.parse(fs.readFileSync(path.join(root, 'regions', 'gp.json'), 'utf8'))
+    const { injectFirstPaint, readObservationIso } = require('./lib/home-first.cjs')
+    const { writeCommercialPages } = require('./lib/write-commercial-pages.cjs')
+    const iso = readObservationIso(root)
+    const gpHtml = fs.readFileSync(path.join(out, 'index.html'), 'utf8')
+    fs.writeFileSync(path.join(out, 'index.html'), injectFirstPaint(gpHtml, gpRegion, iso), 'utf8')
+    writeCommercialPages(out, gpRegion, root)
+    console.log('   → Guadeloupe : accueil, /offres/ et /premium/ localisés')
+  } catch (e) {
+    console.warn('   ⚠ pages commerciales Guadeloupe:', e.message)
+  }
   console.log(`   → index.html Guadeloupe (SEO + PWA + perf parity) écrit avec script ${scriptSrc}`)
   return true
 }
@@ -888,7 +900,7 @@ function prepareNewRegion(region) {
     'legal.css', // charte partagée des pages légales FR (MQ/GP) — orpheline sur USD
     'en', // landing /en/ « Sargassum Monitoring Martinique »
     'a-propos', // page confiance 100% FR
-    'offres', // page offres/tarifs 100% FR (MQ/GP) — jamais sur les domaines USD
+    // /offres/ est régénérée par région (write-commercial-pages) avant cette copie.
     'veille', // landing de capture (Funnel A) 100% FR — jamais sur les domaines USD
   ])
   for (const other of getAllRegions()) {

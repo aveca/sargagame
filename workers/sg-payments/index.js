@@ -1060,6 +1060,9 @@ var index_default = {
         headers: { "Content-Type": "application/json", "Cache-Control": isFree ? "public, max-age=1800" : "no-store" }
       });
     }
+    if (path === "/api/b2b-lead" || path === "/api/b2b-lead.php") {
+      return handleB2BLead(request, env);
+    }
     if (path === "/api/b2b-prospects.php" || path === "/api/b2b-concierge.php") {
       return new Response(JSON.stringify({ error: "endpoint_retired" }), {
         status: 410,
@@ -2187,6 +2190,30 @@ function validateB2BAmount(payment, planKey) {
 }
 __name(validateB2BAmount, "validateB2BAmount");
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+async function handleB2BLead(request, env) {
+  const headers = { ...cors(request), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+  if (request.method !== "POST") return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers });
+  let body = {};
+  try { body = await request.json(); } catch (_) {
+    return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), { status: 400, headers });
+  }
+  const email = String(body.email || "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return new Response(JSON.stringify({ ok: false, error: "invalid_email" }), { status: 400, headers });
+  const host = requestHost(request);
+  const region = String(body.region || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || host;
+  const organization = String(body.organization || "").replace(/[<>]/g, "").trim().slice(0, 120);
+  const row = { email, domain: host, region, status: "new" };
+  if (organization) row.organization = organization;
+  let saved = await supa(env, "b2b_leads", "POST", row);
+  if (saved == null && organization) {
+    delete row.organization;
+    saved = await supa(env, "b2b_leads", "POST", row);
+  }
+  if (saved == null) return new Response(JSON.stringify({ ok: false, error: "not_stored" }), { status: 503, headers });
+  return new Response(JSON.stringify({ ok: true, stored: "b2b_leads" }), { headers });
+}
+__name(handleB2BLead, "handleB2BLead");
 function validatePaymentForFulfillment(payment, metadata) {
   const problems = [];
   const mode = String(payment?.mode || "");

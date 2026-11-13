@@ -1,3 +1,12 @@
+## 2026-11-13 — Pages d'offres par région, premier écran sans JS, grille Pro honnête
+
+- `/offres/` générée par région (EN Miami, ES Cancún / Tulum / Punta Cana, FR MQ/GP) : gratuit vs payant, prix du catalogue, CTA, formulaire B2B.
+- `/premium/` régénérée avec le nom de la région (plus « plages de Martinique » / title Martinique sur les domaines USD et la Guadeloupe).
+- Grille Pro affichée : 79 €/mois ou 690 €/an, 89 $/mois ou 790 $/an. Retrait des prix non catalogués 199 € et 219 $ et de la mention fausse « 2 mois offerts ».
+- Premier écran HTML : valeur, heure satellite, CTA hôtel et CTA pass, visible sans JavaScript.
+- Leads : `POST /api/b2b-lead` vers `b2b_leads`, repli Apps Script déjà en production. Affiliation voyage inactive sans `AFFILIATE_ENABLED=1`.
+- Liste Stripe LIVE : `docs/stripe-live-catalog-2026-11-13.md`. Aucune clé, aucun déploiement.
+
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
 - **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.

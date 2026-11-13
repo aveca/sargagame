@@ -1,3 +1,11 @@
+## 2026-11-13 · Offres localisées + B2B visible (NON déployé)
+
+- `/offres/` et `/premium/` sont générées par région au build. La Guadeloupe est réécrite dans `prepare-ftp.cjs`.
+- Prix Pro affichés alignés sur le catalogue encaissable : 79 €/mois ou 690 € pour 12 mois, 89 $/mois ou 790 $ pour 12 mois. Pas de palier 199 € / 219 $.
+- Premier écran `#sg-first` avec l'horodatage `erddapTimestamp`. Formulaire B2B sur `/offres/#pro`.
+- Stripe LIVE à créer par le propriétaire : `docs/stripe-live-catalog-2026-11-13.md`. Worker lead non live tant que `sg-payments` n'est pas redéployé (accord requis).
+- Tests : `node tests/unit/commercial-offers-pages.test.cjs`, `price-parity`, `b2b-data-freshness`. Pas de paiement sandbox (aucune clé dans l'environnement).
+
 ## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
 
 ### Travail effectué
