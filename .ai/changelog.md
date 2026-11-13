@@ -1,3 +1,25 @@
+## 2026-11-13 — Parcours Pro hôtel en libre-service
+
+- `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.
+- Après un paiement Pro confirmé, le webhook envoie un e-mail Resend avec le lien d'accès, le code du widget et, si `STRIPE_SECRET_KEY` est une clé live, le portail client. Sinon, la résiliation se fait en répondant à l'e-mail. Une clé TEST n'ouvre pas le portail.
+
+## 2026-11-13 — Caisse publique Stripe seulement, accès après confirmation serveur
+
+- `create_payment` et `create_subscription` renvoient un Payment Link Stripe ou une erreur `no_mollie_fallback`. Plus d'appel Mollie ni de clé TEST pour une nouvelle vente.
+- Le webhook n'accorde l'accès que sur `checkout.session.completed` ou `checkout.session.async_payment_succeeded` avec `payment_status=paid` et `livemode=true`. Il traite aussi `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated` et `customer.subscription.deleted`.
+- Remboursement, litige et résiliation retirent l'accès de façon idempotente. L'idempotence est l'`event.id`. `livemode` est stocké.
+- `/merci` reste sur « paiement en cours de confirmation » tant que le statut serveur n'est pas `paid`. L'URL `?premium=1` ou `?session_id` n'écrit plus de droit dans le navigateur.
+- Mesure sur la couche existante : `pricing_view`, `CTA_click`, `checkout_started`, et côté webhook `payment_success`, `payment_failed`, `entitlement_granted`, `refund`. Chaque événement porte `livemode` et un identifiant de corrélation sans email.
+
+## 2026-11-13 — Pages d'offres par région, premier écran sans JS, grille Pro honnête
+
+- `/offres/` générée par région (EN Miami, ES Cancún / Tulum / Punta Cana, FR MQ/GP) : gratuit vs payant, prix du catalogue, CTA, formulaire B2B.
+- `/premium/` régénérée avec le nom de la région (plus « plages de Martinique » / title Martinique sur les domaines USD et la Guadeloupe).
+- Grille Pro affichée : 79 €/mois ou 690 €/an, 89 $/mois ou 790 $/an. Retrait des prix non catalogués 199 € et 219 $ et de la mention fausse « 2 mois offerts ».
+- Premier écran HTML : valeur, heure satellite, CTA hôtel et CTA pass, visible sans JavaScript.
+- Leads : `POST /api/b2b-lead` vers `b2b_leads`, repli Apps Script déjà en production. Affiliation voyage inactive sans `AFFILIATE_ENABLED=1`.
+- Liste Stripe LIVE : `docs/stripe-live-catalog-2026-11-13.md`. Aucune clé, aucun déploiement.
+
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
 - **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.

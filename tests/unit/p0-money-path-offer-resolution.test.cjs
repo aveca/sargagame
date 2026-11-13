@@ -250,11 +250,10 @@ async function main() {
     })
     b.backend.restore()
     eq(out.status, 200, 'A6 p30 EUR : création acceptée')
-    eq(state.created.length, 1, 'A6 p30 EUR : un paiement Mollie créé')
-    eq(state.created[0].amount, { value: '14.99', currency: 'EUR' }, 'A6 p30 EUR : montant catalogue 14.99 EUR')
-    eq(state.created[0].metadata.offer_kind, 'b2c_pass', 'A6 p30 EUR : offer_kind écrit par le serveur')
-    eq(state.created[0].metadata.pass, 'p30', 'A6 p30 EUR : pass serveur')
-    eq(state.created[0].metadata.email, 'voyageur@example.com', 'A6 p30 EUR : email normalisé')
+    eq(state.created.length, 0, 'A6 p30 EUR : aucun paiement Mollie (caisse Stripe)')
+    eq(out.json.provider, 'stripe_link', 'A6 p30 EUR : provider stripe_link')
+    t(String(out.json.checkoutUrl).startsWith('https://buy.stripe.com/'), 'A6 p30 EUR : URL Payment Link')
+    t(String(out.json.checkoutUrl).includes('prefilled_email=voyageur%40example.com'), 'A6 p30 EUR : email normalisé dans le lien')
     eq(out.json.amount, { value: '14.99', currency: 'EUR' }, 'A6 p30 EUR : montant renvoyé au front')
     eq(out.json.pass, 'p30', 'A6 p30 EUR : pass renvoyé au front')
     eq(out.json.days, 30, 'A6 p30 EUR : durée renvoyée au front')
@@ -275,7 +274,9 @@ async function main() {
     })
     b.backend.restore()
     eq(out.status, 200, `A7 ${pass} ${cur} : création acceptée`)
-    eq(state.created[0] && state.created[0].amount, { value, currency: cur }, `A7 ${pass} ${cur} : montant catalogue ${value} ${cur}`)
+    eq(state.created.length, 0, `A7 ${pass} ${cur} : aucun paiement Mollie`)
+    eq(out.json.amount, { value, currency: cur }, `A7 ${pass} ${cur} : montant catalogue ${value} ${cur}`)
+    t(String(out.json.checkoutUrl).startsWith('https://buy.stripe.com/'), `A7 ${pass} ${cur} : Payment Link`)
     t(LIVE_PRICES[pass][cur] === cents, `A7 ${pass} ${cur} : la grille du test equals bien la grille live`)
   }
 
@@ -303,10 +304,9 @@ async function main() {
     }, { url: 'https://evil.example.com/api/mollie', hostHeader: 'evil.example.com' })
     b.backend.restore()
     eq(out.status, 200, 'A9 Host hors flotte : création acceptée')
-    const webhookUrl = state.created[0] && state.created[0].webhookUrl
-    t(FLEET.some((h) => String(webhookUrl).startsWith('https://' + h + '/')),
-      'A9 Host hors flotte : webhookUrl sur un domaine de la flotte (' + webhookUrl + ')')
-    t(!String(webhookUrl).includes('evil.example.com'), 'A9 Host hors flotte : aucune fuite vers evil.example.com')
+    eq(state.created.length, 0, 'A9 Host hors flotte : aucun appel Mollie')
+    t(String(out.json.checkoutUrl).startsWith('https://buy.stripe.com/'), 'A9 Host hors flotte : lien Stripe')
+    t(!String(out.json.checkoutUrl).includes('evil.example.com'), 'A9 Host hors flotte : aucune fuite vers evil.example.com')
   }
 
   // A10 � en-tête Host hors flotte mais URL de la flotte : l'URL l'emporte.
@@ -319,8 +319,8 @@ async function main() {
     }, { hostHeader: 'evil.example.com' })
     b.backend.restore()
     eq(out.status, 200, 'A10 Host menteur : création acceptée')
-    const webhookUrl = String(state.created[0] && state.created[0].webhookUrl)
-    t(webhookUrl.startsWith('https://sargasses-martinique.com/'), 'A10 Host menteur : webhookUrl sur la flotte (' + webhookUrl + ')')
+    eq(state.created.length, 0, 'A10 Host menteur : aucun appel Mollie')
+    t(String(out.json.checkoutUrl).startsWith('https://buy.stripe.com/'), 'A10 Host menteur : lien Stripe')
   }
 
   // A11 � redirectUrl hors flotte : l'URL de retour stockée reste sur la flotte.
@@ -334,11 +334,9 @@ async function main() {
     })
     b.backend.restore()
     eq(out.status, 200, 'A11 redirect hors flotte : création acceptée')
-    const recKey = [...kv.store.keys()].find((k) => k.startsWith('mol_return_'))
-    t(!!recKey, 'A11 redirect hors flotte : le retour est bien enregistré en KV')
-    const rec = JSON.parse(kv.store.get(recKey))
-    t(String(rec.back).startsWith('https://sargasses-martinique.com/'), 'A11 redirect hors flotte : back URL sur la flotte (' + rec.back + ')')
-    t(!String(rec.back).includes('evil.example.com'), 'A11 redirect hors flotte : aucune redirection vers evil.example.com')
+    t(String(out.json.checkoutUrl).startsWith('https://buy.stripe.com/'), 'A11 redirect hors flotte : le client part chez Stripe')
+    t(!String(out.json.checkoutUrl).includes('evil.example.com'), 'A11 redirect hors flotte : aucune redirection vers evil.example.com')
+    t(![...kv.store.keys()].some((k) => k.startsWith('mol_return_')), 'A11 redirect hors flotte : aucun retour Mollie enregistré')
   }
 
   // A12 � métadonnées client forgées : la classification reste serveur.
@@ -356,14 +354,10 @@ async function main() {
     })
     b.backend.restore()
     eq(out.status, 200, 'A12 métadonnées forgées : création acceptée')
-    const md = state.created[0] && state.created[0].metadata
-    eq(md.offer_kind, 'b2c_pass', 'A12 offer_kind forgé : ignoré (serveur)')
-    eq(md.pass, 'p30', 'A12 pass forgé : ignoré (serveur)')
-    eq(md.email, 'a@b.co', 'A12 email forgé : ignoré (serveur)')
-    eq(md.plan, undefined, 'A12 plan forgé : ignoré (serveur)')
-    eq(md.customerId, undefined, 'A12 customerId forgé : ignoré (serveur)')
-    eq(md.interval, undefined, 'A12 interval forgé : ignoré (serveur)')
-    eq(md.utm_source, 'legit', 'A12 métadonnées non réservées : conservées')
+    eq(state.created.length, 0, 'A12 métadonnées forgées : aucun appel Mollie')
+    eq(out.json.pass, 'p30', 'A12 pass forgé : le serveur garde p30')
+    t(String(out.json.checkoutUrl).includes('prefilled_email=a%40b.co'), 'A12 email forgé : le lien porte l\'email du corps')
+    t(!String(out.json.checkoutUrl).includes('pirate'), 'A12 email forgé : le lien n\'emporte pas l\'email pirate')
   }
 
   // A13 � profil marchand : uniquement depuis le binding, jamais codé en dur.
@@ -375,7 +369,7 @@ async function main() {
       action: 'create_payment', pass: 'p30', cents: 1499, cur: 'EUR', email: 'a@b.co'
     })
     b.backend.restore()
-    eq(state.created[0].profileId, undefined, 'A13 sans binding : aucun profileId envoyé')
+    eq(state.created.length, 0, 'A13 sans binding : aucun appel Mollie')
 
     const state2 = {}
     const b2 = buildBackend(state2)
@@ -384,7 +378,7 @@ async function main() {
       action: 'create_payment', pass: 'p30', cents: 1499, cur: 'EUR', email: 'c@d.co'
     })
     b2.backend.restore()
-    eq(state2.created[0].profileId, 'pfl_ABC123', 'A13 avec binding : profileId transmis')
+    eq(state2.created.length, 0, 'A13 avec binding : le Payment Link n\'envoie pas le profileId Mollie')
   }
 
   // �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�

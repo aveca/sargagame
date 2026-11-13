@@ -69,12 +69,12 @@ const T = {
   fr: {
     lang: 'fr',
     title: (n) => `Prévisions sargasses ${n} — Accès premium`,
-    meta: (n) => `Prévisions sargasses complètes, plage par plage, à ${n}. J+1 à J+7, alertes push. Sans publicité.`,
+    meta: (n, cur) => `Prévisions sargasses complètes, plage par plage, à ${n}. J+1 à J+7, alertes. À partir de ${cur === 'usd' ? '8,99 $' : '7,99 €'}.`,
     h1: (n) => `Voyez l'état de chaque plage de ${n} avant d'y aller`,
     sub: 'Prévisions 7 jours · alertes push · carte en direct · sans publicité',
     cta: (p, d) => `Accéder — ${p} (${d} j)`,
     buy: (p, d) => `Obtenir l'accès ${d} jours — ${p}`,
-    best: 'Le plus choisi',
+    best: '30 jours',
     secure: 'Paiement sécurisé Mollie',
     email: 'Votre email (pour recevoir l’accès)',
     bad: 'Entrez un email valide.',
@@ -84,12 +84,12 @@ const T = {
   en: {
     lang: 'en',
     title: (n) => `${n} sargassum forecasts — Premium access`,
-    meta: (n) => `Full sargassum forecasts, beach by beach, in ${n}. Day +1 to +7 and alerts. From €7.99.`,
+    meta: (n, cur) => `Full sargassum forecasts, beach by beach, in ${n}. Day +1 to +7 and alerts. From ${cur === 'usd' ? '$8.99' : '€7.99'}.`,
     h1: (n) => `See the state of every ${n} beach before you go`,
     sub: '7-day forecasts · push alerts · live map · no ads',
     cta: (p, d) => `Access — ${p} (${d} days)`,
     buy: (p, d) => `Get ${d} days access — ${p}`,
-    best: 'Most popular',
+    best: '30 days',
     secure: 'Secure Mollie payment',
     email: 'Your email (to receive access)',
     bad: 'Enter a valid email.',
@@ -99,12 +99,12 @@ const T = {
   es: {
     lang: 'es',
     title: (n) => `Pronóstico de sargazo ${n} — Acceso premium`,
-    meta: (n) => `Pronósticos de sargasso completos, playa por playa, en ${n}. De J+1 a J+7 y alertas. Desde 7,99 €.`,
+    meta: (n, cur) => `Pronósticos de sargazo completos, playa por playa, en ${n}. De J+1 a J+7 y alertas. Desde ${cur === 'usd' ? '$8.99' : '7,99 €'}.`,
     h1: (n) => `Ve el estado de cada playa de ${n} antes de ir`,
     sub: 'Pronóstico 7 días · alertas push · mapa en directo · sin publicidad',
     cta: (p, d) => `Acceder — ${p} (${d} días)`,
     buy: (p, d) => `Obtener acceso ${d} días — ${p}`,
-    best: 'El más elegido',
+    best: '30 días',
     secure: 'Pago seguro Mollie',
     email: 'Tu email (para recibir el acceso)',
     bad: 'Ingresa un email válido.',
@@ -139,6 +139,7 @@ const CATALOGUE = {
 function buildPage(region) {
   const Tl = T[region.primaryLang] || T.fr;
   const lang = Tl.lang;
+  const cur = region.currency === 'USD' ? 'usd' : 'eur';
   const catalogueJson = JSON.stringify(CATALOGUE);
   const usdDomainsJson = JSON.stringify(USD_DOMAINS);
 
@@ -147,7 +148,7 @@ function buildPage(region) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="${escapeHtml(Tl.meta(region.name))}">
+<meta name="description" content="${escapeHtml(Tl.meta(region.name, cur))}">
 <link rel="canonical" href="https://${escapeHtml(region.domain || 'sargasses-martinique.com')}/premium/">
 <title>${escapeHtml(Tl.title(region.name))}</title>
 <style>
@@ -204,7 +205,7 @@ const CUR = IS_USD ? 'usd' : 'eur';
 const OFFERS = CATALOGUE[CUR];
 function money(c){ const v = c / 100; return CUR === 'usd' ? '$' + v.toFixed(2) : (${JSON.stringify(lang)} === 'en' ? '€' + v.toFixed(2) : v.toFixed(2).replace('.', ',') + ' €'); }
 function label(o){ return o.days + (${JSON.stringify(lang)} === 'en' ? ' days' : ${JSON.stringify(lang)} === 'es' ? ' días' : ' jours'); }
-function buyLabel(o){ return ${JSON.stringify(Tl.buy('X', 'Y'))}.replace('X', String(o.days)).replace('Y', money(o.cents)); }
+function buyLabel(o){ return ${JSON.stringify(Tl.buy('__PRICE__', '__DAYS__'))}.replace('__DAYS__', String(o.days)).replace('__PRICE__', money(o.cents)); }
 const host = document.getElementById('offers');
 host.innerHTML = OFFERS.map(function(o){
   return '<div class="offer ' + (o.best ? 'best' : '') + '">' +

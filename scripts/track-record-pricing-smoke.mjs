@@ -62,7 +62,7 @@ try {
       'has proofline': (html) => html.includes('class="proofline"'),
       'has dynamic metric targets': (html) => html.includes('id="tr-clean"') && html.includes('id="tr-line"'),
       'loads shared freshness contract': (html) => html.includes('src="/b2b-data-freshness.js"'),
-      'has B2B trial CTA': (html) => html.includes('/pro/espace/'),
+      'has Pro payment buttons': (html) => html.includes('buy.stripe.com/4gM28rcQCeox7kd6Z2ebu06') && html.includes('>Mensuel<') && html.includes('>Annuel<'),
     };
     await fetchAndCheck(PREVIEW + '/pro/pricing/', staticChecks);
 
