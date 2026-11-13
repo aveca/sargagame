@@ -10,8 +10,17 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const MAX_AGE_MINUTES = 900;
 const PUBLIC_STALE_MINUTES = 2160;
-// Backward-compatible export: publication has no grace window beyond the 900-minute SLA.
+// Backward-compatible export: the operational SLA stays 900 minutes.
 const MAX_PUBLISHABLE_MINUTES = MAX_AGE_MINUTES;
+// A newer legitimate observation can be deployed for 7 days when the site
+// shows its date and says the satellite data is not current. Beyond 7 days,
+// or older than the observation already published, it stays blocked.
+const MAX_LABELED_STALE_MINUTES = 7 * 24 * 60;
+const STALE_NOTICES = [
+  'donnée satellite non actualisée',
+  'satellite data not updated',
+  'dato satelital no actualizado'
+];
 
 function evaluateObservation(erddapTimestamp, now = Date.now()) {
   const observedAt = Date.parse(String(erddapTimestamp ?? ''));
@@ -56,6 +65,22 @@ function evaluatePublicationEligibility(erddapTimestamp, options = {}) {
     return { ...base, publishable: false, withinOperationalSla: false, isNewerThanPrevious };
   }
   if (!base.ok) {
+    const age = base.ageMinutes;
+    const labeled = options.allowLabeledStale === true
+      && Number.isFinite(age)
+      && age > MAX_AGE_MINUTES
+      && age <= MAX_LABELED_STALE_MINUTES
+      && !isOlderThanPrevious;
+    if (labeled) {
+      return {
+        ...base,
+        publishable: true,
+        withinOperationalSla: false,
+        labeledStale: true,
+        isNewerThanPrevious,
+        reason: 'observation au-delà du SLA opérationnel, avec date et mention non actualisée'
+      };
+    }
     return { ...base, publishable: false, withinOperationalSla: false, isNewerThanPrevious };
   }
   if (isOlderThanPrevious) {
@@ -88,6 +113,24 @@ function evaluateFleetPublicationEligibility(regionResults, expectedCount = 6) {
     expected: expectedCount,
     blockedRegions: blocked.map(result => result && result.regionId ? result.regionId : 'unknown')
   };
+}
+
+function htmlShowsStaleObservation(html, erddapTimestamp) {
+  const text = String(html || '');
+  const day = String(erddapTimestamp || '').slice(0, 10);
+  const hasNotice = STALE_NOTICES.some((notice) => text.toLowerCase().includes(notice));
+  const hasDay = /^\d{4}-\d{2}-\d{2}$/.test(day) && text.includes(day);
+  return { ok: hasNotice && hasDay, hasNotice, hasDay };
+}
+
+function preparedSiteShowsStaleObservation(ftpDir, erddapTimestamp) {
+  const files = ['index.html', 'offres/index.html', 'pro/pricing/index.html', 'merci/index.html'];
+  let html = '';
+  for (const rel of files) {
+    const file = path.resolve(String(ftpDir || ''), rel);
+    if (fs.existsSync(file)) html += '\n' + fs.readFileSync(file, 'utf8');
+  }
+  return htmlShowsStaleObservation(html, erddapTimestamp);
 }
 
 function readLiveObservationTimestamp(domain, fetchImpl = globalThis.fetch) {
@@ -148,14 +191,23 @@ async function main() {
     liveTs = await readLiveObservationTimestamp(region && region.domain);
   } catch {}
   const eligibility = evaluatePublicationEligibility(payload && payload.erddapTimestamp, {
-    previousTimestamp: liveTs
+    previousTimestamp: liveTs,
+    allowLabeledStale: true
   });
+  if (eligibility.labeledStale) {
+    const notice = preparedSiteShowsStaleObservation(path.dirname(path.dirname(path.dirname(path.resolve(ROOT, result.file)))), payload.erddapTimestamp);
+    if (!notice.ok) {
+      console.error(`FAIL ${prefix} reason=étiquette de donnée non actualisée absente du site préparé`);
+      process.exitCode = 1;
+      return;
+    }
+  }
   if (!eligibility.publishable) {
     console.error(`FAIL ${prefix} reason=${eligibility.reason}`);
     process.exitCode = 1;
     return;
   }
-  console.log(`PASS ${prefix} age=${eligibility.ageMinutes.toFixed(2)}min withinOperationalSla=true publishable=true liveRef=${liveTs || 'unavailable'} file=${result.file}`);
+  console.log(`PASS ${prefix} age=${eligibility.ageMinutes.toFixed(2)}min withinOperationalSla=${eligibility.withinOperationalSla === true} labeledStale=${eligibility.labeledStale === true} publishable=true liveRef=${liveTs || 'unavailable'} file=${result.file}`);
 }
 if (require.main === module) {
   Promise.resolve(main()).catch((error) => {
@@ -167,9 +219,12 @@ module.exports = {
   MAX_AGE_MINUTES,
   PUBLIC_STALE_MINUTES,
   MAX_PUBLISHABLE_MINUTES,
+  MAX_LABELED_STALE_MINUTES,
   evaluateObservation,
   evaluatePublicationEligibility,
   evaluateFleetPublicationEligibility,
+  htmlShowsStaleObservation,
+  preparedSiteShowsStaleObservation,
   readLiveObservationTimestamp,
   checkPreparedRegion
 };

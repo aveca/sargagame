@@ -42,6 +42,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:key,cents:effCents,base_cents:baseCents,copy_variant:copyVariant})
     try{track("sg_pass_cta",{cents:effCents,base_cents:baseCents,pass:key,segment:seg,copy_variant:copyVariant})}catch(_){}
+    try{track("CTA_click",{livemode:true,correlation_id:(typeof crypto!=="undefined"&&crypto.randomUUID&&crypto.randomUUID())||String(Date.now()),pass:key})}catch(_){}
     localStorage.setItem('sg_checkout_started_at', Date.now())
     // c = centimes de BASE (ce que le serveur attend) ; cents = montant effectif.
     if(onBuy)onBuy({c:baseCents,cents:effCents,baseCents,pass:key,days,segment:seg})

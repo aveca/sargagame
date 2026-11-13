@@ -1975,6 +1975,7 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // les PAID passent par le checkout on-site. sg_checkout_started = début réel
   // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
   "sg_checkout_started",
+  "pricing_view","CTA_click","checkout_started",
   // ⚠️ 2026-11-09 — Le parcours de paiement SOS (1 €) est RETIRÉ du client :
   // `sg_sos_checkout_start` / `sg_sos_checkout_error` ne sont plus émis et ne
   // sont donc plus allowlistés (cf. tests/unit/sos-public-surface-removed.test.cjs).
@@ -1997,6 +1998,13 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Les 10 postes du Veilleur « Jusqu'où on descend » (?verticals, 2026-07-02) : ouverture de
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
   "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
+function sgCorrelation(){
+  try{
+    let id=sessionStorage.getItem("sg_corr")
+    if(!id){id=(window.crypto&&crypto.randomUUID&&crypto.randomUUID())||String(Date.now());sessionStorage.setItem("sg_corr",id)}
+    return String(id).slice(0,80)
+  }catch(_){return "local"}
+}
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
@@ -11635,55 +11643,9 @@ export default function App(){
     }catch{}
     try{
       const params=new URLSearchParams(window.location.search)
-      // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
-      const sessionId=params.get("session_id")
-      // Trip Pass one-time : ?pass=trip → pose une expiration 7j AU LIEU du flag
-      // permanent. DOIT être testé AVANT le bloc générique (qui, lui, lit
-      // session_id et poserait sg_premium=1 à vie). Revenu loggé pareil (le
-      // webhook gère checkout.session.completed pour les sessions mode=payment).
-      // Pass one-time TIME-BOXÉ : ?pass=trip (7j, rétrocompat) OU ?pass=pNN (NN jours,
-      // ex pass vacances p30). Pose une expiration AU LIEU du flag premium permanent.
-      const passParam=params.get("pass")
-      if(passParam&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
-        const days=passParam==="trip"?7:Math.min(120,Math.max(1,parseInt(passParam.slice(1),10)||7))
-        const end=Date.now()+days*86400000
-        try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
-          }).catch(e=>sgLogError("webhook_conversion",e))}catch(ex){sgLogError("webhook_conversion_wrap",ex)}
-        }
-        // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
-        // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
-        // sur les autres replaceState (manage/premium_email).
-        params.delete("pass");params.delete("session_id");params.delete("premium");params.delete("success")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
-      }
-      if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
-        s("sg_premium",true)
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"direct"})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        // Log payment to Apps Script (fire-and-forget)
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
-          }).catch(()=>{})}catch(ex){}
-        }
-        params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
-      }
+      // Un paramètre d'URL (?premium=1, ?success=1, ?session_id, ?pass) ne confirme
+      // jamais un paiement et n'écrit aucun droit. L'accès vient du webhook,
+      // puis de /?restore=1.
       if(params.get("paywall")==="1"){
         openPremium("paywall_deeplink");
         {const qs=params.toString().replace(/paywall/,"");window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
@@ -13620,7 +13582,7 @@ export default function App(){
       let hasEm=false;try{hasEm=!!localStorage.getItem("sg_email")}catch(_){}
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
-    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
+    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null});track("pricing_view",{livemode:true,correlation_id:sgCorrelation(),source:s})
   },[captureGate])
 
   // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───
@@ -13717,7 +13679,7 @@ export default function App(){
     if(v==="premium")openPremium("nav")
     else {setShowPremium(false);setView(v)} // close paywall when navigating away → fixes ⭐ tab staying lit on map/list
   },[openPremium])
-  // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
+  // Deep-link OUVRE le paywall. ?premium=1 n'accorde aucun accès. Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
   // /alertes/ = landing page hot-intent (cherché "alertes sargasses") → ouvre paywall direct.
   // Distinct du general auto-open désactivé L11319 (intention tiède) : ici l'intention est CHAUDE.

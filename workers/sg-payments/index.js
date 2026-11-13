@@ -876,6 +876,15 @@ var index_default = {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
       return handleMollie(request, env);
     }
+    if (path === "/api/stripe-webhook" || path === "/api/stripe-webhook.php") {
+      return handleStripeWebhook(request, env);
+    }
+    if (path === "/api/stripe-status") {
+      return handleStripeStatus(request, env);
+    }
+    if (path === "/api/stripe-track") {
+      return handleStripeTrack(request, env);
+    }
     if (path === "/api/mollie-webhook" || path === "/api/mollie-webhook.php") {
       if (request.method === "GET") return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
       return handleWebhook(request, env, ctx);
@@ -1060,6 +1069,9 @@ var index_default = {
         headers: { "Content-Type": "application/json", "Cache-Control": isFree ? "public, max-age=1800" : "no-store" }
       });
     }
+    if (path === "/api/b2b-lead" || path === "/api/b2b-lead.php") {
+      return handleB2BLead(request, env);
+    }
     if (path === "/api/b2b-prospects.php" || path === "/api/b2b-concierge.php") {
       return new Response(JSON.stringify({ error: "endpoint_retired" }), {
         status: 410,
@@ -1171,40 +1183,11 @@ var index_default = {
     }
     if (path === "/api/b2b-create-checkout.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
-      if (!await rateLimit(env, "b2b_checkout", 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
-      const input = await request.json();
-      if (!input.prospect_id || !input.concierge_id || !input.email) {
-        return new Response(JSON.stringify({ error: "prospect_id, concierge_id, email required" }), { status: 400, headers: cors(request) });
-      }
-      try {
-        const apiKey = env.MOLLIE_API_KEY;
-        const plan = B2B_PLANS.brief_monthly;
-        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
-        let cid = null;
-        for (const c of customers._embedded?.customers || []) {
-          if (c.email === input.email) {
-            cid = c.id;
-            break;
-          }
-        }
-        if (!cid) {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email: input.email, name: input.name || "", metadata: { source: "b2b_concierge_checkout" } });
-          cid = nc.id;
-        }
-        const host = requestHost(request);
-        const subscription = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-          amount: { value: plan.amount.toFixed(2), currency: plan.currency },
-          description: plan.description,
-          webhookUrl: `https://${host}/api/mollie-webhook`,
-          metadata: { source: "b2b_concierge", prospect_id: input.prospect_id, concierge_id: input.concierge_id, plan: "brief_monthly" },
-          interval: plan.interval
-        });
-        const checkoutUrl = subscription._links?.checkout?.href || null;
-        await supa(env, "b2b_payments", "POST", { prospect_id: input.prospect_id, concierge_id: input.concierge_id, amount: plan.amount, status: "pending", mollie_payment_id: subscription.id });
-        return new Response(JSON.stringify({ checkoutUrl, customerId: cid, subscriptionId: subscription.id }), { headers: cors(request) });
-      } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: cors(request) });
-      }
+      const host = requestHost(request);
+      return new Response(JSON.stringify({ error: "use_pricing_page", url: "https://" + host + "/pro/pricing/" }), {
+        status: 410,
+        headers: { ...cors(request), "Cache-Control": "no-store" }
+      });
     }
     if (path === "/api/b2b-contacts.php" || path === "/api/b2b-events.php" || path === "/api/b2b-scores.php" || path === "/api/b2b-forecast-delivery.php") {
       return new Response(JSON.stringify({ error: "endpoint_retired" }), {
@@ -1733,13 +1716,12 @@ async function handleMollie(request, env) {
   if (!await rateLimit(env, `mol_${action}`, 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: h });
   try {
     const apiKey = env.MOLLIE_API_KEY;
-    const profileId = mollieProfileId(env);
     const host = requestHost(request);
     if (action === "create_payment") {
       if (String(body.pass || "") === "sos" || String(body.source || "") === "sos_plage") {
         return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: h });
       }
-      const { email, source, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
+      const { email, cents, amount: amountObj } = body;
       // ── P0 money path : le SERVEUR décide du SKU, de la devise et du montant ──
       // AVANT : un `pass` inconnu (ou ABSENT) court-circuitait l'allowlist
       // (montant libre accepté jusqu'à 300 €) et le montant DÉBITÉ pouvait être
@@ -1779,115 +1761,22 @@ async function handleMollie(request, env) {
       if (!EMAIL_RE.test(normalizedEmail)) {
         return new Response(JSON.stringify({ error: "Email invalide", reason: "invalid_email" }), { status: 400, headers: h });
       }
-      const amount = { value: offer.amount.toFixed(2), currency: offer.currency };
-      // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais par
-      // le client. `source` reste l'attribution de canal (réconciliation des
-      // ventes) mais ne sélectionne plus aucun chemin de livraison.
-      const metadata = stripReservedMetadata(userMeta);
-      metadata.source = String(source || "unknown").slice(0, 40);
-      metadata.offer_kind = "b2c_pass";
-      metadata.pass = pass;
-      metadata.email = normalizedEmail;
-      metadata.lang = lang || "fr";
-      if (referredBy) metadata.referredBy = referredBy;
-      if (myReferralCode) metadata.myReferralCode = myReferralCode;
-      let userId = null;
-      if (body.authToken) {
-        const sess = await authVerify(env, String(body.authToken));
-        if (sess) userId = String(sess.uid);
+      const stripeCheckout = await stripeLinkCheckout(env, { pass, currency: offer.currency, email: normalizedEmail, days: offer.days, amount: offer.amount });
+      if (!stripeCheckout) {
+        return new Response(JSON.stringify({ error: "payment_unavailable", reason: "no_mollie_fallback" }), { status: 503, headers: h });
       }
-      if (!userId && email && String(email).includes("@")) {
-        const u = await userUpsert(env, String(email).toLowerCase().trim(), "email", null);
-        if (u) userId = u.id;
-      }
-      if (userId) metadata.user_id = userId;
-      const kind = "pass";
-      const returnRef = crypto.randomUUID();
-      const backUrl = safeRedirectUrl(userRedirect, `https://${host}/?paid=1&kind=${kind}&email=${encodeURIComponent(normalizedEmail)}&plan=${encodeURIComponent(pass)}`);
-      metadata.return_ref = returnRef;
-      const redirectUrl = `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`;
-      if (normalizedEmail) {
-        const idemKey = `mol_${await hashString(normalizedEmail + "|" + pass)}`;
-        const ex = await kv(env).get(idemKey);
-        if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
-        await kv(env).put(idemKey, "1", { expirationTtl: 60 });
-      }
-      const pd = { amount, description: `Sargasses Pass ${pass}`, redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (offer.currency === "USD" ? "en_US" : "fr_FR") };
-      if (profileId) pd.profileId = profileId;
-      if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
-      if (cardToken) pd.cardToken = cardToken;
-      if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
-      // `amount` = montant EFFECTIF que le serveur va débiter. Le front
-      // (src/PremiumModal.jsx) compare ce champ à l'affichage et émet
-      // `sg_price_mismatch` en cas d'écart : sans lui, l'écart
-      // affichage/débit resterait invisible.
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null, amount: { value: amount.value, currency: amount.currency }, pass, days: offer.days }), { headers: h });
+      return new Response(JSON.stringify(stripeCheckout), { headers: h });
     }
     if (action === "create_subscription") {
-      const { plan: rawPlan, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
+      const { plan: rawPlan, email } = body;
       const planKey = normalizePlanKey(rawPlan);
       const b2c = B2C_SUB_PLANS[planKey];
       const b2b = B2B_PLANS[planKey];
       if (!b2c && !b2b) throw new Error(`Plan inconnu: ${rawPlan || ""}`);
       const plan = b2c || b2b;
-      let cid = customerId;
-      if (!cid && email) {
-        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
-        const existing = (customers._embedded?.customers || []).find((c) => c.email === email);
-        if (existing) cid = existing.id;
-        else {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email, name: name || "", metadata: { source: b2c ? "b2c_premium_signup" : "b2b_monthly_signup" } });
-          cid = nc.id;
-        }
-      }
-      if (!cid) throw new Error("customerId ou email requis");
-      if (mandateId) {
-        const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-          amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
-          description: plan.description,
-          webhookUrl: `https://${host}/api/mollie-webhook`,
-          // `offer_kind` est écrit par le SERVEUR à partir du catalogue : le
-          // client ne peut plus choisir la classe de livraison d'un abonnement.
-          metadata: { ...stripReservedMetadata(userMeta), source: b2c ? "premium_subscription" : "b2b_monthly", offer_kind: b2c ? "b2c_subscription" : "b2b_subscription", plan: planKey, email: email || "", pass: b2c ? b2c.pass : "" },
-          interval: plan.interval || "1 month",
-          mandateId,
-          ...payMethod ? { method: payMethod } : {}
-        });
-        const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
-        if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
-        return new Response(JSON.stringify(result), { headers: h });
-      }
-      const isAnnualB2B = !!(b2b && !b2b.interval);
-      const returnRef = crypto.randomUUID();
-      const metadata = {
-        ...stripReservedMetadata(userMeta),
-        source: b2c ? String(body.source || "premium_subscription").slice(0, 40) : isAnnualB2B ? "b2b_annual" : "b2b_first",
-        offer_kind: b2c ? "b2c_subscription" : isAnnualB2B ? "b2b_annual" : "b2b_first",
-        plan: planKey,
-        email: email || "",
-        pass: b2c ? b2c.pass : "",
-        lang: body.lang || "fr",
-        customerId: cid,
-        interval: plan.interval || "",
-        return_ref: returnRef
-      };
-      const backUrl = `https://${host}/?paid=1&kind=${b2c ? "pass" : "pro"}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(planKey)}`;
-      const pd = {
-        amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
-        description: plan.description,
-        redirectUrl: `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`,
-        webhookUrl: `https://${host}/api/mollie-webhook`,
-        metadata,
-        locale: body.locale || "fr_FR",
-        customerId: cid
-      };
-      if (!isAnnualB2B) pd.sequenceType = "first";
-      if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, customerId: cid, user_id: null }), { headers: h });
+      const stripePlan = await stripeLinkCheckout(env, { pass: planKey, currency: plan.currency, email: String(email || "").trim().toLowerCase(), days: plan.interval ? 30 : 365, amount: Number(plan.amount) });
+      if (!stripePlan) return new Response(JSON.stringify({ error: "payment_unavailable", reason: "no_mollie_fallback" }), { status: 503, headers: h });
+      return new Response(JSON.stringify(stripePlan), { headers: h });
     }
     if (action === "payment_status") {
       const paymentId = String(body.paymentId || "").trim();
@@ -2187,6 +2076,360 @@ function validateB2BAmount(payment, planKey) {
 }
 __name(validateB2BAmount, "validateB2BAmount");
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+async function handleB2BLead(request, env) {
+  const headers = { ...cors(request), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+  if (request.method !== "POST") return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers });
+  let body = {};
+  try { body = await request.json(); } catch (_) {
+    return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), { status: 400, headers });
+  }
+  const email = String(body.email || "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return new Response(JSON.stringify({ ok: false, error: "invalid_email" }), { status: 400, headers });
+  const host = requestHost(request);
+  const region = String(body.region || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || host;
+  const organization = String(body.organization || "").replace(/[<>]/g, "").trim().slice(0, 120);
+  const row = { email, domain: host, region, status: "new" };
+  if (organization) row.organization = organization;
+  let saved = await supa(env, "b2b_leads", "POST", row);
+  if (saved == null && organization) {
+    delete row.organization;
+    saved = await supa(env, "b2b_leads", "POST", row);
+  }
+  if (saved == null) return new Response(JSON.stringify({ ok: false, error: "not_stored" }), { status: 503, headers });
+  return new Response(JSON.stringify({ ok: true, stored: "b2b_leads" }), { headers });
+}
+__name(handleB2BLead, "handleB2BLead");
+const STRIPE_LIVE_LINKS = {
+  trip7_eur: { url: "https://buy.stripe.com/8x2dR95oa5S1awpbfiebu00", amount: 799, currency: "eur", kind: "b2c", pass: "trip7", days: 7 },
+  trip7_usd: { url: "https://buy.stripe.com/28EcN5bMyfsB5c53MQebu01", amount: 899, currency: "usd", kind: "b2c", pass: "trip7", days: 7 },
+  p30_eur: { url: "https://buy.stripe.com/8x200jg2O6W56g997aebu02", amount: 1499, currency: "eur", kind: "b2c", pass: "p30", days: 30 },
+  p30_usd: { url: "https://buy.stripe.com/9B69ATbMycgpeMFabeebu03", amount: 1699, currency: "usd", kind: "b2c", pass: "p30", days: 30 },
+  season_eur: { url: "https://buy.stripe.com/4gMcN55oagwF4816Z2ebu04", amount: 2499, currency: "eur", kind: "b2c", pass: "season", days: 210 },
+  season_usd: { url: "https://buy.stripe.com/4gM28r8AmfsB481eruebu05", amount: 2799, currency: "usd", kind: "b2c", pass: "season", days: 210 },
+  pro_monthly_eur: { url: "https://buy.stripe.com/4gM28rcQCeox7kd6Z2ebu06", amount: 7900, currency: "eur", kind: "b2b", plan: "pro_monthly", days: 30 },
+  pro_monthly_usd: { url: "https://buy.stripe.com/cNi4gzdUGbcl1ZTcjmebu07", amount: 8900, currency: "usd", kind: "b2b", plan: "pro_monthly_usd", days: 30 },
+  pro_annual_eur: { url: "https://buy.stripe.com/cNifZhcQC1BL1ZTbfiebu08", amount: 69000, currency: "eur", kind: "b2b", plan: "pro_annual", days: 365 },
+  pro_annual_usd: { url: "https://buy.stripe.com/cNi8wP4k6gwF33X4QUebu09", amount: 79000, currency: "usd", kind: "b2b", plan: "pro_annual_usd", days: 365 }
+};
+function stripeSpec(pass, currency) {
+  const raw = String(pass || "");
+  if (STRIPE_LIVE_LINKS[raw]) return STRIPE_LIVE_LINKS[raw];
+  const key = raw + "_" + (String(currency || "").toUpperCase() === "USD" ? "usd" : "eur");
+  return STRIPE_LIVE_LINKS[key] || null;
+}
+__name(stripeSpec, "stripeSpec");
+function stripePriceKey(metadata, amount, currency) {
+  const meta = metadata && typeof metadata === "object" ? metadata : {};
+  const fromMeta = typeof meta.price_key === "string" ? meta.price_key : "";
+  const cur = String(currency || "").toLowerCase();
+  const cents = Number(amount);
+  let fromAmount = "";
+  for (const [key, row] of Object.entries(STRIPE_LIVE_LINKS)) {
+    if (row.amount === cents && row.currency === cur) fromAmount = key;
+  }
+  if (fromMeta && !STRIPE_LIVE_LINKS[fromMeta]) return { error: "unknown_price_key" };
+  if (fromMeta && fromAmount && fromMeta !== fromAmount) return { error: "price_key_mismatch" };
+  const priceKey = fromMeta || fromAmount;
+  if (!priceKey) return { error: "unknown_amount" };
+  return { priceKey, spec: STRIPE_LIVE_LINKS[priceKey] };
+}
+__name(stripePriceKey, "stripePriceKey");
+async function stripeLinkCheckout(env, opts) {
+  const spec = stripeSpec(opts.pass, opts.currency);
+  if (!spec) return null;
+  const orderId = crypto.randomUUID();
+  const url = new URL(spec.url);
+  url.searchParams.set("client_reference_id", orderId);
+  if (opts.email && String(opts.email).includes("@")) url.searchParams.set("prefilled_email", String(opts.email).trim());
+  try {
+    await kv(env).put("stripe_order_" + orderId, JSON.stringify({ state: "pending", email: opts.email || "", currency: spec.currency }), { expirationTtl: 14 * 86400 });
+  } catch (_) {}
+  return { checkoutUrl: url.toString(), provider: "stripe_link", orderId, amount: { value: (spec.amount / 100).toFixed(2), currency: spec.currency.toUpperCase() }, pass: spec.pass || spec.plan, days: spec.days };
+}
+__name(stripeLinkCheckout, "stripeLinkCheckout");
+async function stripeSignatureOk(payload, header, secret) {
+  const items = String(header || "").split(",");
+  let t = "";
+  const v1 = [];
+  for (const item of items) {
+    const i = item.indexOf("=");
+    if (i < 0) continue;
+    const k = item.slice(0, i).trim();
+    const v = item.slice(i + 1).trim();
+    if (k === "t") t = v;
+    if (k === "v1") v1.push(v);
+  }
+  if (!t || !v1.length || !secret) return false;
+  const age = Math.abs(Date.now() / 1000 - Number(t));
+  if (!Number.isFinite(age) || age > 300) return false;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = await crypto.subtle.sign("HMAC", key, enc.encode(t + "." + payload));
+  const hex = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return v1.some((sig) => sig.length === hex.length && sig === hex);
+}
+__name(stripeSignatureOk, "stripeSignatureOk");
+function stripeCorrelation(obj, eventId) {
+  const ref = obj && (obj.client_reference_id || obj.id);
+  return String(ref || eventId || "").slice(0, 80);
+}
+__name(stripeCorrelation, "stripeCorrelation");
+function stripeTrack(env, name, fields) {
+  const params = {
+    livemode: fields.livemode === true,
+    correlation_id: String(fields.correlation_id || "").slice(0, 80),
+    price_key: fields.price_key || null,
+    reason: fields.reason || null
+  };
+  return supa(env, "analytics_events", "POST", { event: name, params, island: "stripe" }).catch(() => {});
+}
+__name(stripeTrack, "stripeTrack");
+const STRIPE_CLIENT_EVENTS = new Set(["pricing_view", "CTA_click", "checkout_started"]);
+async function handleStripeTrack(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
+  let data = {};
+  try { data = await request.json(); } catch (_) { data = {}; }
+  const event = String(data.event || "");
+  if (!STRIPE_CLIENT_EVENTS.has(event)) return new Response(null, { status: 204 });
+  const correlation = String(data.correlation_id || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80);
+  const priceKey = typeof data.price_key === "string" ? data.price_key.slice(0, 40) : null;
+  await stripeTrack(env, event, { livemode: data.livemode === true, correlation_id: correlation, price_key: priceKey });
+  return new Response(null, { status: 204 });
+}
+__name(handleStripeTrack, "handleStripeTrack");
+function stripeMeta(obj) {
+  if (!obj || typeof obj !== "object") return {};
+  if (obj.metadata && Object.keys(obj.metadata).length) return obj.metadata;
+  const parent = obj.parent && obj.parent.subscription_details && obj.parent.subscription_details.metadata;
+  if (parent && Object.keys(parent).length) return parent;
+  const lines = obj.lines && Array.isArray(obj.lines.data) ? obj.lines.data : [];
+  for (const line of lines) {
+    if (line && line.metadata && Object.keys(line.metadata).length) return line.metadata;
+  }
+  return {};
+}
+__name(stripeMeta, "stripeMeta");
+function stripeMoney(obj) {
+  const item = obj.items && Array.isArray(obj.items.data) ? obj.items.data[0] : null;
+  const price = item && (item.price || item.plan);
+  const amount = obj.amount_total != null ? obj.amount_total : obj.amount_paid != null ? obj.amount_paid : obj.plan && obj.plan.amount != null ? obj.plan.amount : price && price.unit_amount != null ? price.unit_amount : null;
+  const currency = obj.currency || (obj.plan && obj.plan.currency) || (price && price.currency) || "";
+  return { amount, currency };
+}
+__name(stripeMoney, "stripeMoney");
+function stripeEmail(obj) {
+  return String(
+    obj.customer_details && obj.customer_details.email
+    || obj.customer_email
+    || (obj.metadata && obj.metadata.email)
+    || ""
+  ).trim().toLowerCase();
+}
+__name(stripeEmail, "stripeEmail");
+async function stripeEndAccess(env, grantId) {
+  const id = String(grantId || "");
+  if (!id) return false;
+  await revokeB2CAccess(env, id, "stripe_end");
+  await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(id) + "&type=eq.b2b_pro");
+  const prev = await kv(env).get("stripe_session_" + id);
+  let rec = { state: "ended", accessUrl: null, livemode: true };
+  try { if (prev) rec = Object.assign(JSON.parse(prev), { state: "ended", accessUrl: null }); } catch (_) {}
+  await kv(env).put("stripe_session_" + id, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
+  return true;
+}
+__name(stripeEndAccess, "stripeEndAccess");
+function stripeLiveSecret(env) {
+  const key = String(env && env.STRIPE_SECRET_KEY || "");
+  return /^sk_live_|^rk_live_/.test(key) ? key : "";
+}
+__name(stripeLiveSecret, "stripeLiveSecret");
+async function stripePortalUrl(env, customerId, returnUrl) {
+  const key = stripeLiveSecret(env);
+  const customer = String(customerId || "");
+  if (!key || !customer.startsWith("cus_")) return null;
+  const body = new URLSearchParams({ customer, return_url: returnUrl });
+  const response = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + key, "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+  if (!response.ok) return null;
+  const data = await response.json().catch(() => null);
+  return data && typeof data.url === "string" && data.url.startsWith("https://") ? data.url : null;
+}
+__name(stripePortalUrl, "stripePortalUrl");
+function proWidgetSnippet(host, token) {
+  const src = "https://" + host + "/widget/embed/?k=" + encodeURIComponent(token);
+  return '<iframe src="' + src + '" width="100%" height="168" style="border:0;width:100%" title="Sargasses"></iframe>';
+}
+__name(proWidgetSnippet, "proWidgetSnippet");
+async function sendStripeProEmail(env, options) {
+  const opts = options || {};
+  const email = String(opts.email || "").trim();
+  const token = String(opts.token || "");
+  const grantId = String(opts.grantId || "").trim();
+  if (!email || !token || !grantId) return { sent: false, reason: "missing_email_or_token" };
+  if (!env.RESEND_API_KEY) return { sent: false, reason: "resend_key_missing" };
+  const markerKey = "stripe_pro_mail_" + grantId;
+  if (await kv(env).get(markerKey)) return { sent: false, reason: "already_delivered" };
+  const host = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
+  const lang = host.includes("miami") || host.includes("puntacana") ? "en" : host.includes("cancun") || host.includes("tulum") ? "es" : "fr";
+  const accessUrl = "https://" + host + "/pro/espace/?k=" + encodeURIComponent(token);
+  const snippet = proWidgetSnippet(host, token);
+  let portal = null;
+  try { portal = await stripePortalUrl(env, opts.customerId, "https://" + host + "/pro/pricing/"); } catch (_) { portal = null; }
+  const subject = lang === "en" ? "Sargassum Pro — your access" : lang === "es" ? "Sargassum Pro — tu acceso" : "Sargasses Pro — votre accès";
+  const lead = lang === "en" ? "Your Pro payment is confirmed. This email is the access." : lang === "es" ? "Tu pago Pro está confirmado. Este correo es el acceso." : "Votre paiement Pro est confirmé. Cet e-mail est l'accès.";
+  const open = lang === "en" ? "Open Pro access" : lang === "es" ? "Abrir el acceso Pro" : "Ouvrir l'accès Pro";
+  const widgetLabel = lang === "en" ? "Paste this widget code on the hotel website:" : lang === "es" ? "Pega este código del widget en el sitio del hotel:" : "Collez ce code du widget sur le site de l'hôtel :";
+  const manage = portal
+    ? (lang === "en" ? "Manage or cancel the subscription: " : lang === "es" ? "Gestiona o cancela la suscripción: " : "Gérer ou résilier l'abonnement : ")
+    : (lang === "en" ? "To manage or cancel, reply to this email. Support is by email only." : lang === "es" ? "Para gestionar o cancelar, responde a este correo. El soporte es solo por correo." : "Pour gérer ou résilier, répondez à cet e-mail. Le support se fait uniquement par e-mail.");
+  const portalHtml = portal ? `<p>${manage}<a href="${portal}">${portal}</a></p>` : `<p>${manage}</p>`;
+  const html = `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#1a1408;line-height:1.5"><p>${lead}</p><p><a href="${accessUrl}">${open}</a></p><p>${widgetLabel}</p><pre style="white-space:pre-wrap;background:#f6f1e6;padding:12px;border-radius:8px">${snippet.replace(/</g, "&lt;")}</pre>${portalHtml}</div>`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "Sargasses Pro <alerte@" + host + ">", to: [email], subject, html })
+  });
+  if (!response.ok) throw new Error("resend_http_" + response.status);
+  await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+  return { sent: true, portal: !!portal };
+}
+__name(sendStripeProEmail, "sendStripeProEmail");
+async function stripeGrantPaid(env, request, obj, priceKey, spec, livemode) {
+  const email = stripeEmail(obj);
+  if (!EMAIL_RE.test(email)) return { granted: false, reason: "missing_email" };
+  const grantId = String(obj.id || "");
+  if (!grantId) return { granted: false, reason: "missing_id" };
+  let accessUrl = null;
+  if (spec.kind === "b2c") {
+    await grantB2C(env, grantId, spec.pass, email, { price_key: priceKey, brand: "sargasses", provider: "stripe_link", livemode }, spec.currency.toUpperCase());
+  } else {
+    const granted = await grantB2B(env, String(obj.customer || email), spec.plan, grantId, spec.days, { metadata: { price_key: priceKey, brand: "sargasses", email, livemode } });
+    if (granted && granted.token) {
+      const host = requestHost(request);
+      accessUrl = "https://" + host + "/pro/espace/?k=" + encodeURIComponent(granted.token);
+      await sendStripeProEmail(env, { email, token: granted.token, grantId, host, customerId: obj.customer, planKey: spec.plan });
+    }
+  }
+  const record = { state: "paid", livemode: livemode === true, pass: spec.pass || null, plan: spec.plan || null, days: spec.days, accessUrl, price_key: priceKey };
+  const keys = ["stripe_session_" + grantId];
+  if (obj.client_reference_id) keys.push("stripe_order_" + String(obj.client_reference_id).slice(0, 200));
+  for (const key of keys) await kv(env).put(key, JSON.stringify(record), { expirationTtl: 400 * 86400 });
+  if (typeof obj.payment_intent === "string" && obj.payment_intent) await kv(env).put("stripe_pi_" + obj.payment_intent, grantId, { expirationTtl: 400 * 86400 });
+  if (typeof obj.subscription === "string" && obj.subscription) await kv(env).put("stripe_sub_" + obj.subscription, grantId, { expirationTtl: 400 * 86400 });
+  return { granted: true, price_key: priceKey };
+}
+__name(stripeGrantPaid, "stripeGrantPaid");
+async function handleStripeStatus(request, env) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method !== "GET") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
+  const id = new URL(request.url).searchParams.get("session_id") || "";
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return new Response(JSON.stringify({ error: "invalid_session" }), { status: 400, headers });
+  const raw = await kv(env).get("stripe_session_" + id);
+  if (!raw) return new Response(JSON.stringify({ state: "pending" }), { headers });
+  let rec = {};
+  try { rec = JSON.parse(raw); } catch (_) { rec = {}; }
+  if (rec.state === "ended") return new Response(JSON.stringify({ state: "ended", livemode: rec.livemode === true }), { headers });
+  if (rec.state !== "paid" || rec.livemode !== true) return new Response(JSON.stringify({ state: "pending", livemode: rec.livemode === true }), { headers });
+  return new Response(JSON.stringify({ state: "paid", livemode: true, pass: rec.pass || null, plan: rec.plan || null, days: rec.days || null, accessUrl: rec.accessUrl || null }), { headers });
+}
+__name(handleStripeStatus, "handleStripeStatus");
+async function handleStripeWebhook(request, env) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
+  const payload = await request.text();
+  const sig = request.headers.get("Stripe-Signature") || request.headers.get("stripe-signature") || "";
+  if (!sig) return new Response(JSON.stringify({ error: "missing_signature" }), { status: 400, headers });
+  const secret = String(env.STRIPE_WEBHOOK_SECRET || "");
+  if (!secret || !await stripeSignatureOk(payload, sig, secret)) {
+    return new Response(JSON.stringify({ error: "invalid_signature" }), { status: 400, headers });
+  }
+  let event;
+  try { event = JSON.parse(payload); } catch (_) {
+    return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400, headers });
+  }
+  const eventId = String(event.id || "");
+  if (eventId && await kv(env).get("stripe_evt_" + eventId)) {
+    return new Response(JSON.stringify({ ok: true, duplicate: true }), { headers });
+  }
+  const obj = event.data && event.data.object || {};
+  const type = String(event.type || "");
+  const livemode = event.livemode === true;
+  const correlation = stripeCorrelation(obj, eventId);
+  const finish = async (body, status) => {
+    if (eventId && status < 500) await kv(env).put("stripe_evt_" + eventId, JSON.stringify({ livemode, type }), { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify(body), { status, headers });
+  };
+  try {
+    if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
+      if (!livemode) return finish({ ok: true, granted: false, reason: "not_live", livemode: false }, 200);
+      if (String(obj.payment_status || "") !== "paid") {
+        await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, reason: "not_paid" });
+        return finish({ ok: true, granted: false, reason: "not_paid", livemode: true }, 200);
+      }
+      const resolved = stripePriceKey(obj.metadata, obj.amount_total, obj.currency);
+      if (resolved.error) return finish({ ok: false, error: resolved.error, livemode: true }, 400);
+      await stripeTrack(env, "payment_success", { livemode, correlation_id: correlation, price_key: resolved.priceKey });
+      const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+      if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      return finish({ ok: true, granted: granted.granted === true, reason: granted.reason || null, livemode: true }, 200);
+    }
+    if (type === "checkout.session.async_payment_failed" || type === "invoice.payment_failed") {
+      await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, reason: type });
+      return finish({ ok: true, granted: false, reason: "payment_failed", livemode }, 200);
+    }
+    if (type === "invoice.paid") {
+      const invoicePaid = obj.status === "paid" || obj.paid === true;
+      if (!livemode || !invoicePaid) {
+        return finish({ ok: true, granted: false, reason: livemode ? "not_paid" : "not_live", livemode }, 200);
+      }
+      const money = stripeMoney(obj);
+      const resolved = stripePriceKey(stripeMeta(obj), money.amount, money.currency);
+      if (resolved.error) return finish({ ok: true, granted: false, reason: resolved.error, livemode: true }, 200);
+      await stripeTrack(env, "payment_success", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+      if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      return finish({ ok: true, granted: granted.granted === true, reason: granted.reason || null, livemode: true }, 200);
+    }
+    if (type === "customer.subscription.updated") {
+      const status = String(obj.status || "");
+      const money = stripeMoney(obj);
+      const resolved = stripePriceKey(stripeMeta(obj), money.amount, money.currency);
+      if (livemode && (status === "active" || status === "trialing") && !resolved.error) {
+        const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+        if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+        return finish({ ok: true, granted: granted.granted === true, status, livemode: true }, 200);
+      }
+      if (status === "canceled" || status === "unpaid" || status === "incomplete_expired") {
+        const mapped = await kv(env).get("stripe_sub_" + String(obj.id || ""));
+        await stripeEndAccess(env, mapped || obj.id);
+        await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, price_key: resolved.priceKey || null, reason: status });
+        return finish({ ok: true, ended: true, livemode }, 200);
+      }
+      return finish({ ok: true, granted: false, status, livemode }, 200);
+    }
+    if (type === "customer.subscription.deleted" || type === "charge.refunded" || type === "charge.dispute.created") {
+      let grantId = "";
+      if (type === "customer.subscription.deleted") grantId = await kv(env).get("stripe_sub_" + String(obj.id || "")) || String(obj.id || "");
+      else {
+        const pi = typeof obj.payment_intent === "string" ? obj.payment_intent : "";
+        grantId = pi ? await kv(env).get("stripe_pi_" + pi) || "" : "";
+      }
+      if (!grantId) return finish({ ok: true, ended: false, reason: "unknown_payment", livemode }, 200);
+      await stripeEndAccess(env, grantId);
+      await stripeTrack(env, "refund", { livemode, correlation_id: correlation, reason: type });
+      return finish({ ok: true, ended: true, livemode }, 200);
+    }
+    if (eventId) await kv(env).put("stripe_evt_" + eventId, JSON.stringify({ livemode, type }), { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify({ ok: true, ignored: true, livemode }), { headers });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e).slice(0, 160) }), { status: 500, headers });
+  }
+}
+__name(handleStripeWebhook, "handleStripeWebhook");
 function validatePaymentForFulfillment(payment, metadata) {
   const problems = [];
   const mode = String(payment?.mode || "");
@@ -2570,7 +2813,7 @@ async function handleMolliePayPage(request, env) {
   if (!plan) return new Response("Plan inconnu", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement — ${escapeHtml(plan.description)}</title>
 <style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px}.card{max-width:480px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:28px 22px}h1{font-size:24px;margin:0 0 8px}p{color:#5A5A5A;line-height:1.45}label{display:block;font-weight:700;margin:16px 0 8px}input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(13,13,13,.2);font:inherit}button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;font:inherit;cursor:pointer}.err{color:#E8522A;font-weight:700;margin-top:12px}</style></head>
-<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Mollie. Entrez votre email pour recevoir l'accès.</p>
+<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Stripe. Entrez votre email pour recevoir l'accès.</p>
 <label for="em">Email</label><input id="em" type="email" autocomplete="email" required placeholder="vous@etablissement.com">
 <button id="go" type="button">Payer maintenant →</button><div class="err" id="err" hidden></div></div>
 <script>document.getElementById("go").onclick=async function(){var em=document.getElementById("em").value.trim();var err=document.getElementById("err");err.hidden=true;if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){err.hidden=false;err.textContent="Email requis.";return;}this.disabled=true;this.textContent="Ouverture du paiement…";

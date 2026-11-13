@@ -9,8 +9,8 @@
 >   sur `/api/*` (preuve live : `/api/b2b-paylinks.json` et `/api/mollie-pay`
 >   répondent le code de `sg-payments` sur les 6 domaines).
 > - Source à déployer : `workers/sg-payments/index.js` au SHA autorisé.
-> - Config : `workers/sg-payments/wrangler.jsonc` (**sans `routes`**, sans secret,
->   sans `vars`, **avec le cron**).
+> - Config : `workers/sg-payments/wrangler.jsonc` (routes API durables, sans secret,
+>   sans `vars`, **avec les deux crons**).
 > - PR de code associée : **#1423** (intégration #1406 + #1411 + #1418).
 > - Runbook associé : `.ai/runbooks/mollie-live-cutover.md` (TEST → LIVE, mode,
 >   test d'achat contrôlé).
@@ -34,7 +34,7 @@ La source du dépôt n'est plus la version live : elle intègre, en plus du live
 > webhook échoue → l'argent est encaissé et l'accès n'est PAS livré.** C'est le
 > risque principal de ce déploiement, et il est entièrement évitable (étape 2.1).
 
-> **Point de vigilance n°2** : le cron `0 6,18 * * *` porte les emails
+> **Point de vigilance n°2** : les crons `0 6,18 * * *` et `0 0-5,7-17,19-23 * * *` portent les emails
 > commerciaux (drip B2B à chaque déclenchement, alertes B2C en plus). Il est
 > **déclaré explicitement** dans la config : sans cela, un déploiement peut
 > laisser le déclenchement à la discrétion de la plateforme et les emails
@@ -115,12 +115,12 @@ argument de ligne de commande).
 
 ### 2.4 Routes / domaines
 
-**Ne pas toucher aux routes.** Les 6 domaines sont des domaines personnalisés
-posés **manuellement** dans le dashboard. `workers/sg-payments/wrangler.jsonc` ne
-contient **volontairement aucune clé `routes`**, et le test
-`tests/unit/sg-payments-wrangler-config.test.cjs` échoue si quelqu'un en ajoute
-une. Le droit `Workers Routes:Edit` n'est pas de toute façon accordé au compte
-de déploiement.
+Les routes `/api/stripe-*` des 6 domaines, ainsi que les routes API déjà
+servies (`/api/mollie*`, `/api/b2b-*`, etc.), sont déclarées dans
+`workers/sg-payments/wrangler.jsonc`. Un déploiement qui réconcilie les routes
+ne doit pas en retirer. Ne pas réduire cette liste. Le test
+`tests/unit/sg-payments-wrangler-config.test.cjs` vérifie la présence de
+`/api/stripe-*` et de `/api/mollie*` sur chaque zone.
 
 > **Attention — qui sert quoi (établi par sondes live le 2026-11-12) :**
 >

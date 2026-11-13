@@ -9,14 +9,14 @@
 <link rel="icon" href="/favicon.ico" sizes="any"/>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 <title>Le Veilleur Pro — vigilancia costera para hoteles y administraciones</title>
-<meta name="description" content="El mismo satélite que vigila para el viajero vigila tu costa. Widget gratuito, alertas &quot;la mañana en que cambia&quot; playa por playa, apoyo a los territorios. Fiabilidad publicada y auditada, por régimen. Prueba gratis 30 días, luego $89/mes — todo en línea, sin llamadas."/>
+<meta name="description" content="El mismo satélite que vigila para el viajero vigila tu costa. Pro: $89/mes o $790/año, pagado en línea. El acceso y el código del widget llegan por correo cuando el pago está confirmado."/>
 <link rel="canonical" href="https://sargasses-martinique.com/pro/es/pricing/"/>
 <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/pro/pricing/"/>
 <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/pro/en/pricing/"/>
 <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/pro/es/pricing/"/>
 <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/pro/pricing/"/>
 <meta property="og:title" content="Sargazo Pro — planes y precios"/>
-<meta property="og:description" content="Widget gratuito, alertas para hoteles, apoyo a administraciones. Pronóstico satelital de sargazo playa por playa, fiabilidad publicada."/>
+<meta property="og:description" content="Pro para hoteles: $89/mes o $790/año. El acceso y el código del widget se envían por correo tras la confirmación del pago."/>
 <meta property="og:url" content="https://sargasses-martinique.com/pro/es/pricing/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
@@ -26,7 +26,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/es/"},{"@type":"ListItem","position":3,"name":"Precios","item":"https://sargasses-martinique.com/pro/es/pricing/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Service","name":"Planes de sargazo para empresas","serviceType":"Pronóstico y alertas de sargazo","description":"Widget de condiciones gratuito, alertas playa por playa para hoteles, acompañamiento a medida para administraciones. Fiabilidad publicada y auditada.","provider":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/pro/es/"},"areaServed":[{"@type":"AdministrativeArea","name":"Caribe"},{"@type":"AdministrativeArea","name":"Costa atlántica de EE. UU."}],"audience":{"@type":"BusinessAudience","name":"Hoteles, administraciones y empresas de limpieza"}}
+{"@context":"https://schema.org","@type":"Service","name":"Planes de sargazo para empresas","serviceType":"Pronóstico y alertas de sargazo","description":"Pro para hoteles: $89/mes o $790/año. El acceso y el código del widget se envían por correo tras la confirmación del pago.","provider":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/pro/es/"},"areaServed":[{"@type":"AdministrativeArea","name":"Caribe"},{"@type":"AdministrativeArea","name":"Costa atlántica de EE. UU."}],"audience":{"@type":"BusinessAudience","name":"Hoteles, administraciones y empresas de limpieza"}}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -68,6 +68,9 @@
   .cta{display:block;text-align:center;text-decoration:none;font-weight:800;font-size:14px;padding:13px 16px;border-radius:14px}
   .cta.gold{background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400);color:#190c2c}
   .cta.ghost{background:transparent;color:var(--sg-ink);border:1.5px solid var(--sg-border-m)}
+  .payrow{display:flex;flex-wrap:wrap;gap:8px}
+  .payrow .cta{flex:1;min-width:140px;min-height:48px}
+  .delivery{font-size:13.5px;line-height:1.5;color:var(--sg-mid);margin:12px 0 0}
   .faq{margin-top:8px}
   .faq h3{font-size:15px;font-weight:800;margin:18px 0 4px;color:var(--sg-ink)}
   .faq p{font-size:13.5px;line-height:1.6;color:var(--sg-mid);margin:0}
@@ -86,7 +89,8 @@
   <div class="wrap">
     <p class="eyebrow">Le Veilleur · Pro</p>
     <h1>¿Qué está en juego en tu costa esta mañana?</h1>
-    <p class="lede">Una playa invadida de un día para otro significa huéspedes decepcionados, reseñas que se acumulan, a veces reembolsos — y muchas veces te enteras al mismo tiempo que ellos. El mismo satélite que vigila para el viajero puede vigilar tu costa: te avisa antes de que llegue el sargazo. Conviértete en quien conoce el final de la historia antes que sus huéspedes — prueba gratis 30 días, todo en línea, sin llamadas.</p>
+    <p class="lede">Una playa invadida de un día para otro significa huéspedes decepcionados, reseñas que se acumulan, a veces reembolsos — y muchas veces te enteras al mismo tiempo que ellos. El mismo satélite que vigila para el viajero puede vigilar tu costa: te avisa antes de que llegue el sargazo. Pagas en línea, sin llamada y sin cita. El acceso sale por correo cuando el pago está confirmado.</p>
+    <p id="sat-notice"></p>
     <p class="proofline"><b id="tr-clean">—</b> <span id="tr-line">de nuestros veredictos se confirman, en todos los regímenes.</span> <a href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Ver el historial auditado →</a></p>
   </div>
 </header>
@@ -94,26 +98,25 @@
 <section class="px"><div class="wrap">
   <p class="sec-eyebrow">Por dónde empezar</p>
   <h2>Dinos qué está en juego — te orientamos.</h2>
-  <p class="sub">Elige lo que más te cuesta hoy; cada caso lleva al plan adecuado. Todo se resuelve en línea — prueba gratis 30 días, luego $89/mes o $790/año. Sin llamadas.</p>
+  <p class="sub">Dos botones bastan: Mensual o Anual. $89/mes o $790/año. Ningún formulario es obligatorio para pagar.</p>
   <div class="matrix" style="display:grid;grid-template-columns:1fr;gap:12px;margin:0 0 30px">
     <a href="#plan-pro" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">🥟</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Pierdo reservas cuando la playa cambia.»</b><span style="font-size:13px;color:var(--sg-mid)">→ Quieres la alerta «la mañana en que cambia», playa por playa, antes que tus huéspedes. <b style="color:var(--sg-ink)">Ver Pro Alertas ↓</b></span></span></a>
     <a href="#plan-territoire" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">🔐</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Tengo que gestionar un presupuesto y cuadrillas de limpieza.»</b><span style="font-size:13px;color:var(--sg-mid)">→ Quieres anticipar D+1→D+7 en todo un litoral, con datos que lo respalden. <b style="color:var(--sg-ink)">Ver Litoral ↓</b></span></span></a>
-    <a href="#plan-widget" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">💍</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Solo quiero tranquilizar a mis huéspedes en mi sitio.»</b><span style="font-size:13px;color:var(--sg-mid)">→ El widget gratuito muestra el estado real de tus playas, muestra la fecha de la última observación disponible. <b style="color:var(--sg-ink)">Ver el Widget ↓</b></span></span></a>
+    <a href="#plan-pro" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">💍</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Quiero el código del widget en mi sitio.»</b><span style="font-size:13px;color:var(--sg-mid)">→ Se envía por correo después del pago Pro, con el enlace de acceso. <b style="color:var(--sg-ink)">Elegir Mensual o Anual ↓</b></span></span></a>
   </div>
   <div class="plans">
 
     <div class="plan" id="plan-widget">
-      <h3>El Widget — gratuito</h3>
-      <p class="who">Para cualquier sitio de hotel u oficina de turismo · tranquilizar al huésped</p>
-      <div class="price">Gratis</div>
-      <p class="pnote">Se integra en 2 minutos</p>
+      <h3>El widget</h3>
+      <p class="who">Se entrega con Pro, por correo, tras la confirmación del pago</p>
+      <div class="price">Incluido</div>
+      <p class="pnote">El código para pegar llega en el mismo correo que el acceso</p>
       <ul>
-        <li>Recuadro «estado del sargazo en directo» en tu sitio</li>
-        <li>Medido por satélite, última observación disponible — no adivinado</li>
-        <li>Tranquiliza al huésped antes de reservar: ve el estado real, no una promesa</li>
-        <li>Tu logo, tus colores</li>
+        <li>Recuadro de la última observación de sargazo en tu sitio</li>
+        <li>Medido por satélite, con la hora de la observación visible</li>
+        <li>No hay instalación antes del pago: el código se envía solo después de la confirmación</li>
       </ul>
-      <a class="cta ghost" href="/widget/">Instalar el widget</a>
+      <a class="cta ghost" href="#plan-pro">Elegir Mensual o Anual</a>
     </div>
 
     <div class="plan feat" id="plan-pro">
@@ -121,21 +124,24 @@
       <h3>El Pro — Alertas playa por playa</h3>
       <p class="who">Hoteles, resorts, proveedores · proteger las reservas</p>
       <div class="price">$89/mes</div>
-      <p class="pnote">o $790/año (2 meses gratis) · prueba gratis 30 días, sin tarjeta</p>
+      <p class="pnote">o $790/año por 12 meses, en un solo pago</p>
       <ul>
-        <li>La alerta «la mañana en que cambia»: lo sabes <b>antes</b> que tus huéspedes (email + push)</li>
+        <li>La alerta «la mañana en que cambia»: lo sabes <b>antes</b> que tus huéspedes (correo)</li>
         <li>Pronóstico a 7 días (D+1→D+7) por cada playa de tu frente de mar</li>
-        <li>Anticipa la limpieza y la planificación de equipos — un fin de semana salvado</li>
-        <li>Widget premium incluido</li>
-        <li>Fiabilidad publicada y auditada, por régimen — las alertas de temporada calmada se marcan como baja confianza</li>
+        <li>El código del widget, en el correo de confirmación</li>
+        <li>Historial público fechado, con su alcance y su frescura — las alertas de temporada calma se marcan como baja confianza</li>
       </ul>
-      <a class="cta gold" href="/pro/espace/">Activar mi prueba de 30 días →</a>
+      <div class="payrow">
+        <a class="cta gold" data-eur="https://buy.stripe.com/4gM28rcQCeox7kd6Z2ebu06" data-usd="https://buy.stripe.com/cNi4gzdUGbcl1ZTcjmebu07" data-key-eur="pro_monthly_eur" data-key-usd="pro_monthly_usd" href="https://buy.stripe.com/cNi4gzdUGbcl1ZTcjmebu07">Mensual</a>
+        <a class="cta gold" data-eur="https://buy.stripe.com/cNifZhcQC1BL1ZTbfiebu08" data-usd="https://buy.stripe.com/cNi8wP4k6gwF33X4QUebu09" data-key-eur="pro_annual_eur" data-key-usd="pro_annual_usd" href="https://buy.stripe.com/cNi8wP4k6gwF33X4QUebu09">Anual</a>
+      </div>
+      <p class="delivery">Tras la confirmación del pago, un correo envía el enlace de acceso Pro, el código del widget para pegar en el sitio y la forma de cancelar. Soporte solo por correo: <a data-support href="mailto:support@sargassumcancun.com">support@sargassumcancun.com</a>.</p>
     </div>
 
     <div class="plan" id="plan-territoire">
       <h3>El Litoral</h3>
       <p class="who">Administraciones y oficinas de turismo · presupuesto y recursos de limpieza</p>
-      <div class="price">desde $219/mes</div>
+      <div class="price">Bajo pedido</div>
       <p class="pnote">Como apoyo a tu plan de sargazo — según el número de playas</p>
       <ul>
         <li>Seguimiento bahía por bahía de todas las playas de tu territorio</li>
@@ -143,7 +149,7 @@
         <li>Datos públicos y auditables para gestionar y comunicar con precisión</li>
         <li>Acompañamiento dedicado</li>
       </ul>
-      <a class="cta ghost" href="/pro/es/">Ver la oferta de litoral</a>
+      <a class="cta ghost" data-support href="mailto:support@sargassumcancun.com">Escribir al soporte</a>
     </div>
 
   </div>
@@ -153,21 +159,21 @@
   <p class="sec-eyebrow">Preguntas frecuentes</p>
   <h2>Antes de escribirnos.</h2>
   <h3>¿Cuánto cuesta?</h3>
-  <p>El widget es gratuito, sin compromiso. El Pro cuesta $89/mes (o $790/año, dos meses gratis), con 30 días de prueba gratis sin tarjeta — todo se hace en línea, sin llamadas, y lo cancelas cuando quieras. El Litoral (desde $219/mes) se ajusta al número de playas de tu costa.</p>
+  <p>El Pro cuesta $89/mes, o $790/año por 12 meses en un solo pago. El pago es en línea, sin llamada. El acceso, el código del widget y la forma de cancelar llegan por correo tras la confirmación. Un litoral entero no tiene precio publicado: escribe a <a data-support href="mailto:support@sargassumcancun.com">support@sargassumcancun.com</a>.</p>
   <h3>¿En cuánto tiempo está listo?</h3>
-  <p>El widget, el mismo día. Las alertas Pro, en cuanto activas tu prueba.</p>
+  <p>En cuanto el pago está confirmado: el correo sale con el enlace de acceso y el código del widget.</p>
   <h3>¿En qué zonas?</h3>
   <p>Validado en las Antillas Francesas (Martinica y Guadalupe), y desplegándose ahora por el Caribe y la costa atlántica de EE. UU. Publicamos la fiabilidad a medida que se valida, mercado por mercado — escríbenos para tu zona.</p>
   <h3>¿Por qué confiar en nosotros?</h3>
   <p>Porque publicamos nuestros errores. Cada día confrontamos el pronóstico con lo que el satélite realmente vio, por régimen, y lo hacemos público en nuestro <a href="https://sargasses-martinique.com/fiabilite/">historial auditado</a>. Medido por satélite, no adivinado — y cuando nos equivocamos, lo escribimos. Eso es lo que las herramientas gratuitas no publican.</p>
   <div style="margin-top:24px">
-    <a class="cta gold" style="display:inline-block;text-decoration:none" href="/pro/espace/">Activar mi prueba de 30 días →</a>
+    <a class="cta gold" style="display:inline-block;text-decoration:none" href="#plan-pro">Elegir Mensual o Anual</a>
   </div>
 </div></section>
 
 <footer>
   <a href="https://sargasses-martinique.com/pro/es/">Sargasses Pro</a> ·
-  <a href="https://sargasses-martinique.com/widget/">Widget gratuito</a> ·
+  <a data-support href="mailto:support@sargassumcancun.com">support@sargassumcancun.com</a> ·
   <a href="https://sargasses-martinique.com/fiabilite/">Fiabilidad</a> ·
   <a href="https://sargasses-martinique.com/a-propos/">Acerca de</a> ·
   <a href="https://sargasses-martinique.com/">Mapa en directo</a> ·
@@ -175,6 +181,7 @@
   <div style="margin-top:10px">Mira el mar, nunca a tus clientes · Pronóstico satelital de sargazo</div>
 </footer>
 
+<script src="/pro/pricing-pay.js"></script>
 <script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){

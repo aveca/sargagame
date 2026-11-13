@@ -264,6 +264,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
+      # Une région hors SLA ne doit pas annuler les builds des autres.
+      fail-fast: false
       matrix:
         include:
           - id: mq
@@ -378,16 +380,34 @@ jobs:
         run: |
           set -euo pipefail
           case "${MOLLIE_API_KEY:-}" in
-            live_*) echo "Mollie key mode: LIVE" ;;
-            *) echo "::error::MOLLIE_API_KEY must be configured with a live_ key before production deployment"; exit 1 ;;
+            live_*) echo "Mollie key mode: LIVE (option, Stripe Payment Links are the default cashier)" ;;
+            test_*) echo "::warning::Mollie key is TEST. Stripe Payment Links remain the default cashier." ;;
+            *) echo "::error::MOLLIE_API_KEY missing or unrecognized"; exit 1 ;;
           esac
           test -n "${SUPABASE_SERVICE_KEY:-}" || { echo "::error::SUPABASE_SERVICE_KEY is missing"; exit 1; }
           test -n "${MOLLIE_WEBHOOK_SECRET:-}" || { echo "::error::MOLLIE_WEBHOOK_SECRET is missing"; exit 1; }
           echo "Required payment backend secrets are present; values were not printed."
 
+  deploy-sg-payments:
+    needs: [certification-gate, scope]
+    if: needs.scope.outputs.production == 'true' && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Deploy sg-payments without touching existing secrets or routes
+        working-directory: workers/sg-payments
+        run: npx --yes wrangler@latest deploy --keep-vars
+
   deploy:
     needs: [build, certification-gate, scope, mollie-live-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' && needs.scope.outputs.production == 'true'
+    if: always() && needs.scope.result == 'success' && needs.scope.outputs.production == 'true' && needs.certification-gate.result == 'success' && needs.mollie-live-gate.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'failure') && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -618,7 +638,7 @@ jobs:
 
   deploy-pages:
     needs: [build, certification-gate, scope, mollie-live-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' && needs.scope.outputs.production == 'true'
+    if: always() && needs.scope.result == 'success' && needs.scope.outputs.production == 'true' && needs.certification-gate.result == 'success' && needs.mollie-live-gate.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'failure') && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:

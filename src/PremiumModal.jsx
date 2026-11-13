@@ -1977,7 +1977,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
            }
            throw new Error(userMsg)
          }
-          if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
+          if(d.checkoutUrl){ // redirection caisse : le navigateur ne confirme pas le paiement
+            if(String(d.checkoutUrl).indexOf("buy.stripe.com")>=0){try{track("checkout_started",{livemode:true,correlation_id:d.orderId||"",provider:"stripe_link"})}catch(_){}}
             try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
             setPayRedirecting(true)
             // Ensure redirect UI shows before navigation
@@ -2123,8 +2124,9 @@ const walletRedirect=useCallback(async(method)=>{
          }
          throw new Error(userMsg)
        }
-        track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
+        track("sg_pay_wallet_start",{plan,provider:d.provider||"mollie",method,pass:_pc?_pc.pass:null})
         if(d.checkoutUrl){
+          if(String(d.checkoutUrl).indexOf("buy.stripe.com")>=0){try{track("checkout_started",{livemode:true,correlation_id:d.orderId||"",provider:"stripe_link"})}catch(_){}}
           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
           // État "Redirection…" visible avant de quitter la page
           setPayRedirecting(true)

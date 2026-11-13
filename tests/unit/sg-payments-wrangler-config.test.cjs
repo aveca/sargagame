@@ -45,10 +45,24 @@ t(cfg.main === "index.js", "main = index.js (relatif au dossier workers/sg-payme
 t(cfg.compatibility_date === "2026-08-19", "compatibility_date = 2026-08-19 (identique au runtime live)")
 t(cfg.workers_dev === true, "workers_dev conserve (le live l'expose)")
 
-// ── 2. AUCUNE route : les 6 domaines sont poses a la main dans le dashboard ─
-t(!Object.prototype.hasOwnProperty.call(cfg, "routes"),
-  "AUCUNE cle 'routes' (un deploy ne peut pas ecraser les domaines personnalises)")
-t(!Object.prototype.hasOwnProperty.call(cfg, "route"), "AUCUNE cle 'route'")
+// ── 2. Routes durables : stripe-* sur les 6 domaines, plus les routes API
+// deja servies, pour qu'un deploy qui reconcilie ne les efface pas.
+const STRIPE_ZONES = [
+  "sargasses-martinique.com",
+  "sargasses-guadeloupe.com",
+  "sargassummiami.com",
+  "sargassumcancun.com",
+  "sargassumpuntacana.com",
+  "sargazotulum.com"
+]
+t(Array.isArray(cfg.routes) && cfg.routes.length > 0, "les routes sont declarees")
+t(!Object.prototype.hasOwnProperty.call(cfg, "route"), "AUCUNE cle 'route' singuliere")
+for (const zone of STRIPE_ZONES) {
+  t(cfg.routes.some((route) => route && route.zone_name === zone && route.pattern === zone + "/api/stripe-*"),
+    "route /api/stripe-* conservee pour " + zone)
+  t(cfg.routes.some((route) => route && route.zone_name === zone && String(route.pattern).includes("/api/mollie")),
+    "route Mollie conservee pour " + zone)
+}
 
 // ── 3. AUCUN secret et AUCUNE var en dur dans la config ────────────────────
 t(!Object.prototype.hasOwnProperty.call(cfg, "vars"),
@@ -71,10 +85,12 @@ t(kv.id === "528c05c792e046029a84e2fdb84f4ae6", "id KV = namespace live (528c05c
 
 // ── 5. le cron du live est declare (sinon les emails commerciaux cessent) ──
 t(cfg.triggers && typeof cfg.triggers === "object", "la cle 'triggers' est declaree")
-t(Array.isArray(cfg.triggers && cfg.triggers.crons) && cfg.triggers.crons.length === 1,
-  "1 cron declare")
-t((cfg.triggers && cfg.triggers.crons || [])[0] === "0 6,18 * * *",
-  "cron = '0 6,18 * * *' (cron live : drip B2B + alertes B2C)")
+t(Array.isArray(cfg.triggers && cfg.triggers.crons) && cfg.triggers.crons.length === 2,
+  "2 crons declares")
+t((cfg.triggers && cfg.triggers.crons || []).includes("0 6,18 * * *"),
+  "cron alertes = '0 6,18 * * *'")
+t((cfg.triggers && cfg.triggers.crons || []).includes("0 0-5,7-17,19-23 * * *"),
+  "cron horaire = '0 0-5,7-17,19-23 * * *'")
 const WORKER_SRC = fs.readFileSync(path.join(ROOT, "workers", "sg-payments", "index.js"), "utf8")
 t(WORKER_SRC.includes('event.cron === "0 6,18 * * *"'),
   "le handler scheduled du depot correspond au cron declare")

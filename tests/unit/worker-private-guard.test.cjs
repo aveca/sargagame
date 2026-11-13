@@ -53,7 +53,7 @@ check('handler widget-token préservé', /widget-token/.test(WORKER));
 check('handler b2b-trial préservé', /b2b-trial/.test(WORKER));
 check('/api/ non migré toujours 404 explicite', /api_route_not_migrated/.test(WORKER));
 
-// 5. Worker-first sélectif : seule l'API Copernicus passe par le Worker.
+// 5. run_worker_first=false : les assets statiques sont servis par Cloudflare edge
 check('wrangler.template route uniquement l’API Copernicus en Worker-first', /"run_worker_first"\s*:\s*\[\s*"\/api\/copernicus\/sargassum\.json"\s*\]/.test(TPL));
 check('aucun Worker-first global', !/"run_worker_first"\s*:\s*true/.test(TPL));
 
@@ -62,4 +62,4 @@ const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filt
 const REQUIRED_IGNORE_RULES = ['**/*.php', '**/*.php.*', '**/.env*', '**/.htaccess', '**/.htpasswd', '**/_private/'];
 for (const rule of REQUIRED_IGNORE_RULES) check('.assetsignore contient la règle exacte ' + rule, IGNORE_RULES.has(rule));
 
-console.log('\n' + passed + ' checks passed — private endpoint fail-closed, Copernicus freshness route, public paths intact.');
+console.log('\n' + passed + ' checks passed — private endpoint fail-closed, public paths intact.');

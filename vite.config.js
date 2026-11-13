@@ -206,6 +206,18 @@ export default defineConfig({
         return html.replace('</head>', tags + '</head>')
       },
     },
+    {
+      name: 'first-paint-offer',
+      transformIndexHtml(html) {
+        try {
+          const { injectFirstPaint, readObservationIso } = _require('./scripts/lib/home-first.cjs')
+          return injectFirstPaint(html, REGION, readObservationIso(__dirname, REGION && REGION.id))
+        } catch (e) {
+          console.warn('first-paint-offer:', e.message)
+          return html
+        }
+      },
+    },
     // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
     // MQ/GP strictement inchangés (REGION null ou id mq/gp → html retourné tel quel).
     {
@@ -432,6 +444,10 @@ export default defineConfig({
       name: 'seo-pages',
       closeBundle() {
         const outDir = resolve(__dirname, 'dist')
+        try {
+          const { writeCommercialPages } = _require('./scripts/lib/write-commercial-pages.cjs')
+          if (REGION) writeCommercialPages(outDir, REGION, __dirname)
+        } catch (e) { console.warn('   ⚠ pages offres/premium:', e.message) }
         // Publier /api/reliability.json
         try {
           const btPath = resolve(__dirname, 'scripts/automation/data/backtest-results.json')
