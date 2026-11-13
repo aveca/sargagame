@@ -1,5 +1,85 @@
 ﻿---
 
+## 2026-11-13 ~15:15 UTC · Agent: coding_agent (US beach index fix — mission #1)
+
+### Travail effectué
+- **Résumé 1 ligne** : Corrigé l'index plage 404 sur 3 régions USD (Miami/Punta Cana/Cancún) — `/beaches/` (EN) ou `/playas/` (ES) maintenant générés + `onOpenBeach` navigue vers le bon préfixe région.
+- **Fix 1 (vite.config.js)** : Insertion dans le bloc `IS_NEW_REGION` (lignes ~497-569) de génération `/beaches/` ou `/playas/` index page regroupant les plages par commune, avec badges de statut depuis `SARGASSUM_REF`, fallback `slugify(b.name)`, JSON-LD CollectionPage+BreadcrumbList, hreflang EN/ES, et `appendToRegionSitemap` ajout au sitemap.xml régional.
+- **Fix 2 (build-fiche-dive.cjs)** : `onOpenBeach` patch (lignes 146-152) dérive le préfixe depuis `window.__SG_BEACH__.beach.island` (`mq/gp`→`/plages/`, `florida/puntacana`→`/beaches/`, `rivieramaya/tulum`→`/playas/`), défaut `/plages/` ; garde ligne 178 accepte nouveau ou ancien pattern.
+- **Régénération** : `scripts/lib/fiche-dive-assets.cjs` régénéré (build OK, 69.9 KB engine, ancres OK).
+- **Gate de ship passé** : `npm run build` exit 0 ; `check-bundle-budget.cjs` 208.0/210 Ko OK ; `ux-smoke.mjs` 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]). Aucun `.php` touché → pas de `php -l` requis. Budget inchangé (page HTML statique, pas d'impact bundle JS).
+- **Rollback** : revert les deux edits (vite.config.js bloc IS_NEW_REGION, build-fiche-dive.cjs onOpenBeach) ; pas de `?flag=0` nécessaire (page SEO/navigation, pas d'UI conversion).
+- **Branche** : `agent/coding/us-beach-index-fix`, changements non commités dans vite.config.js, scripts/build-fiche-dive.cjs, scripts/lib/fiche-dive-assets.cjs.
+
+### Fichiers modifiés
+- `vite.config.js` — bloc IS_NEW_REGION : génération `/beaches/`/`/playas/` index + sitemap append
+- `scripts/build-fiche-dive.cjs` — `onOpenBeach` préfixe région-aware + garde adaptée
+- `scripts/lib/fiche-dive-assets.cjs` — output régénéré par build-fiche-dive.cjs
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 208.0/210 Ko OK
+- [x] php -l → N/A (aucun .php touché)
+- [x] ux-smoke → 4 tokens OK
+- [ ] playwright test → à faire en CI sur PR
+
+### Problèmes restants (reportés)
+- [ ] PR #1115 (HEAD e56236d) introuvable en local et sur origin — non récupérable
+- [ ] PR de fraîcheur satellite #1243 et #1250 introuvables en local — à vérifier sur origin
+- [ ] Conflit GA4 : Tulum partage `G-YHCQGRPG8G` avec Cancún, besoin d'ID propre
+- [ ] 404 détectés : `is-there-sargassum-in-miami-today/`, `sargassum-map-tulum/`
+
+### Prochaine action recommandée
+1. Commit + push branche `agent/coding/us-beach-index-fix` + créer PR (auto-merge si CI vert) — Rôle : coding_agent
+2. Ouvrir PR `agent/data/satellite-freshness-sla-900min` sur main — Rôle : release_agent
+3. Suivre BOT-WOW (branche `fix/botwow-conformance-delivery`) — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/us-beach-index-fix`
+- PR : à créer
+- Commit head : en attente
+
+---
+
+### Travail effectué
+- **Résumé** : completion SEO Tulum — 4 fichiers créés, config.cjs corrigé, build CI déclenché, sitemap passé de 12 à 52 URLs (vs 12 avant sur l'ensemble des domaines)
+- **Fichiers modifiés/créés** : 
+  - `scripts/automation/lib/config.cjs` — ajouté `'tulum'` dans REGION_CONFIGS
+  - `regions/seo-content/tulum.json` — contenu ES ~400 lignes (FAQ, pages, beachBlurbs, resortPageTpl, extraPages, routes)
+  - `regions/seo-content/tulum.en.json` — contenu anglais ~400 lignes (même structure que ES)
+  - `regions/resorts/tulum.json` — 15 hôtels mappés sur 5 plages (tu001-tu005)
+- **Build CI** : `Daily Copernicus + Deploy` déclenché, sitemap généré à 52 URLs (dont 25 ES + 18 EN + 9 légales)
+- **Sitemap** : https://sargazotulum.com/sitemap.xml — 52 URLs (was 12 before Tulum SEO add)
+
+### Problèmes résolus
+- PR #1080 fusionnée dans main (GitGuardian 39170333 skipped)
+- GitGuardian 39170333 classé (classification administrative)
+- SEO Tulum complet : 4 nouveaux fichiers, commit pushed sur main
+- Build CI générant pages Tulum (52 URLs sitemap)
+
+### Problèmes restants (reportés)
+- **P1** : Confirmer 100+ URLs sitemap Tulum (currently 52, target ~100+)
+- **P1** : Index plage 404 sur 3 régions USD (issue #1068 — build + deploy pipeline)
+- **P1** : Conflit GA4 — Tulum partage `G-YHCQGRPG8G` avec Cancún, besoin d'ID propre
+- **P1** : 404 détectés : `is-there-sargassum-in-miami-today/`, `sargassum-map-tulum/`
+- **P1** : Acquisition SEO — Google Business Profile × 6 domaines, soumettre sitemaps
+
+### Fichiers modifiés
+- `scripts/automation/lib/config.cjs` — ajout tulum dans REGION_CONFIGS
+- `regions/seo-content/tulum.json` — nouveau (contenu ES)
+- `regions/seo-content/tulum.en.json` — nouveau (contenu EN)
+- `regions/resorts/tulum.json` — nouveau (15 hôtels mappés)
+- `main` (HEAD `9fac7a724`, PR #1080 fusionnée)
+- `.ai/changelog.md` — à jour
+
+### Prochaine action recommandée
+1. Vérifier que le sitemap Tulum atteint ~100+ URLs (manquant ~48 URLs, probablement pages resort individuelles non générées)
+2. Corriger les 404 détectés : `is-there-sargassum-in-miami-today/`, `sargassum-map-tulum/`
+3. Corriger le conflit GA4 : Tulum a son propre `GA4_PROPERTY_ID`
+4. Relancer acquisition SEO : Google Business Profile × 6 domaines, soumettre sitemaps
+
+--- 
+
 ## 2026-10-27 ~00:30 UTC · Agent: mission_agent (audit UI exhaustif — suite)
 
 ### Travail effectué
