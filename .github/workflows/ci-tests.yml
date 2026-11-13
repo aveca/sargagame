@@ -82,6 +82,15 @@ jobs:
           path: /tmp/chasse-home-freshness/*.png
           if-no-files-found: warn
           retention-days: 7
+      # CONTRAT DE DÉCISION de la fiche plage (lc-detail) — la surface exacte
+      # des 12 défauts bloquants `stale-current-decision` (gate `verify` du run
+      # 42227027205). Ce contrôle est LOCAL et pré-déploiement : observation
+      # hors SLA => aucun score / aucune prévision / en-tête « à vérifier » ;
+      # observation fraîche => verdict courant. Desktop + mobile.
+      - name: Run beach-detail freshness contract regression (desktop + mobile)
+        run: node scripts/automation/freshness-contract-check.cjs --base http://127.0.0.1:4173
+      - name: Run user-journey audit against the local build (pre-deploy gate)
+        run: node scripts/automation/user-journey-audit.cjs --base-url http://127.0.0.1:4173 --out /tmp/user-journey-report-local.json
       - name: Run UX smoke test (mobile funnel)
         run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
       - name: Verify smoke tokens
