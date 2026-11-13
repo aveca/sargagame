@@ -8,7 +8,7 @@ const { readObservationIso } = require('./home-first.cjs')
 const { offerLang } = require('./commercial-catalog.cjs')
 
 function writeCommercialPages(outDir, region, root) {
-  const iso = readObservationIso(root || path.resolve(__dirname, '../..'))
+  const iso = readObservationIso(root || path.resolve(__dirname, '../..'), region && region.id)
   const premiumRegion = Object.assign({}, region, { primaryLang: offerLang(region) })
   fs.mkdirSync(path.join(outDir, 'premium'), { recursive: true })
   fs.mkdirSync(path.join(outDir, 'offres'), { recursive: true })

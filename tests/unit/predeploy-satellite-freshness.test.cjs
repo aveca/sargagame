@@ -6,6 +6,7 @@ const path = require('node:path');
 const {
   MAX_AGE_MINUTES,
   evaluateObservation,
+  htmlShowsStaleObservation,
 } = require('../../scripts/autopilot/check-predeploy-satellite-freshness.cjs');
 
 let assertions = 0;
@@ -51,11 +52,15 @@ const prep = build.indexOf('Verify prepare-ftp produces a deployable site');
 const buildGate = build.indexOf('Pre-deploy satellite freshness gate (all six regions)');
 const validate = build.indexOf('Validate prepared HTML CSP and bundle references');
 check(prep >= 0 && prep < buildGate && buildGate < validate, 'all six prepared region artifacts are gated before build jobs can succeed');
+check(build.includes('fail-fast: false'), 'one regional build failure does not cancel the other regions');
+check(htmlShowsStaleObservation('<p>2026-11-12T12:00:00Z. Donnée satellite non actualisée.</p>', '2026-11-12T12:00:00Z').ok, 'a prepared page can show the real date and the not-updated notice');
+check(!htmlShowsStaleObservation('<p>Donnée satellite non actualisée.</p>', '2026-11-12T12:00:00Z').ok, 'the notice without the observation date is not enough');
 check(build.includes("if: github.ref == 'refs/heads/main'"), 'production gate is restricted to main so PR validation remains possible');
 for (const id of ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']) {
   check(build.includes(`- id: ${id}`), `build matrix includes ${id}`);
 }
 const deploy = block(workflow, '\n  deploy:', '\n  deploy-pages:');
+check(deploy.includes('needs.build.result'), 'a failed region does not skip deployment of the regions that built');
 check(deploy.indexOf('Recheck satellite freshness immediately before Worker deploy') >= 0 &&
       deploy.indexOf('Recheck satellite freshness immediately before Worker deploy') < deploy.indexOf('- name: Deploy Worker'),
       'Worker freshness is rechecked before deploy command');

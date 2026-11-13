@@ -33,6 +33,15 @@
     try { navigator.sendBeacon("/api/stripe-track", body); } catch (e) {}
   }
   beacon("pricing_view");
+  var pageLang = String(document.documentElement.lang || "fr").slice(0, 2);
+  fetch("/api/copernicus/sargassum.json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (data) {
+    var el = document.getElementById("sat-notice");
+    var iso = data && data.erddapTimestamp;
+    var age = iso ? (Date.now() - Date.parse(iso)) / 60000 : NaN;
+    if (!el || !(age > 900)) return;
+    var phrase = pageLang === "es" ? "Dato satelital no actualizado." : pageLang === "en" ? "Satellite data not updated." : "Donnée satellite non actualisée.";
+    el.textContent = iso + ". " + phrase;
+  }).catch(function () {});
   document.addEventListener("click", function (ev) {
     var link = ev.target && ev.target.closest ? ev.target.closest("a[data-eur]") : null;
     if (!link) return;

@@ -60,6 +60,17 @@ check(!ancient.publishable, 'observations older than the 900-minute SLA are not 
 const fresh = evaluatePublicationEligibility('2026-11-09T18:00:00.000Z', { now });
 check(fresh.publishable && fresh.withinOperationalSla, 'a fresh observation inside the SLA is publishable');
 
+const labeled = evaluatePublicationEligibility(timestampAtAge(901), { now, allowLabeledStale: true });
+check(labeled.publishable && labeled.labeledStale === true && labeled.withinOperationalSla === false, 'a 901-minute observation can be published only as labeled not-current data');
+const labeledOld = evaluatePublicationEligibility('2026-10-01T12:00:00.000Z', { now, allowLabeledStale: true });
+check(!labeledOld.publishable, 'an observation older than 7 days stays blocked even with the label');
+const labeledRegression = evaluatePublicationEligibility('2026-11-09T18:00:00.000Z', {
+  now,
+  previousTimestamp: '2026-11-09T20:00:00.000Z',
+  allowLabeledStale: true
+});
+check(!labeledRegression.publishable, 'a labeled observation older than the published one is rejected');
+
 const sixFreshRegions = Array.from({ length: 6 }, (_, index) => ({
   regionId: `region-${index + 1}`,
   publishable: true

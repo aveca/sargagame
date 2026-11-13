@@ -81,12 +81,15 @@ function main() {
   // against the last committed observation to reject regressions; the 900-minute
   // operational SLA remains mandatory even when the candidate is newer.
   const rootElig = evaluatePublicationEligibility(data.erddapTimestamp, {
-    previousTimestamp: rootPrevious && rootPrevious.erddapTimestamp
+    previousTimestamp: rootPrevious && rootPrevious.erddapTimestamp,
+    allowLabeledStale: true
   })
   if (!rootElig.publishable) {
     const marker = !rootFreshness.ok ? 'observation hors SLA — ' : ''
     console.error(`❌ Observation satellite racine refusée : ${marker}${rootElig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
     ok = false
+  } else if (rootElig.labeledStale) {
+    console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min, au-delà du SLA ${MAX_AGE_MINUTES} min, publication avec la date et la mention non actualisée`)
   } else {
     console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min (SLA ${MAX_AGE_MINUTES} min) ✓`)
   }
@@ -211,13 +214,16 @@ function main() {
     const freshness = evaluateObservation(reg.erddapTimestamp)
     const prevReg = readGitHeadJson(`public/api/copernicus/${dirName}/sargassum.json`)
     const elig = evaluatePublicationEligibility(reg.erddapTimestamp, {
-      previousTimestamp: prevReg && prevReg.erddapTimestamp
+      previousTimestamp: prevReg && prevReg.erddapTimestamp,
+      allowLabeledStale: true
     })
     requiredRegionEligibility.push({ regionId: dirName, publishable: elig.publishable, reason: elig.reason })
     if (!elig.publishable) {
       const marker = !freshness.ok ? 'observation hors SLA — ' : ''
       console.error(`❌ [${dirName}] observation refusée : ${marker}${elig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
       ok = false
+    } else if (elig.labeledStale) {
+      console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min, au-delà du SLA ${MAX_AGE_MINUTES} min, mention non actualisée requise au déploiement`)
     } else {
       console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min ✓`)
     }
