@@ -140,6 +140,23 @@ ${affiliateHtml(lang)}
 </main>
 <script src="/b2b-capture.js"></script>
 <script src="/b2b-lead-form.js"></script>
+<script>
+(function(){
+  var corr="";
+  try{corr=sessionStorage.getItem("sg_corr")||"";if(!corr){corr=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now());sessionStorage.setItem("sg_corr",corr)}}catch(e){corr="local"}
+  function send(name){
+    var body=JSON.stringify({event:name,livemode:true,correlation_id:corr});
+    try{navigator.sendBeacon("/api/stripe-track",body)}catch(e){}
+  }
+  send("pricing_view");
+  document.addEventListener("click",function(ev){
+    var a=ev.target&&ev.target.closest?ev.target.closest("a"):null;
+    if(!a)return;
+    var href=a.getAttribute("href")||"";
+    if(href.indexOf("buy.stripe.com")>=0){send("CTA_click");send("checkout_started")}
+  });
+})();
+</script>
 </body>
 </html>`
 }

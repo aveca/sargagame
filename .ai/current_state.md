@@ -1,3 +1,10 @@
+## 2026-11-13 · Caisse Stripe sans repli Mollie (PR #1427, non mergée)
+
+- La vente publique passe par les 10 Payment Links LIVE. Sans lien : HTTP 503 `no_mollie_fallback`. Les webhooks Mollie des paiements déjà encaissés restent en place.
+- L'accès n'est écrit qu'après un événement Stripe signé, live, et payé. `/merci` interroge `/api/stripe-status` et n'écrit rien en local.
+- Secret encore à poser par le propriétaire, après déploiement du worker `sg-payments` : `STRIPE_WEBHOOK_SECRET`. Pas de `STRIPE_SECRET_KEY`.
+- Test : `node tests/unit/stripe-webhook-access.test.cjs`.
+
 ## 2026-11-13 · Offres localisées + B2B visible (NON déployé)
 
 - `/offres/` et `/premium/` sont générées par région au build. La Guadeloupe est réécrite dans `prepare-ftp.cjs`.

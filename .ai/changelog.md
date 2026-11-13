@@ -1,3 +1,11 @@
+## 2026-11-13 — Caisse publique Stripe seulement, accès après confirmation serveur
+
+- `create_payment` et `create_subscription` renvoient un Payment Link Stripe ou une erreur `no_mollie_fallback`. Plus d'appel Mollie ni de clé TEST pour une nouvelle vente.
+- Le webhook n'accorde l'accès que sur `checkout.session.completed` ou `checkout.session.async_payment_succeeded` avec `payment_status=paid` et `livemode=true`. Il traite aussi `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated` et `customer.subscription.deleted`.
+- Remboursement, litige et résiliation retirent l'accès de façon idempotente. L'idempotence est l'`event.id`. `livemode` est stocké.
+- `/merci` reste sur « paiement en cours de confirmation » tant que le statut serveur n'est pas `paid`. L'URL `?premium=1` ou `?session_id` n'écrit plus de droit dans le navigateur.
+- Mesure sur la couche existante : `pricing_view`, `CTA_click`, `checkout_started`, et côté webhook `payment_success`, `payment_failed`, `entitlement_granted`, `refund`. Chaque événement porte `livemode` et un identifiant de corrélation sans email.
+
 ## 2026-11-13 — Pages d'offres par région, premier écran sans JS, grille Pro honnête
 
 - `/offres/` générée par région (EN Miami, ES Cancún / Tulum / Punta Cana, FR MQ/GP) : gratuit vs payant, prix du catalogue, CTA, formulaire B2B.

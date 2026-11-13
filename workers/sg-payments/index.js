@@ -882,6 +882,9 @@ var index_default = {
     if (path === "/api/stripe-status") {
       return handleStripeStatus(request, env);
     }
+    if (path === "/api/stripe-track") {
+      return handleStripeTrack(request, env);
+    }
     if (path === "/api/mollie-webhook" || path === "/api/mollie-webhook.php") {
       if (request.method === "GET") return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
       return handleWebhook(request, env, ctx);
@@ -1742,13 +1745,12 @@ async function handleMollie(request, env) {
   if (!await rateLimit(env, `mol_${action}`, 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: h });
   try {
     const apiKey = env.MOLLIE_API_KEY;
-    const profileId = mollieProfileId(env);
     const host = requestHost(request);
     if (action === "create_payment") {
       if (String(body.pass || "") === "sos" || String(body.source || "") === "sos_plage") {
         return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: h });
       }
-      const { email, source, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
+      const { email, cents, amount: amountObj } = body;
       // ── P0 money path : le SERVEUR décide du SKU, de la devise et du montant ──
       // AVANT : un `pass` inconnu (ou ABSENT) court-circuitait l'allowlist
       // (montant libre accepté jusqu'à 300 €) et le montant DÉBITÉ pouvait être
@@ -1789,120 +1791,21 @@ async function handleMollie(request, env) {
         return new Response(JSON.stringify({ error: "Email invalide", reason: "invalid_email" }), { status: 400, headers: h });
       }
       const stripeCheckout = await stripeLinkCheckout(env, { pass, currency: offer.currency, email: normalizedEmail, days: offer.days, amount: offer.amount });
-      if (stripeCheckout) {
-        return new Response(JSON.stringify(stripeCheckout), { headers: h });
+      if (!stripeCheckout) {
+        return new Response(JSON.stringify({ error: "payment_unavailable", reason: "no_mollie_fallback" }), { status: 503, headers: h });
       }
-      const amount = { value: offer.amount.toFixed(2), currency: offer.currency };
-      // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais par
-      // le client. `source` reste l'attribution de canal (réconciliation des
-      // ventes) mais ne sélectionne plus aucun chemin de livraison.
-      const metadata = stripReservedMetadata(userMeta);
-      metadata.source = String(source || "unknown").slice(0, 40);
-      metadata.offer_kind = "b2c_pass";
-      metadata.pass = pass;
-      metadata.email = normalizedEmail;
-      metadata.lang = lang || "fr";
-      if (referredBy) metadata.referredBy = referredBy;
-      if (myReferralCode) metadata.myReferralCode = myReferralCode;
-      let userId = null;
-      if (body.authToken) {
-        const sess = await authVerify(env, String(body.authToken));
-        if (sess) userId = String(sess.uid);
-      }
-      if (!userId && email && String(email).includes("@")) {
-        const u = await userUpsert(env, String(email).toLowerCase().trim(), "email", null);
-        if (u) userId = u.id;
-      }
-      if (userId) metadata.user_id = userId;
-      const kind = "pass";
-      const returnRef = crypto.randomUUID();
-      const backUrl = safeRedirectUrl(userRedirect, `https://${host}/?paid=1&kind=${kind}&email=${encodeURIComponent(normalizedEmail)}&plan=${encodeURIComponent(pass)}`);
-      metadata.return_ref = returnRef;
-      const redirectUrl = `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`;
-      if (normalizedEmail) {
-        const idemKey = `mol_${await hashString(normalizedEmail + "|" + pass)}`;
-        const ex = await kv(env).get(idemKey);
-        if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
-        await kv(env).put(idemKey, "1", { expirationTtl: 60 });
-      }
-      const pd = { amount, description: `Sargasses Pass ${pass}`, redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (offer.currency === "USD" ? "en_US" : "fr_FR") };
-      if (profileId) pd.profileId = profileId;
-      if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
-      if (cardToken) pd.cardToken = cardToken;
-      if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
-      // `amount` = montant EFFECTIF que le serveur va débiter. Le front
-      // (src/PremiumModal.jsx) compare ce champ à l'affichage et émet
-      // `sg_price_mismatch` en cas d'écart : sans lui, l'écart
-      // affichage/débit resterait invisible.
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null, amount: { value: amount.value, currency: amount.currency }, pass, days: offer.days }), { headers: h });
+      return new Response(JSON.stringify(stripeCheckout), { headers: h });
     }
     if (action === "create_subscription") {
-      const { plan: rawPlan, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
+      const { plan: rawPlan, email } = body;
       const planKey = normalizePlanKey(rawPlan);
       const b2c = B2C_SUB_PLANS[planKey];
       const b2b = B2B_PLANS[planKey];
       if (!b2c && !b2b) throw new Error(`Plan inconnu: ${rawPlan || ""}`);
       const plan = b2c || b2b;
       const stripePlan = await stripeLinkCheckout(env, { pass: planKey, currency: plan.currency, email: String(email || "").trim().toLowerCase(), days: plan.interval ? 30 : 365, amount: Number(plan.amount) });
-      if (stripePlan) return new Response(JSON.stringify(stripePlan), { headers: h });
-      let cid = customerId;
-      if (!cid && email) {
-        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
-        const existing = (customers._embedded?.customers || []).find((c) => c.email === email);
-        if (existing) cid = existing.id;
-        else {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email, name: name || "", metadata: { source: b2c ? "b2c_premium_signup" : "b2b_monthly_signup" } });
-          cid = nc.id;
-        }
-      }
-      if (!cid) throw new Error("customerId ou email requis");
-      if (mandateId) {
-        const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-          amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
-          description: plan.description,
-          webhookUrl: `https://${host}/api/mollie-webhook`,
-          // `offer_kind` est écrit par le SERVEUR à partir du catalogue : le
-          // client ne peut plus choisir la classe de livraison d'un abonnement.
-          metadata: { ...stripReservedMetadata(userMeta), source: b2c ? "premium_subscription" : "b2b_monthly", offer_kind: b2c ? "b2c_subscription" : "b2b_subscription", plan: planKey, email: email || "", pass: b2c ? b2c.pass : "" },
-          interval: plan.interval || "1 month",
-          mandateId,
-          ...payMethod ? { method: payMethod } : {}
-        });
-        const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
-        if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
-        return new Response(JSON.stringify(result), { headers: h });
-      }
-      const isAnnualB2B = !!(b2b && !b2b.interval);
-      const returnRef = crypto.randomUUID();
-      const metadata = {
-        ...stripReservedMetadata(userMeta),
-        source: b2c ? String(body.source || "premium_subscription").slice(0, 40) : isAnnualB2B ? "b2b_annual" : "b2b_first",
-        offer_kind: b2c ? "b2c_subscription" : isAnnualB2B ? "b2b_annual" : "b2b_first",
-        plan: planKey,
-        email: email || "",
-        pass: b2c ? b2c.pass : "",
-        lang: body.lang || "fr",
-        customerId: cid,
-        interval: plan.interval || "",
-        return_ref: returnRef
-      };
-      const backUrl = `https://${host}/?paid=1&kind=${b2c ? "pass" : "pro"}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(planKey)}`;
-      const pd = {
-        amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
-        description: plan.description,
-        redirectUrl: `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`,
-        webhookUrl: `https://${host}/api/mollie-webhook`,
-        metadata,
-        locale: body.locale || "fr_FR",
-        customerId: cid
-      };
-      if (!isAnnualB2B) pd.sequenceType = "first";
-      if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, customerId: cid, user_id: null }), { headers: h });
+      if (!stripePlan) return new Response(JSON.stringify({ error: "payment_unavailable", reason: "no_mollie_fallback" }), { status: 503, headers: h });
+      return new Response(JSON.stringify(stripePlan), { headers: h });
     }
     if (action === "payment_status") {
       const paymentId = String(body.paymentId || "").trim();
@@ -2296,6 +2199,96 @@ async function stripeSignatureOk(payload, header, secret) {
   return v1.some((sig) => sig.length === hex.length && sig === hex);
 }
 __name(stripeSignatureOk, "stripeSignatureOk");
+function stripeCorrelation(obj, eventId) {
+  const ref = obj && (obj.client_reference_id || obj.id);
+  return String(ref || eventId || "").slice(0, 80);
+}
+__name(stripeCorrelation, "stripeCorrelation");
+function stripeTrack(env, name, fields) {
+  const params = {
+    livemode: fields.livemode === true,
+    correlation_id: String(fields.correlation_id || "").slice(0, 80),
+    price_key: fields.price_key || null,
+    reason: fields.reason || null
+  };
+  return supa(env, "analytics_events", "POST", { event: name, params, island: "stripe" }).catch(() => {});
+}
+__name(stripeTrack, "stripeTrack");
+const STRIPE_CLIENT_EVENTS = new Set(["pricing_view", "CTA_click", "checkout_started"]);
+async function handleStripeTrack(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
+  let data = {};
+  try { data = await request.json(); } catch (_) { data = {}; }
+  const event = String(data.event || "");
+  if (!STRIPE_CLIENT_EVENTS.has(event)) return new Response(null, { status: 204 });
+  const correlation = String(data.correlation_id || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80);
+  const priceKey = typeof data.price_key === "string" ? data.price_key.slice(0, 40) : null;
+  await stripeTrack(env, event, { livemode: data.livemode === true, correlation_id: correlation, price_key: priceKey });
+  return new Response(null, { status: 204 });
+}
+__name(handleStripeTrack, "handleStripeTrack");
+function stripeMeta(obj) {
+  if (!obj || typeof obj !== "object") return {};
+  if (obj.metadata && Object.keys(obj.metadata).length) return obj.metadata;
+  const parent = obj.parent && obj.parent.subscription_details && obj.parent.subscription_details.metadata;
+  if (parent && Object.keys(parent).length) return parent;
+  const lines = obj.lines && Array.isArray(obj.lines.data) ? obj.lines.data : [];
+  for (const line of lines) {
+    if (line && line.metadata && Object.keys(line.metadata).length) return line.metadata;
+  }
+  return {};
+}
+__name(stripeMeta, "stripeMeta");
+function stripeMoney(obj) {
+  const item = obj.items && Array.isArray(obj.items.data) ? obj.items.data[0] : null;
+  const price = item && (item.price || item.plan);
+  const amount = obj.amount_total != null ? obj.amount_total : obj.amount_paid != null ? obj.amount_paid : obj.plan && obj.plan.amount != null ? obj.plan.amount : price && price.unit_amount != null ? price.unit_amount : null;
+  const currency = obj.currency || (obj.plan && obj.plan.currency) || (price && price.currency) || "";
+  return { amount, currency };
+}
+__name(stripeMoney, "stripeMoney");
+function stripeEmail(obj) {
+  return String(
+    obj.customer_details && obj.customer_details.email
+    || obj.customer_email
+    || (obj.metadata && obj.metadata.email)
+    || ""
+  ).trim().toLowerCase();
+}
+__name(stripeEmail, "stripeEmail");
+async function stripeEndAccess(env, grantId) {
+  const id = String(grantId || "");
+  if (!id) return false;
+  await revokeB2CAccess(env, id, "stripe_end");
+  await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(id) + "&type=eq.b2b_pro");
+  const prev = await kv(env).get("stripe_session_" + id);
+  let rec = { state: "ended", accessUrl: null, livemode: true };
+  try { if (prev) rec = Object.assign(JSON.parse(prev), { state: "ended", accessUrl: null }); } catch (_) {}
+  await kv(env).put("stripe_session_" + id, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
+  return true;
+}
+__name(stripeEndAccess, "stripeEndAccess");
+async function stripeGrantPaid(env, request, obj, priceKey, spec, livemode) {
+  const email = stripeEmail(obj);
+  if (!EMAIL_RE.test(email)) return { granted: false, reason: "missing_email" };
+  const grantId = String(obj.id || "");
+  if (!grantId) return { granted: false, reason: "missing_id" };
+  let accessUrl = null;
+  if (spec.kind === "b2c") {
+    await grantB2C(env, grantId, spec.pass, email, { price_key: priceKey, brand: "sargasses", provider: "stripe_link", livemode }, spec.currency.toUpperCase());
+  } else {
+    const granted = await grantB2B(env, String(obj.customer || email), spec.plan, grantId, spec.days, { metadata: { price_key: priceKey, brand: "sargasses", email, livemode } });
+    if (granted && granted.token) accessUrl = "https://" + requestHost(request) + "/pro/espace/?k=" + encodeURIComponent(granted.token);
+  }
+  const record = { state: "paid", livemode: livemode === true, pass: spec.pass || null, plan: spec.plan || null, days: spec.days, accessUrl, price_key: priceKey };
+  const keys = ["stripe_session_" + grantId];
+  if (obj.client_reference_id) keys.push("stripe_order_" + String(obj.client_reference_id).slice(0, 200));
+  for (const key of keys) await kv(env).put(key, JSON.stringify(record), { expirationTtl: 400 * 86400 });
+  if (typeof obj.payment_intent === "string" && obj.payment_intent) await kv(env).put("stripe_pi_" + obj.payment_intent, grantId, { expirationTtl: 400 * 86400 });
+  if (typeof obj.subscription === "string" && obj.subscription) await kv(env).put("stripe_sub_" + obj.subscription, grantId, { expirationTtl: 400 * 86400 });
+  return { granted: true, price_key: priceKey };
+}
+__name(stripeGrantPaid, "stripeGrantPaid");
 async function handleStripeStatus(request, env) {
   const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
   if (request.method !== "GET") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
@@ -2305,7 +2298,9 @@ async function handleStripeStatus(request, env) {
   if (!raw) return new Response(JSON.stringify({ state: "pending" }), { headers });
   let rec = {};
   try { rec = JSON.parse(raw); } catch (_) { rec = {}; }
-  return new Response(JSON.stringify({ state: rec.state || "pending", pass: rec.pass || null, plan: rec.plan || null, days: rec.days || null, accessUrl: rec.accessUrl || null }), { headers });
+  if (rec.state === "ended") return new Response(JSON.stringify({ state: "ended", livemode: rec.livemode === true }), { headers });
+  if (rec.state !== "paid" || rec.livemode !== true) return new Response(JSON.stringify({ state: "pending", livemode: rec.livemode === true }), { headers });
+  return new Response(JSON.stringify({ state: "paid", livemode: true, pass: rec.pass || null, plan: rec.plan || null, days: rec.days || null, accessUrl: rec.accessUrl || null }), { headers });
 }
 __name(handleStripeStatus, "handleStripeStatus");
 async function handleStripeWebhook(request, env) {
@@ -2328,41 +2323,74 @@ async function handleStripeWebhook(request, env) {
   }
   const obj = event.data && event.data.object || {};
   const type = String(event.type || "");
+  const livemode = event.livemode === true;
+  const correlation = stripeCorrelation(obj, eventId);
+  const finish = async (body, status) => {
+    if (eventId && status < 500) await kv(env).put("stripe_evt_" + eventId, JSON.stringify({ livemode, type }), { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify(body), { status, headers });
+  };
   try {
     if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
+      if (!livemode) return finish({ ok: true, granted: false, reason: "not_live", livemode: false }, 200);
       if (String(obj.payment_status || "") !== "paid") {
-        return new Response(JSON.stringify({ ok: true, granted: false, reason: "not_paid" }), { headers });
+        await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, reason: "not_paid" });
+        return finish({ ok: true, granted: false, reason: "not_paid", livemode: true }, 200);
       }
       const resolved = stripePriceKey(obj.metadata, obj.amount_total, obj.currency);
-      if (resolved.error) return new Response(JSON.stringify({ ok: false, error: resolved.error }), { status: 400, headers });
-      const email = String(obj.customer_details && obj.customer_details.email || "").trim().toLowerCase();
-      if (!EMAIL_RE.test(email)) return new Response(JSON.stringify({ ok: false, error: "missing_email" }), { status: 400, headers });
-      const spec = resolved.spec;
-      const sessionId = String(obj.id || "");
-      let accessUrl = null;
-      if (spec.kind === "b2c") {
-        await grantB2C(env, sessionId, spec.pass, email, { price_key: resolved.priceKey, brand: "sargasses", provider: "stripe_link" }, spec.currency.toUpperCase());
-      } else {
-        const granted = await grantB2B(env, String(obj.customer || email), spec.plan, sessionId, spec.days, { metadata: { price_key: resolved.priceKey, brand: "sargasses", email } });
-        if (granted && granted.token) accessUrl = "https://" + requestHost(request) + "/pro/espace/?k=" + encodeURIComponent(granted.token);
-      }
-      const record = { state: "paid", pass: spec.pass || null, plan: spec.plan || null, days: spec.days, accessUrl };
-      await kv(env).put("stripe_session_" + sessionId, JSON.stringify(record), { expirationTtl: 400 * 86400 });
-      if (obj.client_reference_id) await kv(env).put("stripe_order_" + String(obj.client_reference_id).slice(0, 200), JSON.stringify(record), { expirationTtl: 400 * 86400 });
-      if (typeof obj.payment_intent === "string" && obj.payment_intent) await kv(env).put("stripe_pi_" + obj.payment_intent, sessionId, { expirationTtl: 400 * 86400 });
-    } else if (type === "charge.refunded" || type === "charge.dispute.created") {
-      const pi = typeof obj.payment_intent === "string" ? obj.payment_intent : "";
-      const sessionId = pi ? await kv(env).get("stripe_pi_" + pi) : "";
-      if (!sessionId) return new Response(JSON.stringify({ ok: true, revoked: false, reason: "unknown_payment" }), { headers });
-      await revokeB2CAccess(env, sessionId, type);
-      await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(sessionId) + "&type=eq.b2b_pro");
-      const prev = await kv(env).get("stripe_session_" + sessionId);
-      let rec = { state: "ended" };
-      try { if (prev) rec = Object.assign(JSON.parse(prev), { state: "ended", accessUrl: null }); } catch (_) {}
-      await kv(env).put("stripe_session_" + sessionId, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
+      if (resolved.error) return finish({ ok: false, error: resolved.error, livemode: true }, 400);
+      await stripeTrack(env, "payment_success", { livemode, correlation_id: correlation, price_key: resolved.priceKey });
+      const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+      if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      return finish({ ok: true, granted: granted.granted === true, reason: granted.reason || null, livemode: true }, 200);
     }
-    if (eventId) await kv(env).put("stripe_evt_" + eventId, "done", { expirationTtl: 30 * 86400 });
-    return new Response(JSON.stringify({ ok: true }), { headers });
+    if (type === "checkout.session.async_payment_failed" || type === "invoice.payment_failed") {
+      await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, reason: type });
+      return finish({ ok: true, granted: false, reason: "payment_failed", livemode }, 200);
+    }
+    if (type === "invoice.paid") {
+      const invoicePaid = obj.status === "paid" || obj.paid === true;
+      if (!livemode || !invoicePaid) {
+        return finish({ ok: true, granted: false, reason: livemode ? "not_paid" : "not_live", livemode }, 200);
+      }
+      const money = stripeMoney(obj);
+      const resolved = stripePriceKey(stripeMeta(obj), money.amount, money.currency);
+      if (resolved.error) return finish({ ok: true, granted: false, reason: resolved.error, livemode: true }, 200);
+      await stripeTrack(env, "payment_success", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+      if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      return finish({ ok: true, granted: granted.granted === true, reason: granted.reason || null, livemode: true }, 200);
+    }
+    if (type === "customer.subscription.updated") {
+      const status = String(obj.status || "");
+      const money = stripeMoney(obj);
+      const resolved = stripePriceKey(stripeMeta(obj), money.amount, money.currency);
+      if (livemode && (status === "active" || status === "trialing") && !resolved.error) {
+        const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+        if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+        return finish({ ok: true, granted: granted.granted === true, status, livemode: true }, 200);
+      }
+      if (status === "canceled" || status === "unpaid" || status === "incomplete_expired") {
+        const mapped = await kv(env).get("stripe_sub_" + String(obj.id || ""));
+        await stripeEndAccess(env, mapped || obj.id);
+        await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, price_key: resolved.priceKey || null, reason: status });
+        return finish({ ok: true, ended: true, livemode }, 200);
+      }
+      return finish({ ok: true, granted: false, status, livemode }, 200);
+    }
+    if (type === "customer.subscription.deleted" || type === "charge.refunded" || type === "charge.dispute.created") {
+      let grantId = "";
+      if (type === "customer.subscription.deleted") grantId = await kv(env).get("stripe_sub_" + String(obj.id || "")) || String(obj.id || "");
+      else {
+        const pi = typeof obj.payment_intent === "string" ? obj.payment_intent : "";
+        grantId = pi ? await kv(env).get("stripe_pi_" + pi) || "" : "";
+      }
+      if (!grantId) return finish({ ok: true, ended: false, reason: "unknown_payment", livemode }, 200);
+      await stripeEndAccess(env, grantId);
+      await stripeTrack(env, "refund", { livemode, correlation_id: correlation, reason: type });
+      return finish({ ok: true, ended: true, livemode }, 200);
+    }
+    if (eventId) await kv(env).put("stripe_evt_" + eventId, JSON.stringify({ livemode, type }), { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify({ ok: true, ignored: true, livemode }), { headers });
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e).slice(0, 160) }), { status: 500, headers });
   }

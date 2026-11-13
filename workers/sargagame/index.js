@@ -485,37 +485,12 @@ export default {
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return out({error:"invalid_email"},400);
           const stripePassKey=(pass==="trip7"||pass==="p30"||pass==="season")?pass+"_"+(currency==="USD"?"usd":"eur"):"";
           const stripeHref=STRIPE_LIVE_LINKS[stripePassKey];
-          if(stripeHref){
-            const orderId=crypto.randomUUID();
-            const payUrl=new URL(stripeHref);
-            payUrl.searchParams.set("client_reference_id", orderId);
-            payUrl.searchParams.set("prefilled_email", email);
-            return out({checkoutUrl:payUrl.toString(),provider:"stripe_link",orderId,amount:{value:(expected/100).toFixed(2),currency},pass},200);
-          }
-          // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) :
-          // le serveur live facture le montant affiché (montant validé ci-dessus).
-          const base=allowed.includes(u.origin)?u.origin:"https://sargasses-martinique.com";
-          // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais
-          // par le client.
-          const rawMeta=(d.metadata&&typeof d.metadata==="object"&&!Array.isArray(d.metadata))?d.metadata:{};
-          const meta={};
-          for(const [k,v] of Object.entries(rawMeta)){
-            if(k==="offer_kind"||k==="pass"||k==="plan"||k==="source"||k==="email"||k==="customerId"||k==="interval"||k==="return_ref"||k==="mode")continue;
-            meta[k]=v;
-          }
-          meta.source=String(d.source||"unknown").slice(0,40);
-          meta.offer_kind="b2c_pass";
-          meta.pass=pass;
-          meta.email=email;
-          meta.lang=d.lang||"fr";
-          // URL de retour et webhook : construits par le serveur (jamais client).
-          // Le montant DÉBITÉ est celui du catalogue, pas celui dicté par le client.
-          const body={amount:{value:(expected/100).toFixed(2),currency},description:"Sargasses Pass "+pass,redirectUrl:base+"/?mollie_return=1",webhookUrl:base+"/api/mollie-webhook.php",metadata:meta,locale:d.locale||(currency==="USD"?"en_US":"fr_FR")};
-          if(d.method||d.paymentMethod)body.method=d.method||d.paymentMethod;
-          if(d.applePayPaymentToken)body.applePayPaymentToken=d.applePayPaymentToken;
-          const r=await fetch("https://api.mollie.com/v2/payments",{method:"POST",headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
-          const p=await r.json(); if(!r.ok)throw new Error(p.detail||p.title||"Mollie error");
-          return out({checkoutUrl:p._links&&p._links.checkout&&p._links.checkout.href||null,paymentId:p.id,amount:{value:body.amount.value,currency:body.amount.currency},pass},200);
+          if(!stripeHref) return out({error:"payment_unavailable",reason:"no_mollie_fallback"},503);
+          const orderId=crypto.randomUUID();
+          const payUrl=new URL(stripeHref);
+          payUrl.searchParams.set("client_reference_id", orderId);
+          payUrl.searchParams.set("prefilled_email", email);
+          return out({checkoutUrl:payUrl.toString(),provider:"stripe_link",orderId,amount:{value:(expected/100).toFixed(2),currency},pass},200);
         }
         return out({error:"Unknown action"},400);
       }catch(e){return out({error:e.message||"backend_error"},400)}
