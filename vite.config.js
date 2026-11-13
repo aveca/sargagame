@@ -494,6 +494,78 @@ export default defineConfig({
             writeFileSync(target404, localize404(source404, REGION, REGION.name), 'utf-8')
             console.log(`   → /404.html localisée (${REGION.id}, langue ${REGION.primaryLang})`)
           } catch (e) { console.warn('   ⚠ 404 localisée région:', e.message) }
+          // ── /beaches/ (EN) ou /playas/ (ES) index page — régions USD ──
+          // Florida / Punta Cana / Riviera Maya / Tulum n'ont pas de page index
+          // plage → 404 sur /beaches/ ou /playas/ alors que les fiches
+          // individuelles existent et sont dans le sitemap (issue #1068).
+          // Génère l'index regroupant les plages par commune + l'ajoute au
+          // sitemap.xml régional (écrit plus haut par generateRegionSeoPages).
+          try {
+            const lang = REGION.primaryLang
+            const isEs = lang === 'es'
+            const dir = isEs ? 'playas' : 'beaches'
+            const urlPrefix = `/${dir}/`
+            const domain = REGION.domain
+            const regionBeaches = REGION.beaches || []
+            const statusById = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
+            const statusBadge = (st) => {
+              if (st === 'clean') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">' + (isEs ? 'Limpia' : 'Clean') + '</span>'
+              if (st === 'moderate') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fef3c7;color:#b87a00;font-size:12px;font-weight:600">' + (isEs ? 'Moderada' : 'Moderate') + '</span>'
+              return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">' + (isEs ? 'Evitar' : 'Avoid') + '</span>'
+            }
+            const communes = {}
+            for (const b of regionBeaches) {
+              if (!communes[b.commune]) communes[b.commune] = []
+              communes[b.commune].push(b)
+            }
+            const communeNames = Object.keys(communes).sort()
+            let communeListHtml = ''
+            for (const commune of communeNames) {
+              const cBeaches = communes[commune]
+              const beachLinks = cBeaches.map(b => {
+                const st = statusById[b.id] || 'clean'
+                const slug = b.slug || slugify(b.name)
+                return `<li style="padding:6px 0"><a href="${urlPrefix}${slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> ${statusBadge(st)}</li>`
+              }).join('')
+              communeListHtml += `<h2 style="margin:28px 0 8px;font-size:18px;color:#0D0D0D">${commune}</h2><ul style="list-style:none;padding:0">${beachLinks}</ul>`
+            }
+            const today = new Date().toISOString().slice(0, 10)
+            const indexTitle = isEs
+              ? `Todas las playas — Sargassum ${REGION.name}`
+              : `All beaches — Sargassum ${REGION.name}`
+            const indexDesc = isEs
+              ? `Lista completa de ${regionBeaches.length} playas vigiladas en ${REGION.name}. Estado del sargazo en tiempo real, agrupadas por comuna.`
+              : `Complete list of ${regionBeaches.length} monitored beaches in ${REGION.name}. Real-time sargassum status, grouped by commune.`
+            const indexUrl = `https://${domain}${urlPrefix}`
+            const homeLabel = isEs ? 'Inicio' : 'Home'
+            const beachesLabel = isEs ? 'Playas' : 'Beaches'
+            const indexNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${indexTitle}</h1><p style="color:#686868;margin-bottom:24px">${regionBeaches.length} playas vigiladas par satellite — donnees Copernicus</p>${communeListHtml}<nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte des sargasses</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes sargasses</a></nav></article>`
+            const indexSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":indexTitle,"description":indexDesc,"url":indexUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${REGION.name}`,"url":`https://${domain}/`},"dateModified":today})
+            const indexBreadcrumb = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":homeLabel,"item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":beachesLabel,"item":indexUrl}]})
+            const beachesDir = resolve(outDir, dir)
+            mkdirSync(beachesDir, { recursive: true })
+            const indexHtml = htmlSubpage
+              .replace(/<title>[^<]*<\/title>/, `<title>${indexTitle}</title>`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${indexDesc}" />`)
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${indexUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="en"[^>]*>/, isEs ? '' : `<link rel="alternate" hreflang="en" href="${indexUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="es"[^>]*>/, isEs ? `<link rel="alternate" hreflang="es" href="${indexUrl}" />` : '')
+              .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, '')
+              .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${indexUrl}" />`)
+              .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${indexTitle}" />`)
+              .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${indexDesc}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${indexUrl}" />`)
+              .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${indexTitle}" />`)
+              .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${indexDesc}" />`)
+              .replace('</head>', `\n    <script type="application/ld+json">\n    ${indexSchema}\n    </script>\n    <script type="application/ld+json">\n    ${indexBreadcrumb}\n    </script>\n</head>`)
+              .replace('</body>', `\n    <noscript>${indexNoscript}</noscript>\n</body>`)
+            writeFileSync(resolve(beachesDir, 'index.html'), indexHtml)
+            console.log(`   → /${dir}/ index généré (${REGION.id}, ${regionBeaches.length} plages, ${lang})`)
+            try {
+              const { appendToRegionSitemap } = _require('./scripts/lib/reliability-page.cjs')
+              appendToRegionSitemap(resolve(__dirname, 'dist'), domain, dir)
+            } catch (e) { console.warn('   ⚠ sitemap append /' + dir + '/:', e.message) }
+          } catch (e) { console.warn('   ⚠ beaches index région:', e.message) }
           return
         }
         const indexPath = resolve(outDir, 'index.html')

@@ -145,7 +145,9 @@ function extract () {
     /function onOpenBeach\([^)]*\)\s*\{[^\n]*\}/,
     `function onOpenBeach(id, name, slug) {
     try { track('sg_open_beach', { beach: id, name: name, src: 'fiche_nearby' }); } catch(e) {}
-    window.location.href = slug ? ('/plages/' + slug + '/') : '/carte-sargasses/';
+    var _isl = (window.__SG_BEACH__ && window.__SG_BEACH__.beach) ? window.__SG_BEACH__.beach.island : ''
+    var _pfx = { mq: '/plages/', gp: '/plages/', florida: '/beaches/', puntacana: '/beaches/', rivieramaya: '/playas/', tulum: '/playas/' }[_isl] || '/plages/'
+    window.location.href = slug ? (_pfx + slug + '/') : '/carte-sargasses/';
   }`
   )
 
@@ -173,7 +175,7 @@ function extract () {
     process.exit(1)
   }
   // Guard: onOpenBeach must navigate (else Plan-B cards / nearby halos = dead clicks).
-  if (!ENGINE.includes("'/plages/' + slug + '/'")) {
+  if (!ENGINE.includes("_pfx + slug + '/'") && !ENGINE.includes("'/plages/' + slug + '/'")) {
     console.error('onOpenBeach patch did NOT apply — Plan-B nearby clicks would be dead')
     process.exit(1)
   }

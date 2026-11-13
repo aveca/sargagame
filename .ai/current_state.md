@@ -1,27 +1,45 @@
-﻿--- 
+﻿---
 
-## 2026-11-04 ~00:00 UTC · Agent: mission_p0 (P0 Sales Recovery — Sargagame)
+## 2026-11-13 ~15:15 UTC · Agent: coding_agent (US beach index fix — mission #1)
 
 ### Travail effectué
-- **SLA fraîcheur satellite durci à 900 minutes (15 h)** — cause réelle du retard ERDDAP identifiée : `SAT_STALE_HOURS` était à 36 h (2160 min) alors qu'en production le composite satellite affiche `erddapTimestamp` ≈ 2064 min d'âge avec `stale:false` (figé incorrect). Le seuil 36 h masquait la donnée périmée.
-- **Aucun timestamp falsifié** ; **SLA de 900 min non réduit** (durci de 36 h → 15 h).
-- `scripts/lib/satellite-freshness.cjs` : `SAT_STALE_HOURS 36 → 15`
-- `scripts/cursor-session-startup.cjs` : `SAT_STALE_H 36 → 15`
-- Nouveaux tests : `tests/unit/satellite-freshness-sla.test.cjs` (verrouille le SLA 900 min)
-- Tests mis à jour : `tests/unit/satellite-freshness-metadata.test.cjs`, `tests/unit/post-deploy-satellite-freshness.test.cjs`
-- **Validation réelle** : suite complète 82/82 OK ; `npm run build` exit 0 ; budget bundle 208.0/210 Ko OK (Gate de ship passé).
-- **Branche / PR** : `agent/data/satellite-freshness-sla-900min`, commit `f4f2e0f1f`, pushée sur origin (PR à ouvrir).
+- **Résumé 1 ligne** : Corrigé l'index plage 404 sur 3 régions USD (Miami/Punta Cana/Cancún) — `/beaches/` (EN) ou `/playas/` (ES) maintenant générés + `onOpenBeach` navigue vers le bon préfixe région.
+- **Fix 1 (vite.config.js)** : Insertion dans le bloc `IS_NEW_REGION` (lignes ~497-569) de génération `/beaches/` ou `/playas/` index page regroupant les plages par commune, avec badges de statut depuis `SARGASSUM_REF`, fallback `slugify(b.name)`, JSON-LD CollectionPage+BreadcrumbList, hreflang EN/ES, et `appendToRegionSitemap` ajout au sitemap.xml régional.
+- **Fix 2 (build-fiche-dive.cjs)** : `onOpenBeach` patch (lignes 146-152) dérive le préfixe depuis `window.__SG_BEACH__.beach.island` (`mq/gp`→`/plages/`, `florida/puntacana`→`/beaches/`, `rivieramaya/tulum`→`/playas/`), défaut `/plages/` ; garde ligne 178 accepte nouveau ou ancien pattern.
+- **Régénération** : `scripts/lib/fiche-dive-assets.cjs` régénéré (build OK, 69.9 KB engine, ancres OK).
+- **Gate de ship passé** : `npm run build` exit 0 ; `check-bundle-budget.cjs` 208.0/210 Ko OK ; `ux-smoke.mjs` 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]). Aucun `.php` touché → pas de `php -l` requis. Budget inchangé (page HTML statique, pas d'impact bundle JS).
+- **Rollback** : revert les deux edits (vite.config.js bloc IS_NEW_REGION, build-fiche-dive.cjs onOpenBeach) ; pas de `?flag=0` nécessaire (page SEO/navigation, pas d'UI conversion).
+- **Branche** : `agent/coding/us-beach-index-fix`, changements non commités dans vite.config.js, scripts/build-fiche-dive.cjs, scripts/lib/fiche-dive-assets.cjs.
+
+### Fichiers modifiés
+- `vite.config.js` — bloc IS_NEW_REGION : génération `/beaches/`/`/playas/` index + sitemap append
+- `scripts/build-fiche-dive.cjs` — `onOpenBeach` préfixe région-aware + garde adaptée
+- `scripts/lib/fiche-dive-assets.cjs` — output régénéré par build-fiche-dive.cjs
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 208.0/210 Ko OK
+- [x] php -l → N/A (aucun .php touché)
+- [x] ux-smoke → 4 tokens OK
+- [ ] playwright test → à faire en CI sur PR
 
 ### Problèmes restants (reportés)
-- PR #1115 (HEAD e56236d) introuvable en local et sur origin — non récupérable, à re-créer si nécessaire.
-- PR de fraîcheur satellite #1243 et #1250 introuvables en local — à vérifier sur origin.
+- [ ] PR #1115 (HEAD e56236d) introuvable en local et sur origin — non récupérable
+- [ ] PR de fraîcheur satellite #1243 et #1250 introuvables en local — à vérifier sur origin
+- [ ] Conflit GA4 : Tulum partage `G-YHCQGRPG8G` avec Cancún, besoin d'ID propre
+- [ ] 404 détectés : `is-there-sargassum-in-miami-today/`, `sargassum-map-tulum/`
 
 ### Prochaine action recommandée
-1. Ouvrir la PR `agent/data/satellite-freshness-sla-900min` sur main et la faire reviewer/merger (CI verte, Gate OK).
-2. Déployer et vérifier `curl` sur les 6 domaines après merge (erddapTimestamp, stale).
-3. Suivre BOT-WOW (branche `fix/botwow-conformance-delivery`).
+1. Commit + push branche `agent/coding/us-beach-index-fix` + créer PR (auto-merge si CI vert) — Rôle : coding_agent
+2. Ouvrir PR `agent/data/satellite-freshness-sla-900min` sur main — Rôle : release_agent
+3. Suivre BOT-WOW (branche `fix/botwow-conformance-delivery`) — Rôle : coding_agent
 
---- 
+### Branche / PR
+- Branche : `agent/coding/us-beach-index-fix`
+- PR : à créer
+- Commit head : en attente
+
+---
 
 ### Travail effectué
 - **Résumé** : completion SEO Tulum — 4 fichiers créés, config.cjs corrigé, build CI déclenché, sitemap passé de 12 à 52 URLs (vs 12 avant sur l'ensemble des domaines)

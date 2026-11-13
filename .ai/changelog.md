@@ -2033,3 +2033,11 @@ PR: #810 (auto-merged)
 - **test** : `tests/unit/funnel-checkout-events.test.cjs` (NOUVEAU) — verrouille l'allowlist + `critical`
   et impose que tout composant de paiement émette un événement de checkout. Validé 2 sens.
 - **Tests** : `run-tests.cjs` 72/72 (main : 71/72) · build exit 0 · budget 208.0/210 Ko.
+
+## 2026-11-13 ~15:15 UTC · coding_agent (US beach index fix — mission #1)
+
+- **fix(seo)** : `vite.config.js` — bloc `IS_NEW_REGION` : génère `/beaches/` (EN) ou `/playas/` (ES) index pour les 3 régions USD (Florida/Miami, Punta Cana, Riviera Maya/Tulum) à la place du 404, regroupant les plages par commune avec badges de statut, JSON-LD + hreflang, ajout au sitemap régional via `appendToRegionSitemap`. Issue #1068.
+- **fix(coding)** : `scripts/build-fiche-dive.cjs` — `onOpenBeach` dérive le préfixe de `window.__SG_BEACH__.beach.island` (mq/gp→`/plages/`, florida/puntacana→`/beaches/`, rivieramaya/tulum→`/playas/`), défaut `/plages/` ; garde adaptée.
+- **Gate de ship** : `npm run build` exit 0 ; bundle 208.0/210 Ko ; `ux-smoke.mjs` 4 tokens OK (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]).
+- **Rollback** : revert les deux edits ; pas de `?flag=0` requis (SEO/navigation, pas d'UI conversion).
+- Branche : `agent/coding/us-beach-index-fix`
