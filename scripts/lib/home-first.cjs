@@ -4,15 +4,19 @@ const fs = require('fs')
 const path = require('path')
 const { B2C, PRO, offerLang, currencyOf } = require('./commercial-catalog.cjs')
 
-function readObservationIso(root) {
-  try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, 'public/api/copernicus/sargassum.json'), 'utf8'))
-    const iso = raw && raw.erddapTimestamp
-    const t = Date.parse(String(iso || ''))
-    return Number.isFinite(t) ? new Date(t).toISOString() : null
-  } catch (_) {
-    return null
+function readObservationIso(root, regionId) {
+  const files = []
+  if (regionId) files.push(path.join(root, 'public/api/copernicus', regionId, 'sargassum.json'))
+  files.push(path.join(root, 'public/api/copernicus/sargassum.json'))
+  for (const file of files) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(file, 'utf8'))
+      const iso = raw && raw.erddapTimestamp
+      const t = Date.parse(String(iso || ''))
+      if (Number.isFinite(t)) return new Date(t).toISOString()
+    } catch (_) {}
   }
+  return null
 }
 
 function formatObservation(iso, lang) {
@@ -26,11 +30,17 @@ function formatObservation(iso, lang) {
   const when = new Intl.DateTimeFormat(lang === 'es' ? 'es' : lang === 'en' ? 'en-GB' : 'fr-FR', {
     dateStyle: 'long', timeStyle: 'short', timeZone: 'UTC',
   }).format(new Date(iso))
-  return lang === 'es'
+  const ageMin = (Date.now() - new Date(iso).getTime()) / 60000
+  const notice = !(ageMin > 900) ? '' : lang === 'es'
+    ? ` ${iso}. Dato satelital no actualizado.`
+    : lang === 'en'
+      ? ` ${iso}. Satellite data not updated.`
+      : ` ${iso}. Donnée satellite non actualisée.`
+  return (lang === 'es'
     ? `Última observación satelital: ${when} UTC.`
     : lang === 'en'
       ? `Latest satellite observation: ${when} UTC.`
-      : `Dernière observation satellite : ${when} UTC.`
+      : `Dernière observation satellite : ${when} UTC.`) + notice
 }
 
 function escapeHtml(s) {

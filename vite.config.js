@@ -211,7 +211,7 @@ export default defineConfig({
       transformIndexHtml(html) {
         try {
           const { injectFirstPaint, readObservationIso } = _require('./scripts/lib/home-first.cjs')
-          return injectFirstPaint(html, REGION, readObservationIso(__dirname))
+          return injectFirstPaint(html, REGION, readObservationIso(__dirname, REGION && REGION.id))
         } catch (e) {
           console.warn('first-paint-offer:', e.message)
           return html
