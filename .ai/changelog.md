@@ -1,3 +1,9 @@
+## 2026-11-14 — Réparation du runner Factory V3 (v2 réel, orchestrateur autonome sans simulation)
+
+- **Runner v2 réel, zéro simulation** : `scripts/factory-v3/run.cjs`, `orchestrator.cjs`, `runner.cjs` exécutent les tâches contre les dépôts réels (sargagame, botwow) ; `run.cjs` installe/désinstalle le scheduler Windows ; pas de mock, pas de statut inventé, les preuves (commit SHA, gates, dirty files) sont obligatoires pour un verdict `VERIFIED`.
+- **Lock stale 2026-10-08 PID 19504 réclamé avec preuve** : `lockIsStale` détecte un lock dont le pid est mort (4_000_000_000) ou âgé de > 4h (réutilisation de PID) ; `acquireLock` copie le lock obsolète dans `factory.lock.stale-<iso>` (preuve conservée) avant d'acquérir le nouveau lock. Un lock valide (pid vivant + récent) bloque l'acquisition.
+- **Tests de non-régression 9/9** : `tests/unit/factory-v3-runner.test.cjs` (`node --test`) — `pidAlive`, `lockIsStale`, `acquireLock` (reclaim + preuve conservée, refus sur lock valide), `claimNextJob` anti-doublon (RUNNING jamais re-claimé, FIFO), `recoverOrphans` (mort → PENDING + backoff, vivant intact), `computeBackoff` exponentiel plafonné, `computeVerdict` strict (jamais VERIFIED sans agent ok + gates verts + commit), `loadConfig` fusion des repos, `execStep` code de sortie réel + timeout réel.
+
 ## 2026-11-13 — Parcours Pro hôtel en libre-service
 
 - `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.
