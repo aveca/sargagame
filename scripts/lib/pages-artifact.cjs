@@ -1,0 +1,198 @@
+'use strict'
+/**
+ * pages-artifact.cjs — construction et INVENTAIRE de l'artefact Pages
+ * (publication Cloudflare Pages) à partir de l'artefact régional FTP.
+ *
+ * POURQUOI (défaut mesuré le 2026-11-07)
+ * --------------------------------------
+ * Constat live : les six projets `*.pages.dev` servaient le CODE SOURCE PHP
+ * en clair (`content-type: application/x-httpd-php`, HTTP 200) sur 24/36
+ * endpoints testés — `/api/mollie.php`, `/api/widget-token.php`,
+ * `/api/b2b-trial.php`, `/api/mollie-lib.php`, etc.
+ *
+ * Cause structurelle :
+ *   1. `scripts/prepare-ftp.cjs` ne excluait que `api/stripe-config.php` ; les
+ *      23 autres `.php` restaient dans l'artefact régional ;
+ *   2. le fichier `.assetsignore` (règle « deux astérisques, slash, .php ») n'est
+ *      honoré QUE par les assets statiques **Worker** — `wrangler pages deploy
+ *      <dir>` publie TOUT ce qui se trouve dans `<dir>`, y compris les sources
+ *      PHP.
+ *
+ * AUCUN secret de service n'était exposé (`mollie-config.php` et
+ * `_deploy-secret.php` sont absents du dépôt → 404 ; `_deploy.php` reste
+ * fail-closed). L'exposition était une divulgation de CODE APPLICATIF, pas de
+ * credentials — mais c'est une divulgation, et elle est évitable.
+ *
+ * POURQUOI UN ARTEFACT DISTINCT (et pas un simple nettoyage du dossier FTP)
+ * --------------------------------------------------------------------------
+ * Le dossier régional `<region>-ftp/` a une DOUBLE FONCTION :
+ *   - il est téléversé tel quel sur l'hébergeur FTP historique (Apache/PHP) ;
+ *     les endpoints PHP y sont la money path (Mollie, PayPal, Stripe, B2B) ;
+ *   - il sert de dossier d'assets au Worker Cloudflare (`__ASSETS_DIR__`).
+ * Supprimer les `.php` du dossier FTP casserait le fonctionnement FTP
+ * historique (les endpoints de paiement ne seraient plus jamais mis à jour).
+ * On construit donc un ARTEFACT PAGES DISTINCT, sans PHP, et on laisse le
+ * dossier FTP strictement inchangé.
+ */
+
+const fs = require('fs')
+const path = require('path')
+
+/**
+ * Fichiers qui ne doivent JAMAIS être publiés sur Pages.
+ * - `*.php` et `*.php.*` : sources serveur (le code n'est pas exécuté par
+ *   Pages, il est renvoyé tel quel) ;
+ * - `.htaccess` / `.htpasswd` : configuration Apache (le fichier de mots de
+ *   passe ne doit jamais devenir un asset public).
+ */
+const PAGES_PUBLISH_BLOCKLIST = Object.freeze([
+  /\.php$/i,
+  /\.php\./i,
+  /(^|\/)\.htaccess$/i,
+  /(^|\/)\.htpasswd$/i
+])
+
+/**
+ * Nom du dossier d'artefact Pages dérivé du dossier FTP régional.
+ * `martinique-ftp` -> `martinique-ftp-pages`
+ */
+function pagesArtifactDirName(ftpDir) {
+  return String(ftpDir).replace(/\/+$/, '') + '-pages'
+}
+
+/**
+ * Un chemin (relatif, POSIX) est-il interdit de publication ?
+ * @param {string} relativePath
+ */
+function isBlockedForPages(relativePath) {
+  const rel = String(relativePath || '').replace(/\\/g, '/')
+  return PAGES_PUBLISH_BLOCKLIST.some(re => re.test(rel))
+}
+
+/**
+ * Liste les fichiers bloqués présents sous `dir` (chemins relatifs POSIX).
+ * @param {string} dir
+ * @returns {string[]}
+ */
+function listBlockedFiles(dir) {
+  const out = []
+  if (!fs.existsSync(dir)) return out
+  // lstat is essential here: existsSync/readdirSync follow a symlink at the
+  // root itself, while the recursive walk only rejects child symlinks.
+  const rootStat = fs.lstatSync(dir)
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) return ['.']
+  const walk = (current, rel) => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const childRel = rel ? `${rel}/${entry.name}` : entry.name
+      const childAbs = path.join(current, entry.name)
+      if (entry.isSymbolicLink()) out.push(childRel)
+      else if (entry.isDirectory()) walk(childAbs, childRel)
+      else if (isBlockedForPages(childRel)) out.push(childRel)
+    }
+  }
+  walk(dir, '')
+  return out.sort()
+}
+
+/**
+ * Compte les fichiers PHP (servis en source) présents sous `dir`.
+ * @param {string} dir
+ */
+function countPhpFiles(dir) {
+  return listBlockedFiles(dir).filter(p => /\.php(\.|$)/i.test(p)).length
+}
+
+/**
+ * Copie `sourceDir` vers `targetDir` en EXCLUANT les fichiers interdits de
+ * publication Pages. Le dossier FTP source n'est jamais modifié.
+ *
+ * @param {{sourceDir: string, targetDir: string}} options
+ * @returns {{copied: number, removed: string[], targetDir: string}}
+ */
+function buildPagesArtifact({ sourceDir, targetDir }) {
+  if (!fs.existsSync(sourceDir)) {
+    throw new Error(`[pages-artifact] source introuvable : ${sourceDir}`)
+  }
+  const sourceStat = fs.lstatSync(sourceDir)
+  if (sourceStat.isSymbolicLink()) {
+    throw new Error(`[pages-artifact] la racine source ne peut pas être un lien symbolique : ${sourceDir}`)
+  }
+  if (!sourceStat.isDirectory()) {
+    throw new Error(`[pages-artifact] la source doit être un dossier : ${sourceDir}`)
+  }
+
+  // Résoudre aussi les parents existants par realpath : un chemin lexical
+  // non chevauchant peut devenir un alias du dossier FTP via un parent
+  // symbolique. Le suffixe inexistant est ensuite réappliqué sans le créer.
+  const resolvePhysicalPath = (candidate) => {
+    let cursor = path.resolve(candidate)
+    const suffix = []
+    while (!fs.existsSync(cursor)) {
+      const parent = path.dirname(cursor)
+      if (parent === cursor) throw new Error(`[pages-artifact] chemin impossible à résoudre : ${candidate}`)
+      suffix.unshift(path.basename(cursor))
+      cursor = parent
+    }
+    return path.resolve(fs.realpathSync(cursor), ...suffix)
+  }
+  const sourceAbs = resolvePhysicalPath(sourceDir)
+  const targetAbs = resolvePhysicalPath(targetDir)
+  // Les chemins source/cible ne doivent PAS se chevaucher dans aucun sens :
+  // une cible égale à la source, dedans OU au-dessus pourrait détruire le FTP.
+  const isSameOrWithin = (parent, child) => {
+    const relative = path.relative(parent, child)
+    return relative === '' || (
+      relative !== '..' &&
+      !relative.startsWith('..' + path.sep) &&
+      !path.isAbsolute(relative)
+    )
+  }
+  if (isSameOrWithin(sourceAbs, targetAbs) || isSameOrWithin(targetAbs, sourceAbs)) {
+    throw new Error(`[pages-artifact] source et cible ne doivent pas se chevaucher : source=${sourceAbs} cible=${targetAbs}`)
+  }
+
+  // Vérifier le chevauchement AVANT toute suppression : le FTP historique
+  // ne doit jamais être effacé par une cible mal configurée.
+  if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true })
+  fs.mkdirSync(targetDir, { recursive: true })
+
+  const removed = []
+  let copied = 0
+  const walk = (current, rel, dest) => {
+    fs.mkdirSync(dest, { recursive: true })
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const childRel = rel ? `${rel}/${entry.name}` : entry.name
+      const childAbs = path.join(current, entry.name)
+      const childDest = path.join(dest, entry.name)
+      if (path.resolve(childAbs) === targetAbs) continue
+      if (entry.isSymbolicLink()) {
+        throw new Error(`[pages-artifact] lien symbolique interdit dans la source : ${childRel}`)
+      }
+      if (entry.isDirectory()) {
+        walk(childAbs, childRel, childDest)
+      } else if (isBlockedForPages(childRel)) {
+        removed.push(childRel)
+      } else {
+        fs.copyFileSync(childAbs, childDest)
+        copied++
+      }
+    }
+  }
+  walk(sourceAbs, '', targetAbs)
+
+  // Garde-fou final : l'artefact produit ne doit contenir AUCUN fichier bloqué.
+  const leftovers = listBlockedFiles(targetDir)
+  if (leftovers.length) {
+    throw new Error(`[pages-artifact] l'artefact contient encore des fichiers interdits : ${leftovers.join(', ')}`)
+  }
+  return { copied, removed, targetDir }
+}
+
+module.exports = {
+  PAGES_PUBLISH_BLOCKLIST,
+  pagesArtifactDirName,
+  isBlockedForPages,
+  listBlockedFiles,
+  countPhpFiles,
+  buildPagesArtifact
+}
