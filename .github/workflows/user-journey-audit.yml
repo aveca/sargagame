@@ -6,6 +6,10 @@ name: User Journey Audit (E2E #41)
 # Complète le smoke HTTP du Sentinel (10 min) et le rapport UX hebdomadaire.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/automation/user-journey-audit.cjs'
   schedule:
     - cron: '30 */4 * * *' # décalé des autres crons (00:30, 04:30, …)
   workflow_dispatch:
