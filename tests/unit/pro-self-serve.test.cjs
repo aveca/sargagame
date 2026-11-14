@@ -53,7 +53,11 @@ function backend(state) {
       const rows = state.grants.filter((g) => !sid || g.subscription_id === decodeURIComponent(sid[1]))
       return jsonResponse(rows)
     }
-    if (url.includes('/analytics_events')) return new Response(null, { status: 201 })
+    if (url.includes('/analytics_events')) {
+      state.analytics = state.analytics || []
+      state.analytics.push(JSON.parse(body || '{}'))
+      return new Response(null, { status: 201 })
+    }
     if (url === 'https://api.resend.com/emails') {
       state.emails.push(JSON.parse(body || '{}'))
       return jsonResponse({ id: 're_test' }, 200)
@@ -122,10 +126,18 @@ async function main() {
   t(!/essai|trial|prueba gratis|widget gratuit|widget gratuito|free widget/i.test(offers), 'la page offres ne promet pas un essai ni un widget offert')
 
   const { default: worker } = await import(pathToFileURL(path.join(ROOT, 'workers/sg-payments/index.js')).href)
-  const state = { calls: [], grants: [], emails: [], portals: [], mollie: [] }
+  const state = { calls: [], grants: [], emails: [], portals: [], mollie: [], analytics: [] }
   const net = backend(state)
   const { env } = createEnv({ env: { STRIPE_WEBHOOK_SECRET: SECRET, RESEND_API_KEY: 're_test_key' } })
   delete env.STRIPE_SECRET_KEY
+  const tracked = await worker.fetch(new Request('https://sargasses-martinique.com/api/stripe-track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event: 'CTA_click', livemode: true, correlation_id: 'track_1', price_key: 'pro_monthly_eur' })
+  }), env, { waitUntil() {} })
+  t(tracked.status === 204, 'Stripe tracking endpoint accepts an allowlisted CTA event')
+  t(state.analytics.some((row) => row.event === 'CTA_click' && row.params.hostname === 'sargasses-martinique.com'),
+    'Stripe tracking stores the actual request hostname for regional attribution')
   const first = await post(worker, env, proEvent('evt_pro_1', 'cs_pro_1'))
   t(first.status === 200 && first.json.granted === true, 'abonnement Pro payé : accès accordé')
   t(state.emails.length === 1 && state.emails[0].html.includes('/widget/embed/?k='), 'e-mail Resend : accès et code du widget')
