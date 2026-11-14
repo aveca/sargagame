@@ -1,31 +1,31 @@
 {
   "window_hours": 24,
-  "since": "2026-11-13T12:55:50.044Z",
-  "total_events": 2464,
+  "since": "2026-11-13T17:27:26.270Z",
+  "total_events": 2338,
   "funnel": [
     {
       "key": "map_open",
       "label": "Map opened",
       "icon": "🗺️",
-      "count": 100
+      "count": 106
     },
     {
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 424
+      "count": 399
     },
     {
       "key": "verdict_scan_view",
       "label": "Verdict viewed",
       "icon": "📊",
-      "count": 300
+      "count": 280
     },
     {
       "key": "premium_modal_open",
       "label": "Paywall seen",
       "icon": "🔒",
-      "count": 8
+      "count": 5
     },
     {
       "key": "cta",
@@ -50,17 +50,17 @@
     {
       "from": "Map opened",
       "to": "Beach selected",
-      "rate": 424
+      "rate": 376.4
     },
     {
       "from": "Beach selected",
       "to": "Verdict viewed",
-      "rate": 70.8
+      "rate": 70.2
     },
     {
       "from": "Verdict viewed",
       "to": "Paywall seen",
-      "rate": 2.7
+      "rate": 1.8
     },
     {
       "from": "Paywall seen",
@@ -80,20 +80,20 @@
   ],
   "global_rate": 0,
   "counts": {
-    "map_open": 100,
-    "beach_open": 424,
-    "verdict_scan_view": 300,
-    "premium_modal_open": 8,
+    "map_open": 106,
+    "beach_open": 399,
+    "verdict_scan_view": 280,
+    "premium_modal_open": 5,
     "premium_modal_cta": 0,
     "pass_cta": 0,
     "checkout_redirect": 0,
     "conversion": 0
   },
   "observed_counts": {
-    "map_open": 100,
-    "beach_open": 426,
-    "verdict_scan_view": 301,
-    "premium_modal_open": 9,
+    "map_open": 106,
+    "beach_open": 399,
+    "verdict_scan_view": 280,
+    "premium_modal_open": 5,
     "premium_modal_cta": 0,
     "pass_cta": 0,
     "checkout_redirect": 0,
@@ -101,9 +101,9 @@
   },
   "unverified_counts": {
     "map_open": 0,
-    "beach_open": 2,
-    "verdict_scan_view": 1,
-    "premium_modal_open": 1,
+    "beach_open": 0,
+    "verdict_scan_view": 0,
+    "premium_modal_open": 0,
     "premium_modal_cta": 0,
     "pass_cta": 0,
     "checkout_redirect": 0,
@@ -114,7 +114,7 @@
   "engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 8,
+    "paywall_view": 5,
     "payment_failed": 0,
     "premium_feature_click": 0,
     "checkout_started": 0,
@@ -125,7 +125,7 @@
   "observed_engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 9,
+    "paywall_view": 5,
     "payment_failed": 0,
     "premium_feature_click": 0,
     "checkout_started": 0,
@@ -135,44 +135,38 @@
   },
   "by_island": {
     "GP": {
-      "premium_modal_open": 5,
-      "beach_open": 180,
-      "verdict_scan_view": 117,
-      "map_open": 73
-    },
-    "FLORIDA": {
-      "beach_open": 30,
-      "verdict_scan_view": 23
-    },
-    "PUNTACANA": {
-      "beach_open": 86,
-      "verdict_scan_view": 61,
-      "premium_modal_open": 1
-    },
-    "MQ": {
-      "beach_open": 92,
-      "verdict_scan_view": 65,
-      "map_open": 27,
+      "map_open": 79,
+      "verdict_scan_view": 123,
+      "beach_open": 188,
       "premium_modal_open": 2
     },
-    "RIVIERAMAYA": {
-      "beach_open": 36,
-      "verdict_scan_view": 34
-    }
-  },
-  "unverified_by_island": {
-    "MQ": {
-      "beach_open": 2,
-      "verdict_scan_view": 1,
+    "PUNTACANA": {
+      "beach_open": 79,
+      "verdict_scan_view": 59,
       "premium_modal_open": 1
+    },
+    "FLORIDA": {
+      "beach_open": 19,
+      "verdict_scan_view": 15
+    },
+    "MQ": {
+      "beach_open": 103,
+      "verdict_scan_view": 74,
+      "premium_modal_open": 2,
+      "map_open": 27
+    },
+    "RIVIERAMAYA": {
+      "beach_open": 10,
+      "verdict_scan_view": 9
     }
   },
+  "unverified_by_island": {},
   "data_quality": {
-    "total_rows": 2464,
-    "verified_production_rows": 1676,
+    "total_rows": 2338,
+    "verified_production_rows": 1564,
     "local_test_rows": 0,
     "preview_rows": 0,
-    "unknown_host_rows": 788,
-    "unverified_rows": 788
+    "unknown_host_rows": 774,
+    "unverified_rows": 774
   }
 }
