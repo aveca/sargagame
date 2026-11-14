@@ -476,3 +476,48 @@ gh pr create --title "<task>: <description>" --base main
 **Rappel** : Ce fichier (AGENTS.md) fait autorité pour les interdictions produit.
 Pour la doctrine d'exécution détaillée → `CLAUDE.md`.
 Pour l'état de la session courante → `NEXT_SESSION.md` (tête) + `.ai/current_state.md` (handoffs historiques).
+
+## ChatGPT ↔ OpenCode : protocole de collaboration
+
+Ce protocole organise les missions transmises par ChatGPT. Il complète les règles métier et techniques déjà présentes dans ce dépôt ; il ne les remplace pas.
+
+### Répartition des rôles
+- **ChatGPT** pilote les missions, inspecte les éléments publiés sur GitHub, définit les critères de réussite et contrôle le diff, les commits et la CI.
+- **OpenCode** exécute dans l'environnement local : inspection du dépôt, code, terminal, tests, navigateur, YouTube, extensions et autres outils effectivement disponibles.
+- **GitHub** est la source de vérité commune pour les changements publiés, les commits, les PR, les rapports et les résultats CI.
+- **L'utilisateur** transmet le prompt ChatGPT à OpenCode, puis rapporte la réponse OpenCode à ChatGPT. Ne lui délègue pas d'analyse technique ou de validation ordinaire.
+
+### Cycle obligatoire
+1. À réception d'une mission, vérifier l'état réel du dépôt, la branche, le remote et les changements locaux avant d'agir.
+2. Lire les consignes spécifiques de ce dépôt et les fichiers d'état pertinents. Ne pas refaire un audit général lorsqu'un diagnostic ciblé suffit.
+3. Définir une seule tâche cohérente avec un résultat mesurable et un périmètre limité.
+4. Travailler sur une branche dédiée, sauf instruction explicite différente. Ne jamais écraser des changements locaux préexistants.
+5. Exécuter les tests réellement pertinents, puis inspecter le diff complet et `git diff --check`.
+6. Si les vérifications passent, créer un commit ciblé et pousser la branche. Ne pas pousser directement sur la branche par défaut pour les changements applicatifs ordinaires.
+7. Fournir le rapport compact ci-dessous. Ne pas inventer de résultat et distinguer les tests locaux, CI et tests réels dans le navigateur/runtime.
+
+### Rapport de fin obligatoire
+```text
+MISSION: <nom court>
+REPOSITORY: <owner/repo>
+BRANCH: <branche>
+COMMIT: <SHA complet ou aucun>
+PUSH: oui/non
+MODIFICATIONS: <résumé + fichiers essentiels>
+TESTS: <commandes exactes + résultats réels>
+CI: <URL + statut, ou non déclenchée>
+TESTS LOCAUX RÉELS: <faits + résultats>
+NON VÉRIFIÉ: <limites, ou aucun>
+BLOCAGE: oui/non — <raison>
+```
+
+### Boucle de contrôle ChatGPT
+Après réception du rapport, ChatGPT vérifie directement sur GitHub le commit, le diff réel et les exécutions CI accessibles. Le rapport seul n'est jamais considéré comme une preuve. ChatGPT renvoie ensuite soit un prompt correctif précis, soit le prompt de la mission suivante, soit un bref statut TERMINÉ. Ne demande pas à l'utilisateur de valider chaque étape ordinaire.
+
+### Efficacité et sécurité
+- Modification minimale, sans refonte ni dépendance sans justification démontrée.
+- Après deux échecs d'une même approche, changer de méthode ou signaler un blocage ; ne pas répéter le même essai.
+- Aucun faux succès : capture vidéo ≠ reconnaissance validée ; compilation ≠ test fonctionnel ; CI verte ≠ production vérifiée.
+- Préserver les changements locaux, les secrets et l'historique Git ; jamais de force-push.
+- Les règles spécifiques de ce dépôt, notamment celles relatives aux paiements, aux données, à la production et au déploiement, restent prioritaires. Ne pas effectuer de suppression irréversible, migration destructive, fusion ou déploiement de production sans autorisation explicite.
+- N'utiliser que les outils réellement disponibles. Si l'accès navigateur/runtime local manque, le signaler sans prétendre avoir testé.

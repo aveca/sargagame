@@ -35,7 +35,7 @@
 
 #### Remaining issues
 - **webhook_secret not configured**: `mollie-config.php` has `webhook_secret` commented out → webhook signature verification is fail-open. Needs to be set in the server config via `mollie-config.php` on the FTP deploy.
-- **Live API key in config**: `mollie-config.php` contains `live_H6BUh7uxdUkFKAnBQhz3tRVsuerNPs` — this is gitignored and only exists on the server, but should be verified it's not committed anywhere in git history.
+- **Mollie credential exposure**: a LIVE-key value was previously copied into this note. The literal has been removed from the current file; `mollie-config.php` is excluded by `.gitignore`, but that does not erase prior Git history. Treat the credential as compromised until an approved rotation/revocation is confirmed.
 - **PremiumModal.jsx complexity**: The file is now ~3353 lines with many A/B test variants. Consider splitting into smaller modules for long-term maintainability.
 - **No dedicated payment success/cancel/error pages**: The app uses query parameters and generic error handling. Dedicated pages would improve the UX.
 - **Playwright E2E testing**: Could not run Playwright tests locally (preview server not persistent in this environment). Should be run in CI or locally with `npx playwright test`.

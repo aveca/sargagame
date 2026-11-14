@@ -28,8 +28,10 @@
  *     avant le timeout du job — une purge incomplète est un problème
  *     d'hygiène de table, jamais une raison de tuer le pipeline.
  *
- * Usage : node scripts/automation/purge-analytics.cjs [--days=90] [--dry]
- *        [--batch=5000] [--max-batches=200] [--budget-seconds=480]
+ * Usage : lecture seule par défaut. Une suppression exige --execute et
+ *        --approved-by=<identifiant> après approbation explicite ; --dry prime.
+ *        node scripts/automation/purge-analytics.cjs [--days=90] [--dry]
+ *        [--execute --approved-by=<identifiant>] [--batch=5000] [--max-batches=200]
  */
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
@@ -38,7 +40,12 @@ const DAYS = (() => {
   const a = process.argv.find((x) => x.startsWith('--days='))
   return a ? parseInt(a.slice(7), 10) : 90
 })()
-const DRY = process.argv.includes('--dry')
+function isExecutionAuthorized(args = process.argv.slice(2)) {
+  const approverArg = args.find((x) => x.startsWith('--approved-by='))
+  const approver = approverArg ? approverArg.slice('--approved-by='.length).trim() : ''
+  return args.includes('--execute') && !args.includes('--dry') && approver.length >= 3
+}
+const DRY = !isExecutionAuthorized()
 const BATCH = (() => {
   const a = process.argv.find((x) => x.startsWith('--batch='))
   const n = a ? parseInt(a.slice(7), 10) : 5000
@@ -126,6 +133,11 @@ async function main() {
   }
   const cutoff = new Date(Date.now() - DAYS * 86400000).toISOString()
   console.log(`[purge] analytics_events avant ${cutoff} (dry=${DRY})`)
+  if (DRY && process.argv.includes('--execute')) {
+    console.warn('[purge] --execute refusé : --approved-by=<identifiant> requis et --dry doit être absent — aucune suppression.')
+  } else if (DRY) {
+    console.log('[purge] lecture seule par défaut — aucune suppression sans --execute et --approved-by.')
+  }
 
   let toDelete = 0
   try {
@@ -137,7 +149,7 @@ async function main() {
   console.log(`[purge] ${toDelete} ligne(s) à supprimer`)
 
   if (toDelete === 0 || DRY) {
-    if (DRY) console.log('[purge] --dry → aucune suppression effectuée')
+    if (DRY) console.log('[purge] mode lecture seule → aucune suppression effectuée')
     return
   }
 
@@ -163,4 +175,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { countRows, purgeInBatches }
+module.exports = { countRows, purgeInBatches, isExecutionAuthorized, DRY }

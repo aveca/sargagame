@@ -11,8 +11,10 @@
  *   5. Paramètres régionaux : canonical/og:url = domaine de la région, et si
  *      regions/<id>.json définit un GA4 réel (!= TODO_GA4_ID) ⇒ présent dans le HTML.
  *      Sans GA4 configuré, le contrôle analytics reste NOT_VERIFIED (jamais PASS simulé).
- *   6. Parcours ?sos=1 : HTTP 200 sans redirection d'erreur. Le rendu UI du modal
- *      est client-side : non prouvable en HTTP pur ⇒ reste NOT_VERIFIED.
+ *   6. ABSENCE de la surface SOS publique : le HTML servi ne doit contenir
+ *      AUCUN marqueur du parcours SOS 1 € (CTA, deep-link ?sos=1, classe
+ *      .sg-soscta, catalogue /premium). Une occurrence = FAILED.
+ *      Lecture seule : aucune création de paiement n'est émise.
  *   7. API paiement : POST {"action":"__payment_smoke__"} doit répondre 400 et ne
  *      jamais révéler payment_backend_not_configured / api_route_not_migrated.
  *
@@ -52,11 +54,20 @@ function curl(args, timeoutMs) {
 function httpStatus(url, timeoutMs) {
   const devnull = process.platform === 'win32' ? 'NUL' : '/dev/null';
   const r = curl(['-sL', '-o', devnull, '-w', '%{http_code}', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', url], timeoutMs);
-  return { ok: r.ok, status: parseInt((r.out || '').trim(), 10) || 0 };
+  const status = parseInt((r.out || '').trim(), 10) || 0;
+  return { ok: r.ok, status, error: r.ok ? null : String(r.error || 'curl exited non-zero').split(/\r?\n/)[0] };
 }
 function httpBody(url, timeoutMs) {
   const r = curl(['-sL', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', url], timeoutMs);
-  return { ok: r.ok, body: r.out || '' };
+  return { ok: r.ok, body: r.out || '', error: r.ok ? null : String(r.error || 'curl exited non-zero').split(/\r?\n/)[0] };
+}
+function describeHttpProbe(probe) {
+  if (!probe.ok) {
+    const status = Number(probe.status) > 0 ? ` after HTTP ${probe.status}` : '';
+    const error = String(probe.error || 'unknown transport error').split(/\r?\n/)[0];
+    return `curl exited non-zero${status}: ${error}`;
+  }
+  return Number(probe.status) === 200 ? '' : `HTTP ${Number(probe.status) || 0}`;
 }
 
 /**
@@ -125,7 +136,7 @@ function checkArtifactIdentity(vj, expectV, expectB) {
 
 // ID GA4 d'une région : champ `ga4Id` (config actuelle), repli `ga4` historique.
 // `TODO_GA4_ID`, absent ou vide => null (contrôle NOT_VERIFIED honnête).
-// Pure et testée (voir tests/unit/sos-modal.test.cjs, série G).
+// Pure et testée (voir tests/unit/post-deploy-satellite-freshness.test.cjs).
 function resolveGa4Id(region) {
   const raw = (region && region.ga4Id) || (region && region.ga4) || null;
   if (typeof raw !== 'string' || !raw.trim() || raw.trim() === 'TODO_GA4_ID') return null;
@@ -150,13 +161,54 @@ function checkSatelliteFreshness(payload, now = Date.now()) {
     return {
       status: 'FAILED',
       ageMinutes: freshness.dataAgeMinutes,
-      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min > ${limitMinutes}min)`,
+      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min >= ${limitMinutes}min)`,
     };
   }
   return {
     status: 'VERIFIED',
     ageMinutes: freshness.dataAgeMinutes,
     detail: `âge satellite ${freshness.dataAgeMinutes}min (seuil ${limitMinutes}min)`,
+  };
+}
+
+/**
+ * Validate the public B2B partner catalogue consumed by ChasseHome.
+ * Empty partner/preview arrays are valid; missing or malformed assets are not.
+ */
+function checkB2BPartnersPayload(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { status: 'FAILED', detail: 'b2b-partners.json absent/invalide' };
+  }
+  if (typeof payload.updatedAt !== 'string' || !Number.isFinite(Date.parse(payload.updatedAt))) {
+    return { status: 'FAILED', detail: 'updatedAt absent/invalide' };
+  }
+  for (const key of ['partners', 'preview']) {
+    if (!Array.isArray(payload[key])) {
+      return { status: 'FAILED', detail: key + ' absent ou non-tableau' };
+    }
+  }
+  const required = ['beachId', 'slug', 'name', 'tagline', 'url', 'area'];
+  for (const key of ['partners', 'preview']) {
+    for (let index = 0; index < payload[key].length; index++) {
+      const partner = payload[key][index];
+      if (!partner || typeof partner !== 'object' || Array.isArray(partner)) {
+        return { status: 'FAILED', detail: key + '[' + index + '] invalide' };
+      }
+      for (const field of required) {
+        if (typeof partner[field] !== 'string' || !partner[field].trim()) {
+          return { status: 'FAILED', detail: key + '[' + index + '].' + field + ' absent/invalide' };
+        }
+      }
+      let url;
+      try { url = new URL(partner.url); } catch (_) {}
+      if (!url || !['http:', 'https:'].includes(url.protocol)) {
+        return { status: 'FAILED', detail: key + '[' + index + '].url invalide' };
+      }
+    }
+  }
+  return {
+    status: 'VERIFIED',
+    detail: 'updatedAt=' + payload.updatedAt + '; partners=' + payload.partners.length + '; preview=' + payload.preview.length,
   };
 }
 
@@ -177,7 +229,7 @@ async function verifyDomain(region, opts) {
   const ver = httpBody(`https://${domain}/version.json?pdv=${Date.now()}`);
   let vj = null;
   try { vj = JSON.parse(ver.body); } catch (_) {}
-  if (!ver.ok || !vj || !vj.v) { set('artifact_identity', 'FAILED', 'version.json absent/invalide'); }
+  if (!ver.ok || !vj || !vj.v) { set('artifact_identity', 'FAILED', !ver.ok ? `version.json curl failed: ${ver.error || 'curl exited non-zero'}` : 'version.json absent/invalide'); }
   else {
     R.served = { v: vj.v, b: vj.b || null };
     const idr = checkArtifactIdentity(vj, opts.expectV, opts.expectB);
@@ -188,7 +240,7 @@ async function verifyDomain(region, opts) {
   const sj = httpBody(`https://${domain}/api/copernicus/sargassum.json?pdv=${Date.now()}`);
   let sd = null;
   try { sd = JSON.parse(sj.body); } catch (_) {}
-  if (!sj.ok || !sd || !sd.updatedAt) { set('data_freshness', 'FAILED', 'sargassum.json absent/invalide'); }
+  if (!sj.ok || !sd || !sd.updatedAt) { set('data_freshness', 'FAILED', !sj.ok ? `sargassum.json curl failed: ${sj.error || 'curl exited non-zero'}` : 'sargassum.json absent/invalide'); }
   else {
     const ageH = (Date.now() - new Date(sd.updatedAt).getTime()) / 3.6e6;
     R.dataAgeHours = +ageH.toFixed(1);
@@ -211,6 +263,26 @@ async function verifyDomain(region, opts) {
     });
     set('region_beaches_coherence', foreign.length === 0 ? 'VERIFIED' : 'FAILED', foreign.length === 0 ? `${sd.levels.length} niveaux, aucun niveau d'une autre région` : `${foreign.length} niveaux étrangers : ${foreign.slice(0, 3).map(l => l.id).join(',')}`);
   } else set('region_beaches_coherence', 'NOT_VERIFIED', 'levels absents du sargassum.json');
+
+
+  // 4bis. Catalogue partenaires B2B consommé par ChasseHome.
+  // Un 404 ou un JSON incomplet masque silencieusement les cartes partenaires.
+  const b2bUrl = `https://${domain}/data/b2b-partners.json?pdv=${Date.now()}`;
+  const b2bStatus = httpStatus(b2bUrl);
+  if (!b2bStatus.ok || b2bStatus.status !== 200) {
+    set('b2b_partners_api', 'FAILED',
+      !b2bStatus.ok ? `b2b-partners.json curl failed: ${b2bStatus.error || 'curl exited non-zero'}` : `b2b-partners.json HTTP ${b2bStatus.status}`);
+  } else {
+    const b2bResponse = httpBody(b2bUrl);
+    let b2bPayload = null;
+    try { b2bPayload = JSON.parse(b2bResponse.body); } catch (_) {}
+    if (!b2bResponse.ok) {
+      set('b2b_partners_api', 'FAILED', `b2b-partners.json body unavailable: ${b2bResponse.error || 'curl exited non-zero'}`);
+    } else {
+      const b2bCheck = checkB2BPartnersPayload(b2bPayload);
+      set('b2b_partners_api', b2bCheck.status, b2bCheck.detail);
+    }
+  }
 
   // 5. HTML servi vs empreinte construite (CSP + bundle JS/CSS exacts)
   // Toute divergence déclenche au plus une purge ciblée, suivie d'une nouvelle lecture.
@@ -255,10 +327,11 @@ async function verifyDomain(region, opts) {
       for (const ref of assets) {
         const assetUrl = new URL(ref, `https://${domain}/`).href;
         const assetStatus = httpStatus(assetUrl, 20000);
-        if (!assetStatus.ok || assetStatus.status !== 200) failedAssets.push(ref + ' HTTP ' + assetStatus.status);
+        const probeDetail = describeHttpProbe(assetStatus);
+        if (probeDetail) failedAssets.push(`${ref} ${probeDetail}`);
       }
       set('live_html_integrity', failedAssets.length ? 'FAILED' : 'VERIFIED',
-        failedAssets.length ? 'CSP/bundle paths matched but referenced asset unavailable: ' + failedAssets.join(', ') :
+        failedAssets.length ? 'CSP/bundle paths matched but referenced asset probe failed: ' + failedAssets.join(', ') :
           comparison.reason + '; bundle JS/CSS répondent HTTP 200' + (purgeDetail ? '; ' + purgeDetail : ''));
     }
   }
@@ -275,15 +348,28 @@ async function verifyDomain(region, opts) {
     set('analytics_region_param', 'NOT_VERIFIED', `aucun GA4 configuré pour ${region.id} — contrôle non applicable (jamais simulé)`);
   }
 
-  // 6. Parcours ?sos=1 (niveau HTTP ; le rendu modal est client-side)
+  // 6. ABSENCE de la surface SOS publique (le parcours SOS 1 € a été retiré
+  //    le 2026-11-09). Contrôle RÉEL et lecture seule : on cherche dans le
+  //    HTML servi les marqueurs du parcours supprimé (CTA, deep-link, classe
+  //    CSS, catalogue /premium). Une seule occurrence = FAILED.
+  //    ⚠️ Aucune requête de CRÉATION de paiement n'est émise : cela créerait
+  //    un paiement LIVE (interdit sans validation explicite). La preuve du
+  //    refus serveur est faite en local (tests/unit/sos-public-surface-removed).
   if (opts.sosTest) {
-    const sos = httpStatus(`https://${domain}/?sos=1&pdv=${Date.now()}`);
-    if (!sos.ok) set('sos_deeplink', 'NOT_VERIFIED', `injoignable (${String(sos.error || '').split('\n')[0]})`);
-    else if (sos.status !== 200) set('sos_deeplink', 'FAILED', `HTTP ${sos.status}`);
+    const sosHtml = curl(['-sL', '--max-time', '20', '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', `https://${domain}/?sos=1&pdv=${Date.now()}`], 25000);
+    if (!sosHtml.ok) set('sos_public_surface', 'NOT_VERIFIED', `injoignable (${String(sosHtml.error || '').split('\n')[0]})`);
     else {
-      set('sos_deeplink_http', 'VERIFIED', '?sos=1 → HTTP 200');
-      set('sos_modal_render', 'NOT_VERIFIED', 'modal SOS rendu côté client (JS) — non prouvable en HTTP pur ; contrôle navigateur requis');
+      const html = sosHtml.out || '';
+      const markers = ['sg-soscta', 'SOS PLAGE 24H', 'SOS BEACH 24H', 'SOS PLAYA 24H', 'sos_success', 'sg_sos_checkout', 'sos-observation-state'];
+      const found = markers.filter((m) => html.includes(m));
+      if (found.length) set('sos_public_surface', 'FAILED', `surface SOS encore servie : ${found.join(', ')}`);
+      else set('sos_public_surface', 'VERIFIED', 'aucune surface SOS servie (CTA, deep-link, classe CSS, catalogue)');
     }
+    // Catalogue /premium/ : le pass « sos » ne doit plus être proposé.
+    const prem = curl(['-sL', '--max-time', '20', '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', `https://${domain}/premium/`], 25000);
+    if (!prem.ok) set('sos_premium_catalogue', 'NOT_VERIFIED', `injoignable (${String(prem.error || '').split('\n')[0]})`);
+    else if (/"pass"\s*:\s*"sos"/.test(prem.out || '')) set('sos_premium_catalogue', 'FAILED', 'le catalogue /premium/ propose encore le pass « sos »');
+    else set('sos_premium_catalogue', 'VERIFIED', 'le catalogue /premium/ ne propose plus le pass « sos »');
   }
 
   // 7. API paiement — contrat réel : POST __payment_smoke__ => 400, backend configuré
@@ -399,4 +485,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, describeHttpProbe, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness, checkB2BPartnersPayload };

@@ -140,10 +140,6 @@
   var island="MQ"; try{ if(location.hostname.indexOf("guadeloupe")>=0) island="GP"; }catch(e){}
   function track(ev,p){ p=p||{}; p.island=island;
     try{ var ab=JSON.parse(localStorage.getItem("sg_ab")||"{}"); for(var k in ab)p["ab_"+k]=ab[k]; }catch(e){}
-    try{ var mid=island==="GP"?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y", sec=island==="GP"?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA";
-      var m=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/), cid=m?m[1]:"a."+Date.now();
-      navigator.sendBeacon&&navigator.sendBeacon("https://www.google-analytics.com/mp/collect?measurement_id="+mid+"&api_secret="+sec,
-        JSON.stringify({client_id:cid,events:[{name:ev,params:p}]})); }catch(e){}
     try{ navigator.sendBeacon&&navigator.sendBeacon(APPS, JSON.stringify({type:"analytics_event",e:ev,p:p,t:Date.now(),island:island})); }catch(e){}
   }
   function showDone(){ document.getElementById("offer").style.display="none"; var d=document.getElementById("done"); d.style.display="block"; }

@@ -62,7 +62,18 @@ assert.ok(guardIndex >= 0 && guardIndex < stageIndex,
   'le snapshot doit être validé avant tout staging')
 assert.ok(stageIndex < commitIndex && commitIndex < pushIndex,
   'le snapshot validé doit être stage, committé puis poussé dans cet ordre')
-console.log('OK 2b: collecte → garde → staging → commit → push vérifiés')
+const stashIndex = publishStep.indexOf('git stash push --include-untracked')
+const rebaseIndex = publishStep.indexOf('git rebase -X theirs')
+const restoreDefinitionIndex = publishStep.indexOf('restore_generated_changes() {')
+const restoreCallIndex = publishStep.lastIndexOf('restore_generated_changes')
+const failureIndex = publishStep.indexOf('if [ "$push_ok" != "1" ]')
+assert.ok(commitIndex < stashIndex && stashIndex < restoreDefinitionIndex && restoreDefinitionIndex < rebaseIndex && rebaseIndex < restoreCallIndex,
+  'les sorties générées doivent être mises à l’abri après le commit snapshot, puis restaurées après le rebase')
+assert.ok(restoreCallIndex < failureIndex,
+  'les fichiers générés doivent être restaurés même lorsque la boucle de push échoue')
+assert.match(publishStep, /restore_generated_changes/,
+  'la restauration des fichiers générés doit être centralisée et explicite')
+console.log('OK 2b: collecte → garde → staging → commit → stash → rebase/push → restauration vérifiés')
 
 // ── 3. Responsabilité séparée + échec NON silencieux ───────────────────────
 // Le step de publication ne doit PAS avoir continue-on-error : sinon un échec
@@ -93,8 +104,16 @@ assert.match(step, /if \[ ! -f "\$M" \] \|\| ! node -e/, 'la garde doit vérifie
 const emailStart = daily.indexOf('- name: Commit email state')
 const emailEnd = daily.indexOf('- name: ', emailStart + 10)
 const emailStep = daily.slice(emailStart, emailEnd)
+assert.match(emailStep, /if: always\(\) && github\.event_name != 'push'/,
+  'le commit des états email doit rester exécuté même si la publication métrique échoue')
 assert.match(emailStep, /continue-on-error: true/,
   "le step email conserve son continue-on-error (l'email n'est pas critique)")
+const emailStashIndex = emailStep.indexOf('git stash push --include-untracked')
+const emailRebaseIndex = emailStep.indexOf('git rebase -X theirs')
+const emailRestoreDefinitionIndex = emailStep.indexOf('restore_email_generated_changes() {')
+const emailRestoreCallIndex = emailStep.lastIndexOf('restore_email_generated_changes')
+assert.ok(emailStashIndex >= 0 && emailStashIndex < emailRestoreDefinitionIndex && emailRestoreDefinitionIndex < emailRebaseIndex && emailRebaseIndex < emailRestoreCallIndex,
+  'les marqueurs email doivent être poussés sans perdre les autres sorties générées du worktree')
 assert.doesNotMatch(emailStep, /git add scripts\/automation\/data\/daily-metrics\.json/,
   "le step email ne doit PLUS committer le snapshot — responsabilité séparée")
 console.log('OK 3: publication = step séparé sans continue-on-error, échec définitif = exit 1')

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
+import { stubFreshSatellite } from "./helpers/satellite-freshness"
 
 const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 
@@ -39,17 +40,22 @@ test.describe("Qualité UI/UX — défauts démontrés", () => {
   })
 
   test("carte affiche des labels de plages (>=3)", async ({ page }) => {
+    // Précondition déterministe : sans verdict satellite (< 12 h), la carte
+    // n'affiche AUCUN label (état honnête « à vérifier »). Voir
+    // `tests/e2e/helpers/satellite-freshness.ts`.
+    await stubFreshSatellite(page)
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
-    await page.waitForTimeout(2000)
+    await page.waitForSelector(".sg-maplabel", { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(1500)
     const count = await page.locator(".sg-maplabel").count()
     expect(count).toBeGreaterThanOrEqual(3)
   })
 
   test("clic sur une plage ouvre la fiche détail", async ({ page }) => {
+    await stubFreshSatellite(page)
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
-    await page.waitForTimeout(2000)
+    await page.waitForSelector(".sg-maplabel", { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(1500)
     await page.evaluate(() => {
       const label = [...document.querySelectorAll(".sg-maplabel")].find(
         (el) => getComputedStyle(el).visibility !== "hidden"

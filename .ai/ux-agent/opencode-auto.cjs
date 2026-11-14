@@ -40,6 +40,48 @@ if (process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.G
   process.exit(3);
 }
 
+/**
+ * Ecrit une configuration OpenCode qui DECLARE le provider `ollama` et le
+ * modele local selectionne, puis renvoie son chemin.
+ *
+ * Pourquoi ce fichier est necessaire (constate le 2026-11-08) :
+ * OpenCode 1.18.34 n'expose PAS de provider `ollama` integre sur cette
+ * machine — `opencode models ollama` repondait « Provider not found: ollama »
+ * et l'agent echouait avec une erreur opaque (« Unexpected server error »)
+ * alors que le modele local repondait parfaitement. Ollama expose pourtant
+ * une API compatible OpenAI sur `/v1` : il suffit de DECLARER le provider.
+ *
+ * Le fichier est produit a l'execution (le modele local peut changer) et
+ * pointe via `OPENCODE_CONFIG`. OpenCode MERGE cette config avec la config
+ * globale de l'utilisateur (verifie : les providers globaux et les
+ * permissions `edit/bash: allow` restent actifs) — la config globale du
+ * fondateur n'est donc NI modifiee NI ecrasee.
+ */
+function writeProviderConfig(selectedModel) {
+  const dir = path.join(ROOT, '.ai', 'autopilot');
+  const file = path.join(dir, 'opencode-local-provider.json');
+  const cfg = {
+    $schema: 'https://opencode.ai/config.json',
+    provider: {
+      ollama: {
+        npm: '@ai-sdk/openai-compatible',
+        name: 'Ollama (local)',
+        options: { baseURL: ollamaBase + '/v1' },
+        models: {
+          [selectedModel]: { name: selectedModel },
+        },
+      },
+    },
+  };
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(cfg, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[local-agent] Impossible d ecrire la config provider locale : ' + e.message);
+  }
+  return file;
+}
+
 async function main() {
   // 1. Ensure Ollama is up and select model via local router
   const { routeModel } = require(path.join(ROOT, 'scripts', 'autopilot', 'local-model-router.cjs'));
@@ -84,6 +126,14 @@ async function main() {
   delete env.MISTRAL_API_KEY;
   env.SARGA_LOCAL_ONLY = '1';
   env.OLLAMA_HOST = ollamaBase;
+
+  // 3b. Declare le provider local (OpenCode n'a pas de provider `ollama`
+  //     integre sur cette machine — sans ce fichier, l'agent echoue avec
+  //     « Provider not found: ollama ». La config globale de l'utilisateur
+  //     est MERGEE, jamais ecrasee : ses permissions restent actives.
+  const providerConfig = writeProviderConfig(selected);
+  if (providerConfig) env.OPENCODE_CONFIG = providerConfig;
+  console.log('[local-agent] Provider local declare :', providerConfig);
   
   // 4. Launch OpenCode with selected local model
   const opencodeArgs = ['run', '--model', 'ollama/' + selected, '--auto', prompt];

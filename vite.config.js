@@ -7,6 +7,8 @@ import { conditionPages } from './src/lib/conditions-filters.js'
 // Chargé en lazy via createRequire : un import statique fait bundler le module
 // CJS dans la config ESM ("Dynamic require of fs is not supported").
 const _require = createRequire(import.meta.url)
+const { evaluateConditionsFreshness, suspendConditionTitle } = _require('./scripts/lib/conditions-freshness.cjs')
+const { renderCleanBeachIndex } = _require('./scripts/lib/seo-clean-beach-index.cjs')
 
 // Borne une meta description à la limite d'affichage SERP (~155 ch) SANS couper un mot :
 // garde le maximum de PHRASES complètes qui rentrent ; sinon coupe au dernier mot + « … ».
@@ -60,6 +62,7 @@ try {
 // scripts/automation/seo-enrich-content.cjs pour la jointure historique des fiches SEO.
 const { SARG_TO_BEACH } = _require('./scripts/lib/sarg-to-beach.cjs')
 const BEACH_TO_SARG = Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k, v]) => [v, k]))
+const { buildLegacyBeachIndexStatus } = _require('./scripts/lib/legacy-beach-index-status.cjs')
 
 
 // Région active du build (env VITE_REGION), défaut 'mq' = comportement historique inchangé.
@@ -203,6 +206,18 @@ export default defineConfig({
         return html.replace('</head>', tags + '</head>')
       },
     },
+    {
+      name: 'first-paint-offer',
+      transformIndexHtml(html) {
+        try {
+          const { injectFirstPaint, readObservationIso } = _require('./scripts/lib/home-first.cjs')
+          return injectFirstPaint(html, REGION, readObservationIso(__dirname, REGION && REGION.id))
+        } catch (e) {
+          console.warn('first-paint-offer:', e.message)
+          return html
+        }
+      },
+    },
     // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
     // MQ/GP strictement inchangés (REGION null ou id mq/gp → html retourné tel quel).
     {
@@ -213,11 +228,11 @@ export default defineConfig({
         // ES first sur les marchés hispanophones : head/FAQ/noscript dans la langue primaire.
         const es = lang === 'es'
         const title = es
-          ? `Sargazo y Algas en ${name} Hoy — Mapa de Playas en Vivo y Pronóstico 7 Días 2026`
-          : `${name} Sargassum & Seaweed Today — Live Beach Map & 7-Day Forecast 2026`
+          ? `Sargazo y Algas en ${name} — Mapa de Playas y Observaciones Satelitales 2026`
+          : `${name} Sargassum & Seaweed — Beach Map & Satellite Observations 2026`
         const desc = es
-          ? `¿Qué playa de ${name} está sin sargazo hoy? Mapa en vivo playa por playa, Beach Score 0-100 y pronóstico de 7 días. Actualizado 4 veces al día con datos satelitales.`
-          : `Which ${name} beach is free of sargassum and seaweed today? Live per-beach map, Beach Score 0-100 and 7-day forecast. Updated 4× daily from satellite data.`
+          ? `Consulta la información disponible por playa en ${name}, la hora de la última observación satelital y el estado de la fuente. Las lecturas pueden retrasarse si la fuente no está disponible.`
+          : `Explore available beach information in ${name}, the latest satellite observation time and source status. Readings may be delayed when the source is unavailable.`
         const siteName = es ? `Sargazo ${name}` : `Sargassum ${name}`
         const today = new Date().toISOString().slice(0, 10)
         const beaches = REGION.beaches || []
@@ -295,39 +310,39 @@ export default defineConfig({
 
         // ── 5) JSON-LD : remplace les 4 blocs MQ par 3 blocs région (pas de
         //      SiteNavigationElement : aucune sous-page générée pour l'instant). ──
-        const ldWebApp = JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebApplication', name: `${siteName} · Daily Beach Status`, description: desc, url: `https://${domain}/`, applicationCategory: 'TravelApplication', operatingSystem: 'Web', inLanguage: [lang, ...(REGION.secondaryLangs || [])], dateModified: today, datePublished: today, publisher: { '@type': 'Organization', name: siteName, logo: `https://${domain}/icon-512.png` } })
+        const ldWebApp = JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebApplication', name: `${siteName} · Beach Conditions & Satellite Observations`, description: desc, url: `https://${domain}/`, applicationCategory: 'TravelApplication', operatingSystem: 'Web', inLanguage: [lang, ...(REGION.secondaryLangs || [])], dateModified: today, datePublished: today, publisher: { '@type': 'Organization', name: siteName, logo: `https://${domain}/icon-512.png` } })
         const ldFaq = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: es ? [
-          { '@type': 'Question', name: `¿Hay sargazo o algas en ${name} ahora mismo?`, acceptedAnswer: { '@type': 'Answer', text: `Abre el mapa en vivo para ver el estado de hoy de cada playa de ${name}. Cada una de las ${beaches.length} playas monitoreadas recibe un Beach Score 0-100 que combina sargazo, oleaje, viento, temperatura del agua y sol — actualizado 4 veces al día con datos satelitales de la NOAA.` } },
-          { '@type': 'Question', name: `¿Qué playas de ${name} están sin sargazo hoy?`, acceptedAnswer: { '@type': 'Answer', text: `Las condiciones cambian playa por playa: ${communes.join(', ')} no reciben lo mismo el mismo día. El mapa clasifica todas las playas a diario para elegir la más limpia — normalmente las protegidas por bahías o a sotavento.` } },
-          { '@type': 'Question', name: `¿Cuándo es la temporada de sargazo en ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'La llegada de sargazo suele alcanzar su pico entre abril y septiembre, pero varía semana a semana con corrientes y viento. El monitoreo funciona todo el año con pronóstico de 7 días por playa.' } },
-          { '@type': 'Question', name: '¿Cómo se miden los datos de sargazo?', acceptedAnswer: { '@type': 'Answer', text: 'La detección usa el índice satelital AFAI de la NOAA (Alternative Floating Algae Index) muestreado frente a cada playa, combinado con viento y corrientes en un pronóstico de 7 días por playa. Los datos se actualizan varias veces al día.' } },
+          { '@type': 'Question', name: `¿Cuál es la última observación publicada de sargazo en ${name}?`, acceptedAnswer: { '@type': 'Answer', text: `Abre el mapa de playas para consultar la información publicada más reciente de cada playa de ${name}. Cada ficha muestra la hora de la última observación satelital cuando está disponible. Si la fuente se retrasa, el estado publicado puede no reflejar las condiciones actuales.` } },
+          { '@type': 'Question', name: `¿Cómo puedo consultar las observaciones publicadas de las playas de ${name}?`, acceptedAnswer: { '@type': 'Answer', text: `Las condiciones varían de una playa a otra: ${communes.join(', ')} no reciben el mismo impacto. El mapa muestra la información publicada más reciente para cada playa; consulta la hora de observación satelital antes de planificar tu salida.` } },
+          { '@type': 'Question', name: `¿Cuándo es la temporada de sargazo en ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'La llegada de sargazo suele alcanzar su pico entre abril y septiembre, pero varía semana a semana con corrientes y viento. El mapa muestra la última observación satelital disponible; su hora indica cuándo se midieron los datos.' } },
+          { '@type': 'Question', name: '¿Cómo se miden los datos de sargazo?', acceptedAnswer: { '@type': 'Answer', text: 'La detección usa el índice satelital AFAI de NOAA (Alternative Floating Algae Index), muestreado frente a cada playa y combinado con datos de viento y corrientes. La hora de observación depende de los pasos del satélite y de la disponibilidad de la fuente; se muestra cuando está disponible.' } },
         ] : [
-          { '@type': 'Question', name: `Is there sargassum or seaweed in ${name} right now?`, acceptedAnswer: { '@type': 'Answer', text: `Open the live map to see today's status for every ${name} beach. Each of the ${beaches.length} monitored beaches gets a Beach Score 0-100 combining sargassum, seaweed, swell, wind, water temperature and sun — updated 4× daily from NOAA satellite data.` } },
-          { '@type': 'Question', name: `Which ${name} beaches are sargassum-free today?`, acceptedAnswer: { '@type': 'Answer', text: `Conditions differ beach by beach: ${communes.join(', ')} are not hit equally on the same day. The map ranks all beaches daily so you can pick the cleanest one — typically the leeward and bay-protected spots.` } },
-          { '@type': 'Question', name: `When is sargassum season in ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'Sargassum and seaweed influx usually peaks between April and September, but landings vary week to week with currents and wind. Monitoring runs year-round with a 7-day forecast for every beach.' } },
-          { '@type': 'Question', name: 'How is the sargassum data measured?', acceptedAnswer: { '@type': 'Answer', text: 'Detection uses the NOAA AFAI satellite index (Alternative Floating Algae Index) sampled offshore of each beach, blended with wind and current data into a per-beach 7-day forecast. Data refreshes several times a day.' } },
+          { '@type': 'Question', name: `What is the latest published sargassum observation for ${name}?`, acceptedAnswer: { '@type': 'Answer', text: `Open the beach map to see the latest published information for every ${name} beach. Each page shows the latest available satellite observation time when available. If the source is delayed, the published status may not reflect current beach conditions.` } },
+          { '@type': 'Question', name: `How can I check the published observations for ${name} beaches?`, acceptedAnswer: { '@type': 'Answer', text: `Conditions differ from beach to beach: ${communes.join(', ')} are not affected equally. The map shows the latest published information for each beach; check its satellite observation timestamp before planning a trip.` } },
+          { '@type': 'Question', name: `When is sargassum season in ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'Sargassum and seaweed influx usually peaks between April and September, but landings vary week to week with currents and wind. The map displays the latest available satellite observation; its timestamp shows when the data was measured.' } },
+          { '@type': 'Question', name: 'How is the sargassum data measured?', acceptedAnswer: { '@type': 'Answer', text: 'Detection uses the NOAA AFAI satellite index (Alternative Floating Algae Index) sampled offshore of each beach, combined with wind and current data. Observation timing depends on satellite passes and source availability; the observation timestamp is shown when available.' } },
         ] })
-        const ldOrg = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: siteName, url: `https://${domain}`, logo: `https://${domain}/icon-512.png`, description: es ? `Estado diario del sargazo y Beach Score 0-100 para las playas de ${name}` : `Daily sargassum status and Beach Score 0-100 for ${name} beaches`, areaServed: [name, REGION.country].filter(Boolean), knowsAbout: [es ? 'sargazo' : 'sargassum', es ? 'sargazo y algas marinas' : 'sargassum and seaweed', es ? 'playas' : 'beaches', name, REGION.country].filter(Boolean) })
-        const ldLocalBiz = JSON.stringify({ '@context': 'https://schema.org', '@type': 'LocalBusiness', name: `${siteName} — Beach Conditions Monitoring`, url: `https://${domain}/`, description: es ? `Monitoreo en vivo de sargazo y algas marinas playa por playa en ${name}. Mapa satelital, Beach Score 0-100 y pronóstico 7 días.` : `Live sargassum and seaweed monitoring per beach in ${name}. Satellite map, Beach Score 0-100 and 7-day forecast.`, areaServed: { '@type': 'Place', name: name, address: REGION.country ? { '@type': 'PostalAddress', addressCountry: REGION.countryCode || '' } : undefined }, serviceType: es ? 'Monitoreo de Condiciones de Playa' : 'Beach Conditions Monitoring', provider: { '@type': 'Organization', name: siteName } })
+        const ldOrg = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: siteName, url: `https://${domain}`, logo: `https://${domain}/icon-512.png`, description: es ? `Información de playas y observaciones satelitales disponibles de sargazo para ${name}. Las horas de observación se muestran cuando están disponibles.` : `Satellite-based beach information and available sargassum observations for ${name}. Observation timestamps are shown when available.`, areaServed: [name, REGION.country].filter(Boolean), knowsAbout: [es ? 'sargazo' : 'sargassum', es ? 'sargazo y algas marinas' : 'sargassum and seaweed', es ? 'playas' : 'beaches', name, REGION.country].filter(Boolean) })
+        const ldLocalBiz = JSON.stringify({ '@context': 'https://schema.org', '@type': 'LocalBusiness', name: `${siteName} — Beach Conditions Monitoring`, url: `https://${domain}/`, description: es ? `Información de sargazo por playa en ${name}, basada en las observaciones satelitales disponibles. La hora de la última observación se muestra cuando está disponible.` : `Beach-by-beach sargassum information for ${name}, based on available satellite observations. The latest observation timestamp is shown when available.`, areaServed: { '@type': 'Place', name: name, address: REGION.country ? { '@type': 'PostalAddress', addressCountry: REGION.countryCode || '' } : undefined }, serviceType: es ? 'Monitoreo de Condiciones de Playa' : 'Beach Conditions Monitoring', provider: { '@type': 'Organization', name: siteName } })
         html = html
           .replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
           .replace('<style>', `<script type="application/ld+json">\n    ${ldWebApp}\n    </script>\n    <script type="application/ld+json">\n    ${ldFaq}\n    </script>\n    <script type="application/ld+json">\n    ${ldOrg}\n    </script>\n    <script type="application/ld+json">\n    ${ldLocalBiz}\n    </script>\n  <style>`)
 
         // ── 6) noscript SEO : contenu région en langue primaire, SANS liens internes
         //      (aucune sous-page générée → zéro phantom href, cf. bug seo-link-graph). ──
-        const byCommune = communes.map(c => `<h2>${c} — ${es ? 'playas monitoreadas a diario' : 'beaches monitored daily'}</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
+        const byCommune = communes.map(c => `<h2>${c} — ${es ? 'playas con observaciones disponibles' : 'beaches with available observations'}</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
         const noscriptRegion = es ? `<noscript>
-        <h1>Sargazo y Algas en ${name} Hoy — estado en vivo de cada playa (2026)</h1>
-        <p>¿Qué playa de ${name} está sin sargazo hoy? Estado diario de ${beaches.length} playas (${beachNames.slice(0, 6).join(', ')}…) con datos satelitales de la NOAA, Beach Score 0-100 y pronóstico de 7 días por playa.</p>
+        <h1>Sargazo y algas en ${name} — información disponible por playa (2026)</h1>
+        <p>Consulta la información disponible para ${beaches.length} playas (${beachNames.slice(0, 6).join(', ')}…) a partir de observaciones satelitales de NOAA. La hora de la última observación se muestra cuando está disponible; si la fuente se retrasa, los datos pueden no reflejar las condiciones actuales.</p>
         ${byCommune}
         <h2>Temporada de sargazo en ${name} ${today.slice(0, 4)}</h2>
-        <p>La llegada de sargazo suele alcanzar su pico de abril a septiembre, pero varía semana a semana con viento y corrientes. El mapa se actualiza 4 veces al día, todo el año, para elegir la playa correcta antes de salir.</p>
+        <p>La llegada de sargazo suele alcanzar su pico de abril a septiembre, pero varía semana a semana con viento y corrientes. La fecha y hora de la observación indican cuándo se midieron los datos; la disponibilidad depende de la fuente satelital.</p>
       </noscript>` : `<noscript>
-        <h1>${name} Sargassum & Seaweed Today — live status for every beach (2026)</h1>
-        <p>Which ${name} beach is free of sargassum and seaweed today? Daily status for ${beaches.length} beaches (${beachNames.slice(0, 6).join(', ')}…) from NOAA satellite data, with a Beach Score 0-100 and a 7-day forecast per beach.</p>
+        <h1>Sargassum & seaweed in ${name} — available beach information (2026)</h1>
+        <p>Available information for ${beaches.length} beaches (${beachNames.slice(0, 6).join(', ')}…) is based on NOAA satellite observations. The latest observation time is shown when available; if the source is delayed, the data may not reflect current beach conditions.</p>
         ${byCommune}
         <h2>Sargassum & seaweed season in ${name} ${today.slice(0, 4)}</h2>
-        <p>Sargassum and seaweed arrivals usually peak from April to September, but vary week to week with wind and currents. The map is updated 4× daily, year-round, so you can pick the right beach before you go.</p>
+        <p>Sargassum and seaweed arrivals usually peak from April to September, but vary week to week with wind and currents. The observation timestamp shows when the satellite data was measured; availability depends on the satellite source.</p>
       </noscript>`
         html = html.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, noscriptRegion)
 
@@ -429,6 +444,10 @@ export default defineConfig({
       name: 'seo-pages',
       closeBundle() {
         const outDir = resolve(__dirname, 'dist')
+        try {
+          const { writeCommercialPages } = _require('./scripts/lib/write-commercial-pages.cjs')
+          if (REGION) writeCommercialPages(outDir, REGION, __dirname)
+        } catch (e) { console.warn('   ⚠ pages offres/premium:', e.message) }
         // Publier /api/reliability.json
         try {
           const btPath = resolve(__dirname, 'scripts/automation/data/backtest-results.json')
@@ -544,9 +563,9 @@ export default defineConfig({
             { path: 'previsions', enPath: null, title: 'Prévisions sargasses Martinique 7 jours (2026)', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine. Courants, vent, satellite.' },
             { path: 'alertes', enPath: 'en/sargassum-alerts', esPath: 'es/alertas-sargazo', title: 'Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel', desc: 'Recevez des alertes sargasses pour vos plages en Martinique et Guadeloupe. Notifications en temps réel quand l\'état change. Planifiez vos sorties plage sereinement.' },
             // SEO editorial pages
-            { path: 'saison-sargasses-martinique', enPath: 'en/sargassum-season', esPath: 'es/temporada-sargazo', title: 'Saison des sargasses en Martinique 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
-            { path: 'saison-sargasses-guadeloupe', enPath: null, title: 'Saison des sargasses en Guadeloupe 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
-            { path: 'plages-sans-sargasses', enPath: 'en/best-beaches-no-sargassum', esPath: 'es/mejores-playas-sin-sargazo', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Anses d\'Arlet, Les Salines, Malendure... Quelles plages sont propres aujourd\'hui ? Suivi en temps réel par satellite pour Martinique et Guadeloupe.' },
+            { path: 'saison-sargasses-martinique', enPath: 'en/sargassum-season', esPath: 'es/temporada-sargazo', title: 'Période des sargasses en Martinique : quand en 2026 ?', desc: 'En Martinique, la saison des sargasses va généralement d’avril à octobre, avec un pic de mai à août. Calendrier mensuel pour choisir vos dates.' },
+            { path: 'saison-sargasses-guadeloupe', enPath: null, title: 'Saison des sargasses en Guadeloupe 2026 — Quand et où ?', desc: 'Saison des sargasses en Guadeloupe : calendrier d’avril à octobre, pic souvent observé de mai à août et repères par littoral.' },
+            { path: 'plages-sans-sargasses', enPath: 'en/best-beaches-no-sargassum', esPath: 'es/mejores-playas-sin-sargazo', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Dernière observation satellite disponible pour la Martinique et la Guadeloupe. Les statuts par plage sont affichés uniquement si l’observation respecte le seuil de fraîcheur.' },
             { path: 'meilleures-plages-martinique-sargasses', enPath: 'en/best-beaches-martinique', title: 'Meilleures plages de Martinique sans sargasses — Carte en temps réel 2026', desc: 'Anses d\'Arlet, Anse Dufour, Anse Mitan, Grande Anse... Classement des plages de Martinique propres aujourd\'hui. Données satellite Copernicus, prévisions 7 jours.' },
             { path: 'meilleures-plages-guadeloupe-sargasses', enPath: 'en/best-beaches-guadeloupe', title: 'Meilleures plages de Guadeloupe sans sargasses — Carte en temps réel 2026', desc: 'Malendure, Grande Anse Deshaies, Plage du Souffleur, Plage de la Perle... Classement des plages de Guadeloupe propres aujourd\'hui. Données satellite Copernicus, prévisions 7 jours.' },
             { path: 'danger-sargasses-h2s', enPath: null, title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
@@ -624,43 +643,20 @@ export default defineConfig({
             'en/what-to-do-sargassum-martinique': `<article><h1>Beach covered in sargassum? What to do in Martinique (plan B)</h1><p>Your beach is buried in <strong>sargassum</strong> and you're wondering <strong>what to do in Martinique</strong>? Good news: even at peak season, much of the island stays usable, and there's plenty to do beyond the beach. First reflex — check today's conditions on the <a href="/en/sargassum-map/">real-time map</a>: a clean beach is often just 20–30 minutes away.</p><h2>1. Head for a sheltered Caribbean-coast beach</h2><p>The Caribbean (leeward) coast is shielded from the trade winds that carry sargassum. When the Atlantic coast is saturated, these beaches stay almost always clean — Grande Anse d'Arlet, Anse Dufour, Anse Noire (snorkeling, turtles, sheltered coves), or Anse Mitan and Anse à l'Âne near Les Trois-Îlets (family-friendly, reachable by shuttle boat). See the live list of <a href="/en/best-beaches-martinique/">clean beaches today</a>.</p><h2>2. Things to do away from the beach</h2><ul><li><strong>Rivers and waterfalls</strong> — Gorges de la Falaise, Didier waterfall, Saut du Gendarme: freshwater swimming, sargassum-free.</li><li><strong>Hiking</strong> — Mount Pelée, the Caravelle peninsula, the Trace des Caps coastal path.</li><li><strong>Gardens and heritage</strong> — Balata Garden, rum distilleries (Clément, Depaz, La Mauny).</li><li><strong>White-sand shallows &amp; boat trips</strong> — from Le François or Le Robert, the turquoise offshore pools escape coastal strandings.</li></ul><h2>3. Adapt, don't cancel</h2><p>Sargassum moves fast. A beach covered today can be clear in two days: check the 7-day outlook and turn on <a href="/en/sargassum-alerts/">free alerts</a> to catch the right window. Just avoid picnicking downwind of a rotting pile.</p><p><a href="/en/sargassum-map/">Real-time map</a> · <a href="/en/best-beaches-martinique/">Clean beaches today</a> · <a href="/en/sargassum-alerts/">Free alerts</a></p></article>`,
             'en/what-to-do-sargassum-guadeloupe': `<article><h1>Beach covered in sargassum? What to do in Guadeloupe (plan B)</h1><p>Your beach is overrun with <strong>sargassum</strong> and you're wondering <strong>what to do in Guadeloupe</strong>? Even at peak season, much of the archipelago stays usable, and alternatives to swimming abound. First reflex — check today's conditions on the <a href="/en/sargassum-map/">real-time map</a>: a clean beach is often under 30 minutes away.</p><h2>1. Head for the leeward coast (Basse-Terre)</h2><p>The west coast of Basse-Terre is shielded by La Soufrière from the trade winds that carry sargassum — the most reliable refuge in the archipelago: Plage de Malendure (Bouillante, gateway to the Cousteau reserve), La Grande Anse in Deshaies (the longest beach on Basse-Terre, almost always spared), and Plage de la Perle (a sheltered horseshoe bay). See the live list of <a href="/en/best-beaches-guadeloupe/">clean beaches today</a>.</p><h2>2. Things to do away from the beach</h2><ul><li><strong>Waterfalls and pools</strong> — Carbet Falls, Paradise pool, Saut de la Lézarde: freshwater swimming.</li><li><strong>Hiking</strong> — La Soufrière volcano, the national park, Pointe des Châteaux.</li><li><strong>Heritage &amp; flavours</strong> — Mémorial ACTe, rum distilleries (Damoiseau, Bologne).</li><li><strong>Islets &amp; boat trips</strong> — the Grand Cul-de-Sac Marin, Îlet du Gosier, Les Saintes: offshore waters escape coastal strandings.</li></ul><h2>3. Adapt, don't cancel</h2><p>Sargassum moves fast: a beach covered today can be clear in two days. Check the 7-day outlook and turn on <a href="/en/sargassum-alerts/">free alerts</a> to catch the right window. Just avoid settling downwind of a rotting pile.</p><p><a href="/en/sargassum-map/">Real-time map</a> · <a href="/en/best-beaches-guadeloupe/">Clean beaches today</a> · <a href="/en/sargassum-alerts/">Free alerts</a></p></article>`,
             'saison-sargasses-martinique': `<article><h1>Saison des sargasses en Martinique 2026 — Calendrier mois par mois</h1><p>Quand partir en Martinique pour éviter les sargasses ? La saison s'étend d'avril à octobre, avec un pic entre mai et août. En 2026, les scientifiques prévoient une <a href="/sargasses-record-2026/">année record</a> : des bancs ont été détectés dès novembre 2025, et les côtes Caraïbe — normalement épargnées — ont été touchées en avril. Consulter la <a href="/">carte en temps réel</a> avant tout déplacement est plus utile que jamais.</p><h2>Calendrier mois par mois — risque sargasses Martinique</h2><ul><li><strong>Novembre – Février :</strong> risque faible à nul. Meilleure période de l'année. Côte Atlantique propre la plupart du temps, côte Caraïbe quasi garantie.</li><li><strong>Mars :</strong> début de saison possible. Premiers bancs détectés au large. Vérifiez la carte la veille.</li><li><strong>Avril :</strong> risque modéré. En 2026, la côte Caraïbe a été touchée dès la mi-avril — exceptionnellement précoce. Privilégiez les <a href="/alertes/">alertes push</a> pour être prévenu.</li><li><strong>Mai – Juin :</strong> premier pic. Les bancs atlantiques arrivent en masse sur la côte est. Plages les plus exposées : Tartane, Le Vauclin, Sainte-Anne côté est. Côte Caraïbe reste le refuge.</li><li><strong>Juillet – Août :</strong> pic maximal. Volumes les plus importants de l'année. Concentrez-vous sur les <a href="/meilleures-plages-martinique-sargasses/">plages Caraïbe</a> : Grande Anse d'Arlet, Anse Dufour, Anse Mitan, Anse Noire.</li><li><strong>Septembre – Octobre :</strong> déclin progressif. Les vents changent de direction, les bancs dérivent vers le nord. État très variable d'une semaine à l'autre — la <a href="/previsions/">prévision 7 jours</a> est décisive pour planifier.</li></ul><h2>Côte Caraïbe vs Atlantique — quelle différence ?</h2><p>La côte Caraïbe (Les Anses d'Arlet, Trois-Îlets, Schoelcher, Le Carbet) est protégée des alizés qui portent les sargasses par le relief de la Pelée. En dehors de 2026, elle était quasi-garantie en saison. La côte Atlantique (Trinité, Tartane, Le Vauclin, Sainte-Anne est) encaisse directement le flux d'arrivée.</p><p>En 2026, même la côte Caraïbe a subi des échouages ponctuels : les bancs ont contourné la pointe sud de l'île et atteint le Diamant, Anse Noire et Grande Anse d'Arlet temporairement. <strong>Vérifiez toujours la carte avant de partir, même pour les plages Caraïbe.</strong></p><h2>Plages les plus touchées en saison</h2><ul><li><a href="/plages/bourg-de-tartane/">Tartane / Presqu'île de la Caravelle</a> — plein est, exposition maximale</li><li><a href="/plages/plage-des-salines/">Les Salines</a> (Sainte-Anne) — belle mais exposée selon vent, état très variable</li><li>Le Vauclin, Le Robert, La Trinité — côte atlantique, échouages quasi-continus en pic</li></ul><h2>Plages les plus épargnées</h2><ul><li><a href="/plages/grande-anse-d-arlet/">Grande Anse d'Arlet</a> — refuge historique, rarement touchée</li><li><a href="/plages/anse-dufour/">Anse Dufour</a> — crique abritée, snorkeling</li><li><a href="/plages/anse-mitan/">Anse Mitan</a> (Trois-Îlets) — accessible, eau calme</li><li><a href="/plages/anse-noire/">Anse Noire</a> — sable noir volcanique, souvent propre</li></ul><h2>Quand partir pour être sûr à 90% ?</h2><p>Si vous avez le choix, planifiez entre <strong>novembre et mars</strong>. La haute saison touristique (juillet-août) coïncide malheureusement avec le pic de sargasses : <strong>activez les <a href="/alertes/">alertes push gratuites</a> une semaine avant de partir</strong> pour adapter votre itinéraire plage en fonction des <a href="/previsions/">prévisions 7 jours</a>.</p><p><a href="/">Carte en temps réel</a> · <a href="/meilleures-plages-martinique-sargasses/">Meilleures plages MQ 2026</a> · <a href="/sargasses-record-2026/">Saison record 2026</a> · <a href="/danger-sargasses-h2s/">Risques H2S</a></p></article>`,
-            'saison-sargasses-guadeloupe': `<article><h1>Saison des sargasses en Guadeloupe 2026 — Calendrier mois par mois</h1><p>Quand partir en Guadeloupe pour éviter les sargasses ? La saison officielle s'étend d'avril à octobre, avec un pic entre mai et août. En 2026, les experts prévoient une <a href="/sargasses-record-2026/">année à haut risque</a> selon Météo-France Guadeloupe : des échouages ont débuté dès mars sur Grande-Terre et les côtes est de Basse-Terre. Consultez notre <a href="/">carte en temps réel</a> avant chaque sortie plage.</p><h2>Calendrier mois par mois — risque sargasses Guadeloupe</h2><ul><li><strong>Novembre – Février :</strong> risque faible à nul. Meilleure fenêtre de l'année. Côte sous-le-vent de Basse-Terre quasi garantie, Grande-Terre propre la plupart des semaines.</li><li><strong>Mars :</strong> début de saison précoce en 2026. Premiers arrivages détectés sur le sud-est de Grande-Terre et Marie-Galante. Consultez la carte avant tout déplacement.</li><li><strong>Avril :</strong> risque modéré, accentuation des échouages. Capesterre de Marie-Galante et sud Grande-Terre (Saint-François) en première ligne.</li><li><strong>Mai – Juin :</strong> premier pic. Gosier, Sainte-Anne, Saint-François reçoivent des bancs réguliers. Privilégiez les plages de Basse-Terre ouest ou nord Grande-Terre.</li><li><strong>Juillet – Août :</strong> pic maximal. Volumes records sur la côte est de Grande-Terre. La côte sous-le-vent de Basse-Terre reste le refuge le plus fiable de l'archipel.</li><li><strong>Septembre – Octobre :</strong> déclin progressif mais état très variable. Les <a href="/previsions/">prévisions 7 jours</a> sont indispensables pour s'adapter semaine par semaine.</li></ul><h2>Côte sous-le-vent vs Grande-Terre — quelle différence ?</h2><p>La façade ouest de Basse-Terre (Malendure, Deshaies, Bouillante, Trois-Rivières) est protégée par le relief de la Soufrière des alizés porteurs de sargasses. C'est le refuge le plus fiable de l'archipel. À l'opposé, le sud et l'est de Grande-Terre (Gosier, Sainte-Anne, Saint-François, Le Moule) sont exposés en plein aux flux atlantiques.</p><p>Les dépendances — Marie-Galante, Les Saintes, La Désirade — ont des profils variés : Capesterre de Marie-Galante est parmi les zones les plus touchées ; Terre-de-Haut (Les Saintes) reste souvent propre grâce à son relief. <strong>Consultez toujours la carte par île avant de prendre le ferry.</strong></p><h2>Plages les plus touchées en saison</h2><ul><li><a href="/plages/plage-du-gosier/">Plage du Gosier</a> — accessible mais souvent impactée côté est</li><li><a href="/plages/plage-de-sainte-anne/">Plage de Sainte-Anne</a> (Bourg) — état variable, surveiller avant de partir</li><li>Saint-François, Le Moule — côte atlantique Grande-Terre, exposition directe</li><li>Capesterre de Marie-Galante — pleine exposition atlantique</li></ul><h2>Plages les plus épargnées</h2><ul><li><a href="/plages/plage-de-malendure/">Plage de Malendure</a> (Bouillante) — côte sous-le-vent, départ réserve Cousteau</li><li><a href="/plages/la-grande-anse-deshaies/">La Grande Anse (Deshaies)</a> — la plus longue de Basse-Terre, quasi épargnée</li><li><a href="/plages/plage-du-souffleur/">Plage du Souffleur</a> (Port-Louis) — nord Grande-Terre, moins exposée</li><li><a href="/plages/plage-de-la-perle/">Plage de la Perle</a> (Deshaies) — baie en fer à cheval protégée</li></ul><h2>Quand partir pour être sûr à 90% ?</h2><p>Si vous avez le choix, planifiez entre <strong>novembre et mars</strong>. En juillet-août (haute saison), activez les <a href="/alertes/">alertes push gratuites</a> une semaine avant pour adapter votre programme plage selon les <a href="/previsions/">prévisions 7 jours par plage</a>. En 2026 notamment, même les plages historiquement épargnées peuvent connaître des épisodes temporaires.</p><p><a href="/">Carte en temps réel</a> · <a href="/meilleures-plages-guadeloupe-sargasses/">Meilleures plages GP 2026</a> · <a href="/sargasses-record-2026/">Saison record 2026</a> · <a href="/danger-sargasses-h2s/">Risques H2S</a></p></article>`,
+            'saison-sargasses-guadeloupe': `<article><h1>Saison des sargasses en Guadeloupe 2026 — Calendrier mois par mois</h1><p>Quand partir en Guadeloupe pour limiter le risque de rencontrer des sargasses ? La saison des échouages s'étend généralement d'avril à octobre, avec un pic souvent observé entre mai et août. Ces repères décrivent une tendance saisonnière, pas l'état actuel d'une plage. Avant de vous déplacer, vérifiez la dernière observation publiée et son horodatage sur la <a href="/carte-sargasses/">carte des observations par plage</a>. Si la mesure dépasse le seuil de fraîcheur ou n'est pas disponible, aucun verdict actuel n'est confirmé.</p><h2>Calendrier mois par mois — saison des sargasses en Guadeloupe</h2><ul><li><strong>Novembre – Février :</strong> période généralement en dehors du pic saisonnier. Des échouages restent possibles ; le calendrier ne garantit jamais l'état d'une plage.</li><li><strong>Mars :</strong> la saison peut commencer plus tôt selon les années. Surveillez les observations publiées plutôt que d'extrapoler à partir d'une autre île.</li><li><strong>Avril :</strong> les échouages peuvent s'intensifier selon les conditions météo-marines. L'exposition varie d'une plage à l'autre, y compris sur une même île.</li><li><strong>Mai – Juin :</strong> période souvent comprise dans le pic saisonnier. Gosier, Sainte-Anne et Saint-François se trouvent sur des façades exposées, mais l'état doit être vérifié plage par plage et à une date précise.</li><li><strong>Juillet – Août :</strong> le pic saisonnier peut se prolonger. Les côtes ouvertes aux flux atlantiques peuvent être touchées ; aucune plage n'est garantie propre par sa seule orientation.</li><li><strong>Septembre – Octobre :</strong> la saison peut décroître, mais les conditions restent variables. Une tendance n'est utile que si les observations et les données d'entrée sont récentes et validées.</li></ul><h2>Côte sous-le-vent vs Grande-Terre — quelle différence ?</h2><p>La façade ouest de Basse-Terre (Malendure, Deshaies, Bouillante, Trois-Rivières) est généralement plus abritée des alizés porteurs de sargasses par le relief de la Soufrière. Le sud et l'est de Grande-Terre (Gosier, Sainte-Anne, Saint-François, Le Moule) sont davantage exposés aux flux atlantiques. Ces différences décrivent une exposition géographique, pas un état garanti de chaque plage.</p><p>Les dépendances — Marie-Galante, Les Saintes, La Désirade — ont des profils d'exposition différents. Ne déduisez pas le statut d'une plage de sa seule île ou de son orientation : consultez sa dernière observation datée avant de prendre le ferry.</p><h2>Plages situées sur les façades les plus exposées</h2><ul><li><a href="/plages/plage-du-gosier/">Plage du Gosier</a> — façade est de Grande-Terre, exposée aux flux atlantiques ; état à vérifier selon la date.</li><li><a href="/plages/plage-de-sainte-anne/">Plage de Sainte-Anne</a> (Bourg) — exposition variable selon la plage et les conditions.</li><li>Saint-François, Le Moule — côte atlantique de Grande-Terre, exposition plus directe aux flux.</li><li>Capesterre de Marie-Galante — façade atlantique, état à confirmer par une observation datée.</li></ul><h2>Plages et secteurs géographiquement plus abrités</h2><ul><li><a href="/plages/plage-de-malendure/">Plage de Malendure</a> (Bouillante) — côte sous-le-vent, généralement plus abritée, sans garantie d'absence.</li><li><a href="/plages/la-grande-anse-deshaies/">La Grande Anse (Deshaies)</a> — façade ouest de Basse-Terre, plus abritée par sa configuration géographique.</li><li><a href="/plages/plage-du-souffleur/">Plage du Souffleur</a> (Port-Louis) — nord de Grande-Terre ; vérifier l'observation de la plage.</li><li><a href="/plages/plage-de-la-perle/">Plage de la Perle</a> (Deshaies) — baie en fer à cheval ; son abri géographique ne remplace pas une observation récente.</li></ul><h2>Comment choisir ses dates de séjour ?</h2><p>Si votre calendrier est flexible, novembre à mars se situe généralement en dehors de la période principale. Cela ne garantit jamais l'absence de sargasses. Pour choisir une plage le jour du déplacement, consultez la dernière observation publiée et son horodatage ; si elle dépasse le seuil de fraîcheur ou manque, considérez l'état comme non vérifié. Les <a href="/alertes/">alertes gratuites</a> peuvent signaler de nouvelles publications lorsqu'elles sont disponibles, mais ne remplacent pas la vérification de l'horodatage.</p><p><a href="/carte-sargasses/">Dernières observations par plage</a> · <a href="/meilleures-plages-guadeloupe-sargasses/">Plages suivies en Guadeloupe</a> · <a href="/sargasses-record-2026/">Repères saisonniers 2026</a> · <a href="/danger-sargasses-h2s/">Risques H2S</a> · <a href="/previsions/">Tendances disponibles</a></p></article>`,
             'plages-sans-sargasses': (() => {
-              // Dynamic noscript — reads sargassum.json at build time (spec clean-list.md étape 5)
               try {
                 const _sj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
-                const _lvById = Object.fromEntries((_sj.levels || []).map(l => [l.id, l]))
-                const _buildDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-                const _cleanByIsland = { mq: [], gp: [] }
-                for (const b of ALL_BEACHES) {
-                  const _slug = slugify(b.name)
-                  const sargId = BEACH_TO_SARG[b.id] || _slug
-                  const lv = _lvById[sargId] || _lvById[b.id]
-                  if (lv && lv.status === 'clean') {
-                    _cleanByIsland[b.island === 'gp' ? 'gp' : 'mq'].push({
-                      name: b.name, commune: b.commune, slug: _slug,
-                      score: typeof lv.score === 'number' ? lv.score : null
-                    })
-                  }
-                }
-                // Sort by score desc within each island
-                for (const k of ['mq', 'gp']) _cleanByIsland[k].sort((a, b) => (b.score || 0) - (a.score || 0))
-                const _li = (list) => list.map(b =>
-                  `<li><a href="/plages/${b.slug}/">${b.name}</a> — ${b.commune}` +
-                  ` · propre` + (b.score != null ? ` · score ${b.score}/100` : '') + `</li>`
-                ).join('')
-                const mqList = _cleanByIsland.mq.length ? `<h2>Martinique — Plages propres aujourd'hui</h2><ul>${_li(_cleanByIsland.mq)}</ul>` : ''
-                const gpList = _cleanByIsland.gp.length ? `<h2>Guadeloupe — Plages propres aujourd'hui</h2><ul>${_li(_cleanByIsland.gp)}</ul>` : ''
-                const totalClean = _cleanByIsland.mq.length + _cleanByIsland.gp.length
-                return `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1>` +
-                  `<p><strong>État du ${_buildDate}.</strong> Notre satellite surveille en temps réel l'état de plus de 130 plages en Martinique et Guadeloupe grâce aux données Copernicus (ESA). ` +
-                  `Aujourd'hui, <strong>${totalClean} plage${totalClean > 1 ? 's' : ''} propre${totalClean > 1 ? 's' : ''}</strong> détectée${totalClean > 1 ? 's' : ''} par satellite.</p>` +
-                  mqList + gpList +
-                  `<p><strong>Vérifiez la <a href="/carte-sargasses/">carte en temps réel</a> avant de partir</strong> — l'état peut changer en quelques heures selon le vent. ` +
-                  `Consultez aussi les <a href="/previsions/">prévisions 7 jours par plage</a> et activez les <a href="/alertes/">alertes push gratuites</a>.</p></article>`
+                return renderCleanBeachIndex({
+                  payload: _sj,
+                  beaches: ALL_BEACHES,
+                  beachToSarg: BEACH_TO_SARG,
+                  slugify,
+                  now: Date.now(),
+                })
               } catch (_e) {
-                // Fallback si sargassum.json absent au build — liste statique minimale
-                return `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1><p>Vous cherchez une plage propre aujourd'hui ? Notre application surveille en temps réel l'état de plus de 130 plages en Martinique et Guadeloupe grâce aux données satellite Copernicus.</p><p><a href="/carte-sargasses/">Consulter la carte en temps réel</a> · <a href="/previsions/">Prévisions 7 jours</a> · <a href="/alertes/">Alertes push</a>.</p></article>`
+                // Fail closed: an unreadable payload must never produce a synthetic clean-beach list.
+                return `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1><p>La liste des plages propres est indisponible : l’observation satellite n’a pas pu être lue ou vérifiée lors de la génération. Aucun statut ni score n’est présenté comme actuel.</p><p><a href="/carte-sargasses/">Consulter la carte et son horodatage</a> · <a href="/previsions/">Prévisions 7 jours</a> · <a href="/alertes/">Alertes</a></p></article>`
               }
             })(),
             'danger-sargasses-h2s': `<article><h1>Sargasses et H2S : dangers pour la santé</h1><p>Lorsque les sargasses s'échouent et se décomposent sur les plages, elles libèrent du sulfure d'hydrogène (H2S), un gaz toxique reconnaissable à son odeur d'œuf pourri.</p><h2>Quels sont les risques ?</h2><p>À faible concentration, le H2S provoque des irritations des yeux, du nez et de la gorge. À forte concentration (au-dessus de 5 ppm), il peut causer des maux de tête, nausées et difficultés respiratoires. Les enfants, personnes âgées et asthmatiques sont particulièrement vulnérables.</p><h2>Précautions à prendre</h2><ul><li>Évitez les plages marquées "À éviter" sur notre <a href="/">carte en temps réel</a></li><li>Ne laissez pas les enfants jouer dans ou près des amas de sargasses en décomposition</li><li>Si vous sentez une forte odeur d'œuf pourri, éloignez-vous immédiatement</li><li>Consultez les <a href="/previsions/">prévisions 7 jours</a> avant de planifier une sortie plage</li></ul><h2>L'indice AFAI</h2><p>L'AFAI (Algal Floating Algae Index) est l'indice satellite que nous utilisons pour détecter les sargasses. En dessous de 0,3 la plage est propre. Au-dessus de 0,65, il vaut mieux éviter.</p></article>`,
@@ -978,7 +974,7 @@ export default defineConfig({
           // EN subpages for international SEO
           const enPages = [
             { path: 'en/sargassum-map', title: 'Sargassum Map Martinique &amp; Guadeloupe — Real-time satellite', desc: 'Interactive sargassum map for Martinique and Guadeloupe. Real-time satellite data, 7-day forecast. Find clean beaches today.' },
-            { path: 'en/best-beaches-no-sargassum', title: 'Best beaches without sargassum in Martinique &amp; Guadeloupe', desc: 'Which beaches are clean today? Real-time sargassum monitoring for Martinique and Guadeloupe. Updated daily with satellite data.' },
+            { path: 'en/best-beaches-no-sargassum', title: 'Best beaches without sargassum in Martinique &amp; Guadeloupe', desc: 'Latest available satellite observation for Martinique and Guadeloupe. Beach statuses appear only when the observation meets the freshness threshold.' },
             { path: 'en/sargassum-season', title: 'Sargassum season in the Caribbean — When to avoid', desc: 'When does sargassum season start? Peak months, which beaches are affected, real-time forecasts for Martinique and Guadeloupe.' },
             { path: 'en/sargassum-alerts', title: 'Sargassum alerts Martinique &amp; Guadeloupe — Real-time notifications', desc: 'Get real-time sargassum alerts for your favorite beaches in Martinique and Guadeloupe. Know before you go.' },
             { path: 'en/understanding-sargassum', title: 'Understanding sargassum: origins, proliferation &amp; forecasting (2026)', desc: 'Where does sargassum come from? Great Atlantic Sargassum Belt, nutrients, climate factors. How satellite detection and forecasting works.' },
@@ -1048,7 +1044,7 @@ export default defineConfig({
           // ES subpages for international SEO (Mexique, RD, Puerto Rico, Caraïbes hispanophones)
           const esPages = [
             { path: 'es/mapa-sargazo', title: 'Mapa de sargazo Martinica y Guadalupe — Satélite en tiempo real', desc: 'Mapa interactivo de sargazo para Martinica y Guadalupe. Datos satelitales en tiempo real, pronóstico de 7 días. Encuentra playas limpias hoy.' },
-            { path: 'es/mejores-playas-sin-sargazo', title: 'Mejores playas sin sargazo en Martinica y Guadalupe', desc: '¿Qué playas están limpias hoy? Monitoreo de sargazo en tiempo real para Martinica y Guadalupe. Actualizado cada día con datos satelitales.' },
+            { path: 'es/mejores-playas-sin-sargazo', title: 'Mejores playas sin sargazo en Martinica y Guadalupe', desc: 'Última observación satelital disponible para Martinica y Guadalupe. Los estados por playa solo se muestran cuando la observación cumple el umbral de frescura.' },
             { path: 'es/temporada-sargazo', title: 'Temporada de sargazo en el Caribe — Cuándo evitar', desc: '¿Cuándo comienza la temporada de sargazo? Meses pico, qué playas se ven afectadas, pronósticos en tiempo real para Martinica y Guadalupe.' },
             { path: 'es/alertas-sargazo', title: 'Alertas de sargazo Martinica y Guadalupe — Notificaciones en tiempo real', desc: 'Recibe alertas de sargazo en tiempo real para tus playas favoritas en Martinica y Guadalupe. Entérate antes de ir.' },
           ]
@@ -1208,26 +1204,35 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // hedgée), CTA → /?pro=1&b=…&utm_* (event sg_b2b_visit). Best-effort :
           // reads défensifs → n'échoue jamais (le fichier DOIT exister, garde sitemap).
           try {
-            const { buildHotelLandingFr } = _require('./scripts/lib/hotel-landing-fr.cjs')
-            let _lvById = {}, _updatedRel = ''
+            const { buildHotelLandingFr, getSatelliteFreshness } = _require('./scripts/lib/hotel-landing-fr.cjs')
+            let _lvById = {}, _updatedRel = '', _freshnessStatus = 'unknown'
             try {
               const _sj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
               _lvById = Object.fromEntries((_sj.levels || []).map(l => [l.id, l]))
-              if (_sj.updatedAt) { const h = (Date.now() - new Date(_sj.updatedAt).getTime()) / 3.6e6; _updatedRel = h < 1 ? 'il y a moins d’une heure' : `il y a ${Math.max(1, Math.round(h))} h` }
+              const _freshness = getSatelliteFreshness(_sj)
+              _freshnessStatus = _freshness.status
+              _updatedRel = _freshness.ageLabel
             } catch (_e) {}
             let _rel = null
             try {
               const _bt = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8'))
               const _calm = _bt.regimeReliability && _bt.regimeReliability.regimes && _bt.regimeReliability.regimes.calm
               const _win = (_bt.regimeReliability && _bt.regimeReliability.window || '').split('→').map(s => s.trim())
-              _rel = { overallPct: (_bt.overall && _bt.overall.statusHitRate) || 77, calmSamples: _calm ? _calm.cleanSamples : null, from: _win[0] || null, to: _win[1] || null }
+              _rel = {
+                calmPct: _calm && Number.isFinite(_calm.cleanReliabilityPct) ? _calm.cleanReliabilityPct : null,
+                calmSamples: _calm && Number.isFinite(_calm.cleanSamples) ? _calm.cleanSamples : null,
+                calmAlertPct: _calm && Number.isFinite(_calm.alertReliabilityPct) ? _calm.alertReliabilityPct : null,
+                calmAlertSamples: _calm && Number.isFinite(_calm.alertSamples) ? _calm.alertSamples : null,
+                from: _win[0] || null,
+                to: _win[1] || null,
+              }
             } catch (_e) {}
             const _coverageFor = (isl) => ALL_BEACHES
               .filter(b => (b.island === 'gp' ? 'gp' : 'mq') === isl)
-              .map(b => { const lv = _lvById[BEACH_TO_SARG[b.id] || slugify(b.name)] || _lvById[b.id] || {}; return { name: b.name, commune: b.commune, status: lv.status || b.status || 'clean', score: typeof lv.score === 'number' ? lv.score : null } })
+              .map(b => { const lv = _lvById[BEACH_TO_SARG[b.id] || slugify(b.name)] || _lvById[b.id] || {}; return { name: b.name, commune: b.commune, status: lv.status || 'unknown', score: _freshnessStatus === 'fresh' && typeof lv.score === 'number' ? lv.score : null } })
               .sort((a, b) => (b.score || 0) - (a.score || 0))
-            const _mqLanding = buildHotelLandingFr({ islandId: 'mq', islandName: 'Martinique', domain: 'sargasses-martinique.com', coverage: _coverageFor('mq'), reliability: _rel, updatedRel: _updatedRel })
-            const _gpLanding = buildHotelLandingFr({ islandId: 'gp', islandName: 'Guadeloupe', domain: 'sargasses-guadeloupe.com', coverage: _coverageFor('gp'), reliability: _rel, updatedRel: _updatedRel })
+            const _mqLanding = buildHotelLandingFr({ islandId: 'mq', islandName: 'Martinique', domain: 'sargasses-martinique.com', coverage: _coverageFor('mq'), reliability: _rel, updatedRel: _updatedRel, freshnessStatus: _freshnessStatus })
+            const _gpLanding = buildHotelLandingFr({ islandId: 'gp', islandName: 'Guadeloupe', domain: 'sargasses-guadeloupe.com', coverage: _coverageFor('gp'), reliability: _rel, updatedRel: _updatedRel, freshnessStatus: _freshnessStatus })
             const _mqDir = resolve(outDir, 'sargasses-pour-hotels'); mkdirSync(_mqDir, { recursive: true }); writeFileSync(resolve(_mqDir, 'index.html'), _mqLanding)
             const _gpDir = resolve(outDir, '_gp', 'sargasses-pour-hotels'); mkdirSync(_gpDir, { recursive: true }); writeFileSync(resolve(_gpDir, 'index.html'), _gpLanding)
             console.log('   → Landing B2B FR /sargasses-pour-hotels/ (MQ + GP mirror) générée')
@@ -1403,7 +1408,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // BELLES SANS JS. scripts/lib/scene-svg.cjs porte la géométrie VERBATIM
           // de BeachScene+Veilleur. SSR pur, déterministe (seed=beach.id, phase
           // figée). Lit le live sargassum.json pour le score réel + l'heure LIVE ;
-          // forecast déterministe via buildWeeklyBatch (clé = beach.id, 136/136).
+          // SEO : n'afficher une prévision que si le JSON satellite contient une entrée weekly réelle.
           let _heroLib = null
           try { _heroLib = _require('./scripts/lib/scene-svg.cjs') } catch (e) { console.warn('   → hero scene-svg non chargé:', e.message) }
           // Fiche-dive A/B assets (extracted from design/proto-plage-plongee.html)
@@ -1427,14 +1432,11 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // la source des barres de facteurs de la plongée (heroLv n'a PAS le breakdown).
             for (const [k, v] of Object.entries(_lj.scores || {})) { _heroLive.scoresBySarg[k] = v }
           } catch (e) { /* live absent → fallback déterministe, jamais bloquant */ }
-          // Forecast déterministe pour les 136 plages (clé = beaches-list id).
-          let _heroWeekly = {}
-          try { _heroWeekly = buildWeeklyBatch(SARGASSUM_REF) } catch (e) { _heroWeekly = {} }
           const _statusWordFR = { clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter' }
           // Ligne forecast 7j lisible (jour: statut) pour la bande verdict.
           const heroForecastLine = (b) => {
             const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
-            const wk = _heroWeekly[b.id] || _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id]
+            const wk = _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id]
             const fc = wk && wk.forecast
             if (!fc || !fc.length) return ''
             return fc.slice(0, 7).map(f => `${f.day} ${_statusWordFR[f.status] || f.status}`).join(' · ')
@@ -2034,14 +2036,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 // Éligibilité plongée : seulement les plages avec score+facteurs réels
                 // (~20/136). Ailleurs → contrôle (jamais de plongée avec données vides/MOCK).
                 const _fd_eligible = !!_fd_score
-                // Resolve the weekly entry, then NORMALIZE to a forecast array.
-                // _heroWeekly[b.id] is the wrapper {forecast:[…], drift,…} (see
-                // heroForecastLine l.957) — the old chain fed that object straight
-                // through, so the engine's DATA.forecast[0].afai threw on ~133/136
-                // beaches (frozen + blank journal). Unwrap .forecast → array | null.
+                // Resolve only a real satellite-pipeline weekly entry and normalize it.
+                // Missing forecast stays null: no deterministic/synthetic replacement.
                 const _fd_wk = (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[slugify(b.name)])
                   || (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[b.id])
-                  || _heroWeekly[b.id]
                   || null
                 const _fd_forecast = Array.isArray(_fd_wk) ? _fd_wk
                   : (_fd_wk && Array.isArray(_fd_wk.forecast) ? _fd_wk.forecast : null)
@@ -2136,11 +2134,9 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   `</div>`,
                   `<script>`,
                   `window.__SG_BEACH__=${sgBeachData};`,
+                  // Reuse the page's consent-aware Google tag; never expose Measurement Protocol credentials.
                   `window.__sgTrack=function(ev,params){`,
-                  `  try{var mid="${isMQ ? 'G-V8JGMDZZ2Y' : 'G-Q31VV3LLM9'}",sec="${isMQ ? 'eFHMRr4tQ-2B-JYidixOSA' : 'eWAv3vACT6uVzcrAi7JgYQ'}";`,
-                  `  var cid=document.cookie.match(/_ga=GA\\d+\\.\\d+\\.(\\d+\\.\\d+)/);cid=cid?cid[1]:"a."+Date.now();`,
-                  `  if(navigator.sendBeacon)navigator.sendBeacon("https://www.google-analytics.com/mp/collect?measurement_id="+mid+"&api_secret="+sec,JSON.stringify({client_id:cid,events:[{name:ev,params:params||{}}]}));`,
-                  `  }catch(e){}`,
+                  `  try{if(typeof window.gtag==="function")window.gtag("event",ev,params||{});}catch(e){}`,
                   `};`,
                   `(function(){`,
                   `  var RM=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;`,
@@ -2214,6 +2210,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // and prepare-ftp.cjs only substitutes Martinique→Guadeloupe on the GP
           // side. So we need the FINAL state of dist/ to be Martinique-flavored
           // (hence MQ last) for the MQ copy to be correct.
+          // Never publish current beach verdicts from the static beaches-list fallback.
+          // The authoritative ERDDAP observation timestamp is the only freshness clock.
+          let legacyIndexSatellitePayload = null
+          try {
+            legacyIndexSatellitePayload = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
+          } catch {}
+          const legacyIndexStatus = buildLegacyBeachIndexStatus(legacyIndexSatellitePayload, SARG_TO_BEACH)
+          const statusById = legacyIndexStatus.statusByBeachId
+          const indexObservationLabel = legacyIndexStatus.observationTimestamp
+            ? `Dernière observation satellite : ${new Date(legacyIndexStatus.observationTimestamp).toISOString().replace('T', ' ').slice(0, 16)} UTC`
+            : 'Horodatage satellite indisponible'
+          const indexStatusSummary = legacyIndexStatus.available
+            ? `${legacyIndexStatus.validCount} statuts validés sur la dernière observation ; les autres plages restent à vérifier.`
+            : 'Statuts et scores suspendus : observation satellite absente, invalide ou hors fenêtre de fraîcheur.'
+
           for (const islandCode of ['gp', 'mq']) {
             const isMQ = islandCode === 'mq'
             const island = isMQ ? 'Martinique' : 'Guadeloupe'
@@ -2226,26 +2237,26 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               communes[b.commune].push(b)
             }
             const communeNames = Object.keys(communes).sort()
-            // Status from SARGASSUM_REF
-            const statusById = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
+            // Status map above is built only from fresh, live ERDDAP levels.
             const statusBadge = (st) => {
               if (st === 'clean') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span>'
               if (st === 'moderate') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fef3c7;color:#b87a00;font-size:12px;font-weight:600">Modéré</span>'
-              return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">À éviter</span>'
+              if (st === 'avoid') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">À éviter</span>'
+              return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px;font-weight:600">À vérifier</span>'
             }
             let communeListHtml = ''
             for (const commune of communeNames) {
               const cBeaches = communes[commune]
               const beachLinks = cBeaches.map(b => {
-                const st = statusById[b.id] || 'clean'
+                const st = statusById[b.id] || null
                 return `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> ${statusBadge(st)}</li>`
               }).join('')
               communeListHtml += `<h2 style="margin:28px 0 8px;font-size:18px;color:#0D0D0D">${commune}</h2><ul style="list-style:none;padding:0">${beachLinks}</ul>`
             }
             const plagesTitle = `Toutes les plages \u2014 Sargasses ${island}`
-            const plagesDesc = `Liste compl\u00e8te des ${islandBeaches.length} plages surveill\u00e9es en ${island}. \u00c9tat des sargasses en temps r\u00e9el, regroup\u00e9es par commune.`
+            const plagesDesc = clampDesc(`Liste complète des ${islandBeaches.length} plages suivies en ${island}. ${indexStatusSummary} ${indexObservationLabel}.`, 155)
             const plagesUrl = `https://${domain}/plages/`
-            const plagesNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Toutes les plages de ${island}</h1><p style="color:#686868;margin-bottom:24px">${islandBeaches.length} plages surveill\u00e9es par satellite \u2014 donn\u00e9es Copernicus</p>${communeListHtml}<nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte des sargasses</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes sargasses</a></nav></article>`
+            const plagesNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Toutes les plages de ${island}</h1><p style="color:#686868;margin-bottom:24px">${islandBeaches.length} plages suivies par satellite. ${indexStatusSummary} ${indexObservationLabel}</p>${communeListHtml}<nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte des sargasses</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes sargasses</a></nav></article>`
             const plagesSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":plagesTitle,"description":plagesDesc,"url":plagesUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
             const breadcrumbPlages = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":plagesUrl}]})
             const plagesDir = resolve(outDir, 'plages')
@@ -2287,16 +2298,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             for (const z of (COAST_ZONES[islandCode] || [])) {
               const zBeaches = islandBeaches.filter(b => z.communes.includes(b.commune))
               if (!zBeaches.length) continue
-              const zClean = zBeaches.filter(b => (statusById[b.id] || 'clean') === 'clean').length
+              const zVerified = zBeaches.filter(b => ['clean', 'moderate', 'avoid'].includes(statusById[b.id])).length
+              const zClean = zBeaches.filter(b => statusById[b.id] === 'clean').length
+              const zStatusSummary = zVerified
+                ? `${zVerified} statuts validés sur ${zBeaches.length} plages ; ${zClean} propre(s) dans la dernière observation.`
+                : 'Aucun statut actuel publié ; les décisions sont suspendues.'
+              const zIntro = legacyIndexStatus.available ? z.intro : 'Les statuts de cette zone sont suspendus tant que l’observation satellite ne respecte pas la fenêtre de fraîcheur.'
               const zList = zBeaches
                 .slice().sort((a, b2) => a.commune === b2.commune ? a.name.localeCompare(b2.name) : a.commune.localeCompare(b2.commune))
-                .map(b => `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> — ${b.commune} ${statusBadge(statusById[b.id] || 'clean')}</li>`).join('')
+                .map(b => `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> — ${b.commune} ${statusBadge(statusById[b.id] || null)}</li>`).join('')
               const others = (COAST_ZONES[islandCode] || []).filter(o => o.slug !== z.slug)
                 .map(o => `<a href="/plages/${o.slug}/" style="color:#E8A800;font-weight:600;margin-right:14px">${o.name}</a>`).join('')
-              const zTitle = `Plages ${z.titleName || z.name} — sargasses en temps réel`
-              const zDesc = clampDesc(`${zBeaches.length} plages surveillées par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}) : ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui. État en temps réel et prévisions 7 jours.`, 155)
+              const zTitle = `Plages ${z.titleName || z.name} — Sargasses ${island}`
+              const zDesc = clampDesc(`${zBeaches.length} plages suivies par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}). ${zStatusSummary} ${indexObservationLabel}.`, 155)
               const zUrl = `https://${domain}/plages/${z.slug}/`
-              const zNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — ${z.name}</h1><p style="color:#686868;margin-bottom:12px">${zBeaches.length} plages surveillées · ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui (satellite Copernicus, ${today})</p><p style="color:#333;line-height:1.6;margin-bottom:20px">${z.intro}</p><ul style="list-style:none;padding:0">${zList}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div>${others}<div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte en temps réel</a></div></nav></article>`
+              const zNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — ${z.name}</h1><p style="color:#686868;margin-bottom:12px">${zBeaches.length} plages suivies. ${zStatusSummary} ${indexObservationLabel}</p><p style="color:#333;line-height:1.6;margin-bottom:20px">${zIntro}</p><ul style="list-style:none;padding:0">${zList}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div>${others}<div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte des sargasses</a></div></nav></article>`
               const zSchema = JSON.stringify({ "@context": "https://schema.org", "@type": "CollectionPage", "name": zTitle, "description": zDesc, "url": zUrl, "isPartOf": { "@type": "WebApplication", "name": `Sargasses ${island}`, "url": `https://${domain}/` }, "dateModified": today })
               const zBreadcrumb = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Accueil", "item": `https://${domain}/` }, { "@type": "ListItem", "position": 2, "name": "Plages", "item": plagesUrl }, { "@type": "ListItem", "position": 3, "name": z.name, "item": zUrl }] })
               const zHtml = htmlSubpage
@@ -2337,12 +2353,17 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // "baignade ideale martinique", etc. Build-time generation reads _weather
           // (Open-Meteo) + beach status so content is unique per build, per island.
           {
-            const statusByIdCond = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
-            const weatherAgeMs = _weatherFreshness ? (Date.now() - new Date(_weatherFreshness).getTime()) : Infinity
-            const isWeatherStale = weatherAgeMs > 12 * 60 * 60 * 1000
-            const weatherFreshnessLabel = isWeatherStale || !_weatherFreshness
-              ? 'Vérification des conditions météo en cours'
-              : `Données rafraîchies il y a ${Math.round(weatherAgeMs / 3600000)}h`
+            const statusByIdCond = statusById
+            let conditionsSatellitePayload = null
+            try {
+              conditionsSatellitePayload = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
+            } catch {}
+            const conditionsFreshness = evaluateConditionsFreshness(conditionsSatellitePayload, _weatherFreshness)
+            const isConditionsFresh = conditionsFreshness.selectionFresh
+            const suspendedSelectionCopy = 'Sélection suspendue : l’observation satellite et la météo marine ne satisfont pas toutes deux les seuils de fraîcheur.'
+            const hubFreshnessCopy = isConditionsFresh
+              ? 'Sélections calculées au build à partir des dernières données disponibles.'
+              : suspendedSelectionCopy
 
             // Same GP-first/MQ-last ordering as /plages/ — see comment there.
             for (const islandCode of ['gp', 'mq']) {
@@ -2354,19 +2375,26 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 // Apply today's status to each beach before filtering
                 const enrichedBeaches = islandBeaches.map(b => ({
                   ...b,
-                  status: statusByIdCond[b.id] || b.status,
+                  status: statusByIdCond[b.id] || null,
                 }))
-                const matching = isWeatherStale ? [] : enrichedBeaches
+                const matching = !isConditionsFresh ? [] : enrichedBeaches
                   .filter(b => page.filter(b, _weather[b.id]))
                   .map(b => ({ ...b, _w: _weather[b.id] }))
                   .sort((a, b) => (a.drive || 99) - (b.drive || 99))
                   .slice(0, 30)
-                const pageTitle = isMQ ? page.titleMq : page.titleGp
-                const pageH1 = isMQ ? page.h1Mq : page.h1Gp
+                const pageTitleBase = isMQ ? page.titleMq : page.titleGp
+                const pageH1Base = isMQ ? page.h1Mq : page.h1Gp
+                const pageTitle = isConditionsFresh ? pageTitleBase : suspendConditionTitle(pageTitleBase)
+                const pageH1 = isConditionsFresh ? pageH1Base : suspendConditionTitle(pageH1Base)
                 const pageUrl = `https://${domain}/conditions/${page.slug}/`
-                const pageDesc = clampDesc(`${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd\u2019hui en ${island}.` : 'Aucune plage ne correspond aujourd\u2019hui.'} ${page.intro.slice(0, 120)}`, 155)
-                const beachListHtml = matching.length > 0
-                  ? matching.map(b => {
+                const pageIntro = isConditionsFresh ? page.intro : suspendedSelectionCopy
+                const pageDesc = clampDesc(isConditionsFresh
+                  ? `${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd’hui en ${island}.` : 'Aucune plage ne correspond aujourd’hui.'} ${page.intro.slice(0, 120)}`
+                  : `Sélection suspendue en ${island} : observation satellite ou météo à vérifier. Dernières dates des sources affichées.`, 155)
+                const beachListHtml = !isConditionsFresh
+                  ? `<li style="padding:10px 0;color:#686868">${suspendedSelectionCopy}</li>`
+                  : matching.length > 0
+                    ? matching.map(b => {
                       const w = b._w
                       const wTxt = w && w.waveHeight != null ? `vagues ${w.waveHeight}m` : ''
                       const sTxt = w && w.sst != null ? `eau ${w.sst}\u00b0C` : ''
@@ -2376,7 +2404,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                       return `<li style="padding:10px 0;border-bottom:1px solid #eee"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600">${b.name}</a><br><span style="color:#686868;font-size:14px">${b.commune}${driveTxt}${details ? ' \u00b7 ' + details : ''}</span></li>`
                     }).join('')
                   : `<li style="padding:10px 0;color:#686868">${page.fallback}</li>`
-                const pageNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a> \u203a <a href="/plages/" style="color:#686868">Plages</a> \u203a Conditions</nav><h1 style="font-size:26px;margin-bottom:8px">${pageH1}</h1><p style="color:#444;margin-bottom:12px;font-size:15px">${page.intro}</p><p style="color:#686868;font-size:13px;margin-bottom:20px">${weatherFreshnessLabel}. Sources\u00a0: Copernicus Sentinel-3 (sargasses) + Open-Meteo Marine (vagues, temp\u00e9rature, UV).</p><h2 style="font-size:18px;margin:24px 0 12px">Plages correspondantes (${matching.length})</h2><ul style="list-style:none;padding:0;margin:0">${beachListHtml}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:14px"><a href="/conditions/baignade-ideale/" style="color:#E8A800;font-weight:600;margin-right:16px">Baignade id\u00e9ale</a><a href="/conditions/mer-calme/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer calme</a><a href="/conditions/mer-agitee/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer agit\u00e9e</a><a href="/conditions/uv-fort/" style="color:#E8A800;font-weight:600;margin-right:16px">UV fort</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte</a></nav></article>`
+                const pageResultsHeading = isConditionsFresh ? `Plages correspondantes (${matching.length})` : 'Sélection suspendue'
+                const pageNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a> \u203a <a href="/plages/" style="color:#686868">Plages</a> \u203a Conditions</nav><h1 style="font-size:26px;margin-bottom:8px">${pageH1}</h1><p style="color:#444;margin-bottom:12px;font-size:15px">${pageIntro}</p><p style="color:#686868;font-size:13px;margin-bottom:20px">${conditionsFreshness.satelliteLabel}. ${conditionsFreshness.weatherLabel}. Sources\u00a0: Copernicus Sentinel-3 (sargasses) + Open-Meteo Marine (vagues, temp\u00e9rature, UV).</p><h2 style="font-size:18px;margin:24px 0 12px">${pageResultsHeading}</h2><ul style="list-style:none;padding:0;margin:0">${beachListHtml}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:14px"><a href="/conditions/baignade-ideale/" style="color:#E8A800;font-weight:600;margin-right:16px">Baignade id\u00e9ale</a><a href="/conditions/mer-calme/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer calme</a><a href="/conditions/mer-agitee/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer agit\u00e9e</a><a href="/conditions/uv-fort/" style="color:#E8A800;font-weight:600;margin-right:16px">UV fort</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte</a></nav></article>`
                 const pageSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":pageTitle,"description":pageDesc,"url":pageUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
                 const breadcrumbCond = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/plages/`},{"@type":"ListItem","position":3,"name":"Conditions","item":`https://${domain}/conditions/`},{"@type":"ListItem","position":4,"name":pageH1,"item":pageUrl}]})
                 const condDir = resolve(outDir, 'conditions', page.slug)
@@ -2395,7 +2424,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
                   .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${pageTitle}" />`)
                   .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${pageDesc}" />`)
-                  .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: page.slug, beaches: matching.map(b => ({ id: b.id, name: b.name, commune: b.commune, slug: b.slug, lat: b.lat, lng: b.lng, drive: b.drive, kids: b.kids, snorkel: b.snorkel, status: b.status })) })}</script>\n    <script type="application/ld+json">\n    ${pageSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbCond}\n    </script>\n</head>`)
+                  .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: page.slug, freshness: { selectionFresh: isConditionsFresh, satelliteLabel: conditionsFreshness.satelliteLabel, weatherLabel: conditionsFreshness.weatherLabel }, beaches: matching.map(b => ({ id: b.id, name: b.name, commune: b.commune, slug: b.slug, lat: b.lat, lng: b.lng, drive: b.drive, kids: b.kids, snorkel: b.snorkel, status: b.status })) })}</script>\n    <script type="application/ld+json">\n    ${pageSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbCond}\n    </script>\n</head>`)
                   .replace('</body>', `\n    <noscript>${pageNoscript}</noscript>\n</body>`)
                 writeFileSync(resolve(condDir, 'index.html'), condHtml)
                 if (!isMQ) {
@@ -2408,11 +2437,12 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 else sitemapGPBeaches += condSitemapEntry
               }
               // /conditions/ landing (hub) — lists all sub-pages
-              const hubTitle = `Conditions des plages aujourd\u2019hui \u2014 ${island}`
-              const hubDesc = `Plages de ${island} class\u00e9es par conditions du jour\u00a0: baignade id\u00e9ale, mer calme, mer agit\u00e9e, UV fort, plages enfants, snorkeling. Donn\u00e9es satellite + Open-Meteo rafra\u00eechies quotidiennement.`
+              const hubTitleBase = `Conditions des plages aujourd’hui — ${island}`
+              const hubTitle = isConditionsFresh ? hubTitleBase : suspendConditionTitle(hubTitleBase)
+              const hubDesc = `Plages de ${island} classées selon les critères météo et les dernières observations satellite. Les dates des deux sources sont affichées séparément; les sélections sont suspendues si une source dépasse son seuil de fraîcheur.`
               const hubUrl = `https://${domain}/conditions/`
-              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isMQ ? p.h1Mq : p.h1Gp}</a><br><span style="color:#686868;font-size:14px">${p.intro.slice(0, 140)}\u2026</span></li>`).join('')
-              const hubNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${hubTitle}</h1><p style="color:#686868;margin-bottom:20px;font-size:15px">S\u00e9lections de plages mises \u00e0 jour chaque jour selon la météo et les sargasses. Choisissez le crit\u00e8re qui compte pour vous aujourd\u2019hui.</p><ul style="list-style:none;padding:0;margin:0">${hubLinks}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:16px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte sargasses</a></nav></article>`
+              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isConditionsFresh ? (isMQ ? p.h1Mq : p.h1Gp) : suspendConditionTitle(isMQ ? p.h1Mq : p.h1Gp)}</a><br><span style="color:#686868;font-size:14px">${isConditionsFresh ? p.intro.slice(0, 140) : suspendedSelectionCopy}\u2026</span></li>`).join('')
+              const hubNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${hubTitle}</h1><p style="color:#686868;margin-bottom:20px;font-size:15px">${hubFreshnessCopy} ${conditionsFreshness.satelliteLabel}. ${conditionsFreshness.weatherLabel}. Vérifiez les dates des sources avant de décider.</p><ul style="list-style:none;padding:0;margin:0">${hubLinks}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:16px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte sargasses</a></nav></article>`
               const hubSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":hubTitle,"description":hubDesc,"url":hubUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
               const hubDir = resolve(outDir, 'conditions')
               mkdirSync(hubDir, { recursive: true })
@@ -2428,7 +2458,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${hubTitle}" />`)
                 .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${hubDesc}" />`)
                 .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${hubUrl}" />`)
-                .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: 'hub', pages: conditionPages.map(p => p.slug) })}</script>\n    <script type="application/ld+json">\n    ${hubSchema}\n    </script>\n</head>`)
+                .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: 'hub', freshness: { selectionFresh: isConditionsFresh, satelliteLabel: conditionsFreshness.satelliteLabel, weatherLabel: conditionsFreshness.weatherLabel }, pages: conditionPages.map(p => p.slug) })}</script>\n    <script type="application/ld+json">\n    ${hubSchema}\n    </script>\n</head>`)
                 .replace('</body>', `\n    <noscript>${hubNoscript}</noscript>\n</body>`)
               writeFileSync(resolve(hubDir, 'index.html'), hubHtml)
               if (!isMQ) {

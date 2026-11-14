@@ -27,6 +27,18 @@ function base() {
   }
 }
 
+const workflowPath = path.join(ROOT, '.github', 'workflows', 'live-production-sentinel.yml')
+const workflowSource = fs.readFileSync(workflowPath, 'utf8')
+const incidentStep = workflowSource.match(/- name: Open or update deduplicated live incident[\s\S]*?\n\s+if: ([^\n]+)/)
+t(workflowSource.includes('echo "health_rc=$health_rc" >> "$GITHUB_OUTPUT"'),
+  'workflow exports operational health separately from confirmed incidents')
+t(workflowSource.includes("if: steps.scan.outputs.rc != '0' || steps.scan.outputs.health_rc != '0'"),
+  'workflow fails when confirmed incidents or operational health degradation is present')
+t(workflowSource.includes('health_rc=1') && workflowSource.includes('if [ "$health_rc" != "0" ]; then health_rc=1; fi'),
+  'missing, malformed, or non-healthy report fails closed')
+t(incidentStep?.[1].trim() === "steps.scan.outputs.rc != '0'",
+  'freshness-only degradation does not open or comment a live-incident issue')
+
 // 1. échec CI seul → incident live AUCUN (dans le fingerprint/incidents).
 {
   const r = sentinel.buildReport(base())
@@ -73,7 +85,47 @@ function base() {
   t(r.ok === true, '5b. COMPLET + sa=> ok')
 }
 
-// 6. incident ancien mais confirmé → nouvelle détection post revalidation :
+// 6. SLA breaches are unhealthy even when HTTP/Worker incidents are absent.
+// This reproduces the production artifact: HTTP 200 for all domains, no errors,
+// but the satellite observation exceeds the strict operational SLA.
+{
+  const input = base()
+  input.domains = ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum'].map(region => ({
+    domain: region + '.example.test',
+    checks: [{ path: '/', status: 200, ok: true }],
+    errors: [],
+    ok: false,
+    satelliteAgeMinutes: 2379,
+    operationalFreshness: {
+      ok: false,
+      status: 'OPERATIONAL_SLA_BREACHED',
+      reason: 'observation hors SLA',
+      limitMinutes: 900,
+    },
+    ts: new Date(NOW).toISOString(),
+  }))
+  const r = sentinel.buildReport(input)
+  t(r.ok === false, '6a. six operational SLA breaches => report.ok=false')
+  t(r.domainFailures === 6, '6b. all six degraded domains are counted')
+  t(r.operationalFreshness.breaches === 6, '6c. all six SLA breaches remain explicit')
+  t(r.incidents.length === 0, '6d. freshness degradation stays separate from HTTP/Worker incidents')
+  t(r.fingerprint === sentinel.fingerprintOf(''), '6e. freshness-only degradation does not fabricate a live-incident fingerprint')
+}
+
+// 7. Unverified operational freshness also fails the global health boolean.
+{
+  const input = base()
+  input.domains[0].ok = false
+  input.domains[0].operationalFreshness = {
+    ok: false, status: 'NOT_PROVEN', reason: 'source timestamp unavailable', limitMinutes: 900
+  }
+  const r = sentinel.buildReport(input)
+  t(r.ok === false, '7a. unverified observation => report.ok=false')
+  t(r.operationalFreshness.unverified === 1, '7b. unverified region is counted')
+  t(r.incidents.length === 0, '7c. missing evidence is not mislabeled as a confirmed HTTP/Worker incident')
+}
+
+// 8. incident ancien mais confirmé → nouvelle détection post revalidation :
 //    le fingerprint inclut le message — une réapparition produit une nouvelle empreinte.
 {
   const input = base()
@@ -88,7 +140,7 @@ function base() {
   t(r3.fingerprint !== r1.fingerprint, '6b. réapparition déplacement -> nouvelle empreinte (revalidation récente)')
 }
 
-// 7. permission tail manquante → blocage documenté (sensor.missing), pas d'incident.
+// 9. permission tail manquante → blocage documenté (sensor.missing), pas d'incident.
 {
   const input = base()
   input.tail = { errors: [], missing: ['worker Denied'], total: 0 } // cas où wrangler refusé par permission
@@ -96,7 +148,7 @@ function base() {
   t(r.ok === true && r.sensor.proven === false, '7a. permission manquante => succès du run (pas d incident) + NOT_PROVEN')
 }
 
-// 8. Câblage source : le module exporte les fonctions testables, main() ne s'exécute pas au require.
+// 10. Câblage source : le module exporte les fonctions testables, main() ne s'exécute pas au require.
 t(typeof sentinel.buildReport === 'function' && typeof sentinel.checkDomain === 'function', '8a. module exporte buildReport/checkDomain (testable)')
 t(typeof sentinel.FINGERPRINT_MAX_AGE_H === 'number' && sentinel.FINGERPRINT_MAX_AGE_H === 48, '8b. fenêtre de récence d empreinte exportée (48h)')
 

@@ -113,7 +113,73 @@ const assert = require("node:assert/strict");
     assert.equal((await pending.json()).paid, false);
     assert.equal(state.rpcCalls.length, 0);
 
-    console.log("PASS: payment_status RPC arguments, amount validation, SOS no-email, owner mismatch, RPC fail-closed, pending status");
+    // ── Retrait du parcours SOS (2026-11-09) ─────────────────────────────────
+    // CRÉATION : un pass « sos » ne peut plus être vendu (aucun montant libre).
+    // LIVRAISON : un paiement « sos » DÉJÀ encaissé reste livré (encaisser
+    // sans livrer serait un trou de confiance).
+    const createCalls = [];
+    globalThis.fetch = async (input, init = {}) => {
+      const url = String(input);
+      if (url === "https://api.mollie.com/v2/payments" && (init.method || "GET") === "POST") {
+        createCalls.push(JSON.parse(init.body));
+        return new Response(JSON.stringify({ id: "tr_created01", _links: { checkout: { href: "https://mollie.test/checkout/tr_created01" } } }), {
+          status: 201, headers: { "content-type": "application/json" }
+        });
+      }
+      return originalFetch(input, init);
+    };
+    const sosCreate = await worker.fetch(new Request("https://worker.test/api/mollie", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "create_payment", pass: "sos", cents: 100, cur: "EUR", email: "" })
+    }), env);
+    // 2026-11-09 : le refus d'un pass « sos » est un 410 « offre_indisponible »
+    // (offre RETIRÉE), aligné sur le serveur de paiement live — pas un 400
+    // « Prix invalide » qui laisserait croire à une erreur de formulaire.
+    assert.equal(sosCreate.status, 410);
+    assert.equal((await sosCreate.json()).error, "offre_indisponible");
+    assert.equal(createCalls.length, 0, "aucun paiement « sos » ne doit être créé");
+
+    // ── CONTRÔLE PROPRIÉTAIRE : le client doit TOUJOURS transmettre l'email ──
+    // Le serveur (payment_status) refuse un paiement appartenant à un autre
+    // email (403 payment_owner_mismatch) — mais CE CONTRÔLE n'est effectif que
+    // si le client envoie l'email. Un appel sans `email` laisserait la
+    // confirmation serveur s'ouvrir à quiconque connaît un identifiant de
+    // paiement. Garde-fou : chaque appel `payment_status` du client doit
+    // porter un champ email.
+    const fsMod = require("node:fs");
+    const pathMod = require("node:path");
+    const clientFiles = ["src/PremiumModal.jsx", "src/Sargasses_PROD.jsx"];
+    let auditedCalls = 0;
+    for (const rel of clientFiles) {
+      const src = fsMod.readFileSync(pathMod.resolve(__dirname, "..", "..", rel), "utf8");
+      const re = /action:"payment_status"/g;
+      let m;
+      while ((m = re.exec(src))) {
+        // Extrait l'objet littéral transmis à JSON.stringify (accolades équilibrées).
+        // L'accolade d'ouverture précède `action:` dans le source → recherche en ARRIÈRE.
+        const open = src.lastIndexOf("{", m.index);
+        assert.ok(open !== -1, rel + " : objet de requête introuvable");
+        let depth = 0;
+        let end = -1;
+        for (let i = open; i < src.length; i++) {
+          if (src[i] === "{") depth++;
+          else if (src[i] === "}") {
+            depth--;
+            if (depth === 0) { end = i; break; }
+          }
+        }
+        assert.ok(end !== -1, rel + " : objet de requête mal formé");
+        const payload = src.slice(open, end + 1);
+        auditedCalls++;
+        assert.match(payload, /email/,
+          rel + " : appel payment_status sans email -> le contrôle propriétaire serveur serait inerte");
+      }
+    }
+    assert.ok(auditedCalls >= 4,
+      "les appels payment_status du client ont tous été audités (" + auditedCalls + ")");
+
+    console.log("PASS: payment_status RPC arguments, amount validation, owner mismatch, RPC fail-closed, pending status, CRÉATION sos refusée / LIVRAISON sos conservée, email transmis par TOUS les appels client payment_status");
   } finally {
     globalThis.fetch = originalFetch;
   }

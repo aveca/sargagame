@@ -18,19 +18,34 @@ return [
     'supabase_url'         => 'https://rswdmjtdzrucqzzukfmd.supabase.co',  // PUBLIC — Project Ref
     'supabase_service_key' => '',                                           // SECRET service_role — vide = désactivé
 
-    // Montants des abonnements récurrents. Mollie crée les subscriptions INLINE
-    // (amount + interval), PAS de plan_id pré-créé comme PayPal. La présence de
-    // l'entrée = allowlist serveur (anti-tampering : un montant forgé est rejeté).
-    'subscription' => [
-        'monthly' => ['amount' => '4.99',  'currency' => 'EUR', 'interval' => '1 month'],
-        'annual'  => ['amount' => '49.00', 'currency' => 'EUR', 'interval' => '12 months'], // aligné sur l'affichage front (49 €/an)
-    ],
-// Passes one-time (SANS abonnement). cents = allowlist anti-tampering ; days = durée d'accès.
+    // Abonnements récurrents : map défini par mol_b2b_plans() dans mollie-lib.php
+    // (pro_monthly 79.00 EUR / mois, brief_monthly 29.00 EUR / mois) et NON par ce fichier.
+    // mollie.php create_subscription lit mol_b2b_plans() : un plan absent de cette map
+    // est rejeté ("Plan mensuel inconnu"). Il n'existe AUCUN abonnement B2C à 4,99 €/mois
+    // ni à 49 €/an : l'offre B2C est un PASS à paiement unique.
+    // (Les valeurs 'monthly' => 4.99 / 'annual' => 49.00 qui figuraient ici étaient
+    //  inertes ET fantêmes : aucun plan correspondant n'a jamais été vendable.)
+    //
+    // Passes one-time (SANS abonnement) — DOCUMENTATION SEULE.
+    // Les clés et montants ci-dessous sont ceux que le serveur accepte ; la source
+    // AUTORITATIVE reste public/api/mollie.php ($passPrices) + public/api/create-checkout.php
+    // ($ALLOWED_CENTS). La parité est verrouillée par tests/unit/price-parity.test.cjs.
+    //   • 'season' (et NON 'saison') : c'est la clé serveur (workers/sargagame DAYS_TABLE).
+    //   • 'p7' a été RETIRé : plus aucun code serveur ne l'accepte (les paiements
+    //     historiques de juillet 2026 l'utilisaient — ils ne sont plus rejouables).
+    //   • OFFRE VALIDÉE 2026-11-09 (miroir EXACT du serveur de paiement live
+    //     workers/sg-payments) : trip7 = 7,99 € · p30 = 14,99 € · season = 24,99 €.
+    //     En USD : trip7 = $8.99 · p30 = $16.99 · season = $27.99.
+    //   • La surcharge USD de haute saison (+15 %) a été SUPPRIMÉE le 2026-11-09 :
+    //     le serveur facture le montant affiché (plus de divergence aff./débit).
+    //   • 'sos' a été RETIRÉ le 2026-11-09 : le parcours de paiement SOS (1 €)
+    //     n'est plus proposé au client et le serveur REFUSE sa création. La
+    //     livraison des paiements `sos` DÉJÀ encaissés reste possible (webhook
+    //     + backfill contrôlé) — encaisser sans livrer serait un trou de
+    //     confiance. Ne pas réintroduire 'sos' ici.
     'passes' => [
-        'sos'    => ['cents' => 100,  'days' => 1,   'label' => 'SOS Plage 24H — rapport demain'],
-        'trip7'  => ['cents' => 499,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'],
-        'saison' => ['cents' => 1999, 'days' => 210, 'label' => 'Pass saison'],
-        'p7'     => ['cents' => 799,  'days' => 7,   'label' => 'Pass 7 jours'],
-        'p30'    => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],
+        'trip7' => ['cents' => 799,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'],
+        'season'=> ['cents' => 2499, 'days' => 210, 'label' => 'Pass saison'],
+        'p30'   => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],
     ],
 ];

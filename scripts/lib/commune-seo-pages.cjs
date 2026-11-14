@@ -3,10 +3,10 @@
  *
  * Capte la longue-traîne "sargasses <commune>" (intention vérification locale) pour
  * les communes littorales qui n'ont PAS encore de page dédiée. Chaque page est un
- * HUB data-backed : elle liste les VRAIES plages de la commune (depuis la config
- * BEACHES) avec lien vers leur fiche /plages/<slug>/ (où l'état live est affiché),
- * + maillage vers carte/prévisions/saison/meilleures-plages/alertes. Pas de
- * statut inventé : la page renvoie à la donnée live, elle ne la fabrique pas.
+ * HUB data-backed : elle liste les plages de la commune (depuis la config BEACHES)
+ * avec un lien vers chaque fiche /plages/<slug>/, où l'observation publiée et son
+ * horodatage sont visibles; un statut actuel n'apparaît que si la fraîcheur passe.
+ * Le maillage relie carte, tendances, saison, plages suivies et alertes.
  *
  * Pattern identique aux pages communes écrites à la main (Diamant, Sainte-Luce…),
  * mais généré → couvre les ~33 communes restantes sans dette de code.
@@ -78,32 +78,31 @@ function prepFor(name) {
 }
 
 function titleFor(c) {
-  // <= ~60-66 chars pour le <title>.
-  return `Sargasses ${prepFor(c.name)} (${ISLAND[c.island].label}) — état du jour`
+  // Le titre cible l'intention locale sans promettre un verdict actuel.
+  return `Sargasses ${prepFor(c.name)} (${ISLAND[c.island].label}) — dernières observations`
 }
 
 function descFor(c) {
-  const first = c.beaches.slice(0, 3).map(b => b.name).join(', ')
-  return `Y a-t-il des sargasses ${prepFor(c.name)} aujourd'hui ? État du jour des plages (${first}) en ${ISLAND[c.island].label}. Carte en temps réel, prévision 7 jours par plage, données satellite.`.slice(0, 158)
+  return `Sargasses ${prepFor(c.name)} (${ISLAND[c.island].label}) : dernières observations satellite horodatées. Statut actuel uniquement si la mesure est assez récente.`.slice(0, 158)
 }
 
 function noscriptFor(c, siblings) {
   const isl = ISLAND[c.island]
   const beachLis = c.beaches.map(b => `<li><a href="/plages/${b.slug}/">${esc(b.name)}</a></li>`).join('')
-  return `<article><h1>Sargasses ${esc(prepFor(c.name))} (${isl.label}) — état des plages aujourd'hui</h1>` +
-    `<p>Y a-t-il des <strong>sargasses ${esc(prepFor(c.name))}</strong> aujourd'hui ? L'état des sargasses change d'une plage à l'autre et d'un jour à l'autre&nbsp;: une plage de la commune peut être propre quand une autre, à quelques kilomètres, reçoit un banc. Vérifiez l'<a href="/carte-sargasses/">état du jour plage par plage sur la carte</a> avant de poser votre serviette — mesuré par satellite, pas deviné, plusieurs fois par jour.</p>` +
-    `<h2>Les plages ${esc(prepFor(c.name))}</h2><ul>${beachLis}</ul>` +
-    `<p>Touchez une plage pour voir son <strong>état du jour</strong> (propre, modéré, à éviter), son Beach Score et sa prévision 7 jours.</p>` +
+  return `<article><h1>Sargasses ${esc(prepFor(c.name))} (${isl.label}) — dernières observations</h1>` +
+    `<p>Y a-t-il des <strong>sargasses ${esc(prepFor(c.name))}</strong> ? Les conditions peuvent varier d'une plage à l'autre. Consultez la dernière observation satellite publiée pour chaque plage et son horodatage. Un statut actuel n'est affiché que si la mesure est suffisamment récente; si la source est retardée ou indisponible, aucun verdict actuel n'est présenté.</p>` +
+    `<h2>Plages suivies ${esc(prepFor(c.name))}</h2><ul>${beachLis}</ul>` +
+    `<p>Chaque fiche plage présente la dernière observation publiée, son horodatage et son niveau de confiance. Un statut actuel et un score ne sont affichés que si la mesure passe le contrôle de fraîcheur.</p>` +
     `<h2>Quand les sargasses touchent-elles ${esc(c.name)} ?</h2>` +
-    `<p>La <a href="/${isl.saison}/">saison des sargasses</a> court d'avril à octobre, avec un pic de mai à août. En dehors de cette fenêtre, les échouages sont plus rares mais possibles. Le plus fiable reste de comparer les plages de la commune sur la <a href="/carte-sargasses/">carte en temps réel</a> et de consulter la <a href="/previsions/">prévision 7 jours</a>.</p>` +
+    `<p>La <a href="/${isl.saison}/">saison des sargasses</a> court d'avril à octobre, avec un pic de mai à août. En dehors de cette fenêtre, les échouages sont plus rares mais possibles. Comparez les dernières observations horodatées sur la <a href="/carte-sargasses/">carte des observations par plage</a> et consultez les <a href="/previsions/">tendances disponibles</a> uniquement lorsque les données nécessaires sont validées.</p>` +
     `<h2>Où aller si ${esc(c.name)} est touchée ?</h2>` +
-    `<p>Consultez les <a href="/${isl.best}/">plages les plus propres du jour</a> en ${isl.label} pour trouver une alternative à proximité, ou la <a href="/previsions/">prévision 7 jours</a> pour décaler votre sortie au bon moment.</p>` +
+    `<p>Consultez les <a href="/${isl.best}/">plages suivies en ${isl.label}</a> pour comparer les dernières observations publiées. Une mesure trop ancienne ne doit pas être interprétée comme un état actuel.</p>` +
     `<h2>Être prévenu ${esc(prepFor(c.name))}</h2>` +
-    `<p><a href="/alertes/">Activez une alerte gratuite</a> sur une plage de la commune&nbsp;: Le Veilleur surveille la mer pendant que vous dormez et vous envoie l'état du jour avant de partir.</p>` +
+    `<p><a href="/alertes/">Activez une alerte gratuite</a> sur une plage de la commune pour recevoir les notifications disponibles. Vérifiez toujours l'heure de la dernière observation avant de vous déplacer.</p>` +
     (siblings && siblings.length
       ? `<h2>Sargasses dans les communes voisines</h2><p>${siblings.map(s => `<a href="/${s.slug}/">${esc(s.name)}</a>`).join(' · ')}</p>`
       : '') +
-    `<p><a href="/carte-sargasses/">Carte en temps réel</a> · <a href="/previsions/">Prévisions 7 jours</a> · <a href="/${isl.saison}/">Saison des sargasses</a> · <a href="/${isl.best}/">Meilleures plages du jour</a></p>` +
+    `<p><a href="/carte-sargasses/">Carte des observations</a> · <a href="/previsions/">Tendances disponibles</a> · <a href="/${isl.saison}/">Saison des sargasses</a> · <a href="/${isl.best}/">Plages suivies</a></p>` +
     `</article>`
 }
 

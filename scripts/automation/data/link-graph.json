@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-26T17:32:40.938Z",
+  "generatedAt": "2026-11-09T21:42:51.895Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
+      "pageCount": 366,
       "noIncomingCount": 195,
-      "fewIncomingCount": 42,
+      "fewIncomingCount": 44,
       "phantomCount": 16,
       "noIncoming": [
         {
@@ -103,6 +103,11 @@
           "out": 0
         },
         {
+          "url": "/premium/",
+          "in": 0,
+          "out": 1
+        },
+        {
           "url": "/pro/widget-config/",
           "in": 0,
           "out": 2
@@ -116,11 +121,6 @@
           "url": "/sargasses-aujourdhui/",
           "in": 0,
           "out": 10
-        },
-        {
-          "url": "/sargasses-octobre-2026/",
-          "in": 0,
-          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -262,12 +262,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 8
+          "out": 7
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 7
         },
         {
           "url": "/en/sargassum-health/",
@@ -308,6 +308,16 @@
           "url": "/sargasses-martinique-cette-semaine/",
           "in": 1,
           "out": 11
+        },
+        {
+          "url": "/sargasses-novembre-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/sargasses-octobre-2026/",
+          "in": 1,
+          "out": 3
         },
         {
           "url": "/veilleur-mvp/anse-mitan/",
@@ -398,22 +408,12 @@
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 2,
           "out": 2
-        },
-        {
-          "url": "/es/temporada-sargazo/",
-          "in": 2,
-          "out": 2
-        },
-        {
-          "url": "/faq/",
-          "in": 2,
-          "out": 6
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 188,
+          "in": 190,
           "out": 17
         },
         {
@@ -438,7 +438,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 47,
+          "in": 48,
           "out": 8
         },
         {
@@ -469,11 +469,6 @@
           "out": 55
         },
         {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 24
-        },
-        {
           "url": "/plages/plages-cote-caraibe-martinique/",
           "in": 22,
           "out": 24
@@ -490,7 +485,7 @@
         },
         {
           "url": "/",
-          "in": 188,
+          "in": 190,
           "out": 17
         },
         {
@@ -504,14 +499,19 @@
           "out": 16
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "in": 13,
-          "out": 16
-        },
-        {
           "url": "/sargasses-sainte-luce/",
           "in": 6,
           "out": 14
+        },
+        {
+          "url": "/saison-sargasses-martinique/",
+          "in": 28,
+          "out": 14
+        },
+        {
+          "url": "/pro/",
+          "in": 15,
+          "out": 13
         }
       ],
       "phantom": [
@@ -618,9 +618,9 @@
       ]
     },
     "gp": {
-      "pageCount": 403,
+      "pageCount": 405,
       "noIncomingCount": 201,
-      "fewIncomingCount": 42,
+      "fewIncomingCount": 44,
       "phantomCount": 20,
       "noIncoming": [
         {
@@ -734,6 +734,11 @@
           "out": 0
         },
         {
+          "url": "/premium/",
+          "in": 0,
+          "out": 1
+        },
+        {
           "url": "/pro/widget-config/",
           "in": 0,
           "out": 2
@@ -762,11 +767,6 @@
           "url": "/sargasses-marie-galante/",
           "in": 0,
           "out": 12
-        },
-        {
-          "url": "/sargasses-octobre-2026/",
-          "in": 0,
-          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -883,7 +883,7 @@
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 7
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -944,6 +944,16 @@
           "url": "/sargasses-guadeloupe-cette-semaine/",
           "in": 1,
           "out": 11
+        },
+        {
+          "url": "/sargasses-novembre-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/sargasses-octobre-2026/",
+          "in": 1,
+          "out": 3
         },
         {
           "url": "/sargasses-saint-francois/",
@@ -1014,22 +1024,12 @@
           "url": "/en/best-beaches-guadeloupe/",
           "in": 2,
           "out": 1
-        },
-        {
-          "url": "/en/understanding-sargassum/",
-          "in": 2,
-          "out": 0
-        },
-        {
-          "url": "/es/mapa-sargazo/",
-          "in": 2,
-          "out": 0
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 313,
+          "in": 314,
           "out": 15
         },
         {
@@ -1039,7 +1039,7 @@
         },
         {
           "url": "/carte-sargasses/",
-          "in": 132,
+          "in": 133,
           "out": 13
         },
         {
@@ -1054,7 +1054,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 47,
+          "in": 48,
           "out": 8
         },
         {
@@ -1090,11 +1090,6 @@
           "out": 38
         },
         {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 28
-        },
-        {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
           "in": 25,
           "out": 27
@@ -1120,14 +1115,19 @@
           "out": 15
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "in": 10,
+          "url": "/",
+          "in": 314,
           "out": 15
         },
         {
-          "url": "/",
-          "in": 313,
-          "out": 15
+          "url": "/sargasses-la-desirade/",
+          "in": 3,
+          "out": 14
+        },
+        {
+          "url": "/sargasses-bouillante/",
+          "in": 0,
+          "out": 13
         }
       ],
       "phantom": [

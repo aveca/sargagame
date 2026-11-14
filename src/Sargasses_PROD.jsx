@@ -13,8 +13,11 @@ import { legalHref, legalLinks } from "./lib/legal-links.js"
 import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
-import PassOffer from "./PassOffer.jsx"
-import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+// ⚠️ NE PAS réimporter PassOffer ici : l'import était MORT (aucun `<PassOffer` dans
+// ce fichier) mais il tirait PassOffer + src/lib/pricing.js dans le chunk EAGER
+// (chemin critique) — +0,6 Ko gzip au-dessus du budget CI de 210 Ko. PassOffer
+// n'est chargé que par PremiumModal.jsx (LAZY).
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, isRemoteAnalyticsEnabled } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import "./Themes.css"
 import "./app-runtime.css"
@@ -121,7 +124,6 @@ const SolutionsStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({def
 const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.MapIntroStory})))
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
-const LazySOSPlage=lazyWithRetry(()=>import("./SOSPlage.jsx"))
 // Slugs stations (validation légère côté App ; STATION_BEATS vit dans StoryScenes.jsx).
 const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargasses","danger-sargasses-h2s","nettoyer-sargasses","methode-carte","en/understanding-sargassum","en/satellite-sargassum-detection"])
 
@@ -1849,10 +1851,11 @@ function pricePerDay(){
 // par create-region-payment-links.cjs). Jamais branché sur effectivePlan /
 // stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
 const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
-export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
-// Montant du Trip Pass en cents, dérivé du prix région ("$5.99" → 599). Doit
+// Prix du Trip Pass affiché (offre validée 2026-11-09 : trip7 = 7,99 € / $8.99).
+export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$8.99"):null
+// Montant du Trip Pass en cents, dérivé du prix région ("$8.99" → 899). Doit
 // matcher l'allowlist serveur create-checkout.php action:pay_once ($USD_ISLANDS
-// → [599]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
+// → [899]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
 // avec un montant hors allowlist qui se ferait rejeter 400).
 export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(/[^\d.]/g,""));return Number.isFinite(n)&&n>0?Math.round(n*100):0})()
 // ── Offres EUR (MQ/GP) en MIROIR de l'US — Trip Pass 7j + Annuel ──────────────
@@ -1861,12 +1864,12 @@ export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(
 // n'est lisible que pour les NOUVELLES régions). Les valeurs miroir du bloc
 // `pricing` ajouté à regions/mq.json + gp.json (source de vérité config).
 //
-// TRIP PASS EUR : accès UNIQUE 7 jours, 4,99 € one-time (miroir du tripPass USD
-// $5.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
-// devise EUR. 499¢ DOIT être dans l'allowlist serveur pay_once EUR
-// (create-checkout.php → [499, 799, ...]). EUR uniquement (!IS_NEW_REGION).
-export const EUR_TRIP_CENTS=499
-export const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
+// TRIP PASS EUR : accès UNIQUE 7 jours, 7,99 € one-time (miroir du tripPass USD
+// $8.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
+// devise EUR. 799¢ DOIT être dans l'allowlist serveur pay_once EUR
+// (create-checkout.php → [799, 1499, 2499]). EUR uniquement (!IS_NEW_REGION).
+export const EUR_TRIP_CENTS=799
+export const PRICE_TRIP_EUR=getLang()==="en"?"€7.99":"7,99 €"
 // ANNUEL EUR : 49 €/an (miroir du yearly USD $79). DÉJÀ entièrement câblé côté
 // code (hasAnnual=true pour EUR → toggle annuel, défaut=annuel, serveur 'subscribe'
 // résout prices['annual'] depuis stripe-config.php). Seul l'affichage du prix
@@ -1972,14 +1975,16 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // les PAID passent par le checkout on-site. sg_checkout_started = début réel
   // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
   "sg_checkout_started",
-  // P0 mesure (2026-10-26) : le paiement SOS 1 € (src/SOSPlage.jsx) émettait
-  // `sg_sos_checkout_start`, ABSENT de cette allowlist → l'événement partait en
-  // GA4/beacon mais JAMAIS vers Supabase (`track()` : if(SG_FUNNEL_EVENTS.has(event))).
-  // Résultat mesuré : checkout.reached = 0 dans daily-metrics.json alors que des
-  // paiements réels avaient lieu — tout le funnel checkout était invisible, donc
-  // aucune optimisation CRO prouvable. `sg_sos_checkout_*` commençant par "sg_sos"
-  // et non "sg_checkout", il était aussi exclu de la file `critical`.
-  "sg_sos_checkout_start","sg_sos_checkout_error",
+  "pricing_view","CTA_click","checkout_started",
+  // ⚠️ 2026-11-09 — Le parcours de paiement SOS (1 €) est RETIRÉ du client :
+  // `sg_sos_checkout_start` / `sg_sos_checkout_error` ne sont plus émis et ne
+  // sont donc plus allowlistés (cf. tests/unit/sos-public-surface-removed.test.cjs).
+  // Contrôle affichage = débit (2026-11-04) : le serveur renvoie le montant
+  // EFFECTIF qu'il débite (champ `amount` de create_payment). Si le client a
+  // affiché un autre montant (bascule de mois serveur vs navigateur autour du
+  // 1er juin / 1er décembre, ou tarif non aligné), l'écart est MESURÉ au lieu
+  // d'être invisible. 0 écart attendu en régime nominal.
+  "sg_price_mismatch",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
@@ -1993,35 +1998,31 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Les 10 postes du Veilleur « Jusqu'où on descend » (?verticals, 2026-07-02) : ouverture de
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
   "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
+function sgCorrelation(){
+  try{
+    let id=sessionStorage.getItem("sg_corr")
+    if(!id){id=(window.crypto&&crypto.randomUUID&&crypto.randomUUID())||String(Date.now());sessionStorage.setItem("sg_corr",id)}
+    return String(id).slice(0,80)
+  }catch(_){return "local"}
+}
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
+  const remoteEnabled=isRemoteAnalyticsEnabled()
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
   // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
   // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
-  if(SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
+  
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
-  try{window.gtag("event",event,p)}catch(e){}
-  // Measurement Protocol direct beacon — bypasses gtag.js DMA block
-  // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
-  //  et beaconner ici polluerait les stats MQ/GP)
-  if(!IS_NEW_REGION)try{
-    const isGP=window.location.hostname.includes("guadeloupe")
-    const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
-    const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
-    const cid=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/)?.[1]||"a."+Date.now()
-    navigator.sendBeacon&&navigator.sendBeacon(
-      `https://www.google-analytics.com/mp/collect?measurement_id=${mid}&api_secret=${sec}`,
-      JSON.stringify({client_id:cid,events:[{name:event,params:p}]}))
-  }catch{}
+  if(remoteEnabled)try{window.gtag("event",event,p)}catch(e){}
+  // Measurement Protocol credentials are private and must never ship to browsers.
+  // Keep the configured Google tag and first-party Supabase funnel as client analytics paths.
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
-    // SOS 1 € : même chemin critique que le checkout on-site (voir allowlist).
-    ||event.startsWith("sg_sos_checkout")
-  if(critical){
+  if(remoteEnabled&&critical){
     const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
       const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
@@ -2035,11 +2036,12 @@ export function track(event,params={}){
   }
   // Tracking FIRST-PARTY indépendant (sans GA/Sheets) : capture l'event dans le résumé de session.
   try{sgCollectEvent(event,p)}catch(e){}
+  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
 }
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
   try{
-    if(!window.gtag)return
+    if(!isRemoteAnalyticsEnabled()||!window.gtag)return
     const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
     if(!q.length)return
     // Send top 50 oldest events, clear them
@@ -2057,13 +2059,21 @@ try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 // MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
 // pour ne plus dépendre de Apps Script/clasp push pour le funnel.
 export function submitLead(email,source){
+  // Keep attribution in function scope: the Supabase sink runs after the transport try.
+  let island="MQ"
   try{
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
-    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
-    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
   }catch{}
-  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  // Apps Script delivery is best-effort and independent from first-party funnel logging.
+  try{
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
+    let beaconQueued=false
+    try{if(navigator.sendBeacon)beaconQueued=navigator.sendBeacon(APPS_SCRIPT_URL,body)}catch{}
+    if(!beaconQueued){
+      fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    }
+  }catch{}
+  // Always record the non-PII lead event in Supabase, whether sendBeacon queued or fetch fell back.
   try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
 
@@ -4498,11 +4508,11 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   // cleanup baisse), sinon le satellite. Provenance nommée dans le bandeau ci-dessous → jamais
   // « mesuré au satellite » sur un niveau terrain. Forecast J+1-7 (fcDays) reste 100 % satellite.
   const _terrainStatus=terrainDisplayStatus(beach?.status,terrainEvents)
-  const status=_terrainStatus||_satStatus
-  const sc=comicStatusColor(status)
-  const hasScore=typeof beach?.score==="number"
+  const satelliteDecisionCurrent = isSatelliteFresh12h(sargData)
+  const status = _terrainStatus || (satelliteDecisionCurrent ? _satStatus : "_loading")
+  const sc = comicStatusColor(status)
+  const hasScore = satelliteDecisionCurrent && typeof beach?.score === "number"
   const daypart=(()=>{try{const h=new Date().getHours();return h<12?"matin":h<18?"aprem":"soir"}catch(_){return "matin"}})()
-  const V=comicVerdict(status,lang,daypart)
 
   // ── Score count-up « tally » cartoon — anime 0 → score à l'ouverture de la fiche
   const [scoreAnim,setScoreAnim]=useState(0)
@@ -4517,13 +4527,22 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     return()=>{try{cancelAnimationFrame(raf)}catch(_){}}
   },[beach?.id,beach?.score])
 
-  // ── Fraîcheur satellite (confiance) — preuve « mesuré, pas deviné »
-  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
-  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
-    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
-    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+    // ── Fraîcheur satellite (confiance) — seule l'observation ERDDAP fait foi.
+  const satAge = satelliteAgeHours(sargData)
+  const satFresh = satelliteDecisionCurrent
+  const satLabel = satAge == null
+    ? _t(lang,"Observation satellite à vérifier","Satellite observation needs checking","Medición satelital por verificar")
+    : satAge < 1
+      ? _t(lang,"Dernière observation satellite il y a <1 h","Last satellite observation <1h ago","Última observación satelital hace <1 h")
+      : _t(lang,`Dernière observation satellite il y a ${Math.round(satAge)} h`,`Last satellite observation ${Math.round(satAge)}h ago`,`Última observación satelital hace ${Math.round(satAge)} h`)
+  const lastObservedStatusLabel = (ST[_satStatus] || ST._loading)[lang === "en" ? "le" : lang === "es" ? "les" : "l"]
+  const V = status === "_loading"
+    ? { big: _t(lang,"À vérifier","Check before deciding","Verificar antes de decidir"), when: satLabel, hl: _t(lang,"À vérifier","Check","Verificar") }
+    : _terrainStatus && !satelliteDecisionCurrent
+      ? { ...comicVerdict(status, lang, daypart), when: _t(lang,"signalement terrain récent","recent on-site report","reporte reciente en playa") }
+      : comicVerdict(status, lang, daypart)
 
-  // ── Distance / lieu
+// ── Distance / lieu
   const distKm=(()=>{try{if(!userPos||!beach)return null;return haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
   const locLine=[beach?.commune||null, distKm!=null?_t(lang,`à ${Math.round(distKm)} km`,`${Math.round(distKm)} km away`,`a ${Math.round(distKm)} km`):null].filter(Boolean).join(" · ")
 
@@ -4534,7 +4553,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     // + bleu pour l'info neutre (température). Plus de rainbow vert/ambre/rouge sous le
     // bandeau verdict (retour fondateur « trop de couleurs sur la carte plage »).
     const sgLvl=status==="clean"?{t:_t(lang,"Sargasses faibles","Low sargassum","Sargazo bajo"),c:COMIC.clean}:status==="moderate"?{t:_t(lang,"Sargasses modérées","Moderate sargassum","Sargazo moderado"),c:COMIC.orange}:status==="avoid"?{t:_t(lang,"Sargasses fortes","Heavy sargassum","Sargazo fuerte"),c:COMIC.orange}:null
-    if(sgLvl)out.push(sgLvl)
+    if(sgLvl && status !== "_loading") out.push(sgLvl)
     if(weather){
       if(weather.waveHeight!=null){const w=weather.waveHeight;out.push({t:w<.6?_t(lang,"Houle calme","Calm swell","Mar calmo"):w<1.2?_t(lang,"Houle modérée","Moderate swell","Mar moderado"):_t(lang,"Houle forte","Strong swell","Mar fuerte"),c:w<.6?COMIC.clean:COMIC.orange})}
       if(weather.wind!=null){const v=weather.wind;out.push({t:v<20?_t(lang,"Vent léger","Light wind","Viento leve"):v<35?_t(lang,"Vent modéré","Moderate wind","Viento moderado"):_t(lang,"Vent fort","Strong wind","Viento fuerte"),c:v<20?COMIC.clean:COMIC.orange})}
@@ -4545,7 +4564,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
   // ── Plan B : si avoid/moderate, plages PROPRES proches (réduit la frustration + maille SEO)
   const planB=useMemo(()=>{
-    if(!beach||!allBeaches||status==="clean"||status==="_loading")return[]
+    if(!satelliteDecisionCurrent||!beach||!allBeaches||status==="clean"||status==="_loading")return[]
     // Plafond de distance : « plutôt y aller » n'a de sens que si c'est ATTEIGNABLE.
     // Sur un grand marché (Floride : plages à 390 km), suggérer une plage à l'autre
     // bout de l'État est inutile → on cache au-delà de 60 km (les petites îles MQ/GP
@@ -4554,7 +4573,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       .map(b=>({...b,_d:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
       .filter(b=>b._d<=60)
       .sort((a,b)=>a._d-b._d).slice(0,3)
-  },[beach?.id,allBeaches,status])
+  },[beach?.id,allBeaches,status,satelliteDecisionCurrent])
 
   const requestClose=()=>{
     if(closingRef.current)return; closingRef.current=true
@@ -4652,20 +4671,22 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
             {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}{!userPos&&beach?.lat&&onRequestGeo&&<GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="beach_dive" style={{padding:"2px 8px",fontSize:11,marginLeft:2}}/>}</div>}
           </div>
-          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
+          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{status==="_loading"?_t(lang,"À vérifier","Check first","Verificar"):(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
 
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
             le plus scannable de la recherche). Fini le blanc-sur-crème illisible :
             mot sombre net sur aplat de couleur = la réponse se lit en 0,2 s. */}
-        <div className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
+        <div data-testid="beach-sheet-verdict" className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
           background:status==="avoid"?"linear-gradient(135deg, #FF3B30 0%, #C70000 100%)":sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:status==="avoid"?"0 8px 24px rgba(255,59,48,0.4), 4px 4px 0 #8B0000":`4px 4px 0 ${COMIC.ink}`,
           animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both",position:"relative",zIndex:1}}>
           <div aria-hidden style={{flexShrink:0,filter:status==="avoid"?"drop-shadow(0 0 12px rgba(255,255,255,0.5))":"none"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
             <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:status==="avoid"?"#fff":COMIC.ink,textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {_terrainStatus
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {status==="_loading"
+              ? _t(lang,`Dernier statut observé : ${lastObservedStatusLabel} · pas une confirmation actuelle`,`Last observed status: ${lastObservedStatusLabel} · not a current confirmation`,`Último estado observado: ${lastObservedStatusLabel} · no es una confirmación actual`)
+              : _terrainStatus
               ? ({clean:0,moderate:1,avoid:2}[_terrainStatus]>{clean:0,moderate:1,avoid:2}[_satStatus]
                   ? _t(lang,`relevé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`raised on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`elevado in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`)
                   : _t(lang,`corrigé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`corrected on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`corregido in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`))
@@ -4688,7 +4709,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         )}
 
         {/* Score + facteurs (carte) */}
-        <div className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
+        <div data-testid="beach-sheet-score" className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
           {hasScore&&<div style={{flexShrink:0,textAlign:"center",position:"relative"}}>
             {/* Score-vedette avec halo animé - WOW effect */}
             <div className={status==="clean"?"score-blob-glow":"score-blob-pulse"} style={{
@@ -4712,9 +4733,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Preuve fraîcheur satellite */}
         <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
+          <span style={{width:7,height:7,borderRadius:"50%",background:satFresh?COMIC.clean:COMIC.orange,boxShadow:`0 0 0 3px ${(satFresh?COMIC.clean:COMIC.orange)}33`}}/>{satLabel}
         </div>
 
+        {/* Les prévisions dépendent de la fraîcheur de l'observation source. */}
+        {satelliteDecisionCurrent ? (
+          <>
         {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
@@ -4751,8 +4775,16 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             ?cadran=1, barre plate sinon), mêmes composants que l'ancienne BeachSheet.
             Alimenté par les données hebdo RÉELLES de cette plage + sargData courant ;
             fraîcheur via prédicats partagés (erddap seul), jamais updatedAt. */}
-        {weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
-
+          </>
+        ) : (
+          <div data-testid="beach-sheet-forecast-paused" className="bsc-card" role="status" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
+            <div style={{font:"800 12px/1.3 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:6}}>{_t(lang,"Prévisions suspendues","Forecasts paused","Pronóstico suspendido")}</div>
+            <div style={{font:"600 12px/1.45 'Bricolage Grotesque'",color:COMIC.sub}}>{satAge==null
+              ? _t(lang,"Horodatage satellite inconnu : les prévisions sont masquées.","Satellite timestamp unknown: forecasts are hidden.","Hora satelital desconocida: el pronóstico está oculto.")
+              : _t(lang,"Observation satellite trop ancienne : les prévisions sont masquées jusqu'à une nouvelle mesure.","Satellite observation is too old: forecasts are hidden until a new reading.","La observación satelital es demasiado antigua: el pronóstico se oculta hasta una nueva medición.")}</div>
+          </div>
+        )}
+        {satelliteDecisionCurrent&&weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
         {/* Plan B — où aller maintenant (avoid/moderate) */}
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
           <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
@@ -11577,7 +11609,6 @@ export default function App(){
   // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
-  const[showSOS,setShowSOS]=useState(false)
   // Parcours « Trouve ta plage » (TrouvePlage) ouvert IN-APP depuis le CTA primaire de la carte —
   // plus besoin du deep-link ?recommend=1 (conservé pour rétro-compatibilité des liens sortants).
   const[showRecommend,setShowRecommend]=useState(RECOMMEND_MODE)
@@ -11612,55 +11643,9 @@ export default function App(){
     }catch{}
     try{
       const params=new URLSearchParams(window.location.search)
-      // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
-      const sessionId=params.get("session_id")
-      // Trip Pass one-time : ?pass=trip → pose une expiration 7j AU LIEU du flag
-      // permanent. DOIT être testé AVANT le bloc générique (qui, lui, lit
-      // session_id et poserait sg_premium=1 à vie). Revenu loggé pareil (le
-      // webhook gère checkout.session.completed pour les sessions mode=payment).
-      // Pass one-time TIME-BOXÉ : ?pass=trip (7j, rétrocompat) OU ?pass=pNN (NN jours,
-      // ex pass vacances p30). Pose une expiration AU LIEU du flag premium permanent.
-      const passParam=params.get("pass")
-      if(passParam&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
-        const days=passParam==="trip"?7:Math.min(120,Math.max(1,parseInt(passParam.slice(1),10)||7))
-        const end=Date.now()+days*86400000
-        try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
-          }).catch(e=>sgLogError("webhook_conversion",e))}catch(ex){sgLogError("webhook_conversion_wrap",ex)}
-        }
-        // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
-        // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
-        // sur les autres replaceState (manage/premium_email).
-        params.delete("pass");params.delete("session_id");params.delete("premium");params.delete("success")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
-      }
-      if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
-        s("sg_premium",true)
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"direct"})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        // Log payment to Apps Script (fire-and-forget)
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
-          }).catch(()=>{})}catch(ex){}
-        }
-        params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
-      }
+      // Un paramètre d'URL (?premium=1, ?success=1, ?session_id, ?pass) ne confirme
+      // jamais un paiement et n'écrit aucun droit. L'accès vient du webhook,
+      // puis de /?restore=1.
       if(params.get("paywall")==="1"){
         openPremium("paywall_deeplink");
         {const qs=params.toString().replace(/paywall/,"");window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
@@ -13597,7 +13582,7 @@ export default function App(){
       let hasEm=false;try{hasEm=!!localStorage.getItem("sg_email")}catch(_){}
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
-    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
+    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null});track("pricing_view",{livemode:true,correlation_id:sgCorrelation(),source:s})
   },[captureGate])
 
   // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───
@@ -13694,7 +13679,7 @@ export default function App(){
     if(v==="premium")openPremium("nav")
     else {setShowPremium(false);setView(v)} // close paywall when navigating away → fixes ⭐ tab staying lit on map/list
   },[openPremium])
-  // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
+  // Deep-link OUVRE le paywall. ?premium=1 n'accorde aucun accès. Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
   // /alertes/ = landing page hot-intent (cherché "alertes sargasses") → ouvre paywall direct.
   // Distinct du general auto-open désactivé L11319 (intention tiède) : ici l'intention est CHAUDE.
@@ -13721,20 +13706,7 @@ export default function App(){
       try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
       window.history.replaceState({},"",window.location.pathname)}
     else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
-    else if(p.get("sos")==="1"){setShowSOS(true);track("sg_sos_open",{source:"deeplink"});window.history.replaceState({},"",window.location.pathname)}
   }catch(_){}},[openPremium])
-
-  // SOS deep-link handler — separate effect to ensure it runs on mount regardless of openPremium stability
-  useEffect(()=>{
-    try{
-      const p=new URLSearchParams(window.location.search)
-      if(p.get("sos")==="1"){
-        setShowSOS(true)
-        track("sg_sos_open",{source:"deeplink"})
-        window.history.replaceState({},"",window.location.pathname)
-      }
-    }catch(_){}
-  },[])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
@@ -13803,7 +13775,7 @@ export default function App(){
     try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
   })
   // Mission P0 refonte UX (2026-10-14) : la bannière cookies (~100px) recouvrait la chrome basse
-  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/SOS/chat/découverte tant qu'elle est affichée.
+  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/chat/découverte tant qu'elle est affichée.
   useEffect(()=>{try{
     const h=(!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb)?"100px":"0px"
     document.documentElement.style.setProperty("--sg-consent-h",h)
@@ -14669,18 +14641,6 @@ export default function App(){
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
-          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,pointerEvents:"none"}}>
-            <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
-              <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
-                className="sg-soscta"
-                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"9px 16px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:13.5,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
-                <span style={{font:"800 13px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
-              </button>
-            </div>
-          </div>
-        )}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(220px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
@@ -14696,8 +14656,7 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-        {showSOS&&<div style={{position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",WebkitOverflowScrolling:"touch"}}><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
-        
+
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
             onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}
@@ -14825,8 +14784,8 @@ export default function App(){
                   openPremium={openPremium}
                 />
                 <LazyWorldMapView
-                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                  erddapTimestamp={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                  beaches={allBeaches} island={island} updatedAt={sargData?.updatedAt}
+                  erddapTimestamp={sargData?.erddapTimestamp} source={sargData?.source}
                   lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
                   rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
                   arrivals={mapArrivals}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paiement — Sargasses</title>
+<meta name="robots" content="noindex">
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#14110e;color:#f4efe4}
+main{max-width:520px;margin:0 auto;padding:32px 18px}
+h1{font-size:28px;line-height:1.1;margin:0 0 12px}
+a.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;margin-top:16px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font-weight:800;text-decoration:none}
+p{line-height:1.45}
+</style>
+</head>
+<body>
+<main>
+<h1 id="title">Paiement en cours de confirmation</h1>
+<p id="body">Stripe a renvoyé le navigateur. L'accès n'est ouvert qu'après confirmation du serveur. Cette page se met à jour toute seule.</p>
+<p id="extra"></p>
+<a class="btn" id="next" href="/?restore=1">Retrouver mon accès avec l'email de paiement</a>
+</main>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var id = q.get('session_id') || '';
+  var title = document.getElementById('title');
+  var body = document.getElementById('body');
+  var extra = document.getElementById('extra');
+  var tries = 0;
+  function show(state, data) {
+    if (state === 'paid') {
+      title.textContent = 'Accès confirmé';
+      body.textContent = 'Le serveur a enregistré le paiement. Ouvrez le site et retrouvez l\'accès avec le même email.';
+      if (data && data.accessUrl) {
+        extra.innerHTML = '<a href="' + data.accessUrl.replace(/"/g, '') + '">Ouvrir l\'accès</a>';
+      }
+      return true;
+    }
+    if (state === 'ended') {
+      title.textContent = 'Accès retiré';
+      body.textContent = 'Ce paiement a été remboursé ou contesté. L\'accès correspondant est révoqué.';
+      return true;
+    }
+    return false;
+  }
+  function poll() {
+    if (!id) {
+      title.textContent = 'Session absente';
+      body.textContent = 'Aucun identifiant de paiement dans l\'adresse. Si vous avez payé, utilisez l\'email de la commande.';
+      return;
+    }
+    fetch('/api/stripe-status?session_id=' + encodeURIComponent(id), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (show(data && data.state, data)) return;
+        tries += 1;
+        if (tries < 30) setTimeout(poll, 2000);
+        else body.textContent = 'La confirmation n\'est pas encore arrivée. Gardez cette page, ou retrouvez l\'accès plus tard avec votre email. Un retour navigateur ne confirme pas le paiement.';
+      })
+      .catch(function () { setTimeout(poll, 3000); });
+  }
+  poll();
+})();
+</script>
+</body>
+</html>

@@ -19,6 +19,10 @@ t(fingerprintForDefect(a) !== fingerprintForDefect(c), 'different domain has its
 t(hash('abc') === hash('abc'), 'batch fingerprint is stable');
 t(uniqueDefects([a,b,c]).length === 2, 'duplicate findings collapse by stable key');
 t(severity(a) === 'blocking', 'navigation failure classified as blocking');
+const staleDecision = { domain: 'sargazotulum.com', step: 'fiche', type: 'stale-current-decision' };
+t(severity(staleDecision) === 'blocking', 'stale current decision classified as blocking');
+t(titleFor(staleDecision).startsWith('[E2E-BLOCKING]'), 'stale decision incident title is blocking');
+t(labelsFor(staleDecision).includes('autopilot-blocking'), 'stale decision issue gets blocking label');
 t(severity({ type: 'console-error' }) === 'ux', 'non-blocking signal classified as UX');
 t(titleFor(a).startsWith('[E2E-BLOCKING]'), 'blocking incident title is explicit');
 t(labelsFor(a).includes('autopilot-blocking'), 'blocking issue gets blocking label');

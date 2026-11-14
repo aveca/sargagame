@@ -11,6 +11,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'AGENTS.md'
+      - '.github/workflows/daily-copernicus.yml'
+      - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/erddap-capture-window-monitor.yml'
+      - 'scripts/probe-erddap-capture-window.cjs'
+      - 'tests/unit/erddap-capture-window-monitor.test.cjs'
 
 # Gating par événement — un push de code doit être RAPIDE :
 #   • push            → build des 6 régions + health-check UNIQUEMENT.
@@ -23,11 +30,9 @@ on:
 # Le deploy est géré par cloudflare-production.yml (Workers + Pages).
 
 permissions:
-  contents: write
-  # `actions: write` autorise le dispatch de la chaîne CI + production après la
-  # publication des données (le push est fait avec le GITHUB_TOKEN, or un push
-  # GITHUB_TOKEN ne déclenche aucun workflow `push`).
-  actions: write
+  # Least privilege by default. Only jobs that publish repository state or
+  # dispatch follow-up workflows receive write permissions below.
+  contents: read
 
 # Sérialise les runs sur main pour éliminer les conflits rebase
 concurrency:
@@ -37,17 +42,23 @@ concurrency:
 jobs:
   # ── 1. DATA FETCH (rapide, < 5 min) ────────────────────────────────────────
   fetch-data:
+    permissions:
+      contents: write
+      actions: write
+    outputs:
+      publication_status: ${{ steps.publication_status.outputs.status }}
+      gate_outcome: ${{ steps.verify.outcome }}
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: npm
@@ -81,7 +92,22 @@ jobs:
       - name: Gate intégrité (refuse source dégradée / pic tout-vert)
         id: verify
         continue-on-error: true
-        run: node scripts/verify-ftp-ready.cjs
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-ftp-ready.cjs 2>&1 | tee "$RUNNER_TEMP/verify-ftp-ready.log"
+          rc=${PIPESTATUS[0]}
+          # Le code de sortie tranche. Une publication autorisée (observation
+          # plus récente, hors des 900 min) ne doit pas être classée bloquée
+          # juste parce qu'un avertissement mentionne le SLA.
+          if [ "$rc" -ne 0 ] && grep -q 'observation hors SLA' "$RUNNER_TEMP/verify-ftp-ready.log"; then
+            echo "gate_status=BLOCKED_STALE_SOURCE" >> "$GITHUB_OUTPUT"
+          elif [ "$rc" -ne 0 ]; then
+            echo "gate_status=FAILED_VALIDATION" >> "$GITHUB_OUTPUT"
+          else
+            echo "gate_status=PASS" >> "$GITHUB_OUTPUT"
+          fi
+          exit "$rc"
 
       # The public B2B track record must be generated in THIS workspace, after
       # fresh archive/history are fetched and before the data commit/deploy.
@@ -148,9 +174,11 @@ jobs:
           fi
           if git diff --cached --quiet; then
             echo "Aucune donnée à commit (déjà à jour)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git commit -m "chore(data): refresh Copernicus $(date -u +'%Y-%m-%d %H:%M UTC')"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           BRANCH="${GITHUB_REF_NAME:-main}"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -201,7 +229,8 @@ jobs:
       # publication sur une branche de développement ne doit jamais déclencher
       # un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
+        id: dispatch
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.changed == 'true' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
@@ -214,11 +243,173 @@ jobs:
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'
-        run: echo "::error title=Data refresh bloquée::verify-ftp-ready a refusé la publication. Prochain run (4x/j) re-tentera."
+        run: echo "::error title=Data refresh bloquée::verify-ftp-ready a refusé la publication."
+
+      - name: Report publication status
+        id: publication_status
+        if: always()
+        env:
+          SOURCE: ${{ steps.src.outputs.source }}
+          ERDDAP_OUTCOME: ${{ steps.erddap.outcome }}
+          GATE_OUTCOME: ${{ steps.verify.outcome }}
+          GATE_STATUS: ${{ steps.verify.outputs.gate_status }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          PUBLISH_CHANGED: ${{ steps.publish.outputs.changed }}
+          PUBLISH_SHA: ${{ steps.publish.outputs.sha }}
+          PUBLISH_BRANCH: ${{ steps.publish.outputs.branch }}
+          DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const { execFileSync } = require('node:child_process');
+          let payload = {};
+          try { payload = JSON.parse(fs.readFileSync('public/api/copernicus/sargassum.json', 'utf8')); } catch {}
+          const sourceTimestamp = typeof payload.erddapTimestamp === 'string' ? payload.erddapTimestamp : null;
+          const sourceMs = sourceTimestamp ? Date.parse(sourceTimestamp) : NaN;
+          const nowMs = Date.now();
+          const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs <= nowMs;
+          const sourceAgeMinutes = sourceTimestampValid ? Math.floor((nowMs - sourceMs) / 60000) : null;
+          const gateStatus = process.env.GATE_STATUS || 'UNCLASSIFIED';
+          const publishChanged = process.env.PUBLISH_CHANGED === 'true'
+            ? true
+            : process.env.PUBLISH_CHANGED === 'false' ? false : null;
+          const { classifyPublicationStatus } = require('./scripts/lib/copernicus-publication-status.cjs');
+          const status = classifyPublicationStatus({
+            gateStatus,
+            erddapOutcome: process.env.ERDDAP_OUTCOME,
+            source: process.env.SOURCE,
+            gateOutcome: process.env.GATE_OUTCOME,
+            publishOutcome: process.env.PUBLISH_OUTCOME,
+            publishChanged
+          });
+          let changedPayloadFiles = [];
+          try {
+            const sha = process.env.PUBLISH_SHA;
+            const raw = sha
+              ? execFileSync('git', ['show', '--format=', '--name-only', sha], { encoding: 'utf8' })
+              : execFileSync('git', ['diff', '--name-only', 'HEAD', '--', 'public/api/copernicus/'], { encoding: 'utf8' });
+            changedPayloadFiles = raw.split(/\r?\n/).map(x => x.trim()).filter(x => x.startsWith('public/api/copernicus/'));
+          } catch {}
+          const report = {
+            generatedAt: new Date(nowMs).toISOString(),
+            status,
+            source: process.env.SOURCE || null,
+            erddapFetchOutcome: process.env.ERDDAP_OUTCOME || null,
+            erddapTimestamp: sourceTimestamp,
+            sourceTimestampValid,
+            sourceAgeMinutes,
+            operationalSlaMinutes: 900,
+            publicStaleThresholdMinutes: 2160,
+            publicStale: sourceTimestampValid ? sourceAgeMinutes >= 2160 : null,
+            integrityGateOutcome: process.env.GATE_OUTCOME || null,
+            integrityGateClassification: gateStatus,
+            publishOutcome: process.env.PUBLISH_OUTCOME || null,
+            publishChanged,
+            publishBranch: process.env.PUBLISH_BRANCH || null,
+            commitSha: process.env.PUBLISH_SHA || null,
+            deploymentDispatchOutcome: process.env.DISPATCH_OUTCOME || 'unknown',
+            changedPayloadFiles,
+            changedPayloadFields: null,
+            payloadFieldComparison: 'NOT_PERFORMED_BY_WORKFLOW_STATUS_PATCH',
+            sourceTimestampAdvancedAgainstLive: null
+          };
+          const out = process.env.RUNNER_TEMP + '/copernicus-publication-status.json';
+          fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=' + status + '\n' + 'gate_outcome=' + (process.env.GATE_OUTCOME || 'unknown') + '\n');
+          const summary = [
+            '## Copernicus publication status: ' + status,
+            '',
+            '- Source: ' + (report.source || 'unknown'),
+            '- ERDDAP fetch: ' + report.erddapFetchOutcome,
+            '- Observation timestamp: ' + (sourceTimestamp || 'UNVERIFIED'),
+            '- Computed candidate age (minutes): ' + (sourceAgeMinutes === null ? 'UNVERIFIED' : sourceAgeMinutes),
+            '- Operational SLA: 900 minutes',
+            '- Public stale threshold: 2160 minutes',
+            '- Integrity gate: ' + report.integrityGateOutcome + ' (' + gateStatus + ')',
+            '- Publish outcome: ' + report.publishOutcome,
+            '- Commit changes detected: ' + (publishChanged === null ? 'UNVERIFIED' : publishChanged),
+            '- Commit SHA: ' + (report.commitSha || 'none'),
+            '- Deploy dispatch: ' + report.deploymentDispatchOutcome,
+            '- Changed payload files: ' + (changedPayloadFiles.length ? changedPayloadFiles.join(', ') : 'none detected'),
+            '- Field-level payload comparison: NOT PERFORMED by this status-only change',
+            '- Source timestamp advancement against live: NOT VERIFIED'
+          ].join('\n') + '\n';
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          console.log(JSON.stringify(report, null, 2));
+          if (['BLOCKED_STALE_SOURCE', 'FAILED_VALIDATION', 'FAILED_PUBLISH'].includes(status)) {
+            console.error('Copernicus publication status is ' + status);
+            process.exit(1);
+          }
+          NODE
+
+      - name: Upload publication status evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: copernicus-publication-status-${{ github.run_id }}
+          path: ${{ runner.temp }}/copernicus-publication-status.json
+          if-no-files-found: error
+          retention-days: 7
+
+  # ── 1b. MESURE REVENU (INDÉPENDANTE de la fraîcheur satellite) ────────────
+  # Le tracker MRR mesure l'ARGENT, pas la DONNÉE satellite. Il était placé
+  # dans `email-automation`, job conditionné (depuis #1265) à une publication
+  # fraîche. Conséquence mesurée : quand la donnée satellite est périmée — donc
+  # quand la donnée est dégradée — le tracker MRR ne tournait PLUS et le
+  # rapport `scripts/automation/data/mollie-mrr.json` se figeait. La mesure du
+  # revenu s'éteignait au moment exact où elle compte le plus.
+  #
+  # Ce job est donc AUTONOME : pas de `needs`, conditionné au seul
+  # `schedule`. Lecture seule de l'API Mollie + écriture du rapport de mesure.
+  # Aucun email client, aucun prix, aucun paiement, aucun remboursement.
+  revenue-metrics:
+    permissions:
+      contents: write
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '24' }
+      - name: Mollie MRR tracker
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-mrr.cjs --send
+      - name: B2B funnel snapshot (essais / conversions / paiements refusés)
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-b2b-from-supabase.cjs --days=90
+      - name: Commit measurement reports (les rapports de mesure ne doivent pas se figer)
+        if: always() && github.event_name != 'push'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for M in scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-b2b-snapshot.json; do
+            [ -f "$M" ] && git add "$M"
+          done
+          if git diff --cached --quiet; then echo "Measurement reports unchanged."; exit 0; fi
+          git commit -m "chore: measurement reports $(date -u +'%Y-%m-%d %H:%M UTC')" || exit 0
+          # Push best-effort : un push GITHUB_TOKEN ne déclenche AUCUN workflow.
+          git push || echo "Push ignoré (conflit ou rights) : les rapports restent dans les logs du run."
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
-    if: github.event_name == 'schedule'
+    needs: [fetch-data]
+    permissions:
+      contents: write
+    if: >-
+      github.event_name == 'schedule' &&
+      needs.fetch-data.result == 'success' &&
+      needs.fetch-data.outputs.gate_outcome == 'success' &&
+      (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' ||
+       needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
     # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget
     # était de 30 min — trop juste : un seul appel bloqué annulait le job, donc
@@ -230,10 +421,10 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: npm
@@ -302,13 +493,6 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/revenue-watch.cjs --send
 
-      - name: Mollie MRR tracker
-        if: github.event_name == 'schedule'
-        continue-on-error: true
-        env:
-          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
-        run: node scripts/automation/mollie-mrr.cjs --send
-
       - name: UX watch (alerte criticals rage/dead-click)
         if: github.event_name == 'schedule'
         continue-on-error: true
@@ -345,7 +529,7 @@ jobs:
         timeout-minutes: 10
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node scripts/automation/purge-analytics.cjs
+        run: node scripts/automation/purge-analytics.cjs --dry
 
       - name: Funnel from Supabase (complementary)
         if: github.event_name == 'schedule'
@@ -410,6 +594,23 @@ jobs:
           fi
           git add "$M"
           git commit -m "chore: daily metrics snapshot ${TODAY_UTC}" || echo "Rien à committer (snapshot inchangé)."
+          # Les étapes précédentes génèrent aussi des rapports et états non commités.
+          # Les isoler temporairement évite que git rebase refuse le worktree sale ;
+          # ils sont restaurés avant le step séparé « Commit email state ».
+          STASHED_GENERATED_CHANGES=0
+          if [ -n "$(git status --porcelain)" ]; then
+            git stash push --include-untracked -m "daily-metrics-snapshot-${GITHUB_RUN_ID:-local}"
+            STASHED_GENERATED_CHANGES=1
+          fi
+          restore_generated_changes() {
+            if [ "$STASHED_GENERATED_CHANGES" = "1" ]; then
+              if ! git stash pop --index; then
+                echo "::error::Impossible de restaurer les fichiers générés ; le stash reste conservé."
+                return 1
+              fi
+              STASHED_GENERATED_CHANGES=0
+            fi
+          }
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
@@ -432,13 +633,16 @@ jobs:
             echo "::warning::push échoué (tentative $i/5), pause 20s"
             sleep 20
           done
+          # Restaurer les sorties des étapes précédentes avant le commit email anti-doublon.
+          restore_generated_changes
           # ÉCHEC DÉFINITIF : exit non nul (pas une simple annotation).
           if [ "$push_ok" != "1" ]; then
             echo "::error title=Publication du snapshot métrique échouée::push refusé après 5 tentatives — le workflow ÉCHOUE."
             exit 1
           fi
       - name: Commit email state (anti-doublon)
-        if: github.event_name != 'push'
+        # Persister les marqueurs des emails déjà envoyés même si la publication métrique échoue.
+        if: always() && github.event_name != 'push'
         continue-on-error: true
         # Étape critique : c'est elle qui fige l'anti-doublon des envois. Elle
         # ne doit JAMAIS être sautée par l'annulation d'une étape précédente.
@@ -450,7 +654,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           # NOTE : la publication du snapshot métrique quotidien est désormais une
@@ -460,6 +664,22 @@ jobs:
           # La garde d'exploitabilité et le test de cadence vivent dans ce step.
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
           git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Les rapports/fichiers générés hors marqueurs email restent hors du commit.
+          # Les mettre à l’abri pendant le rebase, puis les restaurer sans les perdre.
+          STASHED_GENERATED_CHANGES=0
+          if [ -n "$(git status --porcelain)" ]; then
+            git stash push --include-untracked -m "email-state-${GITHUB_RUN_ID:-local}"
+            STASHED_GENERATED_CHANGES=1
+          fi
+          restore_email_generated_changes() {
+            if [ "$STASHED_GENERATED_CHANGES" = "1" ]; then
+              if ! git stash pop --index; then
+                echo "::error::Impossible de restaurer les sorties après le commit email ; le stash reste conservé."
+                return 1
+              fi
+              STASHED_GENERATED_CHANGES=0
+            fi
+          }
           BRANCH="${GITHUB_REF_NAME:-main}"
           push_ok=0
           for i in 1 2 3 4 5; do
@@ -485,6 +705,7 @@ jobs:
             echo "::warning::git push échoué (tentative $i/5), pause 20s"
             sleep 20
           done
+          restore_email_generated_changes
           [ "$push_ok" = "1" ] || echo "::error title=Email state non persisté::markers anti-doublon non poussés après 5 tentatives"
 
   # ── 3. HEALTH CHECK (rapide, parallèle) ───────────────────────────────────
@@ -492,10 +713,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: npm }
       - run: npm ci
       - name: Health check (uptime + staleness)
@@ -518,8 +739,8 @@ jobs:
           - id: rivieramaya
           - id: tulum
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: npm }
       - run: npm ci
       - run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
@@ -531,11 +752,11 @@ jobs:
   # ── 5. NOTIFY ON FAILURE ──────────────────────────────────────────────────
   notify-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure()
+    if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: npm }
       - run: npm ci
       - name: Send failure alert email
@@ -548,7 +769,7 @@ jobs:
   # ── 6. RETRY ON FAILURE (once, after 5 min, schedule only) ───────────────
   retry-on-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && github.run_attempt == '1' && github.event_name == 'schedule'
+    if: failure() && (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION') && github.run_attempt == '1' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write

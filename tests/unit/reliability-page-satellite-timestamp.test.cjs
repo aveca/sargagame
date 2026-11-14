@@ -37,4 +37,40 @@ assert.ok(refresh.includes('Number.isFinite(Date.parse(d.erddapTimestamp))'), 'l
 assert.ok(refresh.includes('show(d.erddapTimestamp)'), 'relative age must use the satellite observation time');
 assert.ok(!refresh.includes('d.updatedAt'), 'client must not replace satellite time with pipeline time');
 
-console.log('RELIABILITY_PAGE_SATELLITE_TIMESTAMP_TESTS PASS (13 assertions)');
+
+const unsupportedClaims = [
+  /4 passages par jour/i,
+  /4 passes a day/i,
+  /4 pasadas al día/i,
+  /recalculée à chaque passage satellite/i,
+  /recomputed at every satellite pass/i,
+  /recalcula en cada pasada satelital/i,
+  /revalidée 4 fois par jour/i,
+  /re-checked 4 times a day/i,
+  /verificado 4 veces al día/i,
+  /carte en direct/i,
+  /see the live map/i,
+  /mapa en vivo/i,
+  /carte en temps réel/i,
+  /regenerated with every update/i,
+  /se regenera con cada actualización/i,
+  /régénérée à chaque mise à jour/i,
+  /chaque jour, la prévision de la veille/i,
+  /Every day, yesterday’s forecast/i,
+  /Cada día, el pronóstico de ayer/i,
+  /Un backtest automatique, tous les jours/i,
+  /An automatic backtest, every single day/i,
+  /Un backtest automático, todos los días/i,
+];
+for (const pattern of unsupportedClaims) {
+  assert.doesNotMatch(src, pattern, `reliability page must not promise an unsupported freshness cadence: ${pattern}`);
+}
+assert.ok(src.includes('les prévisions archivées sont comparées aux observations satellite disponibles'), 'French method copy must describe available observations without a daily guarantee');
+assert.ok(src.includes('Archived forecasts are compared with the satellite observations available'), 'English method copy must describe available observations without a daily guarantee');
+assert.ok(src.includes('Los pronósticos archivados se comparan con las observaciones satelitales disponibles'), 'Spanish method copy must describe available observations without a daily guarantee');
+assert.ok(src.includes('horodatage de l\'observation satellite affiché ci-dessus'), 'French freshness copy must point to the displayed observation timestamp');
+assert.ok(src.includes('the satellite observation timestamp is shown above'), 'English freshness copy must point to the displayed observation timestamp');
+assert.ok(src.includes('la hora de la observación satelital se muestra arriba'), 'Spanish freshness copy must point to the displayed observation timestamp');
+assert.ok(src.includes('Voir la carte des plages →') && src.includes('See the beach map →') && src.includes('Ver el mapa de playas →'), 'all localized CTAs must avoid an unsupported live-map promise');
+
+console.log('RELIABILITY_PAGE_SATELLITE_TIMESTAMP_TESTS PASS (freshness and localized copy)');

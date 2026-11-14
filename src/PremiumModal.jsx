@@ -8,6 +8,13 @@ import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
+// Source de vérité des prix B2C (miroir du serveur) — voir src/lib/pricing.js.
+import { PASS_DAYS, passBaseCents, resolvePass } from "./lib/pricing.js"
+import { selectB2bPaylink } from "./lib/b2b-paylink-offer.mjs"
+// Accusés serveur réels du parcours B2B (lead + essai) : le succès n'est
+// affiché qu'après confirmation de persistance. Même règle que les pages
+// statiques /pro/** (public/b2b-capture.js, PR #1412).
+import { submitB2BWithAck, b2bAckMessage } from "./lib/b2b-ack.js"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -108,14 +115,32 @@ function TerritoireMeeting({lang,email,org}){
   const [phone,setPhone]=useState("")
   const [sent,setSent]=useState(false)
   const [busy,setBusy]=useState(false)
+  const [err,setErr]=useState("")
   const submit=()=>{
     if(sent||busy)return
     setBusy(true)
+    setErr("")
     const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
-    try{track("sg_b2b_meeting_request",{})}catch(_){}
-    fetch("/api/b2b-meeting.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,org,littoral:littoral.trim(),phone:phone.trim(),island})})
-      .then(()=>{setBusy(false);setSent(true)}).catch(()=>{setBusy(false);setSent(true)})
+    // ACCUSÉ RÉEL : le succès n'est affiché qu'après confirmation serveur
+    // (lead persisté + demande de RDV acceptée). Avant, `setSent(true)` était
+    // appelé MÊME sur erreur réseau → un prospect perdu se voyait comme
+    // enregistré (faux succès, issue #1273).
+    submitB2BWithAck({
+      lead:{email,island,source:"b2b_territoire_meeting",org},
+      meeting:{email,org,littoral:littoral.trim(),phone:phone.trim(),island},
+    }).then(res=>{
+      setBusy(false)
+      if(res.ok){
+        setSent(true)
+        try{track("sg_b2b_meeting_request",{})}catch(_){}
+      }else{
+        setErr(b2bAckMessage(res.reason,lang,res.stage))
+        try{track("sg_b2b_capture_failed",{stage:res.stage,reason:res.reason})}catch(_){}
+      }
+    }).catch(()=>{
+      setBusy(false)
+      setErr(b2bAckMessage("network",lang))
+    })
   }
   if(sent)return(
     <div style={{marginTop:14,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`}}>
@@ -130,6 +155,7 @@ function TerritoireMeeting({lang,email,org}){
       <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} aria-label={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
       <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} aria-label={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
       <button onClick={submit} disabled={busy} style={{width:"100%",textAlign:"center",font:"800 14px/1 'Bricolage Grotesque'",padding:13,borderRadius:12,border:`2.5px solid ${I.ink}`,boxShadow:`2px 2px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:busy?"default":"pointer"}}>{busy?_t(lang,"Envoi…","Sending…","Enviando…"):_t(lang,"Planifier un point · recevoir un devis →","Schedule a call · get a quote →","Reservar · recibir presupuesto →")}</button>
+      {err?<p role="alert" style={{font:"700 12px/1.45 'Bricolage Grotesque'",color:"#b42318",background:"#fff",border:`2px solid ${I.ink}`,borderRadius:10,padding:"9px 11px",marginTop:9}}>{err}</p>:null}
       <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#dff1ec",marginTop:9}}>{_t(lang,"Données satellite publiques (Copernicus/NOAA), auditables · Devis, bon de commande, facture — conforme RGPD & marché public · Un interlocuteur dédié. Tarif indicatif HT.","Public satellite data (Copernicus/NOAA), auditable · Quote, purchase order, invoice — GDPR & public-procurement compliant · A dedicated contact. Indicative price excl. tax.","Datos satelitales públicos (Copernicus/NOAA), auditables · Presupuesto, orden de compra, factura — conforme RGPD · Un interlocutor dedicado. Precio indicativo sin IVA.")}</div>
       <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#cfe9e3",marginTop:6}}>{_t(lang,"Vos coordonnées servent uniquement à vous recontacter (intérêt légitime), conservées 12 mois, supprimées sur simple demande.","Your details are used only to contact you (legitimate interest), kept 12 months, deleted on request.","Sus datos solo se usan para contactarle (interés legítimo), conservados 12 meses, eliminados a petición.")} <a href="/fiabilite/" style={{color:"#fdfcf7",textDecoration:"underline"}}>{_t(lang,"Voyez d'abord ce qu'on vaut →","See what we're worth first →","Vea primero lo que valemos →")}</a></div>
     </div>
@@ -148,7 +174,15 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   const [org,setOrg]=useState("")
   const [sent,setSent]=useState(false)
   const [token,setToken]=useState("")   // token Pro 30 j renvoyé par b2b-trial.php (essai INSTANTANÉ)
+  // Consentement MARKETING — case par DÉFAUT NON COCHÉE (l'essai est
+  // transactionnel : il ne doit JAMAIS dépendre d'un opt-in). Si l'hôtelier
+  // coche, le flag part avec le trial (version + horodatage + source côté
+  // serveur). Aucun email marketing n'est envoyé par ce flux.
+  const [mktConsent,setMktConsent]=useState(false)
   const [busy,setBusy]=useState(false)
+  // Erreur VISIBLE : le serveur a refusé / le réseau a coupé / le délai a expiré
+  // → aucun succès affiché, les champs restent, l'hôtelier peut réessayer.
+  const [err,setErr]=useState("")
   // Querystring EFFECTIVE : le handler deeplink ?pro=1 fait replaceState AVANT le mount
   // lazy de ce chunk → location.search est déjà vidé. Il stashe search dans
   // sessionStorage sg_b2b_qs (pattern sg_deep_plan) : flags + ?beach= y survivent.
@@ -243,13 +277,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // {url, montant} devise-aware : domaines USD → entrée `${key}_usd` du JSON (790/390 $),
   // montant rendu depuis value (jamais en dur). Territoire = JAMAIS de paylink carte
   // (verdict panel : un paiement CB juxtaposé au parcours devis/BDC décrédibilise les 2).
-  const payOf=t=>{
-    const key={pro:"pro_annual",brief:"brief_annual"}[t];if(!key||!paylinks)return null
-    const k=(IS_NEW_REGION&&paylinks[key+"_usd"])?key+"_usd":key
-    const l=paylinks[k];if(!l||!l.url)return null
-    const v=String(l.value||"").replace(/\.00$/,"")
-    return {url:l.url,amt:v?(k.endsWith("_usd")?("$"+v):(v+" €")):null}
-  }
+  const payOf=t=>selectB2bPaylink(paylinks,t,IS_NEW_REGION)
   const payUrlOf=t=>{const p=payOf(t);return p?p.url:null}   // compat écran unique (?b2bseq=0)
   // ── Navigation de séquence : events funnel par étape + focus titre (a11y — le
   //    focus-trap de useModalA11y ne focus qu'au mount, pas au swap d'étape).
@@ -286,12 +314,12 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
   // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 30j time-boxé.
   const TIERS=[
-    {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
-      pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
-      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_brief"},
     {id:"pro",icon:"🔔",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 €/mois","€79/mo","79 €/mes"),featured:true,
       pitch:_t(lang,"Devenez LA référence sargasses de votre plage : mis en avant dans l'app au moment où le voyageur vérifie avant de réserver, brief du matin, alertes, prévision 7 j, et un encart à vos couleurs sur votre propre site. Pour hôtels & resorts.","Become THE sargassum reference for your beach: featured in the app right when travelers check before booking, morning brief, alerts, 7-day forecast, and a panel in your own colors on your website. For hotels & resorts.","Conviértase en LA referencia de sargazo de su playa: destacado en la app justo cuando el viajero comprueba antes de reservar, informe matinal, alertas, pronóstico 7 días, y un panel con sus colores en su propia web. Para hoteles y resorts."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_pro"},
+    {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
+      pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
+      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_brief"},
     {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois HT","from €199/mo excl. tax","desde 199 €/mes sin IVA"),
       pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_territoire"},
@@ -300,21 +328,51 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   const submit=()=>{
     if(!valid||sent||busy)return
     try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
+    // submitLead() reste appelé : il porte l'event GA4 `sg_email_submit` +
+    // l'event Supabase du funnel + le beacon de secours (le sink déduplique
+    // par email → aucun doublon possible avec l'appel accusé ci-dessous).
     try{submitLead(email.trim(),cur.source)}catch(_){}
     try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
     // TOUS les tiers (Brief/Pro/Territoire) = essai 30 j émis INSTANTANÉMENT par
     // /api/b2b-trial.php (zéro call, zéro attente, zéro humain) → accès Pro tout de suite +
     // lien de paiement annuel direct. Territoire inclus (décision fondateur : tout self-serve).
     // Flag ?b2btrial=0 → ancien flux capture-lead + message 24 h.
-    if(!instantTrial){setSent(true);return}
-    setBusy(true)
     const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
-    fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email:email.trim(),name:org.trim(),island})})
-      .then(r=>r.json()).then(d=>{
-        if(d&&d.ok&&d.token){setToken(d.token);try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}
-        setBusy(false);setSent(true)   // échec → fallback gracieux : lead déjà capturé, message 24 h
-      }).catch(()=>{setBusy(false);setSent(true)})
+    setBusy(true)
+    setErr("")
+    // ACCUSÉ RÉEL (2 étapes, l'ordre compte) :
+    //   (1) le LEAD est écrit dans le sink des prospects et l'on exige son
+    //       accusé {ok:true} → un prospect n'est JAMAIS perdu en silence ;
+    //   (2) l'ESSAI est activé et l'on exige son accusé {ok:true,token}.
+    // Le succès n'est affiché qu'après les DEUX accusés. Un échec → message
+    // explicite + formulaire conservé + réessai possible (sans doublon).
+    const lead={email:email.trim(),island,source:cur.source,org:org.trim()}
+    const req=instantTrial
+      ? {lead,trial:{email:email.trim(),name:org.trim(),island,marketingConsent:mktConsent?1:0,consentSource:"b2b_trial_form"}}
+      : {lead}
+    submitB2BWithAck(req).then(res=>{
+      setBusy(false)
+      if(res.ok){
+        if(res.token){setToken(res.token)}
+        setSent(true)
+        // Lead CONFIRMÉ par le serveur → aiguille duale de `sg_b2b_capture_failed`
+        // (le lead existe, pas seulement l'intention). `sg_b2b_signup` reste un
+        // événement d'INTENTION émis au submit (pages statiques) : on ne le fait
+        // pas basculer ici, sinon les intentions ne seraient plus comparables
+        // entre le modal et les pages /pro/**.
+        try{track("sg_b2b_capture_confirmed",{stage:res.stage,tier:cur.id,island})}catch(_){}
+        // L'essai n'existe QUE si un token a été émis : en rollback
+        // (?b2btrial=0) le lead est capturé mais AUCUN trial n'est activé →
+        // pas d'`sg_b2b_trial_activated` (sinon conversion fictive).
+        if(res.token){try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}
+      }else{
+        setErr(b2bAckMessage(res.reason,lang,res.stage))
+        try{track("sg_b2b_capture_failed",{stage:res.stage,reason:res.reason,tier:cur.id})}catch(_){}
+      }
+    }).catch(()=>{
+      setBusy(false)
+      setErr(b2bAckMessage("network",lang))
+    })
   }
   // ── Styles partagés de la séquence. Anti-thème OBLIGATOIRE : .theme-comic button
   //    {background:var(--sg-card)!important} repeint les boutons inline (la sélection
@@ -346,6 +404,24 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   const titleStyle={fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,6.2vw,25px)",lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 8px",outline:"none"}
   const bodyStyle={font:"600 13px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:11}
   const inputStyle={width:"100%",boxSizing:"border-box",padding:"12px 14px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:9,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}
+  // Consentement MARKETING — case OPTIONNELLE, JAMAIS pré-cochée (checked=false par
+  // défaut). L'essai 30 j est transactionnel : il s'active sans cocher. Le flag
+  // n'est envoyé que si l'utilisateur coche (version/horodatage/source côté serveur).
+  const consentBox=(
+    <label style={{display:"flex",alignItems:"flex-start",gap:8,marginTop:9,cursor:"pointer"}}>
+      <input type="checkbox" checked={mktConsent} onChange={e=>setMktConsent(e.target.checked)}
+        style={{width:18,height:18,minWidth:18,margin:"1px 0 0",accentColor:"#1c8f4e",flexShrink:0}}/>
+      <span style={{font:"600 11px/1.45 'Bricolage Grotesque'",color:"#52525b"}}>
+        {_t(lang,"Oui, recevoir les alertes et les conseils Veilleur pour mon établissement (newsletter). Facultatif — désinscription en un clic.","Yes, receive Veilleur alerts and tips for my property (newsletter). Optional — one-click unsubscribe.","Sí, recibir alertas y consejos Veilleur para mi establecimiento (newsletter). Opcional — baja en un clic.")}
+      </span>
+    </label>)
+  // Bandeau d'erreur (serveur refusé / réseau coupé / délai dépassé) : il
+  // remplace l'ancien faux succès. Le formulaire reste affiché, les champs
+  // sont conservés et le bouton est réactivé → réessai possible (le sink
+  // déduplique par email → aucun doublon).
+  const errBox=err?(
+    <p role="alert" style={{font:"700 12.5px/1.45 'Bricolage Grotesque'",color:"#b42318",background:"#fff",border:`2.5px solid ${I.ink}`,borderRadius:12,padding:"10px 12px",marginTop:9,boxShadow:`2px 2px 0 ${I.ink}`}}>{err}</p>
+  ):null
   // Chip prix = INFORMATION dès É1 (règle « prix tôt »), jamais un lien (l'ASK vit à É4).
   const proPay=payOf("pro")
   const priceChip=(
@@ -410,7 +486,9 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             aria-label={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
           <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activation…","Activating…","Activando…"):cur.cta}</button>
+          {errBox}
           <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prélèvement automatique · −2 mois en annuel · stop quand vous voulez","30-day trial, no card, no auto-charge · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta, sin cobro automático · 2 meses gratis al año · pare cuando quiera")}</div>
+          {consentBox}
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
             <a href={payUrlOf(tier)} onClick={()=>{try{track("sg_b2b_paylink_click",{tier})}catch(_){}}} style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,"Ou payez l'année directement →","Or pay yearly directly →","O paga el año directamente →")}</a>
           </div>}
@@ -445,7 +523,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             </select>}
           </>:<>
             <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>
-              🛰️ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. Donnée en cours de chargement…","The satellite passes over your beaches 4 times a day. Data loading…","El satélite pasa 4 veces al día sobre sus playas. Datos cargándose…")}
+              🛰️ {_t(lang,"Nous vérifions régulièrement si une nouvelle observation satellite est disponible. L'heure de la dernière observation est affichée…","We check for new source observations several times a day. The latest observation time is shown…","Comprobamos varias veces al día si hay nuevas observaciones de la fuente. Se muestra la hora de la última observación…")}
             </div>
           </>}
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
@@ -548,8 +626,10 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             aria-label={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
           <button className="b2f-cta" onClick={submit} disabled={!valid||busy}>{busy?_t(lang,"Activation…","Activating…","Activando…"):_t(lang,"Activer mon essai 30 j →","Activate my 30-day trial →","Activar mi prueba de 30 días →")}</button>
+          {errBox}
           <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Accès immédiat — aucun email de confirmation à cliquer · premier brief demain matin à 7 h","Instant access — no confirmation email to click · first brief in your inbox tomorrow at 7am","Acceso inmediato — sin email de confirmación · primer informe mañana a las 7 h")}</div>
           <div style={{font:"600 10.5px/1.45 'Bricolage Grotesque'",color:"#6a6478",textAlign:"center",marginTop:7}}>{_t(lang,"Votre email sert à ouvrir votre accès et vous envoyer le brief (intérêt légitime) · conservé 12 mois · supprimé sur simple demande.","Your email is used to open your access and send your brief (legitimate interest) · kept 12 months · deleted on request.","Su email sirve para abrir su acceso y enviarle el informe (interés legítimo) · conservado 12 meses · eliminado a petición.")}</div>
+          {consentBox}
           {(tier==="pro"||tier==="brief")&&payOf(tier)&&<div style={{textAlign:"center",marginTop:9}}>
             <a href={payOf(tier).url} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"ask"})}catch(_){}}} style={{font:"800 12.5px/1.5 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,`Déjà décidé ? Payez l'année directement — ${payOf(tier).amt} (2 mois offerts) →`,`Already decided? Pay the year directly — ${payOf(tier).amt} (2 months free) →`,`¿Ya decidido? Pague el año directamente — ${payOf(tier).amt} (2 meses gratis) →`)}</a>
           </div>}
@@ -906,8 +986,8 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {recordProof
           ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
           :totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
-          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
-          :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
+          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · dernière observation satellite`,`${cleanCount}/${totalCount} beaches clean right now · latest satellite observation`,`${cleanCount}/${totalCount} playas limpias ahora · última observación satelital`)
+          :_t(lang,`${totalCount} plages suivies · dernière observation satellite`,`${totalCount} beaches tracked · latest satellite observation`,`${totalCount} playas seguidas · última observación satelital`)}</div>}
 
         {/* PLANS — masqués en mode capture : rien n'est facturé (la 2e étape offre 7 j
             contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
@@ -948,7 +1028,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
           <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
             <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:3}}><path d="M12 5v2M6 11l1 1M2 18h20M18 11l-1 1M8.5 18a3.5 3.5 0 0 1 7 0"/></svg>{_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · toute la saison · sans abonnement","€19.99 once · all season · no subscription","19,99 € una vez · toda la temporada · sin suscripción")}</em>
+            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
           </span>
           <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
         </button>}
@@ -1294,8 +1374,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {recordProof
           ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_record"})}catch(_){}}} style={{display:"inline-block",marginTop:4,fontSize:10.5,fontWeight:800,color:"var(--grn)",textDecoration:"underline"}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
           :totalCount>0&&<div className="pwx-proof">{cleanCount>0
-            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
-            :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
+            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · dernière observation satellite`,`${cleanCount}/${totalCount} beaches clean right now · latest satellite observation`,`${cleanCount}/${totalCount} playas limpias ahora · última observación satelital`)
+            :_t(lang,`${totalCount} plages suivies · dernière observation satellite · prévision 7 jours`,`${totalCount} beaches tracked · latest satellite observation · 7-day forecast`,`${totalCount} playas · última observación satelital · pronóstico 7 días`)}</div>}
 
         <div className="pwx-act">
           {hasAnnual&&!captureMode&&<div className="pwx-plans">
@@ -1326,14 +1406,14 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </div>
           {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : pass one-time,
               accès numérique immédiat → pas de garantie de remboursement volontaire. */}
-          {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
+          {/* A/B pw_season : alternative pass saison 24,99 € (paiement unique 6 mois,
               sans abo) — cash d'avance, zéro churn. Chemin pay_once
               on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
           {onSeason&&<button type="button" onClick={onSeason} style={{display:"block",width:"100%",marginTop:12,padding:"11px 13px",borderRadius:12,cursor:"pointer",border:"1.5px dashed rgba(13,11,20,.34)",background:"rgba(13,11,20,.04)",fontFamily:"inherit",textAlign:"left"}}>
             <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
               <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
                 <b style={{fontSize:13.5,color:"#0d0b14",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · toute la saison · sans abonnement","€19.99 once · all season · no subscription","19,99 € una vez · toda la temporada · sin suscripción")}</em>
+                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
               </span>
               <span style={{fontSize:18,fontWeight:800,color:"#0d0b14",flexShrink:0}}>→</span>
             </span>
@@ -1555,6 +1635,25 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const[payStep,_setPayStep]=useState(false)
   const payStepRef=useRef(false)
   const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
+  // ── Présélection du pass depuis l'URL (?pass=p30|trip7|season) ───────────────
+  // C'est l'étape « DURÉE » du tunnel : plage → verdict → intention → durée →
+  // offre → checkout → confirmation → alertes. La page /offres/ (et toute page
+  // de campagne) peut donc diriger vers UN pass précis.
+  // La clé et les centimes viennent de src/lib/pricing.js (miroir du serveur) :
+  //   • JAMAIS de centimes en dur ici (le serveur rejette un montant hors
+  //     allowlist : 400 « Prix invalide ») ;
+  //   • la clé serveur du pass saison est « season », PAS « saison » ;
+  //   • si le pass demandé n'est pas vendu dans la devise courante, on retombe
+  //     sur l'offre principale p30 (jamais un prix non débitable affiché).
+  // Le contexte de paiement (passCtxRef) n'est PAS-touché ici : il est posé par
+  // le CTA de PassOffer (onBuy), qui transmet la clé et les centimes résolus.
+  const _passFromUrl=(()=>{
+    try{
+      const q=new URLSearchParams(window.location.search)
+      const p=q.get("pass")
+      return p?resolvePass(p,PAY_CUR):"p30"
+    }catch(_){return "p30"}
+  })()
   const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
   // Swipe-down to go back depuis l'écran paiement on-site (overlay z1300, rendu
   // hors du panel → ne bénéficie pas du swipe du paywall). Même geste que le
@@ -1850,6 +1949,20 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           :{action:"create_subscription",plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
          const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
          const d=await r.json().catch(()=>({}))
+         // ── CONTRÔLE affichage = débit ────────────────────────────────────────
+         // Le serveur renvoie le montant EFFECTIF qu'il va débiter (champ
+         // `amount`, additif). Si le client a affiché autre chose (ex. bascule
+         // de mois côté serveur vs navigateur autour du 1er juin / 1er déc.),
+         // on MESURE l'écart au lieu de le laisser invisible.
+         if(_pc&&d&&d.amount&&d.amount.value!=null){
+           try{
+             const _srvCents=Math.round(Number(d.amount.value)*100)
+             const _shownCents=_pc.eff||_pc.cents
+             if(Number.isFinite(_srvCents)&&_srvCents!==_shownCents){
+               track("sg_price_mismatch",{pass:_pc.pass,cur:_pc.cur||d.amount.currency,shown_cents:_shownCents,server_cents:_srvCents,source:source||"unknown"})
+             }
+           }catch(_){}
+         }
          if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){
            const errMsg=d.error||""
            let userMsg
@@ -1864,7 +1977,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
            }
            throw new Error(userMsg)
          }
-          if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
+          if(d.checkoutUrl){ // redirection caisse : le navigateur ne confirme pas le paiement
+            if(String(d.checkoutUrl).indexOf("buy.stripe.com")>=0){try{track("checkout_started",{livemode:true,correlation_id:d.orderId||"",provider:"stripe_link"})}catch(_){}}
             try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
             setPayRedirecting(true)
             // Ensure redirect UI shows before navigation
@@ -2010,15 +2124,19 @@ const walletRedirect=useCallback(async(method)=>{
          }
          throw new Error(userMsg)
        }
-        track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
+        track("sg_pay_wallet_start",{plan,provider:d.provider||"mollie",method,pass:_pc?_pc.pass:null})
         if(d.checkoutUrl){
+          if(String(d.checkoutUrl).indexOf("buy.stripe.com")>=0){try{track("checkout_started",{livemode:true,correlation_id:d.orderId||"",provider:"stripe_link"})}catch(_){}}
           try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}));localStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
           // État "Redirection…" visible avant de quitter la page
           setPayRedirecting(true)
           window.location.href=d.checkoutUrl;return
         }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
-        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+        // `email` est transmis pour que le serveur applique le CONTRÔLE
+        // PROPRIÉTAIRE (payment_owner_mismatch) : l'email de la commande est
+        // exactement celui stocké dans metadata.email par create_payment.
+        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email})})
         const cd=await cr.json().catch(()=>({}))
         if(cd.terminal&&cd.status){
           const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
@@ -2062,7 +2180,8 @@ const walletRedirect=useCallback(async(method)=>{
       let canAP=false;try{canAP=window.ApplePaySession.canMakePayments()}catch(_){}
       if(canAP && applePayDomainReady){
         try{
-          const cents=_pc?_pc.cents:499
+          // Repli = Trip Pass (offre validée 2026-11-09 : 7,99 € / $8.99).
+          const cents=_pc?_pc.cents:(PAY_CUR==="usd"?899:799)
           const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:(PAY_CUR==="usd"?"USD":"EUR"),merchantCapabilities:["supports3DS"],
             supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],
             total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},
@@ -2088,14 +2207,14 @@ const walletRedirect=useCallback(async(method)=>{
 const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
               if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
-              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email:apEmail})})
               const cd=await cr.json().catch(()=>({}))
               if(cd.terminal&&cd.status){
                 const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
                 throw new Error(statusMsg[cd.status]||_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
               }
               let paid=cd.paid===true
-              if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
+              if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email:apEmail})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
               ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
               if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
               if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
@@ -2269,9 +2388,9 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[passSeq,sargData,beach,island,_trackRec,lang])
-  // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
+  // A/B pw_season : surface le SKU « pass saison » dormant (24,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
-  // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
+  // (allowlist serveur pay_once = [799, 1499, 2499]¢ ; 2499 OK). Cash d'avance + zéro churn.
   // Réversible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site déjà éprouvé (p30).
   const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
@@ -2297,19 +2416,19 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   // doSubscribe). passCtxRef porte cents/devise/jours pour l'écran de paiement.
   const startTripPass=useCallback(()=>{
     if(TRIP_CENTS<=0)return
-    passCtxRef.current={pass:"trip7",cents:TRIP_CENTS,days:7,cur:"usd"}
+    passCtxRef.current={pass:"trip7",cents:passBaseCents("trip7","usd"),eff:passBaseCents("trip7","usd"),days:PASS_DAYS.trip7,cur:"usd"}
     try{track("sg_pass_cta",{pass:"trip7",cents:TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
     // Arme la relance panier abandonné (la bannière lit sg_checkout_abandoned).
     try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
     setPayStep(true)
   },[source,setPayStep])
   // ── Trip Pass EUR (MQ/GP) — MIROIR du Trip Pass USD ci-dessus ────────────────
-  // Accès UNIQUE 7 jours, 4,99 € one-time (EUR_TRIP_CENTS=499), sans abonnement.
+  // Accès UNIQUE 7 jours, 7,99 € one-time (EUR_TRIP_CENTS=799), sans abonnement.
   // EUR uniquement (!IS_NEW_REGION) : les régions USD utilisent tripAB/startTripPass.
   // A/B pw_trippass_eur (override ?pwtripeur=1/0). Chemin de checkout SÉPARÉ de
   // l'abo (passCtxRef + action:pay_once, devise EUR) — ZÉRO contact avec
-  // effectivePlan/stripeLinkFor. 499¢ DOIT être dans l'allowlist serveur pay_once
-  // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799¢+) reste intact.
+  // effectivePlan/stripeLinkFor. 799¢ DOIT être dans l'allowlist serveur pay_once
+  // EUR. Le pass off-site historique (PassOffer/pwPass, p30 1499¢+) reste intact.
   // A/B pw_trippass_eur_ab (override ?pwtripeur=1/0). 50/50 control vs trip.
   // Rollback QA : ?pwtripeur=0 force control, ?pwtripeur=1 force trip.
   const tripEurAB=!IS_NEW_REGION&&(()=>{try{
@@ -2319,7 +2438,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     return abVariant("pw_trippass_eur_ab",["control","trip"],[.5,.5])==="trip"
   }catch(_){return false}})()
   const startTripPassEur=useCallback(()=>{
-    passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}
+    passCtxRef.current={pass:"trip7",cents:passBaseCents("trip7","eur"),eff:passBaseCents("trip7","eur"),days:PASS_DAYS.trip7,cur:"eur"}
     try{track("sg_pass_cta",{pass:"trip7",cents:EUR_TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
     try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
     setPayStep(true)
@@ -2468,13 +2587,13 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()}
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} passKey={_passFromUrl}
           seq={passSeq} proof={_seqProof}
           onProofOpen={()=>{try{track("sg_pass_proof_open",{source:source||"unknown"})}catch(_){}}}
           onProofBack={()=>{try{track("sg_pass_seq_back",{source:source||"unknown"})}catch(_){}}}
           onBuy={(item)=>{
-          try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
-          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
+          try{track("sg_pass_cta",{pass:item.pass,cents:item.cents||item.c,base_cents:item.baseCents||item.c,source:source||"unknown",onsite:1,method:item.method||"card"})}catch(_){}
+          passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
         }}/>}
         {!passOnly&&pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
@@ -2486,8 +2605,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:1999,days:210,cur:"eur"};setPayStep(true)}):undefined}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:passBaseCents("season","eur"),source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:passBaseCents("season","eur"),eff:passBaseCents("season","eur"),days:PASS_DAYS.season,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
@@ -2499,15 +2618,15 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:1999,days:210,cur:"eur"};setPayStep(true)}):undefined}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:passBaseCents("season","eur"),source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:passBaseCents("season","eur"),eff:passBaseCents("season","eur"),days:PASS_DAYS.season,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} sargData={sargData} island={island} beach={beach||null} source={source||"paywall"} onClose={()=>setShowB2B(false)}/>}
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
-          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} passKey={_passFromUrl} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.cents||item.c,base_cents:item.baseCents||item.c,source:source||"unknown",onsite:1})}catch(_){}
+          passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
@@ -2548,7 +2667,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           const _pName=_ctxName||_topName, _pScore=_ctxScore||_topScore
           const _baseProof=(_pName&&_pScore)
             ?_t(lang,`${_pName} · ${_pScore}/100 · vérifié satellite`,`${_pName} · ${_pScore}/100 · satellite-verified`,`${_pName} · ${_pScore}/100 · verificado por satélite`)
-            :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
+            :_t(lang,"Toute ta côte · dernière observation satellite","Your whole coast · latest satellite observation","Toda tu costa · última observación satelital")
           // A/B pw_proof : au point de décision, remplace le snapshot du jour par
           // le PALMARÈS auditable (preuve « Airbnb » = note + volume + public).
           const proof=(pwProof&&_recordProof)||_baseProof
@@ -3094,7 +3213,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,
             border:`1px solid ${C.gold}`,background:"rgba(245,158,11,.07)"}}>
             <div style={{fontSize:12.5,fontWeight:700,color:C.gold,letterSpacing:".01em",marginBottom:8}}>
-              {_t(lang,"4,99 € · 7 jours","€4.99 · 7 days","4,99 € · 7 días")}
+              {_t(lang,"7,99 € · 7 jours","€7.99 · 7 days","7,99 € · 7 días")}
             </div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.82)",lineHeight:1.35,marginBottom:10}}>
               {_t(lang,
@@ -3288,7 +3407,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(()=>{
             const w=walletAvail()
             if(!w.apple&&!w.google)return null
-            const cents = passCtxRef.current?.cents ?? (PAY_CUR==="usd"?499:499)
+            // Repli = Trip Pass (offre validée 2026-11-09 : 7,99 € / $8.99).
+            const cents = passCtxRef.current?.cents ?? (PAY_CUR==="usd"?899:799)
             const amountStr = (cents/100).toFixed(2) + (PAY_CUR==="usd"?" $":" €")
             // Ordre : device natif en premier
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)

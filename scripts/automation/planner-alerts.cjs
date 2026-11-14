@@ -250,9 +250,9 @@ async function main() {
     for (const id of emailToIds.get(r.email.toLowerCase()) || []) notifiedIds.push(id)
   }
 
-  // En SEND : marque tout (envoyés + passés). En DRY : marque seulement les passés
-  // (nettoyage), jamais les éligibles (on ne les a pas encore prévenus).
-  await markNotified(SEND ? notifiedIds : stale)
+  // Dry-run : aucune écriture. En --send seulement, on marque les envois et les dates passées.
+  if (SEND) await markNotified(notifiedIds)
+  else console.log(`[planner] dry-run : ${stale.length} date(s) passée(s) non modifiée(s).`)
 
   console.log(`Done. ${SEND ? sent + ' rappel(s) envoyé(s)' : picks.length + ' candidat(s) (dry-run)'}${fail ? ` · ${fail} échec(s)` : ''} · ${stale.length} passée(s) nettoyée(s).`)
 }

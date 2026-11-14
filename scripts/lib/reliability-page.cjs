@@ -6,10 +6,10 @@
  *   - Régions: dist/reliability/ (EN) ou dist/fiabilidad/ (ES) + ajout au
  *              sitemap.xml régional écrit par region-seo-pages.cjs.
  *
- * RÈGLE D'OR : aucun chiffre inventé. Tout vient de :
- *   scripts/automation/data/backtest-results.json   (précision réelle prévision vs observé)
- *   public/api/copernicus[/<region>]/sargassum.json (updatedAt, points de mesure)
- * Donnée absente → la section saute, on n'écrit RIEN à la place.
+ * RÈGLE D'OR : aucun chiffre inventé. Les métriques viennent uniquement du
+ * registre public daté public/api/copernicus/track-record.json, après contrôle
+ * de fraîcheur et de périmètre régional. Les observations restent horodatées
+ * par erddapTimestamp. Donnée absente ou périmètre inadéquat → aucun chiffre.
  *
  * Design « Le Veilleur » : papier crème #FDFCF7, or signal #FFC72C, polices Anton
  * (titres) + Bricolage Grotesque (corps), panneaux golden-hour sombres (#10231E /
@@ -18,7 +18,8 @@
  */
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
-const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie réelle du modèle (5,0 j) — jamais re-coder en dur
+const { resolvePublicAccuracy } = require('./regional-track-record.cjs')
+const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie des bancs flottants (5,0 j), pas des échouages
 const path = require('path')
 const HL_FR = String(HALF_LIFE_DAYS).replace('.', ',') // 5,0 → "5"
 const HL_NUM = String(HALF_LIFE_DAYS)
@@ -82,14 +83,14 @@ const I18N = {
     faNote: 'En saison calme, presque aucun échouage réel à confirmer : ce taux compte des pixels propres faussement signalés, ce n’est pas une fiabilité d’alerte de 76 %.',
     capConsent: '1 email/jour max · désinscription en 1 clic · voir Confidentialité',
     h1a: 'Nos prévisions,', h1b: 'vérifiées',
-    lead: "Aucune promesse, des mesures : chaque jour, la prévision de la veille est comparée à ce que le satellite observe réellement. Voici la méthode — et les chiffres, y compris ceux qu'on rate.",
+    lead: "Aucune promesse, des mesures : les prévisions archivées sont comparées aux observations satellite disponibles. Voici la méthode — et les chiffres, y compris ceux qu'on rate.",
     l1: 'La méthode', h2m: 'Comment naît une prévision',
-    m1t: 'Satellite Copernicus / NOAA, 4 passages par jour',
+    m1t: 'Observations AFAI NOAA/AOML ERDDAP',
     m1s: "L'indice AFAI (algues flottantes) est échantillonné au large de chaque plage, pixel par pixel — jamais une moyenne régionale.",
     m2t: 'Un modèle de dérive, pas une boule de cristal',
-    m2s: `Persistance des échouages (demi-vie ${HL_FR} jours), vent et bancs détectés au large : la prévision 7 jours est recalculée à chaque passage satellite.`,
-    m3t: 'Un backtest automatique, tous les jours',
-    m3s: "Chaque prévision est archivée puis confrontée à l'observation satellite du jour J. Le calcul est automatique — personne ne retouche les chiffres.",
+    m2s: `Les bancs flottants utilisent une demi-vie de persistance de ${HL_FR} jours ; la persistance des algues déjà échouées reste une hypothèse provisoire, non calibrée sur des observations de terrain en saison active.`,
+    m3t: 'Un backtest automatique',
+    m3s: "Les prévisions archivées sont confrontées aux observations satellite disponibles. Le calcul est automatique — personne ne retouche les chiffres.",
     m4t: "Quand la donnée manque, on n'affiche rien",
     m4s: "Pas de chiffre inventé : si une mesure n'existe pas, la section disparaît plutôt que de deviner.",
     l2: 'La précision, mesurée', h2p: 'Ce que valent nos prévisions',
@@ -106,10 +107,10 @@ const I18N = {
     l3: 'Fraîcheur', h2f: 'La donnée que vous regardez',
     fUpd: 'Dernière mesure satellite',
     agoLt1: "il y a moins d'1 h", agoTpl: 'il y a {h} h',
-    fPoints: n => `${n} points de mesure suivis · donnée revalidée 4 fois par jour · cette page est régénérée à chaque mise à jour.`,
-    cta: 'Voir la carte en direct →',
+    fPoints: n => `${n} points de mesure suivis · horodatage de l'observation satellite affiché ci-dessus.`,
+    cta: 'Voir la carte des plages →',
     fdata: 'Données : Copernicus Marine & NOAA ERDDAP · backtest recalculé automatiquement',
-    caribNote: null,
+    scopeNote: scope => `Périmètre de validation publié : ${scope}. Résultats agrégés dans ce périmètre, pas une garantie plage par plage.`,
     rgClean: 'Prévisions « Propre »',
     rgFalse: 'Taux Fausses Alertes',
     capTitle: 'Recevez le verdict du matin',
@@ -124,14 +125,14 @@ const I18N = {
     faNote: 'In calm season there is almost no real beaching to confirm: this rate counts clean pixels wrongly flagged, not a 76% alert reliability.',
     capConsent: '1 email/day max · 1-click unsubscribe · see Privacy',
     h1a: 'Our forecasts,', h1b: 'verified',
-    lead: 'No promises — measurements. Every day, yesterday’s forecast is compared with what the satellite actually observed. Here is the method, and the numbers — including the ones we miss.',
+    lead: 'No promises — measurements. Archived forecasts are compared with the satellite observations available. Here is the method, and the numbers — including the ones we miss.',
     l1: 'The method', h2m: 'How a forecast is made',
-    m1t: 'Copernicus / NOAA satellite, 4 passes a day',
+    m1t: 'NOAA/AOML ERDDAP AFAI observations',
     m1s: 'The AFAI floating-algae index is sampled offshore of every beach, pixel by pixel — never a regional average.',
     m2t: 'A drift model, not a crystal ball',
-    m2s: `Beaching persistence (${HL_NUM}-day half-life), wind and offshore mats: the 7-day forecast is recomputed at every satellite pass.`,
-    m3t: 'An automatic backtest, every single day',
-    m3s: 'Every forecast is archived, then checked against the satellite observation on the target day. Fully automatic — nobody edits the numbers.',
+    m2s: `Floating mats use a ${HL_NUM}-day persistence half-life; persistence of material already beached remains a provisional prior, not calibrated against active-season ground truth.`,
+    m3t: 'An automatic backtest',
+    m3s: 'Archived forecasts are checked against the available satellite observations. The process is automatic — nobody edits the numbers.',
     m4t: 'When data is missing, we show nothing',
     m4s: 'No invented figures: if a measurement does not exist, the section disappears rather than guessing.',
     l2: 'Accuracy, measured', h2p: 'How good are our forecasts',
@@ -148,10 +149,10 @@ const I18N = {
     l3: 'Freshness', h2f: 'The data you are looking at',
     fUpd: 'Latest satellite measurement',
     agoLt1: 'less than 1 h ago', agoTpl: '{h} h ago',
-    fPoints: n => `${n} monitored sampling points · data re-checked 4 times a day · this page is regenerated with every update.`,
-    cta: 'See the live map →',
+    fPoints: n => `${n} monitored sampling points · the satellite observation timestamp is shown above.`,
+    cta: 'See the beach map →',
     fdata: 'Data: Copernicus Marine & NOAA ERDDAP · backtest recomputed automatically',
-    caribNote: region => `Accuracy is measured on our longest-running network — 20 Caribbean beaches (Martinique & Guadeloupe), where the verification archive is deepest. The exact same model (pipeline v3) powers the ${region} forecasts.`,
+    scopeNote: scope => `Published validation scope: ${scope}. Results are aggregated for that scope, not a per-beach guarantee.`,
     rgClean: '"Clean" Forecasts',
     rgFalse: 'False Alarm Rate',
     capTitle: 'Get the morning verdict',
@@ -166,14 +167,14 @@ const I18N = {
     faNote: 'En temporada tranquila casi no hay recales reales que confirmar: esta tasa cuenta píxeles limpios mal señalados, no es una fiabilidad de alerta del 76%.',
     capConsent: '1 email/día máx · baja en 1 clic · ver Privacidad',
     h1a: 'Nuestros pronósticos,', h1b: 'verificados',
-    lead: 'Sin promesas — mediciones. Cada día, el pronóstico de ayer se compara con lo que el satélite observó realmente. Este es el método, y las cifras — incluidas las que fallamos.',
+    lead: 'Sin promesas — mediciones. Los pronósticos archivados se comparan con las observaciones satelitales disponibles. Este es el método, y las cifras — incluidas las que fallamos.',
     l1: 'El método', h2m: 'Cómo se hace un pronóstico',
-    m1t: 'Satélite Copernicus / NOAA, 4 pasadas al día',
+    m1t: 'Observaciones AFAI de NOAA/AOML ERDDAP',
     m1s: 'El índice AFAI (algas flotantes) se muestrea frente a cada playa, píxel por píxel — nunca un promedio regional.',
     m2t: 'Un modelo de deriva, no una bola de cristal',
-    m2s: `Persistencia de los recales (vida media de ${HL_FR} días), viento y bancos detectados mar adentro: el pronóstico de 7 días se recalcula en cada pasada satelital.`,
-    m3t: 'Un backtest automático, todos los días',
-    m3s: 'Cada pronóstico se archiva y luego se compara con la observación satelital del día previsto. Todo automático — nadie retoca las cifras.',
+    m2s: `Los bancos flotantes usan una semivida de persistencia de ${HL_FR} días; la persistencia del material ya varado sigue siendo una hipótesis provisional, sin calibrar con observaciones de terreno durante la temporada activa.`,
+    m3t: 'Un backtest automático',
+    m3s: 'Los pronósticos archivados se comparan con las observaciones satelitales disponibles. El proceso es automático — nadie retoca las cifras.',
     m4t: 'Cuando falta el dato, no mostramos nada',
     m4s: 'Ninguna cifra inventada: si una medición no existe, la sección desaparece antes que adivinar.',
     l2: 'La precisión, medida', h2p: 'Cuánto valen nuestros pronósticos',
@@ -190,10 +191,10 @@ const I18N = {
     l3: 'Frescura', h2f: 'El dato que estás viendo',
     fUpd: 'Última medición satelital',
     agoLt1: 'hace menos de 1 h', agoTpl: 'hace {h} h',
-    fPoints: n => `${n} puntos de medición monitoreados · dato verificado 4 veces al día · esta página se regenera con cada actualización.`,
-    cta: 'Ver el mapa en vivo →',
+    fPoints: n => `${n} puntos de medición monitoreados · la hora de la observación satelital se muestra arriba.`,
+    cta: 'Ver el mapa de playas →',
     fdata: 'Datos: Copernicus Marine & NOAA ERDDAP · backtest recalculado automáticamente',
-    caribNote: region => `La precisión se mide en nuestra red más antigua — 20 playas del Caribe (Martinica y Guadalupe), donde el archivo de verificación es más profundo. El mismo modelo exacto (pipeline v3) genera los pronósticos de ${region}.`,
+    scopeNote: scope => `Alcance de validación publicado: ${scope}. Los resultados son agregados para ese alcance, no una garantía por playa.`,
     rgClean: 'Pronósticos «Limpia»',
     rgFalse: 'Tasa Falsas Alertas',
     capTitle: 'Recibe el veredicto de la mañana',
@@ -204,11 +205,57 @@ const I18N = {
   },
 }
 
-/** Lit le backtest réel ; null si rien d'exploitable (→ la section saute). */
-function readBacktest() {
-  const bt = loadJSON(path.join(ROOT, 'scripts', 'automation', 'data', 'backtest-results.json'), null)
-  if (!bt || !bt.byHorizon || !bt.overall || typeof bt.overall.statusHitRate !== 'number' || !(bt.totalPairs > 0)) return null
-  return bt
+/**
+ * Lit uniquement un registre public frais et strictement régional.
+ * Un backtest global interne ne constitue jamais une preuve pour une région.
+ */
+function readBacktest(regionId, root = ROOT) {
+  const record = loadJSON(path.join(root, 'public', 'api', 'copernicus', 'track-record.json'), null)
+  const accuracy = resolvePublicAccuracy(record, regionId)
+  const normalizedRegion = String(regionId ?? '').trim().toLowerCase()
+  if (!accuracy.available || accuracy.scopeRegions.length !== 1 || accuracy.scopeRegions[0] !== normalizedRegion) return null
+
+  const overallRate = Number(record.overall?.statusHitRatePct)
+  if (!Number.isFinite(overallRate) || overallRate < 0 || overallRate > 100) return null
+
+  const byHorizon = {}
+  for (const item of Array.isArray(record.byHorizon) ? record.byHorizon : []) {
+    const day = Number(item?.day)
+    const rate = Number(item?.hitRatePct)
+    const pairs = Number(item?.pairs)
+    if (!Number.isInteger(day) || day < 1 || day > 7 ||
+        !Number.isFinite(rate) || rate < 0 || rate > 100 ||
+        !Number.isFinite(pairs) || pairs <= 0) continue
+    const confidence = Number(item?.avgConfidence)
+    byHorizon[`day${day}`] = {
+      pairs,
+      statusHitRate: rate,
+      avgConfidence: Number.isFinite(confidence) && confidence >= 0 && confidence <= 100 ? confidence : null,
+    }
+  }
+  if (!byHorizon.day1 || !byHorizon.day3) return null
+
+  const byBeach = {}
+  for (const beach of Array.isArray(record.byBeach) ? record.byBeach : []) {
+    const id = String(beach?.id ?? '').trim()
+    const rate = Number(beach?.hitRatePct)
+    const pairs = Number(beach?.samples)
+    if (!id || !Number.isFinite(rate) || rate < 0 || rate > 100 ||
+        !Number.isFinite(pairs) || pairs <= 0) continue
+    byBeach[id] = { statusHitRate: rate, pairs }
+  }
+
+  const archiveDays = Number(record.window?.days)
+  return {
+    overall: { statusHitRate: overallRate, afaiMAE: accuracy.horizons['J+1'].meanAbsErr },
+    byHorizon,
+    totalPairs: accuracy.sampleSize,
+    dateRange: { archiveFrom: accuracy.window.from, archiveTo: accuracy.window.to },
+    archiveDays: Number.isFinite(archiveDays) && archiveDays > 0 ? archiveDays : null,
+    byBeach,
+    regimeReliability: record.byRegime && record.headline ? { regimes: record.byRegime, headline: record.headline } : null,
+    scopeLabel: accuracy.scopeLabel,
+  }
 }
 
 function beachLabel(lang, id) {
@@ -217,7 +264,7 @@ function beachLabel(lang, id) {
   return `${b.name} (${ISLAND_LABEL[lang][b.island] || b.island})`
 }
 
-/** Section précision — uniquement depuis backtest-results.json, gardée champ par champ. */
+/** Section précision — uniquement depuis un registre public frais et mono-région. */
 function precisionSection(lang, bt, regionName) {
   if (!bt) return ''
   const t = I18N[lang]
@@ -233,8 +280,10 @@ function precisionSection(lang, bt, regionName) {
     }
   }
 
-  // Note réseau Caraïbe (régions USD uniquement — le backtest est mesuré sur MQ+GP)
-  const carib = t.caribNote && regionName ? `<p class="note">${esc(t.caribNote(regionName))}</p>` : ''
+  // Le périmètre est explicite : aucun résultat agrégé n'est attribué à une autre région.
+  const scopeNote = bt.scopeLabel && t.scopeNote
+    ? `<p class="note">${esc(t.scopeNote(bt.scopeLabel))}</p>`
+    : ''
 
   // Stats clés J+1 / J+3 / global
   const stats = []
@@ -287,7 +336,7 @@ function precisionSection(lang, bt, regionName) {
     <div class="lbl">${esc(t.l2)}</div>
     <h2>${esc(t.h2p)}</h2>
     ${regimeLead}
-    ${intro}${carib}
+    ${intro}${scopeNote}
     <div class="stats">${stats.join('')}</div>
     ${hitDef}
     ${table}
@@ -437,21 +486,6 @@ function track(event, params) {
     for (var k in ab) { p["ab_" + k] = ab[k]; }
   } catch(e){}
   p["ab_rel_v2"] = VARIANT === "v2" ? 1 : 0;
-  
-  if (ISLAND_CODE === "MQ" || ISLAND_CODE === "GP") {
-    try {
-      var mid = ISLAND_CODE === "GP" ? "G-Q31VV3LLM9" : "G-V8JGMDZZ2Y";
-      var sec = ISLAND_CODE === "GP" ? "eWAv3vACT6uVzcrAi7JgYQ" : "eFHMRr4tQ-2B-JYidixOSA";
-      var cid = document.cookie.match(/_ga=GA\\d+\\.\\d+\\.(\\d+\\.\\d+)/);
-      cid = cid ? cid[1] : "a." + Date.now();
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(
-          "https://www.google-analytics.com/mp/collect?measurement_id=" + mid + "&api_secret=" + sec,
-          JSON.stringify({ client_id: cid, events: [{ name: event, params: p }] })
-        );
-      }
-    } catch(e){}
-  }
   
   if (event === "sg_email_submit" || event === "sg_rel_view") {
     try {
@@ -781,7 +815,7 @@ if (capForm) {
   </div>
 
   <div class="foot"><div class="foot-sig">${esc(t.sig)}</div>${esc(siteName.toUpperCase())} · ${esc(t.fdata)}${lang === 'fr' ? `
-    <nav class="foot-nav"><a href="/">Carte en temps réel</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
+    <nav class="foot-nav"><a href="/">Carte des plages</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
     <nav class="foot-nav legal"><a href="/cgv.html">CGV</a><a href="/remboursement.html">Remboursement</a><a href="/confidentialite.html">Confidentialité</a><a href="/mentions-legales.html">Mentions légales</a></nav>
     <div class="foot-co">97TECH — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a> · © 2026 97TECH</div>` : ''}</div>
 </div>
@@ -821,7 +855,7 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all} % de prévisions sargasses justes, vérifié — ${regionLabel}` : `Fiabilité des prévisions sargasses — précision mesurée | ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Prévision vs observation satellite : ${j1} % de réussite à J+1, ${all} % global sur ${pairs} comparaisons (${days} jours). Méthode et chiffres réels, jamais retouchés.`
-        : 'Comment nos prévisions sargasses sont calculées et vérifiées : satellite Copernicus/NOAA 4 passages par jour, modèle de dérive, backtest automatique quotidien.',
+        : 'Comment nos prévisions sargasses sont calculées et vérifiées : observations AFAI NOAA/AOML ERDDAP, modèle de dérive et backtest automatique.',
     }
   }
   if (lang === 'es') {
@@ -829,14 +863,14 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all}% de pronósticos de sargazo acertados, verificado — ${regionLabel}` : `Precisión del pronóstico de sargazo, verificada — ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Pronóstico vs observación satelital: ${j1}% de acierto a 1 día, ${all}% global en ${pairs} comparaciones (${days} días). Método y cifras reales, nunca retocadas.`
-        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: satélite Copernicus/NOAA 4 veces al día, modelo de deriva, backtest automático diario.',
+        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: observaciones AFAI de NOAA/AOML ERDDAP, modelo de deriva y backtest automático.',
     }
   }
   return {
     title: all != null ? `${all}% Accurate Sargassum Forecasts, Verified — ${regionLabel}` : `Sargassum Forecast Accuracy, Verified — ${regionLabel}`,
     desc: j1 != null && all != null && pairs && days
       ? `Forecast vs satellite observation: ${j1}% next-day hit rate, ${all}% overall across ${pairs} checks (${days} days). Full method, real numbers, never edited.`
-      : 'How our sargassum forecasts are computed and verified: Copernicus/NOAA satellite 4 passes a day, drift model, automatic daily backtest.',
+      : 'How our sargassum forecasts are computed and verified: NOAA/AOML ERDDAP AFAI observations, drift model and automatic backtest.',
   }
 }
 
@@ -845,24 +879,25 @@ function buildMeta(lang, bt, regionLabel) {
  * sinon build mono-région (florida / puntacana / rivieramaya).
  */
 function generateReliabilityPages(region, distDir) {
-  const bt = readBacktest()
   const isNewRegion = !!(region && region.id !== 'mq' && region.id !== 'gp')
 
   if (!isNewRegion) {
     const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'sargassum.json'), null)
-    // MQ — canonical martinique
-    const mqMeta = buildMeta('fr', bt, 'Martinique')
+    // MQ — canonical Martinique : métrique uniquement si le registre couvre MQ seul.
+    const mqBt = readBacktest('mq')
+    const mqMeta = buildMeta('fr', mqBt, 'Martinique')
     writePage(distDir, 'fiabilite', renderPage({
       lang: 'fr', domain: 'sargasses-martinique.com', siteName: 'Sargasses Martinique',
-      slug: 'fiabilite', title: mqMeta.title, desc: mqMeta.desc, data, bt, islandCode: 'MQ'
+      slug: 'fiabilite', title: mqMeta.title, desc: mqMeta.desc, data, bt: mqBt, islandCode: 'MQ'
     }))
-    // GP — miroir dist/_gp/ (prepare-ftp l'overlay sur guadeloupe-ftp en dernier)
-    const gpMeta = buildMeta('fr', bt, 'Guadeloupe')
+    // GP — miroir dist/_gp/ : métrique uniquement si le registre couvre GP seul.
+    const gpBt = readBacktest('gp')
+    const gpMeta = buildMeta('fr', gpBt, 'Guadeloupe')
     writePage(path.join(distDir, '_gp'), 'fiabilite', renderPage({
       lang: 'fr', domain: 'sargasses-guadeloupe.com', siteName: 'Sargasses Guadeloupe',
-      slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt, islandCode: 'GP'
+      slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt: gpBt, islandCode: 'GP'
     }))
-    console.log(`   → /fiabilite/ générée (MQ + miroir GP)${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
+    console.log(`   → /fiabilite/ générée (MQ + miroir GP) · précision régionale ${mqBt || gpBt ? 'disponible selon le registre' : 'masquée (registre absent, périmé ou multi-régions)'}`)
     return
   }
 
@@ -878,6 +913,7 @@ function generateReliabilityPages(region, distDir) {
   const langs = [region.primaryLang, ...(region.secondaryLangs || [])]
     .map(norm).filter((l, i, a) => a.indexOf(l) === i) // dédupe, primaire d'abord
   const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), null)
+  const bt = readBacktest(region.id)
   const alternates = langs.map(l => ({ lang: l, href: `https://${region.domain}/${SLUG[l]}/`, xDefault: l === primary }))
   const done = []
   for (const l of langs) {
@@ -911,7 +947,7 @@ function generateReliabilityPages(region, distDir) {
 `
   writePage(distDir, 'fiabilite', legacyHtml)
   done.push(`/fiabilite/ (redirect → ${legacyTarget})`)
-  console.log(`   → ${done.join(' + ')} générée(s) (${region.id})${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
+  console.log(`   → ${done.join(' + ')} générée(s) (${region.id}) · précision régionale ${bt ? 'disponible selon le registre' : 'masquée (registre absent, périmètre invalide ou périmé)'}`)
 }
 
-module.exports = { generateReliabilityPages }
+module.exports = { generateReliabilityPages, readBacktest }

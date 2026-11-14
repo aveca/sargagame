@@ -1,24 +1,19 @@
 {
-  "generatedAt": "2026-10-26T17:32:33.329Z",
+  "generatedAt": "2026-11-09T21:42:43.187Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
-      "orphanCount": 7,
+      "orphanCount": 8,
       "orphansByKind": {
-        "editorial": 2,
+        "editorial": 3,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 4054,
-          "clicks": 386
-        },
-        {
-          "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1097,
-          "clicks": 92
+          "impressions": 4170,
+          "clicks": 462
         }
       ],
       "orphans": [
@@ -28,8 +23,7 @@
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -38,8 +32,16 @@
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/previsions/",
+          "impressions": 4,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -48,8 +50,7 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
@@ -58,38 +59,34 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
           "url": "https://sargasses-martinique.com/en/sargassum-alerts/",
-          "impressions": 0,
+          "impressions": 4,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
           "url": "https://sargasses-martinique.com/en/sargassum-season/",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         },
         {
           "url": "https://sargasses-martinique.com/mentions-legales.html",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-martinique.com/",
-            "https://sargasses-martinique.com/carte-sargasses/"
+            "https://sargasses-martinique.com/"
           ]
         }
       ]
@@ -105,13 +102,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 4780,
-          "clicks": 444
+          "impressions": 5030,
+          "clicks": 549
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 1293,
-          "clicks": 126
+          "impressions": 2143,
+          "clicks": 220
         }
       ],
       "orphans": [
@@ -157,7 +154,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/best-beaches-no-sargassum/",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [

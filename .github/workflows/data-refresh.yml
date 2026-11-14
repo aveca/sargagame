@@ -43,12 +43,15 @@ concurrency:
 
 jobs:
   refresh:
+    outputs:
+      publication_status: ${{ steps.publication_status.outputs.status }}
+      gate_outcome: ${{ steps.verify.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -59,7 +62,7 @@ jobs:
           fi
           echo "GH_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -96,7 +99,22 @@ jobs:
       - name: Gate intégrité (refuse source dégradée / pic tout-vert)
         id: verify
         continue-on-error: true
-        run: node scripts/verify-ftp-ready.cjs
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-ftp-ready.cjs 2>&1 | tee "$RUNNER_TEMP/verify-ftp-ready.log"
+          rc=${PIPESTATUS[0]}
+          # Le code de sortie tranche. Une publication autorisée (observation
+          # plus récente, hors des 900 min) ne doit pas être classée bloquée
+          # juste parce qu'un avertissement mentionne le SLA.
+          if [ "$rc" -ne 0 ] && grep -q 'observation hors SLA' "$RUNNER_TEMP/verify-ftp-ready.log"; then
+            echo "gate_status=BLOCKED_STALE_SOURCE" >> "$GITHUB_OUTPUT"
+          elif [ "$rc" -ne 0 ]; then
+            echo "gate_status=FAILED_VALIDATION" >> "$GITHUB_OUTPUT"
+          else
+            echo "gate_status=PASS" >> "$GITHUB_OUTPUT"
+          fi
+          exit "$rc"
 
       - name: Commit + push des données Copernicus
         id: publish
@@ -134,10 +152,12 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "Aucune donnée à commit (déjà à jour)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit -m "chore(data): refresh Copernicus $(date -u +'%Y-%m-%d %H:%M UTC')"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
           BRANCH="${GITHUB_REF_NAME:-main}"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
@@ -199,7 +219,8 @@ jobs:
       # production (`main`). Une publication sur une branche de développement
       # ne doit jamais déclencher un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
+        id: dispatch
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.changed == 'true' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
@@ -213,3 +234,109 @@ jobs:
         if: steps.verify.outcome == 'failure'
         run: |
           echo "::error title=Data refresh bloquee::verify-ftp-ready a refuse la publication. Aucun commit, aucun deploy - les donnees restent celles deja en prod. Prochain run (4x/j) re-tentera."
+
+      - name: Report publication status
+        id: publication_status
+        if: always()
+        env:
+          SOURCE: ${{ steps.src.outputs.source }}
+          ERDDAP_OUTCOME: ${{ steps.erddap.outcome }}
+          GATE_OUTCOME: ${{ steps.verify.outcome }}
+          GATE_STATUS: ${{ steps.verify.outputs.gate_status }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          PUBLISH_CHANGED: ${{ steps.publish.outputs.changed }}
+          PUBLISH_SHA: ${{ steps.publish.outputs.sha }}
+          PUBLISH_BRANCH: ${{ steps.publish.outputs.branch }}
+          DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const { execFileSync } = require('node:child_process');
+          let payload = {};
+          try { payload = JSON.parse(fs.readFileSync('public/api/copernicus/sargassum.json', 'utf8')); } catch {}
+          const sourceTimestamp = typeof payload.erddapTimestamp === 'string' ? payload.erddapTimestamp : null;
+          const sourceMs = sourceTimestamp ? Date.parse(sourceTimestamp) : NaN;
+          const nowMs = Date.now();
+          const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs <= nowMs;
+          const sourceAgeMinutes = sourceTimestampValid ? Math.floor((nowMs - sourceMs) / 60000) : null;
+          const gateStatus = process.env.GATE_STATUS || 'UNCLASSIFIED';
+          const publishChanged = process.env.PUBLISH_CHANGED === 'true'
+            ? true
+            : process.env.PUBLISH_CHANGED === 'false' ? false : null;
+          const { classifyPublicationStatus } = require('./scripts/lib/copernicus-publication-status.cjs');
+          const status = classifyPublicationStatus({
+            gateStatus,
+            erddapOutcome: process.env.ERDDAP_OUTCOME,
+            source: process.env.SOURCE,
+            gateOutcome: process.env.GATE_OUTCOME,
+            publishOutcome: process.env.PUBLISH_OUTCOME,
+            publishChanged
+          });
+          let changedPayloadFiles = [];
+          try {
+            const sha = process.env.PUBLISH_SHA;
+            const raw = sha
+              ? execFileSync('git', ['show', '--format=', '--name-only', sha], { encoding: 'utf8' })
+              : execFileSync('git', ['diff', '--name-only', 'HEAD', '--', 'public/api/copernicus/'], { encoding: 'utf8' });
+            changedPayloadFiles = raw.split(/\r?\n/).map(x => x.trim()).filter(x => x.startsWith('public/api/copernicus/'));
+          } catch {}
+          const report = {
+            generatedAt: new Date(nowMs).toISOString(),
+            status,
+            source: process.env.SOURCE || null,
+            erddapFetchOutcome: process.env.ERDDAP_OUTCOME || null,
+            erddapTimestamp: sourceTimestamp,
+            sourceTimestampValid,
+            sourceAgeMinutes,
+            operationalSlaMinutes: 900,
+            publicStaleThresholdMinutes: 2160,
+            publicStale: sourceTimestampValid ? sourceAgeMinutes >= 2160 : null,
+            integrityGateOutcome: process.env.GATE_OUTCOME || null,
+            integrityGateClassification: gateStatus,
+            publishOutcome: process.env.PUBLISH_OUTCOME || null,
+            publishChanged,
+            publishBranch: process.env.PUBLISH_BRANCH || null,
+            commitSha: process.env.PUBLISH_SHA || null,
+            deploymentDispatchOutcome: process.env.DISPATCH_OUTCOME || 'unknown',
+            changedPayloadFiles,
+            changedPayloadFields: null,
+            payloadFieldComparison: 'NOT_PERFORMED_BY_WORKFLOW_STATUS_PATCH',
+            sourceTimestampAdvancedAgainstLive: null
+          };
+          const out = process.env.RUNNER_TEMP + '/copernicus-publication-status.json';
+          fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=' + status + '\n' + 'gate_outcome=' + (process.env.GATE_OUTCOME || 'unknown') + '\n');
+          const summary = [
+            '## Copernicus publication status: ' + status,
+            '',
+            '- Source: ' + (report.source || 'unknown'),
+            '- ERDDAP fetch: ' + report.erddapFetchOutcome,
+            '- Observation timestamp: ' + (sourceTimestamp || 'UNVERIFIED'),
+            '- Computed candidate age (minutes): ' + (sourceAgeMinutes === null ? 'UNVERIFIED' : sourceAgeMinutes),
+            '- Operational SLA: 900 minutes',
+            '- Public stale threshold: 2160 minutes',
+            '- Integrity gate: ' + report.integrityGateOutcome + ' (' + gateStatus + ')',
+            '- Publish outcome: ' + report.publishOutcome,
+            '- Commit changes detected: ' + (publishChanged === null ? 'UNVERIFIED' : publishChanged),
+            '- Commit SHA: ' + (report.commitSha || 'none'),
+            '- Deploy dispatch: ' + report.deploymentDispatchOutcome,
+            '- Changed payload files: ' + (changedPayloadFiles.length ? changedPayloadFiles.join(', ') : 'none detected'),
+            '- Field-level payload comparison: NOT PERFORMED by this status-only change',
+            '- Source timestamp advancement against live: NOT VERIFIED'
+          ].join('\n') + '\n';
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          console.log(JSON.stringify(report, null, 2));
+          if (['BLOCKED_STALE_SOURCE', 'FAILED_VALIDATION', 'FAILED_PUBLISH'].includes(status)) {
+            console.error('Copernicus publication status is ' + status);
+            process.exit(1);
+          }
+          NODE
+
+      - name: Upload publication status evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: copernicus-publication-status-${{ github.run_id }}
+          path: ${{ runner.temp }}/copernicus-publication-status.json
+          if-no-files-found: error
+          retention-days: 7

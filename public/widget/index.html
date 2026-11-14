@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Widget sargasses gratuit — l'état des plages en direct sur votre site</title>
-  <meta name="description" content="Widget gratuit sargasses Martinique et Guadeloupe. Affichez l'état des plages en temps réel sur votre site d'hôtel, location ou blog voyage. Données satellite Copernicus, prévision 7 jours.">
+  <title>Widget sargasses gratuit — observations satellite des plages</title>
+  <meta name="description" content="Widget gratuit pour hôtels, locations et blogs en Martinique et Guadeloupe. Affichez la dernière observation satellite disponible et une tendance si les données sont assez récentes.">
   <link rel="canonical" href="https://sargasses-martinique.com/widget/">
   <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/widget/" />
   <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/widget/" />
@@ -54,8 +54,8 @@
     <a class="back" href="/">← Retour à la carte</a>
   </header>
   <main>
-    <h1>Le widget « plages en direct » pour votre site</h1>
-    <p class="sub">Hôtel, location, restaurant de plage, blog voyage — affichez l'état réel des sargasses et la prévision 7 jours, mis à jour 4× par jour à partir des données satellite Copernicus. Gratuit, sans inscription, à vos couleurs.</p>
+    <h1>Le widget d’observation des plages pour votre site</h1>
+    <p class="sub">Hôtel, location, restaurant de plage, blog voyage — intégrez la dernière observation satellite disponible et, lorsque les données sont assez récentes, la tendance sur 7 jours. Si l’observation est trop ancienne, le widget masque le verdict et la prévision au lieu de présenter un état comme actuel. Gratuit, sans inscription, à vos couleurs.</p>
 
     <h2>Configurez le vôtre</h2>
     <div class="builder">
@@ -106,17 +106,17 @@
           <input type="color" id="a" value="#009E8E">
         </div>
       </div>
-      <div class="prev"><div style="width:100%;max-width:520px"><iframe id="prev" title="Aperçu du widget" height="168" style="width:100%;border:0"></iframe><p class="credit" id="prevcredit">Conditions en direct par <a id="prevcreditlink" href="https://sargasses-martinique.com/">Sargasses Martinique</a></p></div></div>
+      <div class="prev"><div style="width:100%;max-width:520px"><iframe id="prev" title="Aperçu du widget" height="168" style="width:100%;border:0"></iframe><p class="credit" id="prevcredit">Données satellite par <a id="prevcreditlink" href="https://sargasses-martinique.com/">Sargasses Martinique</a></p></div></div>
       <pre><code id="code"></code></pre>
       <button class="copy" id="copy">Copier le code</button>
     </div>
 
     <h2>Pourquoi l'installer</h2>
     <div class="grid2">
-      <div class="benefit"><span class="ic">📡</span><div><strong>Données satellite réelles</strong><p>Indice AFAI Copernicus Marine, pas du déclaratif. Mis à jour 4× par jour, automatiquement.</p></div></div>
-      <div class="benefit"><span class="ic">🗓️</span><div><strong>Prévision 7 jours</strong><p>Vos clients voient l'état du jour <em>et</em> la tendance de la semaine avant de réserver.</p></div></div>
+      <div class="benefit"><span class="ic">📡</span><div><strong>Observations satellite datées</strong><p>Indice AFAI issu des données Copernicus Marine. L’heure de l’observation reste distincte de l’heure de publication.</p></div></div>
+      <div class="benefit"><span class="ic">🗓️</span><div><strong>Tendance jusqu’à 7 jours</strong><p>La tendance s’affiche uniquement lorsque l’observation satellite est assez récente ; sinon, le widget indique que la vérification est nécessaire.</p></div></div>
       <div class="benefit"><span class="ic">🎨</span><div><strong>À vos couleurs</strong><p>Couleur d'accent, thème clair ou sombre, 3 langues. S'intègre à votre charte.</p></div></div>
-      <div class="benefit"><span class="ic">⚡</span><div><strong>Zéro maintenance</strong><p>Une simple iframe, aucun script à charger. Se met à jour tout seul, pour toujours.</p></div></div>
+      <div class="benefit"><span class="ic">⚡</span><div><strong>Intégration par iframe</strong><p>Aucun script tiers à charger directement sur votre page. L’affichage dépend de la disponibilité du service et des données.</p></div></div>
     </div>
 
     <div class="pro">
@@ -126,8 +126,9 @@
     </div>
 
     <h2>Questions fréquentes</h2>
-    <p><strong>C'est vraiment gratuit ?</strong> Oui, le widget est gratuit et le restera. En retour, un discret crédit « Conditions par Sargasses » sous le widget renvoie à notre carte — c'est ce lien qui nous permet de le garder gratuit. Vous restez libre de le retirer.</p>
-    <p><strong>Ça ralentit mon site ?</strong> Non. C'est une iframe légère, isolée, sans script tiers sur votre page.</p>
+    <p><strong>C'est vraiment gratuit ?</strong> Oui, le widget est proposé gratuitement. En retour, un discret crédit « Conditions par Sargasses » sous le widget renvoie à notre carte. Vous restez libre de le retirer.</p>
+    <p><strong>Ça ralentit mon site ?</strong> Le widget est isolé dans une iframe et n’ajoute pas de script tiers directement dans votre page. Comme toute ressource distante, son chargement dépend du réseau et de la disponibilité du service.</p>
+    <p><strong>Le widget affiche-t-il toujours un verdict ?</strong> Non. Il s’appuie sur la dernière observation satellite disponible. Si elle est trop ancienne, le verdict et la prévision sont masqués au lieu d’être présentés comme actuels.</p>
     <p><strong>Ma plage n'est pas dans la liste ?</strong> Nous suivons les 20 plages les plus fréquentées des Antilles. Écrivez-nous à <strong>alerte@sargasses-martinique.com</strong> pour en ajouter une.</p>
   </main>
   <footer>
@@ -160,7 +161,7 @@
       // (un lien dans l'iframe ne compte pas comme backlink). Chaque install = un backlink.
       return '<div style="max-width:520px">\n'
         +'  <iframe\n    src="https://'+d+'/widget/embed/?'+qs()+'"\n    width="100%" height="'+vh()+'" frameborder="0"\n    title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n    style="border:0;width:100%"\n  ></iframe>\n'
-        +'  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">Conditions en direct par <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses '+brand()+'</a></p>\n'
+        +'  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">Données satellite par <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses '+brand()+'</a></p>\n'
         +'</div>';
     }
     function update(){

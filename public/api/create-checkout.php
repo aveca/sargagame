@@ -537,18 +537,15 @@ if ($action === 'pay_once') {
     $email = trim($input['email'] ?? '');
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
     // Devise + montants autorisés PAR RÉGION (via $island = $ISLAND_BY_ORIGIN).
-    // Régions touristes USD : pass voyage 7j one-time $5.99 = 599¢ → même checkout
-    // ON-SITE que l'EUR (capture email + abandon récupérable, plus de Payment Link
-    // hébergé qui bounce). EUR (MQ/GP) : passes 7j/30j historiques inchangés.
-    // Allowlist PAR DEVISE = anti-tampering croisé (un 2499 USD ou un 599 EUR
+    // ⚠️ 2026-11-09 — OFFRE VALIDÉE (miroir de workers/sg-payments, serveur de
+    // paiement live) : EUR 799/1499/2499 (7,99/14,99/24,99 €) et USD
+    // 899/1699/2799 ($8.99/$16.99/$27.99). Plus de surcoût saisonnier.
+    // Allowlist PAR DEVISE = anti-tampering croisé (un 2499 USD ou un 899 EUR
     // forgé est rejeté).
     $USD_ISLANDS = ['florida', 'rivieramaya', 'puntacana'];
     $isUsd = in_array($island, $USD_ISLANDS, true);
     $currency = $isUsd ? 'usd' : 'eur';
-    // EUR (MQ/GP) : 499 = Trip Pass 7j on-site (4,99 € one-time, miroir du
-    // tripPass USD $5.99). 799..2499 = passes historiques (PassOffer p7/p30) +
-    // pass saison 1999 (19,99 €). Ajouter 499 ouvre le checkout one-time EUR au Trip Pass.
-    $ALLOWED_CENTS = $isUsd ? [599] : [499, 799, 999, 1499, 1999, 2499];
+    $ALLOWED_CENTS = $isUsd ? [899, 1699, 2799] : [799, 1499, 2499];
     if (!$setupIntentId || !in_array($cents, $ALLOWED_CENTS, true)) {
         http_response_code(400);
         echo json_encode(['error' => 'bad pass params']);

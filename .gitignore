@@ -188,3 +188,8 @@ scripts/veilleurs/_artifacts/
 # Autonomous factory runtime state/logs — local only
 scripts/local-factory/state/
 scripts/local-factory/logs/
+
+# Private financial/contact reports: pseudonymous identifiers and transaction metadata must never enter the public repository.
+scripts/automation/data/reconcile-sales.json
+scripts/automation/data/b2c-segmentation.json
+scripts/automation/data/fulfillment-diagnosis.json

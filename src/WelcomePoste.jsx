@@ -161,7 +161,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
               <span style={h2}>{_t(lang,"Les plages qu'il garde pour toi","The beaches he keeps for you","Las playas que cuida para ti")}</span>
               {picked>0 && okBadge(_t(lang,`${picked} surveillée${picked>1?"s":""}`,`${picked} watched`,`${picked} vigilada${picked>1?"s":""}`))}
             </div>
-            <div style={{...subTxt, margin:"5px 0 10px"}}>{_t(lang,"Il les surveille au satellite, 4×/jour, et te prévient le matin où l'une bascule.","He watches them by satellite, 4×/day, and warns you the morning one turns.","Las vigila por satélite, 4×/día, y te avisa la mañana en que una cambie.")}</div>
+            <div style={{...subTxt, margin:"5px 0 10px"}}>{_t(lang,"Il suit les dernières observations satellite disponibles et te prévient lorsqu'un changement validé est détecté.","He checks the latest available satellite observations and alerts you when a validated change is detected.","Comprueba las últimas observaciones satelitales disponibles y avisa cuando detecta un cambio validado.")}</div>
             <div style={{display:"flex", flexDirection:"column", gap:7}}>
               {suggestions.map(b=>{
                 const on = favSet.has(b.id)
