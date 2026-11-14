@@ -1,3 +1,43 @@
+## 2026-11-14 19:55 UTC · Agent: DevOps (autonomie Factory V3)
+
+### Travail effectué
+- **Résumé 1 ligne** : Factory V3 bascule maintenant automatiquement de modèle quand un quota / rate limit / fournisseur tombe, sans jamais changer de modèle sur une erreur de code et sans dépense.
+- **Détails** : le routage n'est plus une liste statique. L'inventaire est redécouvert à chaud via les mécanismes natifs (`opencode auth list`, `opencode models <provider> --verbose`, `ollama list`), filtré (gratuit 0/0, statut actif, sortie texte, support outils), puis classé (Nvidia gratuit > autres gratuits OpenCode > fournisseurs configurés > locaux Ollama). Chaque échec est classé (quota journalier / 429 / crédit 402 / fournisseur / timeout / erreur de code), le modèle fautif est mis en cooldown (minuit UTC pour le quota journalier, exponentiel plafonné à 30 min pour le rate limit, 1 h au 3e échec consécutif) et un autre modèle est choisi. La session OpenCode est **reprise** (`--session`) et le contexte (mission, raison de l'échec, dernier commit, fichiers déjà modifiés) est transmis dans un bloc de reprise + persisté dans `state/context/<jobId>.json`. Le registre `state/model-registry.json` est écrit atomiquement sous verrou de fichier (agents concurrents) et réintègre automatiquement les modèles dont le cooldown expire.
+- **Preuve réelle** : `scripts/factory-v3/state/evidence/real-failover-1794685860227.json` — inventaire 135 modèles / 38 éligibles / 59 gratuits / 9 fournisseurs authentifiés ; phase A 2/2 modèles gratuits vérifiés par usage réel (`ollama/qwen2.5-coder:7b` 22 s, `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` 9 s) ; phase B : sonde `nvidia/nvidia/model-quota-probe-introuvable` → vraie erreur `PROVIDER_UNAVAILABLE` → **bascules = 1** → Nvidia Nemotron réussit, fichier `FACTORY_REAL_OK` créé, **commit réel `742ce09e122fa21a7c6d06d7e2681d49d803dffd`**, **dépense 0**.
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/error-classifier.cjs` — classification quota journalier / 429 / 402 / fournisseur / timeout / **erreur de code (jamais de bascule)**.
+- `scripts/factory-v3/lib/model-registry.cjs` — mémoire persistante des quotas, cooldowns, circuit breaker, expenditure, verrou de fichier.
+- `scripts/factory-v3/lib/inventory.cjs` — découverte dynamique + parsing ANSI de `auth list` + filtre gratuit + scoring de priorité.
+- `scripts/factory-v3/lib/exec.cjs` — exécution robuste (fichiers au lieu de pipes, kill d'arbre, timeout d'inactivité) + résolution du vrai binaire `opencode.exe`.
+- `scripts/factory-v3/lib/failover.cjs` — moteur de bascule : sélection, classification, reprise de session, vérification du résultat produit.
+- `scripts/factory-v3/dashboard.cjs` — tableau de bord (modèle courant, fournisseur, quota, bascules, reprises, agents bloqués, dépense).
+- `scripts/factory-v3/test-real-failover.cjs` — test réel en 2 phases (disponibilité + bascule).
+- `scripts/factory-v3/README.md` — architecture, classification, procédures de récupération, résultats réels.
+- `scripts/factory-v3/run.cjs` — intégration dans l'orchestrateur central (un seul orchestrateur), verdict `WAIT_QUOTA` + reprogrammation.
+- `tests/unit/factory-v3-failover.test.cjs` + `tests/fixtures/factory-v3-opencode-stub.cjs` — 20 tests déterministes.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-failover.test.cjs` → **20/20 PASS** (les 10 scénarios exigés + erreurs de code + hang + concurrence + faux succès + sondes).
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **9/9 PASS** (non-régression runner).
+- [x] `npm run build` → exit 0.
+- [x] `node scripts/check-bundle-budget.cjs` → 206,7 Ko ≤ 210 Ko, exit 0.
+- [x] `node scripts/factory-v3/test-real-failover.cjs` → **exit 0** : 2/2 modèles gratuits vérifiés, bascules = 1, commit réel, dépense 0.
+
+### Problèmes restants
+- [ ] `FAILOVER-QUOTA-REAL` : un quota journalier réel ne peut pas être épuisé artificiellement → les classes `DAILY_QUOTA_EXHAUSTED` et `HTTP 429` restent couvertes par les tests déterministes uniquement (la bascule elle-même est prouvée sur une vraie erreur de fournisseur).
+- [ ] `FACTORY-TASK-OLD` : la tâche planifiée `FactoryV3-Dispatcher` pointe encore vers l'ancien runner (fuites de processus, `ollama/qwen2.5-coder:14b` non installé). À re-pointer sur le code failover après merge de `main`.
+- [ ] `FACTORY-JOB-DEMO` : le job démo `job-1794676119497-1f224f` est `PENDING` avec le verdict historique `FAILED` (4 attempts time-out, travail réel jeté) ; il sera repris par le moteur.
+
+### Prochaine action recommandée
+1. Merger la PR failover dans `main` puis re-pointer la tâche planifiée sur le runner à bascule — Rôle : devops.
+2. Rejouer le job démo avec le moteur failover pour obtenir un verdict `VERIFIED` — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : (à ouvrir sur `main`)
+- Commit head : (à committer)
+
 ## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
 
 - Les pages `/pro/pricing/` FR, EN et ES ont deux boutons vers les Payment Links Pro. Le script `public/pro/pricing-pay.js` choisit EUR ou USD selon l'un des 6 domaines.

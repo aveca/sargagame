@@ -32,7 +32,10 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
-const { spawn } = require('child_process');
+const { runProcess, runShell } = require('./lib/exec.cjs');
+const { executeJobWithFailover } = require('./lib/failover.cjs');
+const inventoryLib = require('./lib/inventory.cjs');
+const registryLib = require('./lib/model-registry.cjs');
 
 // ============================================================
 // Configuration
@@ -46,14 +49,40 @@ const DEFAULT_CONFIG = {
   backoffBaseMs: 5 * 60 * 1000,
   backoffMaxMs: 60 * 60 * 1000,
   stepTimeoutMs: { agent: 15 * 60 * 1000, gate: 20 * 60 * 1000 },
-  // Chaîne de modèles — vérifiée disponibles & gratuites via le sélecteur natif OpenCode
-  // (tools.opencode.models, coût 0/0) le 2026-11-14. Fallback automatique dans l'ordre.
+  // Exécutable OpenCode (surchargeable pour les tests : stub déterministe).
+  opencodeBin: 'opencode',
+  // AUCUNE dépense autorisée par défaut : les modèles payants sont exclus.
+  paidAllowed: false,
+  // Moteur de bascule automatique (mission P0 : failover + quota autopilot).
+  failover: {
+    maxModelSwitches: 4,          // nombre max de tentatives modèle pour un job
+    agentTimeoutMs: 15 * 60 * 1000,
+    agentIdleTimeoutMs: 5 * 60 * 1000, // hang fournisseur (aucune sortie)
+    inventoryMaxAgeMs: 30 * 60 * 1000,
+    circuitThreshold: 3,           // circuit breaker : échecs consécutifs
+    cooldowns: {
+      dailyMs: 24 * 60 * 60 * 1000,
+      hourlyMs: 60 * 60 * 1000,
+      rateMs: 2 * 60 * 1000,
+      providerMs: 10 * 60 * 1000,
+      technicalMs: 2 * 60 * 1000,
+    },
+  },
+  // Priorité de mission (ordre de préférence), PAS une chaîne figée.
+  // La liste réelle est redécouverte à chaud via l'inventaire dynamique ;
+  // ces modèles sont simplement priorisés (bonus dégressif par rang).
+  // `ollama/qwen2.5-coder:14b` a été RETIRÉ : il figurait au catalogue OpenCode
+  // mais n'est PAS installé (`ollama list`) — l'ancien runner le visait à tort.
   models: [
     'nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b',
     'opencode/nemotron-3.5-super-vl-free',
-    'router/auto',
-    'ollama/qwen2.5-coder:14b'
+    'ollama/qwen2.5-coder:7b',
+    'router/auto'
   ],
+  // Sondes de bascule : modèles volontairement tentés EN PREMIER pour éprouver
+  // la mécanique de bascule sur une vraie erreur de fournisseur (coût 0).
+  // Une sonde payante connue est refusée avant tout appel.
+  probeModels: [],
   repos: {
     sargagame: {
       local: 'C:\\factory\\worktrees\\sargagame-main',
@@ -278,78 +307,64 @@ function updateJob(stateDir, jobId, patch) {
 // ============================================================
 // Exécution RÉELLE de processus (timeout + kill de l'arbre + windowsHide)
 // ============================================================
-function execStep(cmd, { cwd, timeoutMs }) {
-  return new Promise(resolve => {
-    const child = spawn('powershell.exe',
-      ['-NoProfile', '-NonInteractive', '-Command', cmd],
-      { cwd, windowsHide: true, timeout: timeoutMs, killSignal: 'SIGKILL' });
-    let stdout = '', stderr = '', done = false, timedOut = false;
-    const cap = s => { if (s.length > 200 * 1024) return s.slice(0, 100 * 1024) + '...[tronqué]...' + s.slice(-100 * 1024); return s; };
-    child.stdout.on('data', d => { if (stdout.length < 400 * 1024) stdout += d; });
-    child.stderr.on('data', d => { if (stderr.length < 400 * 1024) stderr += d; });
-    child.on('error', e => { if (!done) { done = true; resolve({ exitCode: -1, timedOut: false, stdout: cap(stdout), stderr: cap(stderr + '\nSPAWN_ERROR: ' + e.message) }); } });
-    child.on('close', code => {
-      if (done) return; done = true;
-      resolve({ exitCode: code, timedOut, stdout: cap(stdout), stderr: cap(stderr) });
-    });
-    // timeout du spawn ne garantit pas l'arbre (opencode.exe petit-fils) → taskkill /T /F
-    const to = setTimeout(() => {
-      timedOut = true;
-      try { spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true }); } catch (_) {}
-    }, timeoutMs);
-    child.on('close', () => clearTimeout(to));
-  });
+/**
+ * Exécution robuste d'une étape (gate ou commande).
+ *
+ * CORRECTION d'un bug réel (job job-1794676119497-1f224f, 2026-11-14) :
+ * avec `stdio: 'pipe'`, un petit-fils (opencode.exe) hérite des handles stdout
+ * du powershell parent ; même après la mort du parent, le pipe reste ouvert →
+ * l'événement 'close' de Node ne se déclenche JAMAIS → le runner reste bloqué
+ * (41 min de hang observées, runner CPU 0,1 s).
+ * Correctif : redirection stdout/stderr vers des FICHIERS (aucun handle hérité),
+ * kill de l'arbre Windows systématique, résolution immédiate au timeout.
+ */
+function execStep(cmd, { cwd, timeoutMs } = {}) {
+  return runShell(cmd, { cwd, timeoutMs: timeoutMs || 60000 }).then((r) => ({
+    exitCode: r.exitCode,
+    timedOut: r.timedOut || r.idleTimedOut,
+    stdout: r.stdout,
+    stderr: r.stderr,
+    durationMs: r.durationMs,
+  }));
 }
 
 // ============================================================
-// Étape AGENT — exécution réelle via opencode CLI (chaîne de modèles, fallback)
+// Étape AGENT — exécution réelle via opencode CLI (bascule automatique)
 // ============================================================
-function buildAgentPrompt(job, repoCfg) {
-  return [
-    `Tâche FACTORY (job ${job.jobId}, repo ${job.repo}, sévérité ${job.severity}) : ${job.task}`,
-    '',
-    'Règles absolues :',
-    '- Travaille réellement dans ce dépôt : LIS les fichiers concernés, MODIFIE si nécessaire, TESTE, COMMIT.',
-    '- Commits conventionnels (feat/fix/docs/chore/test(scope): description) sur la branche courante.',
-    '- Si la tâche ne nécessite aucune modification de fichier, dis-le explicitement (résultat légitime).',
-    '- INTERDIT : inventer des données, falsifier des timestamps, toucher aux paiements/prix/clés, modifier dist/.',
-    '- Si tu es bloqué après 3 tentatives, arrête-toi et explique le blocage (le job sera marqué FAILED honnêtement).',
-    '- Termine par une ligne : FACTORY_DONE: <résumé en 1 ligne de ce qui a réellement été fait>.'
-  ].join('\n');
-}
 
+/**
+ * Étape AGENT — exécution réelle via le moteur de bascule automatique.
+ *
+ * Le routage de modèle n'est plus une liste statique : l'inventaire est
+ * découvert en direct via OpenCode (`opencode models --verbose`), filtré
+ * (gratuit + outils + statut actif), classé (priorité Nvidia gratuit > autres
+ * gratuits > locaux), puis les échecs de quota/rate/provider déclenchent une
+ * bascule avec reprise de session et conservation du contexte.
+ */
 async function runAgentStage(stateDir, cfg, job, repoCfg) {
-  const repoPath = repoCfg.local;
-  const headBefore = await execStep('git rev-parse HEAD', { cwd: repoPath, timeoutMs: 30_000 });
-  const promptDir = path.join(stateDir, 'prompts');
-  fs.mkdirSync(promptDir, { recursive: true });
-  const promptFile = path.join(promptDir, `${job.jobId}.txt`);
-  fs.writeFileSync(promptFile, buildAgentPrompt(job, repoCfg));
-
-  const attempts = [];
-  for (const model of cfg.models) {
-    appendLog(stateDir, 'AGENT_ATTEMPT', { jobId: job.jobId, model });
-    const psScript = `opencode run --dir '${repoPath}' -m '${model}' (Get-Content -Raw -LiteralPath '${promptFile}')`;
-    const r = await execStep(psScript, { cwd: repoPath, timeoutMs: cfg.stepTimeoutMs.agent });
-    attempts.push({ model, exitCode: r.exitCode, timedOut: r.timedOut, tail: r.stdout.slice(-1500) });
-    if (r.exitCode === 0 && !r.timedOut) {
-      const headAfter = await execStep('git rev-parse HEAD', { cwd: repoPath, timeoutMs: 30_000 });
-      const status = await execStep('git status --porcelain', { cwd: repoPath, timeoutMs: 30_000 });
-      const dirtyFiles = status.stdout.split('\n').filter(Boolean).length;
-      return {
-        ok: true, model, attempts,
-        exitCode: r.exitCode, timedOut: false, outputTail: r.stdout.slice(-4000),
-        headBefore: headBefore.stdout.trim(), headAfter: headAfter.stdout.trim(),
-        committedSha: headAfter.stdout.trim() !== headBefore.stdout.trim() ? headAfter.stdout.trim() : null,
-        dirtyFiles
-      };
-    }
-    appendLog(stateDir, 'AGENT_ATTEMPT_FAILED', { jobId: job.jobId, model, exitCode: r.exitCode, timedOut: r.timedOut });
-  }
+  const result = await executeJobWithFailover({
+    stateDir,
+    cfg,
+    job,
+    repoCfg,
+    log: (event, data) => appendLog(stateDir, event, data),
+  });
   return {
-    ok: false, model: null, attempts,
-    exitCode: attempts.length ? attempts[attempts.length - 1].exitCode : -1,
-    error: 'AGENT_UNAVAILABLE: toute la chaîne de modèles a échoué (aucun fallback restant)'
+    ok: result.ok,
+    model: result.model,
+    sessionId: result.sessionId,
+    attempts: result.attempts,
+    failovers: result.failovers,
+    resumes: result.resumes,
+    committedSha: result.committedSha,
+    dirtyFiles: result.dirtyFiles,
+    interruptedWithCommit: result.interruptedWithCommit,
+    skipped: result.skipped,
+    spend: result.spend,
+    error: result.error,
+    errorCategory: result.errorCategory,
+    exitCode: result.ok ? 0 : 1,
+    timedOut: false,
   };
 }
 
@@ -376,11 +391,37 @@ async function runGateStage(stateDir, cfg, job, repoCfg) {
 // Verdict — STRICT : jamais de succès sans preuve complète
 // ============================================================
 function computeVerdict(agent, gate) {
-  if (!agent || !agent.ok) return { verdict: 'FAILED', reason: (agent && agent.error) || 'agent en échec' };
+  if (!agent) return { verdict: 'FAILED', reason: 'agent non exécuté' };
+  // Quota épuisé partout : ce n'est PAS un échec de mission → reprise programmée.
+  if (agent.errorCategory === 'ALL_MODELS_IN_COOLDOWN') {
+    return { verdict: 'WAIT_QUOTA', reason: agent.error || 'tous les modèles sont en cooldown — reprise automatique programmée' };
+  }
+  if (!agent.ok) {
+    // Le modèle a produit un commit AVANT l'interruption : les gates décident.
+    if (agent.interruptedWithCommit && agent.committedSha) {
+      if (agent.dirtyFiles > 0) return { verdict: 'BLOCKED_UNCOMMITTED', reason: `${agent.dirtyFiles} fichier(s) non commités après interruption` };
+      if (!gate || !gate.allPassed) return { verdict: 'FAILED', reason: `commit ${agent.committedSha} produit avant interruption mais gates rouges` };
+      return { verdict: 'VERIFIED', reason: `commit ${agent.committedSha} produit avant interruption + gates verts` };
+    }
+    return { verdict: 'FAILED', reason: (agent.error) || 'agent en échec' };
+  }
   if (agent.dirtyFiles > 0) return { verdict: 'BLOCKED_UNCOMMITTED', reason: `${agent.dirtyFiles} fichier(s) modifié(s) non commités par l'agent` };
   if (!gate || !gate.allPassed) return { verdict: 'FAILED', reason: 'gates de livraison en échec' };
   if (agent.committedSha) return { verdict: 'VERIFIED', reason: `commit ${agent.committedSha} + gates verts` };
   return { verdict: 'DONE_NO_CHANGE', reason: 'aucune modification nécessaire (légitime) + gates verts' };
+}
+
+/** Date de fin de cooldown la plus proche (tous modèles) — sert à reprogrammer un job. */
+function earliestCooldownMs(stateDir) {
+  const reg = registryLib.readRegistry(path.join(stateDir, 'model-registry.json'));
+  const now = Date.now();
+  let min = Infinity;
+  for (const e of Object.values(reg.models || {})) {
+    if (!e.cooldownUntil) continue;
+    const t = Date.parse(e.cooldownUntil);
+    if (Number.isFinite(t) && t > now && t < min) min = t;
+  }
+  return Number.isFinite(min) ? min : null;
 }
 
 // ============================================================
@@ -439,6 +480,16 @@ async function processJob(stateDir, cfg, job) {
   } else if (verdict === 'BLOCKED_UNCOMMITTED') {
     updateJob(stateDir, job.jobId, { status: 'BLOCKED', claimedBy: null, evidence });
     appendLog(stateDir, 'JOB_BLOCKED', { jobId: job.jobId, reason });
+  } else if (verdict === 'WAIT_QUOTA') {
+    // Quota épuisé : ce n'est pas une faute de la mission → reprogrammation
+    // SANS consommer de tentative (le travail n'a pas « échoué », il est différé).
+    const next = earliestCooldownMs(stateDir) || (Date.now() + cfg.backoffBaseMs);
+    updateJob(stateDir, job.jobId, {
+      status: 'PENDING', claimedBy: null, evidence,
+      nextRetryAt: new Date(next).toISOString(),
+      quotaWait: true,
+    });
+    appendLog(stateDir, 'JOB_QUOTA_WAIT', { jobId: job.jobId, nextRetryAt: new Date(next).toISOString(), reason });
   } else {
     const attempts = (job.attempts || 0) + 1;
     if (attempts >= job.maxAttempts) {
@@ -516,6 +567,40 @@ async function main() {
   }
   if (has('--clear-stale-lock')) { console.log(JSON.stringify(clearStaleLock(stateDir, cfg))); return; }
   if (has('--recover')) { console.log(JSON.stringify({ recovered: recoverOrphans(stateDir, cfg) })); return; }
+  if (has('--inventory')) {
+    // Découverte réelle via les mécanismes natifs OpenCode (jamais de liste supposée).
+    const inv = await inventoryLib.refreshInventory({
+      opencodeBin: cfg.opencodeBin,
+      paidAllowed: cfg.paidAllowed,
+      providers: cfg.inventory && cfg.inventory.providers,
+      cwd: (cfg.repos.sargagame && cfg.repos.sargagame.local) || process.cwd(),
+    });
+    inventoryLib.saveInventory(path.join(stateDir, 'inventory.json'), inv);
+    console.log(JSON.stringify({
+      updatedAt: inv.updatedAt,
+      counts: inv.counts,
+      authProviders: inv.authProviders,
+      installedOllama: inv.installedOllama,
+      top: inventoryLib.rankModels(inv, { preferred: cfg.models }).slice(0, 12),
+      errors: inv.errors,
+    }, null, 2));
+    return;
+  }
+  if (has('--models')) {
+    const inv = inventoryLib.loadInventory(path.join(stateDir, 'inventory.json'));
+    if (!inv) { console.log('Aucun inventaire en cache — lancez d\'abord : node scripts/factory-v3/run.cjs --inventory'); return; }
+    const ranked = inventoryLib.rankModels(inv, { preferred: cfg.models });
+    console.log(JSON.stringify(ranked.map((r) => ({
+      ref: r.ref, provider: r.provider, free: r.free, score: r.score, reasons: r.reasons,
+    })), null, 2));
+    return;
+  }
+  if (has('--dashboard')) {
+    const { buildDashboard, render } = require('./dashboard.cjs');
+    const dash = buildDashboard(stateDir);
+    console.log(has('--json') ? JSON.stringify(dash, null, 2) : render(dash));
+    return;
+  }
   if (has('--enqueue')) { console.log(JSON.stringify(enqueue(stateDir, JSON.parse(get('--enqueue'))), null, 2)); return; }
   if (has('--enqueue-file')) { console.log(JSON.stringify(enqueue(stateDir, JSON.parse(fs.readFileSync(get('--enqueue-file'), 'utf8'))), null, 2)); return; }
 
