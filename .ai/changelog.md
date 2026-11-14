@@ -1,3 +1,13 @@
+## 2026-11-14 17:20 UTC — Mission Factory B : fraîcheur Copernicus vérifiée, câblage dorénavant testé
+
+- Audit factuel (branche `agent/mission/factory-b-copernicus`) : `public/api/copernicus/sargassum.json` honnête — `erddapTimestamp` 2026-11-12T12:00:00Z, âge réel mesuré 3184 min à 17:04:10Z, `stale=true` (contrat ≥ 36 h). Rien falsifié.
+- Câblage `refreshSatellitePayload` présent au build (`scripts/build-sargassum-json.cjs:66`), au packaging (`scripts/prepare-ftp.cjs:1226`) et au flux pages code-only. Preuve réelle : un `npm run build` a fait passer `dataAgeMinutes` de 2930 à 3185 — **seul champ modifié**, aucune donnée scientifique touchée.
+- Fail-closed UI vérifié déjà en place (ChasseHome `satelliteDecisionCurrent` exige `stale===false`, kill-switch 12 h de Sargasses_PROD, WorldMapView/BeachSheet/TrouvePlage) et déjà testé (57 assertions WorldMapView, 11 assertions 12h, sarga-chat, pro-hotels…). Aucun ajout produit.
+- Seul écart trouvé : aucun test ne protégeait le câblage du générateur du composite. Nouveau test `tests/unit/build-sargassum-json-freshness-wiring.test.cjs` (10 assertions : câblage + non-mutation des données scientifiques + no-op fail-closed hors erddap-live).
+- Gates locales réelles : `npm run build` exit 0 · `check-bundle-budget.cjs` exit 0 (206,7 Ko ≤ 210 Ko) · `run-tests.cjs` 202/202 exit 0.
+- Endpoints B2B : `gen-b2b-partners.cjs` déterministe ; `public/api/b2b-partners.json` et `public/data/b2b-partners.json` octet-identiques, 0 partenaire LIVE / 2 preview.
+- Observé (sans action) : PR #1430 et #1469 toutes deux OPEN + CONFLICTING avec main.
+
 ## 2026-11-13 — Parcours Pro hôtel en libre-service
 
 - `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.
