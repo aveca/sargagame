@@ -63,6 +63,15 @@ t(/VOIR LES 7 PROCHAINS JOURS\|SEE THE NEXT 7 DAYS\|VER LOS 7 DÍAS/.test(auditS
 t(/!decisionUi\.hasForecastCta/.test(auditSource),
   'le contrat stale exige aussi la disparition du CTA prévision')
 
+t(/if \(!observation\.ok \|\| !observation\.current\)/.test(auditSource),
+  'l’audit branche le parcours selon la fraîcheur réelle de l’observation')
+t(/data-testid="chasse-home-stale"/.test(auditSource) && /data-testid="chasse-home-offer-cta"/.test(auditSource),
+  'l’état satellite suspendu doit exposer une porte d’offre visible')
+t(/waitForSelector\('\.pww-wrap, \.sg-modal-panel'/.test(auditSource) && /step: 'paywall-open'/.test(auditSource),
+  'l’audit clique la porte stale et vérifie l’ouverture réelle du paywall')
+t(/step: 'beach-selection', ok: true, skipped: true/.test(auditSource),
+  'la sélection de plage est explicitement ignorée lorsque le verdict est suspendu')
+
 // 2. Classification bloquant/ux.
 const cls = classify([
   { type: 'fatal-js' }, { type: 'blank-page' }, { type: 'nav-broken' },
@@ -92,6 +101,18 @@ if (fs.existsSync(wfPath)) {
   t(/workflow_run/.test(wf), 'workflow : déclenchement post-déploiement (workflow_run)')
   t(/user-journey-audit\.cjs/.test(wf), 'workflow : exécute le script de parcours')
   t(/actions\/upload-artifact/.test(wf), 'workflow : rapport/ Screenshots uploadés en artefact')
+  t(/push:[\s\S]*paths:[\s\S]*scripts\/automation\/user-journey-audit\.cjs/.test(wf),
+    'workflow : relance ciblée après modification de l’audit')
+}
+
+const productionWorkflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'cloudflare-production.yml'), 'utf8')
+for (const file of [
+  'scripts/automation/user-journey-audit.cjs',
+  'tests/unit/user-journey-report.test.cjs',
+  '.github/workflows/user-journey-audit.yml'
+]) {
+  t(productionWorkflow.includes("- '" + file + "'"),
+    'un changement audit-only sur ' + file + ' ne déclenche pas le déploiement financier')
 }
 
 console.log(`\nUSER_JOURNEY_REPORT_TESTS PASS (${n} assertions)`)

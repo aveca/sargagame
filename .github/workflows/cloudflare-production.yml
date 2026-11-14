@@ -48,6 +48,10 @@ on:
       # Garde-fou de non-regression : tests/unit/pages-code-only-workflow.test.cjs
       - '.github/workflows/pages-code-only-release.yml'
       - 'tests/unit/pages-code-only-workflow.test.cjs'
+      # Audit E2E/test-only : relancer les parcours sans redeployer sg-payments ni réécrire les secrets.
+      - 'scripts/automation/user-journey-audit.cjs'
+      - 'tests/unit/user-journey-report.test.cjs'
+      - '.github/workflows/user-journey-audit.yml'
       # Memoire des agents (handoff, backlog, changelog) : une mise a jour de
       # documentation NE doit jamais redployer le Worker ni reecrire les
       # secrets de paiement. Cette exclusion rend le chemin de handoff

@@ -108,11 +108,25 @@ async function runJourney(browser, region, viewport) {
     await page.waitForTimeout(1500)
     steps.push({ step: 'cookie-banner', ok: true, via: cookie })
 
-    // 2. Choix d'une plage. Défaut observé (#41) : l'assistant se ré-ouvre après
-    //    fermeture et couvre la carte — on le referme avant CHAQUE tentative, et on
-    //    retombe sur un clic synthétique (dispatchEvent) si un overlay avale
-    //    l'actionabilité Playwright ; le résultat est vérifié dans le DOM (fiche).
-    const pickers = ['.sg-maplabel', '.sg-l-card', 'button.lc-card', '.blv-row', '[data-beach]', '.hj-card']
+    // 2. Le parcours dépend de la fraîcheur réelle : en mode stale, la carte
+    //    et les sélections de plage sont volontairement suspendues. Le contrat
+    //    commercial à vérifier est alors la porte d'offre + l'ouverture du paywall.
+    let observation = { ok: false, current: false, reason: 'API unavailable' }
+    try {
+      observation = await page.evaluate(async () => {
+        const response = await fetch('/api/copernicus/sargassum.json', { cache: 'no-store' })
+        if (!response.ok) return { ok: false, current: false, reason: 'HTTP ' + response.status }
+        const payload = await response.json()
+        const timestamp = Date.parse(payload.erddapTimestamp || '')
+        const ageMinutes = Number.isFinite(timestamp) ? (Date.now() - timestamp) / 60000 : null
+        const current = payload.source === 'erddap-live' && payload.stale === false &&
+          ageMinutes !== null && ageMinutes >= 0 && ageMinutes < 720
+        return { ok: true, current, ageMinutes, source: payload.source, stale: payload.stale }
+      })
+    } catch (error) {
+      observation = { ok: false, current: false, reason: String(error?.message || error).slice(0, 160) }
+    }
+
     const closeChat = () => page.evaluate(() => {
       const dlgs = [...document.querySelectorAll('[role="dialog"]')]
       const chat = dlgs[dlgs.length - 1]
@@ -121,105 +135,143 @@ async function runJourney(browser, region, viewport) {
         if (x) x.click()
       }
     })
-    let opened = false
-    for (let attempt = 0; attempt < 3 && !opened; attempt++) {
-      await closeChat()
-      await page.waitForTimeout(1200)
-      for (const sel of pickers) {
-        const el = await page.$(sel)
-        if (!el) continue
-        try { await el.click({ timeout: 4000 }); opened = true; steps.push({ step: 'pick-beach', ok: true, via: sel + (attempt ? `(retry${attempt})` : '') }); break } catch (_) {}
-      }
-      if (!opened) {
-        // Fallback synthétique : la carte est couverte par un overlay récalcitrant.
-        opened = await page.evaluate((sels) => {
-          for (const sel of sels) {
-            const el = document.querySelector(sel)
-            if (el) { el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return sel }
-          }
-          return null
-        }, pickers)
-        if (opened) steps.push({ step: 'pick-beach', ok: true, via: opened + '(synthetic)' })
-      }
-    }
-    await page.waitForTimeout(5000)
-    // Vérification DOM : une fiche s'est-elle réellement ouverte ?
-    const ficheOpen = await page.evaluate(() => /7 PROCHAINS JOURS|PRÉVISION 7 JOURS/i.test(document.body.innerText) || !!document.querySelector('.bsc-sheet, .lc-detail, .sheet'))
-    if (!opened || !ficheOpen) defects.push({ domain, step: 'pick-beach', type: 'nav-broken', detail: `aucune plage cliquable/fiche non ouverte (opened=${opened}, ficheOpen=${ficheOpen})` })
 
-    // 3. Fiche détaillée : verdict + fraîcheur (seulement si une fiche s'est ouverte —
-    //    sinon le texte de l'accueil fausserait le contrôle).
-    if (ficheOpen) {
-      const fiche = await page.evaluate(() => {
-        const t = document.body.innerText
-        return {
-          hasVerdict: /PROPRE|MODÉRÉ|À ÉVITER|CLEAN|MODERATE|AVOID|LIMPIA|EVITAR|ATTENTION|ÉVITER|À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(t),
-          hasFreshness: /Mesuré au satellite|Dernière mesure|Dernier statut observé|ce matin|il y a|vérification|DATA DELAYED|DONNÉE EN RETARD|EN DIRECT|LIVE|EN VIVO|Verificación/i.test(t)
-        }
-      })
-      let observation = { ok: false, current: false, reason: 'API unavailable' }
-      try {
-        observation = await page.evaluate(async () => {
-          const response = await fetch('/api/copernicus/sargassum.json', { cache: 'no-store' })
-          if (!response.ok) return { ok: false, current: false, reason: 'HTTP ' + response.status }
-          const payload = await response.json()
-          const timestamp = Date.parse(payload.erddapTimestamp || '')
-          const ageMinutes = Number.isFinite(timestamp) ? (Date.now() - timestamp) / 60000 : null
-          const current = payload.source === 'erddap-live' && payload.stale === false &&
-            ageMinutes !== null && ageMinutes >= 0 && ageMinutes < 720
-          return { ok: true, current, ageMinutes, source: payload.source, stale: payload.stale }
-        })
-      } catch (error) {
-        observation = { ok: false, current: false, reason: String(error?.message || error).slice(0, 160) }
-      }
-      const decisionUi = await page.evaluate(() => {
+    if (!observation.ok || !observation.current) {
+      // Ne pas signaler « navigation cassée » lorsque le produit suspend
+      // volontairement les choix de plage. Tester à la place le vrai chemin de vente.
+      await closeChat()
+      const staleUi = await page.evaluate(() => {
         const visible = (el) => {
           if (!el) return false
           const style = window.getComputedStyle(el)
           return style.display !== 'none' && style.visibility !== 'hidden' &&
             Number(style.opacity || 1) > 0 && el.getClientRects().length > 0
         }
-        const head = document.querySelector('.lc-detail-head')?.textContent?.trim() || ''
-        // Current build uses data-testid; the deployed legacy build only has the class.
-        // Measure the rendered DOM, not the presence of a test-only selector.
-        const score = document.querySelector('[data-testid="lc-detail-score"], .lc-detail-score')
-        const scoreValue = score?.querySelector('.lc-detail-scnum')?.textContent?.trim() || ''
-        const forecastCta = [...document.querySelectorAll('button, a')].find((el) =>
-          visible(el) && /VOIR LES 7 PROCHAINS JOURS|SEE THE NEXT 7 DAYS|VER LOS 7 DÍAS/i.test((el.textContent || '').trim())
-        )
+        const root = document.querySelector('[data-testid="chasse-home-stale"]')
+        const offer = document.querySelector('[data-testid="chasse-home-offer-cta"]')
+        const lastObservation = document.querySelector('[data-testid="chasse-home-last-observation"]')
         return {
-          head,
-          hasCurrentScore: visible(score) && /\d/.test(scoreValue.replace(/\/100/g, '')),
-          scorePaused: visible(document.querySelector('[data-testid="lc-detail-score-paused"], .lc-detail-score-paused')),
-          staleNotice: visible(document.querySelector('[data-testid="lc-detail-stale"], .lc-detail-stale')),
-          hasForecast: visible(document.querySelector('.lc-detail-fc-row')),
-          forecastPaused: visible(document.querySelector('[data-testid="lc-detail-forecast-paused"], .lc-detail-forecast-paused')),
-          hasForecastCta: !!forecastCta
+          staleScreenVisible: visible(root),
+          offerVisible: visible(offer),
+          lastObservationVisible: visible(lastObservation),
+          offerText: offer?.textContent?.trim() || ''
         }
       })
-      if (!fiche.hasVerdict) defects.push({ domain, step: 'fiche', type: 'ux', detail: 'verdict absent de la fiche' })
-      if (!fiche.hasFreshness) defects.push({ domain, step: 'fiche', type: 'misleading-state', detail: 'aucune mention de fraîcheur sur la fiche (état satellite trompeur)' })
-      if (observation.ok && !observation.current) {
-        const staleContractOk = !decisionUi.hasCurrentScore && decisionUi.scorePaused &&
-          decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused &&
-          !decisionUi.hasForecastCta &&
-          /À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(decisionUi.head)
-        if (!staleContractOk) defects.push({ domain, step: 'fiche', type: 'stale-current-decision', detail: 'observation stale/unknown (ageMinutes=' + observation.ageMinutes + ') mais UI non fail-closed: ' + JSON.stringify(decisionUi) })
+      if (!staleUi.staleScreenVisible) {
+        defects.push({ domain, step: 'stale-state', type: 'misleading-state', detail: 'observation stale/unknown mais écran de suspension absent' })
       }
-      steps.push({ step: 'fiche', ok: fiche.hasVerdict && fiche.hasFreshness, verdict: fiche.hasVerdict, freshness: fiche.hasFreshness })
-      steps.push({ step: 'freshness-contract', ok: observation.ok && (observation.current || (!decisionUi.hasCurrentScore && decisionUi.scorePaused && decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused && !decisionUi.hasForecastCta)), observation, decisionUi })
-      await page.screenshot({ path: path.join(shotsDir, `journey-${region.id}-${viewport}.png`) }).catch(() => {})
-    }
+      if (!staleUi.lastObservationVisible) {
+        defects.push({ domain, step: 'stale-state', type: 'misleading-state', detail: 'date de dernière observation non visible' })
+      }
+      let clicked = false
+      let paywallVisible = false
+      if (!staleUi.offerVisible) {
+        defects.push({ domain, step: 'stale-offer-entry', type: 'primary-cta-dead', detail: 'aucun CTA d’offre visible lorsque le verdict satellite est suspendu' })
+      } else {
+        try {
+          await page.locator('[data-testid="chasse-home-offer-cta"]').click({ timeout: 5000 })
+          clicked = true
+        } catch (error) {
+          defects.push({ domain, step: 'stale-offer-entry', type: 'primary-cta-dead', detail: 'CTA stale non cliquable : ' + String(error?.message || error).slice(0, 140) })
+        }
+        if (clicked) {
+          try {
+            await page.waitForSelector('.pww-wrap, .sg-modal-panel', { state: 'visible', timeout: 20000 })
+            paywallVisible = true
+          } catch (_) {}
+        }
+      }
+      steps.push({ step: 'stale-offer-entry', ok: clicked, via: 'chasse-home-offer-cta', label: staleUi.offerText })
+      steps.push({ step: 'paywall-open', ok: paywallVisible })
+      if (clicked && !paywallVisible) {
+        defects.push({ domain, step: 'paywall-open', type: 'primary-cta-dead', detail: 'le CTA stale est cliquable mais le paywall ne s’ouvre pas' })
+      }
+      steps.push({ step: 'freshness-contract', ok: !observation.current, verified: observation.ok, observation })
+      steps.push({ step: 'beach-selection', ok: true, skipped: true, reason: 'sélection suspendue tant que l’observation ne permet pas un verdict courant' })
+      await page.screenshot({ path: path.join(shotsDir, 'journey-' + region.id + '-' + viewport + '.png') }).catch(() => {})
+    } else {
+      // 3. Observation courante : le parcours normal plage → fiche reste exigé.
+      const pickers = ['.sg-maplabel', '.sg-l-card', 'button.lc-card', '.blv-row', '[data-beach]', '.hj-card']
+      let opened = false
+      for (let attempt = 0; attempt < 3 && !opened; attempt++) {
+        await closeChat()
+        await page.waitForTimeout(1200)
+        for (const sel of pickers) {
+          const el = await page.$(sel)
+          if (!el) continue
+          try { await el.click({ timeout: 4000 }); opened = true; steps.push({ step: 'pick-beach', ok: true, via: sel + (attempt ? '(retry' + attempt + ')' : '') }); break } catch (_) {}
+        }
+        if (!opened) {
+          // Fallback synthétique : la carte est couverte par un overlay récalcitrant.
+          opened = await page.evaluate((sels) => {
+            for (const sel of sels) {
+              const el = document.querySelector(sel)
+              if (el) { el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return sel }
+            }
+            return null
+          }, pickers)
+          if (opened) steps.push({ step: 'pick-beach', ok: true, via: opened + '(synthetic)' })
+        }
+      }
+      await page.waitForTimeout(5000)
+      const ficheOpen = await page.evaluate(() => /7 PROCHAINS JOURS|PRÉVISION 7 JOURS/i.test(document.body.innerText) || !!document.querySelector('.bsc-sheet, .lc-detail, .sheet'))
+      if (!opened || !ficheOpen) defects.push({ domain, step: 'pick-beach', type: 'nav-broken', detail: 'aucune plage cliquable/fiche non ouverte (opened=' + opened + ', ficheOpen=' + ficheOpen + ')' })
 
-    // 4. Retour (close ou back) puis plage alternative.
-    const closed = await page.evaluate(() => {
-      const btn = document.querySelector('[aria-label="Fermer"], [aria-label="Close"], .lc-detail-x, .bsc-close')
-      if (btn) { btn.click(); return true }
-      return false
-    })
-    await page.waitForTimeout(2500)
-    steps.push({ step: 'close-fiche', ok: closed })
-    if (!closed) defects.push({ domain, step: 'close-fiche', type: 'nav-broken', detail: 'bouton fermeture fiche introuvable/inactif' })
+      if (ficheOpen) {
+        const fiche = await page.evaluate(() => {
+          const t = document.body.innerText
+          return {
+            hasVerdict: /PROPRE|MODÉRÉ|À ÉVITER|CLEAN|MODERATE|AVOID|LIMPIA|EVITAR|ATTENTION|ÉVITER|À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(t),
+            hasFreshness: /Mesuré au satellite|Dernière mesure|Dernier statut observé|ce matin|il y a|vérification|DATA DELAYED|DONNÉE EN RETARD|EN DIRECT|LIVE|EN VIVO|Verificación/i.test(t)
+          }
+        })
+        const decisionUi = await page.evaluate(() => {
+          const visible = (el) => {
+            if (!el) return false
+            const style = window.getComputedStyle(el)
+            return style.display !== 'none' && style.visibility !== 'hidden' &&
+              Number(style.opacity || 1) > 0 && el.getClientRects().length > 0
+          }
+          const head = document.querySelector('.lc-detail-head')?.textContent?.trim() || ''
+          const score = document.querySelector('[data-testid="lc-detail-score"], .lc-detail-score')
+          const scoreValue = score?.querySelector('.lc-detail-scnum')?.textContent?.trim() || ''
+          const forecastCta = [...document.querySelectorAll('button, a')].find((el) =>
+            visible(el) && /VOIR LES 7 PROCHAINS JOURS|SEE THE NEXT 7 DAYS|VER LOS 7 DÍAS/i.test((el.textContent || '').trim())
+          )
+          return {
+            head,
+            hasCurrentScore: visible(score) && /\d/.test(scoreValue.replace(/\/100/g, '')),
+            scorePaused: visible(document.querySelector('[data-testid="lc-detail-score-paused"], .lc-detail-score-paused')),
+            staleNotice: visible(document.querySelector('[data-testid="lc-detail-stale"], .lc-detail-stale')),
+            hasForecast: visible(document.querySelector('.lc-detail-fc-row')),
+            forecastPaused: visible(document.querySelector('[data-testid="lc-detail-forecast-paused"], .lc-detail-forecast-paused')),
+            hasForecastCta: !!forecastCta
+          }
+        })
+        if (!fiche.hasVerdict) defects.push({ domain, step: 'fiche', type: 'ux', detail: 'verdict absent de la fiche' })
+        if (!fiche.hasFreshness) defects.push({ domain, step: 'fiche', type: 'misleading-state', detail: 'aucune mention de fraîcheur sur la fiche (état satellite trompeur)' })
+        let staleContractOk = false
+        if (observation.ok && !observation.current) {
+          staleContractOk = !decisionUi.hasCurrentScore && decisionUi.scorePaused &&
+            decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused &&
+            !decisionUi.hasForecastCta &&
+            /À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(decisionUi.head)
+          if (!staleContractOk) defects.push({ domain, step: 'fiche', type: 'stale-current-decision', detail: 'observation stale/unknown (ageMinutes=' + observation.ageMinutes + ') mais UI non fail-closed: ' + JSON.stringify(decisionUi) })
+        }
+        steps.push({ step: 'fiche', ok: fiche.hasVerdict && fiche.hasFreshness, verdict: fiche.hasVerdict, freshness: fiche.hasFreshness })
+        steps.push({ step: 'freshness-contract', ok: observation.ok && (observation.current || staleContractOk), observation, decisionUi })
+        await page.screenshot({ path: path.join(shotsDir, 'journey-' + region.id + '-' + viewport + '.png') }).catch(() => {})
+
+        const closed = await page.evaluate(() => {
+          const btn = document.querySelector('[aria-label="Fermer"], [aria-label="Close"], .lc-detail-x, .bsc-close')
+          if (btn) { btn.click(); return true }
+          return false
+        })
+        await page.waitForTimeout(2500)
+        steps.push({ step: 'close-fiche', ok: closed })
+        if (!closed) defects.push({ domain, step: 'close-fiche', type: 'nav-broken', detail: 'bouton fermeture fiche introuvable/inactif' })
+      }
+    }
 
     consoleErrors.slice(0, 10).forEach(txt => {
       // 404 connus hors périmètre (mission #41) : b2b-partners + referral PHP en preview.
