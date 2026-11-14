@@ -76,6 +76,27 @@
 - **Estimation** : 1h
 - **Statut** : [x] done by coding_agent — Gate de ship passé (build OK, bundle 208.0/210 Ko, smoke 4 tokens OK, ?flag=0 non requis = SEO/navigation non conversion)
 
+### TASK-P1-007 Review/merge PR #1430 (index plage USD) sur main
+- **Priorité** : P1
+- **Rôle** : release_agent
+- **Description** : PR #1430 ouverte sur `agent/coding/us-beach-index-fix` (commit eef898c8, fix plage /beaches/ /playas/ mission #1). Auto-merge si CI vert. Gate de ship à revalider avant merge.
+- **Estimation** : 30 min
+- **Statut** : [~] in_progress by release_agent — PR ouverte, CI en attente
+
+### TASK-P1-008 Review/merge PR #1469 (SLA satellite 900 min + fraîcheur) sur main
+- **Priorité** : P1
+- **Rôle** : release_agent
+- **Description** : PR #1469 ouverte sur `agent/data/satellite-freshness-sla-900min` (commit 9b5768d2, SLA 900 min + b2b-partners + copernicus). Auto-merge si CI vert.
+- **Estimation** : 30 min
+- **Statut** : [ ] pending — PR ouverte, CI en attente
+
+### TASK-P2-004 FACTORY V3 Phase 2 : rétablir fonctionnement autonome
+- **Priorité** : P2
+- **Rôle** : devops_agent
+- **Description** : factory.lock stale (PID 19504, 08/10, PID inactif) à réclamer ; single dispatcher ; retries avec backoff ; reprise après interruption. Corriger bugs run.cjs (listLocalBranches typo `%(refersname:short)`, executeAgentTask simulé, runTests = npm test non gate de ship).
+- **Estimation** : 4h
+- **Statut** : [ ] pending
+
 ---
 
 ## P2 — Backlog normal
