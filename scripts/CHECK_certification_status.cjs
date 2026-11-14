@@ -195,21 +195,21 @@ function evaluatePredeploy(root, product, reasons, fetchOverride) {
   return decidePredeploy(product, runs, reasons);
 }
 
-// ── Fichiers sensibles paiements (informatif : n'autorise ni ne bloque) ─────
-// Toute release touchant ces chemins exige le contrôle adapté (Payment API
-// smoke post-déploiement, déjà systématique dans le workflow) et une stratégie
-// de retour arrière explicite (rollback joint). Le flag ne bloque JAMAIS :
-// seul le verdict technique décide (fail-open informatif, jamais fail-closed).
-const PAYMENT_PATH_RE = /mollie|paypal|stripe|payment|checkout|pass-price|PremiumModal/i;
+// ── Sensibilité release : détection fail-closed + approbation SHA exacte ────
+// Toute modification de paiement, checkout, prix/offre, entitlement, Worker
+// ou gouvernance de déploiement exige une approbation explicite du SHA produit.
+// Une diff illisible est UNKNOWN et bloque : elle ne peut jamais devenir "non sensible".
+const PAYMENT_PATH_RE = /mollie|paypal|stripe|payment|checkout|pass-price|PremiumModal|SOSPlage|pricing|price|offres?|tarifs?|prix|offers?|paylinks?|entitlement|grant|subscription|sku|b2b|widget|for-hotels|workers|wrangler|cloudflare-production|CHECK_certification_status/i;
 function paymentSensitiveInfo(root, product) {
   let files = [];
   try {
-    files = git(root, ['diff', '--name-only', `${product}~1`, product]).split('\n').filter(Boolean);
+    files = git(root, ['diff', '--name-only', product + '~1', product]).split('\n').filter(Boolean);
   } catch (_) {
-    return { paymentSensitive: false, paymentFiles: [], note: 'diff git invérifiable (commit racine ou historique illisible)' };
+    return { diffVerified: false, paymentSensitive: null, paymentFiles: [], rollback: null, note: 'diff git invérifiable (commit racine ou historique illisible)' };
   }
   const hits = files.map(f => String(f).replace(/\\/g, '/')).filter(f => PAYMENT_PATH_RE.test(f));
   return {
+    diffVerified: true,
     paymentSensitive: hits.length > 0,
     paymentFiles: hits.slice(0, 20),
     rollback: hits.length > 0 ? `git revert ${product} --no-edit && git push origin main` : null,
@@ -584,6 +584,18 @@ function evaluateDeploy(opts, overrides) {
   const product = effectiveProductCommit(root, reasons);
   if (!product) return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: null, reasons, certifications: {} };
 
+  const pay = paymentSensitiveInfo(root, product);
+  const approvalSha = String(deps.businessApprovalSha ?? process.env.BUSINESS_APPROVAL_SHA ?? '').trim().toLowerCase();
+  const businessApprovalGranted = SHA40.test(approvalSha) && approvalSha === product.toLowerCase();
+  if (!pay.diffVerified) {
+    reasons.push('deploy: diff produit illisible — périmètre sensible inconnu, refus fail-closed');
+    return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, certifications: {}, paymentSensitive: null, paymentFiles: [], rollback: null, businessApprovalRequired: true, businessApprovalGranted: false };
+  }
+  if (pay.paymentSensitive && !businessApprovalGranted) {
+    reasons.push('deploy: release sensible (paiement/prix/checkout/sécurité) — approbation explicite requise pour le SHA produit exact via workflow_dispatch.business_approval_sha');
+    return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, certifications: {}, paymentSensitive: true, paymentFiles: pay.paymentFiles, rollback: pay.rollback, businessApprovalRequired: true, businessApprovalGranted: false };
+  }
+
   // ── Voie 1 : attestation complète (PRÉSENTE ⇒ doit être pleinement valide) ──
   const attAbs = safeResolve(root, path.join('.ai', 'certification', 'attestations', `${product}.json`));
   const attExists = attAbs ? fs.existsSync(attAbs) : false;
@@ -604,6 +616,8 @@ function evaluateDeploy(opts, overrides) {
         return {
           mode: 'deploy', global: 'PASS', decision: 'ALLOW', stage: 'PRODUCTION_VERIFIED', exit: 0,
           productCommit: product, attestedAt: att.createdAt || null, proofs: [{ check: 'attestation', target: product }],
+          paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback,
+          businessApprovalRequired: pay.paymentSensitive, businessApprovalGranted,
           reasons, certifications: perCert,
         };
       }
@@ -611,10 +625,11 @@ function evaluateDeploy(opts, overrides) {
       return {
         mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1,
         productCommit: product, reasons: reasons.concat('deploy: attestation présente mais invalide/incomplète — aucun repli predeploy face à une preuve altérée'),
-        certifications: perCert,
+        paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback,
+        businessApprovalRequired: pay.paymentSensitive, businessApprovalGranted, certifications: perCert,
       };
     }
-    return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, certifications: {} };
+    return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback, businessApprovalRequired: pay.paymentSensitive, businessApprovalGranted, certifications: {} };
   }
 
   // ── Voie 2 : PREDEPLOY_ELIGIBLE via les check-runs CI réels du SHA ─────────
@@ -634,13 +649,12 @@ function evaluateDeploy(opts, overrides) {
   } else {
     proofs = evaluatePredeploy(root, product, reasons, deps.fetchCheckRuns);
   }
-  // Sensibilité paiements : informative uniquement (ne bloque jamais).
-  const pay = paymentSensitiveInfo(root, product);
   if (proofs) {
     return {
       mode: 'deploy', global: 'PREDEPLOY_ELIGIBLE', decision: 'ALLOW', stage: 'PREDEPLOY_ELIGIBLE', exit: 0,
       productCommit: product, proofs, waitedMs,
       paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback,
+      businessApprovalRequired: pay.paymentSensitive, businessApprovalGranted,
       reasons: ['predeploy: éligible via checks CI verts — la version déployée restera DEPLOYED_PENDING_VERIFICATION jusqu\'au contrôle post-déploiement réel'],
       certifications: { TECHNICAL: 'PASS', PRODUCTION: 'NOT_PROVEN', BUSINESS: 'NOT_PROVEN' },
     };
@@ -648,7 +662,8 @@ function evaluateDeploy(opts, overrides) {
   return {
     mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1,
     productCommit: product, reasons, waitedMs,
-    paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback, certifications: {},
+    paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback,
+    businessApprovalRequired: pay.paymentSensitive, businessApprovalGranted, certifications: {},
   };
 }
 

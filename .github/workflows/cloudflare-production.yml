@@ -27,6 +27,11 @@ name: Cloudflare Production
 
 on:
   workflow_dispatch:
+    inputs:
+      business_approval_sha:
+        description: 'Exact 40-character product commit SHA explicitly approved for a sensitive production release; leave blank for non-sensitive changes.'
+        required: false
+        type: string
   push:
     branches:
       - main
@@ -339,6 +344,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
+      BUSINESS_APPROVAL_SHA: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.business_approval_sha || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
