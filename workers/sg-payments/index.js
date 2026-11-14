@@ -2182,6 +2182,8 @@ function stripeTrack(env, name, fields) {
     price_key: fields.price_key || null,
     reason: fields.reason || null
   };
+  const hostname = String(fields.hostname || "").toLowerCase().replace(/^www\./, "").slice(0, 253);
+  if (hostname) params.hostname = hostname;
   return supa(env, "analytics_events", "POST", { event: name, params, island: "stripe" }).catch(() => {});
 }
 __name(stripeTrack, "stripeTrack");
@@ -2194,7 +2196,9 @@ async function handleStripeTrack(request, env) {
   if (!STRIPE_CLIENT_EVENTS.has(event)) return new Response(null, { status: 204 });
   const correlation = String(data.correlation_id || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80);
   const priceKey = typeof data.price_key === "string" ? data.price_key.slice(0, 40) : null;
-  await stripeTrack(env, event, { livemode: data.livemode === true, correlation_id: correlation, price_key: priceKey });
+  let hostname = "";
+  try { hostname = new URL(request.url).hostname.toLowerCase().replace(/^www\./, ""); } catch (_) {}
+  await stripeTrack(env, event, { livemode: data.livemode === true, correlation_id: correlation, price_key: priceKey, hostname });
   return new Response(null, { status: 204 });
 }
 __name(handleStripeTrack, "handleStripeTrack");
