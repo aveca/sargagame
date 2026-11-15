@@ -193,6 +193,87 @@ test('dashboard: registre/queue corrompus sont affichés explicitement', () => {
   assert.match(rendered, /ERREUR QUEUE \(QUEUE_CORRUPT\)/);
 });
 
+test('dashboard central: agrège sessions + observateur et distingue les preuves', () => {
+  const dir = tempStateDir();
+  const observerDir = path.join(dir, 'observer');
+  fs.mkdirSync(observerDir, { recursive: true });
+
+  fs.writeFileSync(path.join(observerDir, 'SESSION_REGISTRY.json'), JSON.stringify({
+    version: 1,
+    generatedAt: '2026-11-15T10:30:00.000Z',
+    counts: { PLANNING: 1, RUNNING: 2, WAITING: 3, BLOCKED: 0, RECOVERING: 1, VERIFYING: 0, COMPLETED: 1, FAILED: 1 },
+    sources: { jobs: 2, sessions: 8, sessionsMergedIntoJobs: 2 },
+    errors: [],
+    entries: [
+      {
+        kind: 'job', id: 'job-1', repo: 'sargagame', state: 'COMPLETED',
+        reason: 'verdict vérifié (agent + gates + commit réel)', branch: 'agent/factory/job-1',
+        resolvedModel: 'nvidia/a', provider: 'nvidia', spend: 0,
+        committedSha: 'a'.repeat(40), lastActivityAt: '2026-11-15T10:20:00.000Z',
+      },
+      {
+        kind: 'session', id: 'ses_x', state: 'WAITING',
+        reason: 'aucune activité depuis 45 min — surveillance requise',
+        stale: true, stallSeconds: 2700, lastActivityAt: '2026-11-15T09:45:00.000Z',
+      },
+    ],
+  }), 'utf8');
+
+  fs.writeFileSync(path.join(observerDir, 'CURRENT_STATE.json'), JSON.stringify({
+    generatedAt: '2026-11-15T10:30:00.000Z',
+    branch: 'agent/devops/factory-v3-model-failover',
+    head: 'c'.repeat(40),
+    remoteHead: 'c'.repeat(40),
+    ahead: 0, behind: 0,
+    lastCommitAt: '2026-11-15T10:00:00.000Z',
+    localChanges: { total: 3, added: 1, modified: 2, deleted: 0, renamed: 0, untracked: 0 },
+  }), 'utf8');
+
+  fs.writeFileSync(path.join(observerDir, 'TEST_RESULTS.json'), JSON.stringify({
+    generatedAt: '2026-11-15T10:25:00.000Z',
+    results: [{ ts: '2026-11-15T10:25:00.000Z', command: 'node --test tests/unit/demo.test.cjs', ok: true, durationMs: 12, errors: [] }],
+  }), 'utf8');
+
+  fs.writeFileSync(path.join(observerDir, 'BLOCKERS.json'), JSON.stringify({
+    blockers: [
+      { id: 'B1', resolved: false, reason: 'test', severity: 'P1' },
+      { id: 'B2', resolved: true, reason: 'ancien', severity: 'P2' },
+    ],
+  }), 'utf8');
+
+  const dash = dashboard.buildDashboard(dir);
+  assert.equal(dash.sessions.present, true);
+  assert.equal(dash.sessions.healthy, true);
+  assert.equal(dash.sessions.counts.RUNNING, 2);
+  assert.equal(dash.sessions.counts.COMPLETED, 1);
+  assert.equal(dash.sessions.entries.length, 2);
+  assert.equal(dash.observer.present, true);
+  assert.equal(dash.observer.healthy, true);
+  assert.equal(dash.observer.branch, 'agent/devops/factory-v3-model-failover');
+  assert.equal(dash.observer.localChanges.total, 3);
+  assert.equal(dash.observer.dernierTest.ok, true);
+  assert.equal(dash.observer.blocagesOuverts, 1, 'seuls les blocages non résolus comptent');
+
+  const rendered = dashboard.render(dash);
+  assert.match(rendered, /--- SESSIONS \(états normalisés\) ---/);
+  assert.match(rendered, /\[COMPLETED\] job job-1/);
+  assert.match(rendered, /\[WAITING\] session ses_x/);
+  assert.match(rendered, /--- OBSERVATEUR LOCAL ---/);
+  assert.match(rendered, /dernier test=OK/);
+  assert.match(rendered, /--- DISTINCTION DES PREUVES/);
+  assert.match(rendered, /validation terminée \(COMPLETED\)=1 · résultat en vérification \(VERIFYING\)=0/);
+});
+
+test('dashboard central: registre/observateur absents sont annoncés honnêtement', () => {
+  const dir = tempStateDir();
+  const dash = dashboard.buildDashboard(dir);
+  assert.equal(dash.sessions.present, false);
+  assert.equal(dash.observer.present, false);
+  const rendered = dashboard.render(dash);
+  assert.match(rendered, /\(absent : registre absent/);
+  assert.match(rendered, /\(absent : observateur absent/);
+});
+
 test('recoverOrphans: RUNNING de runner mort → PENDING avec backoff ; RUNNING vivant → intact', () => {
   const dir = tempStateDir();
   const cfg = mkCfg(dir);

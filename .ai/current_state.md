@@ -1,3 +1,31 @@
+## 2026-11-15 10:45 UTC · Agent: DevOps (Factory V3 — tableau de bord central)
+
+### Travail effectué
+- **Résumé 1 ligne** : le tableau de bord Factory V3 devient central : sessions normalisées + observateur local + distinction explicite activité/progression/résultat/validation.
+- **Détails** : extension de `dashboard.cjs` (aucun nouveau port) avec les sections `SESSIONS (états normalisés)`, `OBSERVATEUR LOCAL` et `DISTINCTION DES PREUVES` ; absences et corruptions annoncées honnêtement ; blocages comptés ouverts uniquement.
+
+### Fichiers modifiés
+- `scripts/factory-v3/dashboard.cjs` — agrégation registre sessions + observateur + section preuves.
+- `tests/unit/factory-v3-runner.test.cjs` — 2 nouveaux tests dashboard.
+- `.ai/changelog.md`, `NEXT_SESSION.md`, `.ai/tasks.md` — documentation.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **19/19 PASS**.
+- [x] Preuve réelle : dashboard sur données du poste → 12 sessions affichées + observateur rendu.
+
+### Problèmes restants
+- [ ] Consultation ChatGPT (boucle bidirectionnelle réelle) à livrer via bridge 4187.
+- [ ] CI à re-vérifier sur le prochain push (test-frontend + perf + lighthouse).
+
+### Prochaine action recommandée
+1. Committer/pousser, vérifier CI — Rôle : devops.
+2. Agent de consultation ChatGPT réutilisant `result-relay.js`/`chatgpt-watcher.js` (Factory Control) via bridge local — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472
+- Commit head : à committer
+
 ## 2026-11-15 10:20 UTC · Agent: DevOps (Factory V3 — porte de preuve evidence gate)
 
 ### Travail effectué

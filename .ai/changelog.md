@@ -1,3 +1,11 @@
+## 2026-11-15 — Factory V3 : tableau de bord central (sessions + observateur + preuves)
+
+- **Agrégation centrale** (`scripts/factory-v3/dashboard.cjs`) : le dashboard fusionne désormais le registre de sessions normalisés (`observer/SESSION_REGISTRY.json`), l'observateur local (`CURRENT_STATE`, `TEST_RESULTS`, `BLOCKERS` avec blocages **ouverts** uniquement, `NEXT_ACTIONS`) et les données modèles/queue existantes — une seule vue, aucun nouveau port.
+- **Distinction exigée par la mission** : section dédiée `DISTINCTION DES PREUVES` séparant explicitement **activité** (événement observé — ne prouve rien) ≠ **progression** (fichiers/commits locaux réels) ≠ **résultat** (commit vérifié + tests exécutés) ≠ **validation** (verdict VERIFIED).
+- **Honnêteté** : registre/observateur absents → `(absent : …)` avec la commande à lancer ; corrompus → erreur explicite ; erreurs sources du registre affichées.
+- **Tests** : `node --test tests/unit/factory-v3-runner.test.cjs` → **19/19 PASS** (2 nouveaux : agrégation + absence honnête).
+- **Preuve réelle** : `dashboard.cjs` sur les données du poste → 12 sessions OpenCode réelles affichées (états normalisés), observateur local rendu (branche, head, ahead/behind, changements locaux).
+
 ## 2026-11-15 — Factory V3 : porte de preuve avant complétion de mission (evidence gate)
 
 - **Preuve d'espace de travail réelle** (`run.cjs`) : au moment du verdict, le runner exécute un vrai `git status --porcelain -uall` (`computeWorkspaceProof`). Un espace de travail réellement sale → `BLOCKED_UNCOMMITTED` même si l'agent a commité ; une preuve illisible → `FAILED` (fail-closed, jamais un faux `DONE_NO_CHANGE`).

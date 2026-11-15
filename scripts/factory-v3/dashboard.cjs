@@ -58,6 +58,76 @@ function readQueueForDashboard(stateDir) {
   }
 }
 
+function readSessionRegistryForDashboard(stateDir) {
+  const file = path.join(stateDir, 'observer', 'SESSION_REGISTRY.json');
+  if (!fs.existsSync(file)) {
+    return { present: false, note: 'registre absent — lancer scripts/factory-v3/session-registry.cjs' };
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!raw || typeof raw !== 'object' || !raw.counts || !Array.isArray(raw.entries)) {
+      return { present: true, healthy: false, error: 'SESSION_REGISTRY_CORRUPT' };
+    }
+    return {
+      present: true,
+      healthy: true,
+      error: null,
+      generatedAt: raw.generatedAt,
+      counts: raw.counts,
+      errors: Array.isArray(raw.errors) ? raw.errors : [],
+      entries: raw.entries.map((e) => ({
+        kind: e.kind,
+        id: e.id,
+        state: e.state,
+        reason: e.reason,
+        repo: e.repo || null,
+        branch: e.branch || null,
+        lastActivityAt: e.lastActivityAt || null,
+        sessionId: e.sessionId || null,
+        resolvedModel: e.resolvedModel || e.requestedModel || null,
+        provider: e.provider || null,
+        spend: e.spend != null ? e.spend : null,
+        committedSha: e.committedSha || null,
+        stale: !!e.stale,
+      })),
+    };
+  } catch (error) {
+    return { present: true, healthy: false, error: `SESSION_REGISTRY_UNREADABLE: ${String(error && error.message || error)}` };
+  }
+}
+
+function readObserverForDashboard(stateDir) {
+  const dir = path.join(stateDir, 'observer');
+  const current = readJson(path.join(dir, 'CURRENT_STATE.json'), null);
+  const tests = readJson(path.join(dir, 'TEST_RESULTS.json'), null);
+  const blockers = readJson(path.join(dir, 'BLOCKERS.json'), null);
+  const nextActions = readJson(path.join(dir, 'NEXT_ACTIONS.json'), null);
+  if (!current && !tests && !blockers && !nextActions) {
+    return { present: false, note: 'observateur absent — lancer scripts/factory-v3/observer.cjs' };
+  }
+  const results = tests && Array.isArray(tests.results) ? tests.results : [];
+  const latestTest = results.length ? results[results.length - 1] : null;
+  const openBlockers = blockers && Array.isArray(blockers.blockers)
+    ? blockers.blockers.filter((b) => !b.resolved)
+    : [];
+  return {
+    present: true,
+    healthy: !!current,
+    error: current ? null : 'CURRENT_STATE_UNREADABLE',
+    generatedAt: current ? current.generatedAt : null,
+    branch: current ? current.branch : null,
+    head: current ? current.head : null,
+    remoteHead: current ? current.remoteHead : null,
+    ahead: current ? current.ahead : null,
+    behind: current ? current.behind : null,
+    lastCommitAt: current ? current.lastCommitAt : null,
+    localChanges: current ? current.localChanges : null,
+    dernierTest: latestTest ? { at: latestTest.ts, command: latestTest.command, ok: !!latestTest.ok } : null,
+    blocagesOuverts: blockers ? openBlockers.length : null,
+    prochainesActions: nextActions && Array.isArray(nextActions.actions) ? nextActions.actions.length : null,
+  };
+}
+
 function buildDashboard(stateDir) {
   let registry = null;
   let registryError = null;
@@ -183,6 +253,9 @@ function buildDashboard(stateDir) {
   const blocked = agents.filter((a) => a.bloque && a.statutJob !== 'RUNNING');
   const running = agents.filter((a) => a.statutJob === 'RUNNING');
 
+  const sessions = readSessionRegistryForDashboard(stateDir);
+  const observer = readObserverForDashboard(stateDir);
+
   return {
     generatedAt: new Date().toISOString(),
     registryHealthy: !registryError,
@@ -209,6 +282,19 @@ function buildDashboard(stateDir) {
     agents,
     agentsEnCours: running.map((r) => r.jobId),
     agentsBloques: blocked.map((b) => ({ jobId: b.jobId, statut: b.statutJob, verdict: b.dernierVerdict })),
+    sessions,
+    observer,
+    // Distinction exigée par la mission : activité ≠ progression ≠ résultat ≠ validation.
+    preuves: {
+      definition: {
+        activite: 'dernier événement observé (fichier, session, heartbeat) — ne prouve RIEN',
+        progression: 'travail produit réel (fichiers modifiés, commits locaux non poussés)',
+        resultat: 'commit vérifié + tests réellement exécutés',
+        validation: 'verdict VERIFIED (agent vérifié + gates verts + commit reachable + test exécuté)',
+      },
+      sessionsParEtat: sessions && sessions.healthy ? sessions.counts : null,
+      observerPresent: !!(observer && observer.present),
+    },
   };
 }
 
@@ -261,6 +347,62 @@ function render(dash) {
     lines.push('');
     lines.push('--- AGENTS BLOQUÉS ---');
     for (const b of dash.agentsBloques) lines.push(`  ${b.jobId} : ${b.statut} (${b.verdict || '-'})`);
+  }
+
+  lines.push('');
+  lines.push('--- SESSIONS (états normalisés) ---');
+  if (!dash.sessions || !dash.sessions.present) {
+    lines.push(`  (absent : ${dash.sessions && dash.sessions.note || 'inconnu'})`);
+  } else if (dash.sessions.healthy === false) {
+    lines.push(`  ERREUR : ${dash.sessions.error}`);
+  } else {
+    const counts = dash.sessions.counts || {};
+    lines.push(
+      `  PLANNING=${counts.PLANNING || 0} RUNNING=${counts.RUNNING || 0} WAITING=${counts.WAITING || 0}`
+      + ` BLOCKED=${counts.BLOCKED || 0} RECOVERING=${counts.RECOVERING || 0} VERIFYING=${counts.VERIFYING || 0}`
+      + ` COMPLETED=${counts.COMPLETED || 0} FAILED=${counts.FAILED || 0}`
+    );
+    if (dash.sessions.errors && dash.sessions.errors.length) {
+      for (const err of dash.sessions.errors) lines.push(`  ERREUR SOURCE : ${err}`);
+    }
+    for (const s of dash.sessions.entries || []) {
+      lines.push(
+        `  [${s.state}] ${s.kind} ${s.id}` +
+        ` ${s.repo || s.title || ''}` +
+        ` modèle=${s.resolvedModel || '-'} commit=${s.committedSha || '-'} dépense=${s.spend != null ? s.spend : '-'}`
+      );
+      lines.push(`    raison=${s.reason}`);
+    }
+  }
+
+  lines.push('');
+  lines.push('--- OBSERVATEUR LOCAL ---');
+  if (!dash.observer || !dash.observer.present) {
+    lines.push(`  (absent : ${dash.observer && dash.observer.note || 'inconnu'})`);
+  } else if (dash.observer.healthy === false) {
+    lines.push(`  ERREUR : ${dash.observer.error}`);
+  } else {
+    lines.push(
+      `  branche=${dash.observer.branch} head=${String(dash.observer.head || '').slice(0, 12)}`
+      + ` ahead/behind=${dash.observer.ahead}/${dash.observer.behind}`
+      + ` dernier commit=${dash.observer.lastCommitAt || '-'}`
+    );
+    lines.push(`  changements locaux=${JSON.stringify(dash.observer.localChanges || {})}`);
+    lines.push(
+      `  dernier test=${dash.observer.dernierTest ? `${dash.observer.dernierTest.ok ? 'OK' : 'ÉCHEC'} ${dash.observer.dernierTest.command} (${dash.observer.dernierTest.at})` : '-'}`
+    );
+    lines.push(`  blocages ouverts=${dash.observer.blocagesOuverts != null ? dash.observer.blocagesOuverts : '-'} prochaines actions=${dash.observer.prochainesActions != null ? dash.observer.prochainesActions : '-'}`);
+  }
+
+  lines.push('');
+  lines.push('--- DISTINCTION DES PREUVES (activité ≠ progression ≠ résultat ≠ validation) ---');
+  lines.push('  activité = événement observé (fichier, session) — ne prouve RIEN');
+  lines.push('  progression = fichiers modifiés / commits locaux réels');
+  lines.push('  résultat = commit vérifié + tests réellement exécutés');
+  lines.push('  validation = verdict VERIFIED (agent vérifié + gates verts + commit reachable + test)');
+  if (dash.preuves && dash.preuves.sessionsParEtat) {
+    const c = dash.preuves.sessionsParEtat;
+    lines.push(`  validation terminée (COMPLETED)=${c.COMPLETED || 0} · résultat en vérification (VERIFYING)=${c.VERIFYING || 0}`);
   }
   return lines.join('\n');
 }
