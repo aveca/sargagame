@@ -1,5 +1,93 @@
 ﻿---
 
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 12e1959ef
+
+### Travail effectué (Phase 1 migration Google Sheets → Supabase — inventaire et documentation)
+
+- **Résumé 1 ligne** : Inventaire complet des Google Sheets (1 onglet principal, 13 tabs), des 3 projets Apps Script et des 4 scripts Node.js d'automatisation ; sauvegarde du code Apps Script ; documentation Phase 1 livrée.
+- **Détails** :
+  - Création branche `feat/sargagame-supabase-google-migration` depuis `agent/coding/BUG-2026-001-webhook-secret` (commit `cb71169e8`)
+  - `docs/migration-google-sheets/README.md` : vue d'ensemble, 9 phases, règles absolues, prérequis
+  - `docs/migration-google-sheets/inventory-google.md` : Sheet ID (`1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ`), 13 onglets, 3 projets Apps Script, 4 scripts Node.js, risques, prérequis clasp
+  - `docs/migration-google-sheets/functions-inventory.md` : tous les handlers doPost/doGet (21 types), fonctions utilitaires, séquences drip (j3/j7/j14), règles de déduplication
+  - `docs/migration-google-sheets/migration-report.json` : template Phase 9 (rapport structuré)
+  - `docs/migration-google-sheets/appscript-code-backup/` : 3 fichiers Apps Script sauvegardés (Code.js, stripe-webhook.gs, apps-script-digest.gs)
+
+### Fichiers modifiés
+- `docs/migration-google-sheets/README.md` (nouveau)
+- `docs/migration-google-sheets/inventory-google.md` (nouveau)
+- `docs/migration-google-sheets/functions-inventory.md` (nouveau)
+- `docs/migration-google-sheets/migration-report.json` (nouveau)
+- `docs/migration-google-sheets/appscript-code-backup/Code.js` (nouveau, sauvegarde)
+- `docs/migration-google-sheets/appscript-code-backup/stripe-webhook.gs` (nouveau, sauvegarde)
+- `docs/migration-google-sheets/appscript-code-backup/apps-script-digest.gs` (nouveau, sauvegarde)
+
+### Tests réalisés
+- [ ] npm run build → non requis (documentation uniquement)
+- [ ] check-bundle-budget → non requis (documentation uniquement)
+- [ ] php -l → non requis (documentation uniquement)
+- [ ] ux-smoke → non requis (documentation uniquement)
+
+### Problèmes restants
+- [ ] clasp non authentifié — `clasp login` requis pour lister triggers, déploiements, versions, web app URLs
+- [ ] GOOGLE_SERVICE_ACCOUNT_JSON non défini localement — scripts automation Node.js bloqués localement
+- [ ] SUPABASE_SERVICE_KEY non défini — audit Phase 2 bloqué
+- [ ] GitHub gh CLI indisponible — création PR bloquée
+- [ ] TASK-P0-001 webhook secret Mollie : code prêt sur branche `agent/coding/BUG-2026-001-webhook-secret` (commit `cb71169e8`), **non mergé sur `main`, non déployé**
+- [ ] BUG-2026-015 : CTA paywall fermé hors fenêtre satellite — décision fondateur requise
+
+### Prochaine action recommandée
+1. Authentifier clasp (`clasp login`) et inventory triggers/déployements/versions — Rôle : coding_agent
+2. Phase 2 : audit schéma Supabase existant (tables, RLS, Edge Functions, secrets, cron) — Rôle : coding_agent + data_agent, nécessite SUPABASE_SERVICE_KEY
+3. Phase 3 : proposer modèle de données cible — Rôle : architect_agent
+
+### Branche / PR
+- Branche : `feat/sargagame-supabase-google-migration` (sur ce dépôt, commit `12e1959ef`)
+- PR : non créée (outils GitHub indisponibles)
+- Commit head : `12e1959ef`
+
+---
+
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche agent/coding/BUG-2026-001-webhook-secret · commit cb71169e8 (poussé sur origin, NON mergé, NON déployé)
+
+### Travail effectué (overhaul documentation + nettoyage, aucun changement de production, aucun déploiement, aucun secret modifié)
+
+- **Résumé 1 ligne** : Archivage des fichiers obsolètes dans `.ai/archive/`, reconstruction de l'état `.ai/` (current_state + changelog + bugs), ajout de `docs/stripe-live-catalog-2026-11-13.md`, suppression des chiffres en dur (MRR/leads) au profit de `daily-metrics.json`, nettoyage des références FTP dans `docs/OPERATIONS.md`, remplacement des stubs racine `NEXT_AGENT_CONTEXT.md` / `NEXT_SESSION.md`.
+- **Détails** :
+  - `.ai/archive/` : copies fidèles de `NEXT_AGENT_CONTEXT.md` (2026-07-31), `NEXT_SESSION.md` (2026-07-30), `.ai/current_state.md` (2026-11-04), `.ai/changelog.md` (2026-11-04).
+  - Racine : `NEXT_AGENT_CONTEXT.md` et `NEXT_SESSION.md` remplacés par des stubs pointant vers `CLAUDE.md` + `.ai/current_state.md`.
+  - `.ai/bugs.md` : `BUG-2026-001` mis à jour (webhook secret désormais provisionné via Cloudflare/GitHub secrets, plus de FTP ; bloqué sur le déploiement Martinique) ; `BUG-2026-015` ajouté (CTA paywall fermé hors fenêtre satellite 12 h, 6 domaines, décision fondateur requise).
+  - `docs/stripe-live-catalog-2026-11-13.md` : créé (catalogue Stripe legacy lecture seule, source de vérité = `daily-metrics.json`, aucun produit créé, aucun montant modifié).
+  - `.agent-runtime.md` : MRR "69.86 EUR / 14 actifs" remplacé par lecture de `daily-metrics.json`.
+  - `PRODUCT.md` : "~€70/mo, ~14 abos au 2026-07-02" remplacé par référence `daily-metrics.json`.
+  - `docs/OPERATIONS.md` : références `FTP_SERVER_*`/`FTP_USERNAME_*`/`FTP_PASSWORD_*` retirées de l'inventaire et des conventions ; déploiement désormais Cloudflare-only (Workers/Pages).
+  - `CLAUDE.md` : index des docs déjà à jour (`MOLLIE_TEST_CERTIFICATION.md` + `docs/stripe-live-catalog-2026-11-13.md` référencés).
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (déjà validé v221, bundle 209.8 Ko gzip ≤ 210 Ko)
+- [x] `node scripts/check-bundle-budget.cjs` → OK (209.8 Ko)
+- [x] `php -l` → OK sur `public/api/mollie-config.php` (gitignoré, inchangé)
+- [x] `node scripts/ux-smoke.mjs` → 4 tokens OK
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0
+- [x] Unit tests → 36 passed, 0 failed
+
+### Problèmes restants
+- [ ] TASK-P0-001 webhook secret Mollie : code prêt sur branche `agent/coding/BUG-2026-001-webhook-secret` (commit `cb71169e8`), **non mergé sur `main`, non déployé**. La PR ne peut pas être créée (outils GitHub indisponibles dans ce conteneur) et ne doit pas être mergée sans approbation (touche paiement/routage). Déploiement Cloudflare Martinique-first non exécuté.
+- [ ] BUG-2026-015 : CTA paywall fermé hors fenêtre satellite — décision fondateur requise (découpler l'entrée paywall du verdict satellite OU aligner le seuil UI 720 min sur le SLA 900 min).
+
+### Prochaine action recommandée
+1. Créer la PR `agent/coding/BUG-2026-001-webhook-secret` → `main` via GitHub MCP, puis merge (CI gate : build + bundle ≤ 210 Ko + php -l + ux-smoke + playwright) — Rôle : release_agent / fondateur (approbation requise pour le paiement)
+2. Déployer Martinique d'abord via pipeline Cloudflare ; enregistrer l'ID de version ; vérifier HTTP 200, paywall CTA, health route OK, aucun paiement test non voulu — Rôle : devops
+3. Déployer progressivement les 5 autres domaines (GP, FL, PC, RM, TULUM) ; documenter chaque déploiement (domaine, version ID, contrôles, plan de rollback) — Rôle : devops
+4. Appliquer la décision fondateur sur BUG-2026-015 — Rôle : product / fondateur
+
+### Branche / PR
+- Branche : `agent/coding/BUG-2026-001-webhook-secret` (sur origin)
+- PR : non créée (outils GitHub indisponibles)
+- Commit head : `cb71169e8`
+
+---
+
 ## 2026-11-04 · Agent: coding_agent (OpenCode) · branche fix/p0-mollie-fulfillment · commit 747af8376d972c9bd4712abb7b02b7f614f00b9c · PUBLIÉ sur origin
 
 ### Travail effectué (cycle 3 — publication, revue et sécurisation)

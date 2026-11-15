@@ -54,6 +54,14 @@
 - **Estimation** : 3h
 - **Statut** : [x] done by coding_agent
 
+### TASK-P1-004 Migration Google Sheets/Apps Script → Supabase (Phase 1 : inventaire)
+- **Priorité** : P1
+- **Rôle** : coding_agent
+- **Description** : Inventaire complet des Google Sheets, Apps Script, triggers, déploiements et automatisations Node.js ; documentation Phase 1 livrée.
+- **Estimation** : 4h
+- **Statut** : [x] done by coding_agent — branche `feat/sargagame-supabase-google-migration`, commit `12e1959ef`
+- **Suivant** : Phase 2 (audit Supabase) requiert SUPABASE_SERVICE_KEY ; Phase 1.5 (clasp login) requise pour triggers/déployements/versions
+
 ---
 
 ## P2 — Backlog normal

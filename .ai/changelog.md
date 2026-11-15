@@ -1,5 +1,46 @@
 ﻿---
 
+## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 12e1959ef
+
+**Migration Google Sheets/Apps Script → Supabase : Phase 1 (inventaire) livrée.**
+
+- Création branche `feat/sargagame-supabase-google-migration`
+- `docs/migration-google-sheets/README.md` : vue d'ensemble, 9 phases, règles absolues, prérequis
+- `docs/migration-google-sheets/inventory-google.md` : Sheet ID, 13 onglets, 3 projets Apps Script, 4 scripts Node.js, risques, prérequis clasp
+- `docs/migration-google-sheets/functions-inventory.md` : tous les handlers doPost/doGet, fonctions utilitaires, séquences drip, règles de déduplication
+- `docs/migration-google-sheets/migration-report.json` : template Phase 9 (rapport structuré)
+- `docs/migration-google-sheets/appscript-code-backup/` : sauvegarde des 3 fichiers Apps Script (Code.js, stripe-webhook.gs, apps-script-digest.gs)
+
+**Tests :** build non requis (documentation uniquement).
+
+**Statut :** Phase 1 terminée (inventaire). Phase 2 bloquée sur `SUPABASE_SERVICE_KEY`. Phase 1.5 (clasp auth) bloquée sur authentification Google.
+
+**Fichiers modifiés :** `docs/migration-google-sheets/*` (7 fichiers, 1844 lignes ajoutées).
+
+---
+
+## 2026-11-15 — coding_agent (OpenCode)
+
+**Overhaul documentation + nettoyage (aucun changement de production, aucun déploiement, aucun secret modifié).**
+
+- Archivage des fichiers obsolètes dans `.ai/archive/` : `NEXT_AGENT_CONTEXT.md` (2026-07-31), `NEXT_SESSION.md` (2026-07-30), `.ai/current_state.md` (2026-11-04), `.ai/changelog.md` (2026-11-04).
+- Racine : `NEXT_AGENT_CONTEXT.md` et `NEXT_SESSION.md` remplacés par des stubs pointant vers `CLAUDE.md` + `.ai/current_state.md`.
+- `.ai/current_state.md` : entrée 2026-11-15 ajoutée (état actuel, format handoff).
+- `.ai/changelog.md` : cette entrée.
+- `.ai/bugs.md` : `BUG-2026-001` mis à jour (Cloudflare-only, bloqué sur déploiement Martinique) ; `BUG-2026-015` ajouté (CTA paywall fermé hors fenêtre satellite).
+- `docs/stripe-live-catalog-2026-11-13.md` : créé (catalogue Stripe legacy lecture seule, source de vérité `daily-metrics.json`).
+- `.agent-runtime.md` : MRR figé remplacé par lecture de `daily-metrics.json`.
+- `PRODUCT.md` : MRR "~€70/mo, ~14 abos" remplacé par référence `daily-metrics.json`.
+- `docs/OPERATIONS.md` : références `FTP_SERVER_*`/`FTP_USERNAME_*`/`FTP_PASSWORD_*` retirées ; déploiement Cloudflare-only.
+
+**Tests :** build OK (v221, bundle 209.8 Ko gzip ≤ 210 Ko), check-bundle-budget OK, php -l OK, ux-smoke 4 tokens OK, régions valides, unit tests 36/36.
+
+**Statut :** TASK-P0-001 code prêt (branche `agent/coding/BUG-2026-001-webhook-secret`, commit `cb71169e8`), **non mergé, non déployé**. PR et déploiement Cloudflare bloqués (pas d'outil GitHub MCP dans ce conteneur ; approbation requise pour le paiement/routage).
+
+**Fichiers modifiés :** `.ai/archive/*` (4), `NEXT_AGENT_CONTEXT.md` (stub), `NEXT_SESSION.md` (stub), `.ai/current_state.md`, `.ai/changelog.md`, `.ai/bugs.md`, `docs/stripe-live-catalog-2026-11-13.md` (nouveau), `.agent-runtime.md`, `PRODUCT.md`, `docs/OPERATIONS.md`.
+
+---
+
 ## 2026-11-04 — coding_agent (OpenCode) · Cycle 3 publication/revue/sécurisation (branche fix/p0-mollie-fulfillment, commit 747af8376d972c9bd4712abb7b02b7f614f00b9c, publiée sur origin)
 
 **Objectif** : rendre le travail cycle 2 vérifiable sur GitHub, corriger les derniers risques, préparer une PR exploitable. Aucun changement de production, aucune route Cloudflare, aucune écriture Supabase.
