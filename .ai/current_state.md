@@ -1,4 +1,52 @@
 ﻿---
+
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 72ea7ccd1
+
+### Travail effectué
+
+- **Résumé 1 ligne** : Webhook Mollie `b2b_first` ajouté aux sources B2B, plans annuels centralisés dans `mol_b2b_plans()`, `b2b-create-checkout.php` créé avec CORS whitelist, 31 tests B2B payment flow ajoutés et passés.
+- **Détails** :
+  - `public/api/mollie-webhook.php` : `b2b_first` maintenant traité comme `b2b_annual` (grant pro 365j sur subscription.created/updated + subscription.paid)
+  - `public/api/mollie-lib.php` : `mol_b2b_plans()` centralise pro_annual (690€) et brief_annual (290€)
+  - `public/api/b2b-create-checkout.php` : créé avec CORS whitelist (pas `*`), source `b2b_first` pour les mensuels, `b2b_annual` pour les annuels
+  - `tests/unit/b2b-payment-flow.test.cjs` : 31 tests (mollie-lib, webhook b2b_first, verify_subscription, b2b-create-checkout CORS, contacts dedup, migration dry-run)
+  - `npm run build` : exit 0, bundle 180.87 kB gzip
+  - `check-bundle-budget.cjs` : 209.2 Ko ≤ 210 Ko gzip, OK
+  - `php -l` : OK sur mollie-webhook.php, mollie-lib.php, b2b-create-checkout.php
+  - Commit `72ea7ccd1` poussé sur origin feat/sargagame-supabase-google-migration
+
+### Fichiers modifiés
+- `public/api/mollie-webhook.php` — b2b_first ajouté aux sources B2B (webhook)
+- `public/api/mollie-lib.php` — mol_b2b_plans() ajoute pro_annual + brief_annual
+- `public/api/b2b-create-checkout.php` — nouveau fichier, CORS whitelist
+- `tests/unit/b2b-payment-flow.test.cjs` — 31 tests B2B payment flow
+
+### Tests réalisés
+- [x] npm run build → exit 0 (bundle 180.87 kB gzip)
+- [x] check-bundle-budget → 209.2 Ko ≤ 210 Ko gzip, OK
+- [x] php -l → OK sur mollie-webhook.php, mollie-lib.php, b2b-create-checkout.php
+- [x] node tests/unit/b2b-payment-flow.test.cjs → 31/31 passés
+- [x] git push origin feat/sargagame-supabase-google-migration → OK
+
+### Problèmes restants
+- [ ] SUPABASE_SERVICE_KEY absent localement → verify_subscription retourne lookup_failed
+- [ ] Stripe live key expirée → fondateur doit renouveler dans le dashboard Stripe
+- [ ] BUG-2026-015 : CTA paywall fermé hors fenêtre satellite 12h → décision fondateur requise
+- [ ] TASK-P0-001 webhook secret Mollie non déployé en production
+
+### Prochaine action recommandée
+1. Fondateur renouvelle la clé Stripe live dans le dashboard — Rôle : fondateur
+2. Fondateur fournit SUPABASE_SERVICE_KEY — Rôle : fondateur/devops
+3. Fondateur décide sur BUG-2026-015 — Rôle : product/fondateur
+4. Générer les 158 liens de paiement B2B (dry-run → réel avec approbation) — Rôle : coding_agent
+5. Préparer campagne pilote B2B — Rôle : growth_agent
+
+### Branche / PR
+- Branche : `feat/sargagame-supabase-google-migration` (sur origin)
+- PR : non créée (outils GitHub indisponibles)
+- Commit head : `72ea7ccd1`
+
+---
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 374f2ae2f
 
 ### Travail effectué

@@ -1,5 +1,22 @@
 ﻿---
 
+## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 72ea7ccd1
+
+**Webhook Mollie `b2b_first` + plans annuels centralisés + b2b-create-checkout avec CORS whitelist.**
+
+- `public/api/mollie-webhook.php` : `b2b_first` maintenant traité comme `b2b_annual` (grant pro 365j sur subscription.created/updated + subscription.paid)
+- `public/api/mollie-lib.php` : `mol_b2b_plans()` centralise pro_annual (690€) et brief_annual (290€)
+- `public/api/b2b-create-checkout.php` : créé avec CORS whitelist (pas `*`), source `b2b_first` pour les mensuels, `b2b_annual` pour les annuels
+- `tests/unit/b2b-payment-flow.test.cjs` : 31 tests B2B payment flow ajoutés, tous passés
+
+**Tests :** `npm run build` → exit 0 (bundle 180.87 kB gzip), `check-bundle-budget.cjs` → 209.2 Ko ≤ 210 Ko gzip OK, `php -l` OK sur les 3 fichiers PHP, `node tests/unit/b2b-payment-flow.test.cjs` → 31/31, `git push origin` OK.
+
+**Statut :** Branche `feat/sargagame-supabase-google-migration` poussée sur origin, non mergée sur `main`. PR non créée (outils GitHub indisponibles).
+
+**Fichiers modifiés :** `public/api/mollie-webhook.php`, `public/api/mollie-lib.php`, `public/api/b2b-create-checkout.php` (nouveau), `tests/unit/b2b-payment-flow.test.cjs`.
+
+---
+
 ## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
 
 **Migration Google Sheets/Apps Script → Supabase : Phase 3 (modèle de données cible) proposée.**
