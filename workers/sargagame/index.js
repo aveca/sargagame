@@ -19,6 +19,20 @@ export default {
     const LEGACY_PRICES = Object.freeze({
       trip7: { EUR: [7.99], USD: [5.99] },
     });
+    // Date de coupure historique : seuls les paiements créés AVANT cette date
+    // peuvent bénéficier d'un ancien pass (p7). Les achats concernés datent de
+    // juin-juillet 2026 ; tout pass legacy créé à partir de cette date est refusé.
+    const LEGACY_CUTOFF_DATE = "2026-08-01T00:00:00Z";
+    // Identifiant de corrélation opaque : ne jamais logger un payment ID brut.
+    const opaqueId = (s) => {
+      if (!s) return "-";
+      let h = 2166136261 >>> 0;
+      for (const c of String(s)) {
+        h ^= c.charCodeAt(0);
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return "c" + (h >>> 0).toString(36).slice(0, 10);
+    };
     const PASS_PRICES = Object.freeze({
       p30:{EUR:14.99,USD:11.99},
       trip7:{EUR:4.99,USD:null},
@@ -57,6 +71,13 @@ export default {
         // Legacy payment: accept ONLY an allowed historical price
         // (current price is NOT allowed for legacy codes — keeps fraud surface
         // narrow and matches the historical amounts actually used).
+        // De plus, le paiement doit avoir été créé avant la date de coupure
+        // historique : aucun ancien pass n'est accepté pour un paiement récent.
+        const created = Date.parse(payment.createdAt || "");
+        const cutoff = Date.parse(LEGACY_CUTOFF_DATE);
+        if (!Number.isFinite(created) || created >= cutoff) {
+          return {ok:false,reason:"legacy_expired"};
+        }
         const legacyAmounts = LEGACY_PRICES[pass] || {};
         const acceptableCents = new Set();
         for (const n of legacyAmounts[currency] || []) acceptableCents.add(Math.round(n*100));
@@ -112,12 +133,21 @@ export default {
       if(!r.ok){
         let code="";
         try { code=String((await r.json())?.code||""); } catch {}
-        console.error("[mollie-webhook] Supabase grant RPC failed", {paymentId: String(payment?.id)||"", status: r.status, code: code||"unknown"});
+        console.error("[mollie-webhook] Supabase grant RPC failed", {cid: opaqueId(payment?.id), status: r.status, code: code||"unknown"});
         if(r.status===404 || code==="PGRST202") return {granted:false,error:"rpc_unavailable",status:r.status};
         return {granted:false,error:"grant_sync_failed",status:r.status};
       }
       return {granted:true,pass,email,days};
     };
+    if(u.pathname==="/api/health"){
+      // Santé du backend de paiement : booléens uniquement, jamais de valeur secrète.
+      return out({
+        mollieKeyPresent:!!env.MOLLIE_API_KEY,
+        webhookSecretPresent:!!env.MOLLIE_WEBHOOK_SECRET,
+        stripeLiveLinksPresent:!!env.STRIPE_SECRET_KEY,
+        liveMode:String(env.MOLLIE_API_KEY||"").startsWith("live_")
+      },200);
+    }
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
       const raw=await request.text();
@@ -144,7 +174,7 @@ export default {
       if(payment.status!=="paid") return out({received:true,paymentId:id,status:payment.status||"unknown",granted:false},200);
       const validation=validateMollieAmount(payment);
       if(!validation.ok){
-        console.error("[mollie-webhook] grant rejected", {paymentId:id,reason:validation.reason});
+        console.error("[mollie-webhook] grant rejected", {cid: opaqueId(id),reason:validation.reason});
         return out({received:true,paymentId:id,status:payment.status,granted:false,reason:validation.reason},200);
       }
       const grant=await grantB2CPassIdempotent(payment);

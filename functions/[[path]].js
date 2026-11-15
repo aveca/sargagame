@@ -1,0 +1,136 @@
+export async function onRequest(context) {
+  const { request, env } = context;
+  
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch(e) {
+    return new Response('Bad URL', { status: 400 });
+  }
+  
+  const pathname = url.pathname;
+
+  // /api/health — booléens de présence des clés de paiement, jamais de valeurs secrètes
+  if (pathname === '/api/health') {
+    return new Response(JSON.stringify({
+      mollieKeyPresent: !!env.MOLLIE_API_KEY,
+      webhookSecretPresent: !!env.MOLLIE_WEBHOOK_SECRET,
+      stripeLiveLinksPresent: !!env.STRIPE_SECRET_KEY,
+      liveMode: String(env.MOLLIE_API_KEY || '').startsWith('live_')
+    }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Assets statiques
+  if (pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|webp|avif|map|json|webmanifest)$/)) {
+    return env.ASSETS.fetch(request);
+  }
+
+  // BUG-2026-032 : sitemap.xml / robots.txt (et tout .xml/.txt) tombaient dans
+  // le fallback SPA → index.html 200 (SEO Guard rouge quotidien, sitemap
+  // invisible). _routes.json les exclut désormais des Functions, mais ce
+  // garde-fou couvre aussi le cas où le routage changerait : servir le fichier.
+  if (pathname.match(/\.(xml|txt)$/)) {
+    try {
+      const fileResponse = await env.ASSETS.fetch(request);
+      if (fileResponse.ok) return fileResponse;
+    } catch(e) {}
+    return new Response('Not found', { status: 404 });
+  }
+
+  // API routes — mapper vers fichiers JSON
+  if (pathname.startsWith('/api/')) {
+    // Laisser passer les routes Worker
+    if (pathname.startsWith('/api/mollie') || pathname.startsWith('/api/widget-token') ||
+        pathname.startsWith('/api/track-') || pathname.startsWith('/api/copernicus/forecast') ||
+        pathname.startsWith('/api/b2b-') || pathname.startsWith('/api/create-checkout')) {
+      return env.ASSETS.fetch(request);
+    }
+
+    // Mapper /api/pois → /api/pois.json
+    const apiMap = {
+      '/api/pois': '/api/pois.json',
+      '/api/beaches': '/api/beaches.json',
+      '/api/regions': '/api/regions.json',
+    };
+
+    if (apiMap[pathname]) {
+      try {
+        const fileResponse = await env.ASSETS.fetch(
+          new Request(new URL(apiMap[pathname], url.origin))
+        );
+        if (fileResponse.ok) {
+          return new Response(await fileResponse.text(), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      } catch(e) {}
+    }
+
+    // Fallback: essayer pathname + .json
+    try {
+      const jsonPath = pathname + '.json';
+      const jsonResponse = await env.ASSETS.fetch(
+        new Request(new URL(jsonPath, url.origin))
+      );
+      if (jsonResponse.ok) {
+        return new Response(await jsonResponse.text(), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    } catch(e) {}
+
+    return new Response(JSON.stringify({ error: 'Not found', path: pathname }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  // Widget
+  if (pathname.startsWith('/widget')) {
+    return env.ASSETS.fetch(request);
+  }
+
+  // track-click.php → redirect 302
+  if (pathname === '/track-click.php' || pathname.startsWith('/track-click')) {
+    try {
+      const targetUrl = url.searchParams.get('url') || '/';
+      const target = new URL(targetUrl, url.origin).toString();
+      return Response.redirect(target, 302);
+    } catch(e) {
+      return Response.redirect(url.origin + '/', 302);
+    }
+  }
+
+  // SPA fallback — servir index.html, MAIS d'abord le fichier statique s'il
+  // existe (BUG-2026-032 partie 2) : le dist/ contient 500+ pages SEO statiques
+  // (/beach/*, /plages/, /fiabilite/, …) avec head unique, que ce catch-all
+  // masquait en servant la coquille générique partout (contenu dupliqué aux
+  // yeux des crawlers). Les statiques embarquent le même bundle app (#root +
+  // /assets) : UX identique, SEO réel. Inconnu → fallback inchangé.
+  try {
+    const staticResponse = await env.ASSETS.fetch(request);
+    if (staticResponse.ok) return staticResponse;
+  } catch(e) {}
+  try {
+    const indexResponse = await env.ASSETS.fetch(
+      new Request(new URL('/index.html', url.origin), { method: 'GET' })
+    );
+    if (indexResponse.ok) {
+      const body = await indexResponse.text();
+      return new Response(body, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-cache, must-revalidate'
+        }
+      });
+    }
+  } catch(e) {}
+
+  // Dernier recours : redirect vers / (JAMAIS de "Sargassum monitoring")
+  return Response.redirect(url.origin + '/', 302);
+}

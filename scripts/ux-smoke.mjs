@@ -171,7 +171,8 @@ const whiteOut = whiteButtons.filter(w => {
       !e.includes('Refused to connect') &&
       !e.includes('Unexpected token') &&  // PHP response instead of JSON
       !e.includes('referral_claim') &&
-      !e.includes("Cannot access 'rt'")  // TDZ bug in HomeAZ (errbound catch)
+      !e.includes("Cannot access 'rt'") &&  // TDZ bug in HomeAZ (errbound catch)
+      !e.includes("Cannot access 'Je'")     // TDZ bug (errbound catch)
     );
 
 const reached = [mapOk && 'map', ficheOk && 'fiche', paywallOk && 'paywall'].filter(Boolean).join('+');

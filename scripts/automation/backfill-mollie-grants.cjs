@@ -145,6 +145,12 @@ async function main() {
     const canonical = LEGACY_ALIAS[rawPass] || rawPass;
     const isLegacy = Object.prototype.hasOwnProperty.call(LEGACY_ALIAS, rawPass);
 
+    // 4b. Date de coupure historique : un ancien pass ne peut être régénéré que
+    // pour un paiement créé avant la coupure (cohérence avec le Worker).
+    const createdAt = Date.parse(payment.createdAt || "");
+    const cutoff = Date.parse("2026-08-01T00:00:00Z");
+    const createdAtOk = isLegacy ? (Number.isFinite(createdAt) && createdAt < cutoff) : true;
+
     // 5. Amount validation (historical allowed amounts)
     const legacyAmounts = { trip7: { EUR: [7.99], USD: [5.99] } };
     const currency = String(payment.amount && payment.amount.currency || "").toUpperCase();
@@ -166,13 +172,14 @@ async function main() {
 
     const email = (payment.metadata && payment.metadata.email) || "";
     const emailOk = canonical !== "sos" ? !!email : true;
-    const canGrant = payment.status === "paid" && !existing.length && amountOk && emailOk && entry.refunds.count === 0;
+    const canGrant = payment.status === "paid" && !existing.length && amountOk && emailOk && entry.refunds.count === 0 && createdAtOk;
 
     // 6. Proposed grant (rights 7 or 30 days from EFFECTIVE delivery date, not payment date)
     const days = DAYS[canonical] || 7;
     entry.proposedGrant = {
       canonicalPass: canonical,
       isLegacy: isLegacy,
+      createdAtOk: createdAtOk,
       daysFromDelivery: days,
       emailSource: email ? "mollie_metadata" : "MISSING — manual lookup required",
       amountValid: amountOk,
