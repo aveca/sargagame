@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> **2026-11-15 — observateur local + canal externe (handoff actuel)** : observateur local indépendant et canal `aveca/factory-control` expurgé livrés sur `agent/devops/factory-v3-model-failover`. Preuve réelle : issue `#107`. Reprendre en branchant l'observateur sur le pilotage de session et le dashboard central.
+
 > **2026-11-15 — durcissement fail-closed Factory V3 (handoff actuel)** : claims tokenisés, worktrees dédiés et publication durcie sont testés localement (53/53 PASS) sur `agent/devops/factory-v3-model-failover` ; committer/pousser sur la PR #1472 puis reprendre l'observateur local indépendant et le canal `aveca/factory-control`. Lire `.ai/current_state.md` (entrée 2026-11-15) avant toute reprise.
 
 > **2026-11-14 — Factory V3 résilience (handoff actuel)** : retry intelligent + `Retry-After` strict, breaker fournisseur/modèle, concurrence multi-agents, reprise après restart et preuve réelle sont livrés sur `agent/devops/factory-v3-model-failover` (PR #1472). Lire `.ai/current_state.md` (entrée 21:25 UTC) et `scripts/factory-v3/README.md` avant de reprendre ce chantier.

@@ -1,3 +1,37 @@
+## 2026-11-15 09:41 UTC · Agent: DevOps (Factory V3 — observateur local indépendant)
+
+### Travail effectué
+- **Résumé 1 ligne** : un observateur local indépendant collecte l'état réel du dépôt, l'histoire des événements et publie un instantané expurgé vers `aveca/factory-control`.
+- **Détails** : `scripts/factory-v3/lib/observer.cjs` combine `fs.watch` et une réconciliation Git périodique ; `scripts/factory-v3/observer.cjs` lance le processus ; `scripts/factory-v3/publish-observer-state.cjs` publie le bundle structuré (`CURRENT_STATE`, `LOCAL_CHANGES`, `WORKLOG`, `TEST_RESULTS`, `BLOCKERS`, `NEXT_ACTIONS`) avec le diff exact des fichiers non suivis, tronqué et redacté. Preuve réelle : issue `aveca/factory-control#107` créée et relue via `gh`.
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/observer.cjs` — noyau d'observateur indépendant.
+- `scripts/factory-v3/observer.cjs` — CLI de démarrage de l'observateur.
+- `scripts/factory-v3/publish-observer-state.cjs` — publication expurgée vers GitHub.
+- `tests/unit/factory-v3-observer.test.cjs` — tests de détection réelle et de reprise.
+- `tests/unit/factory-v3-observer-publish.test.cjs` — tests de diff et de redaction.
+- `scripts/factory-v3/README.md` — documentation de l'observateur et du canal.
+
+### Tests réalisés
+- [x] `node --check scripts/factory-v3/lib/observer.cjs scripts/factory-v3/observer.cjs scripts/factory-v3/publish-observer-state.cjs` → exit 0.
+- [x] `node --test tests/unit/factory-v3-observer.test.cjs` → **3/3 PASS**.
+- [x] `node --test tests/unit/factory-v3-observer-publish.test.cjs` → **2/2 PASS**.
+- [x] Publication réelle sur `aveca/factory-control#107` + relecture via `gh issue view`.
+
+### Problèmes restants
+- [ ] L'observateur n'est pas encore connecté au pilote de session OpenCode.
+- [ ] Le dashboard central n'agrège pas encore l'état des sessions et les consultations ChatGPT.
+- [ ] Le cycle complet de réorientation automatique des sessions reste à livrer.
+
+### Prochaine action recommandée
+1. Committer et pousser l'observateur + le canal externe, puis re-vérifier la CI de la PR #1472 — Rôle : devops.
+2. Brancher l'observateur sur le pilotage de session et le dashboard central — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer
+
 ## 2026-11-15 00:00 UTC · Agent: DevOps (Factory V3 — durcissement fail-closed + observabilité)
 
 ### Travail effectué

@@ -340,3 +340,32 @@ La preuve complète est écrite dans `state/evidence/real-failover-*.json` (runt
 | Preuve de résultat | fichier `factory-real-proof.txt` = `FACTORY_REAL_OK`, **commit réel `8473e6dd5886822f104c2134d4cbacbeb02a9a76`** |
 | Transparence | logs `[MODEL] requested/resolved/execution_resumed=true` et `[FAILOVER] reason/next_model` dans la preuve |
 | Dépense | **0** |
+
+---
+
+## 8. Observateur local indépendant
+
+`scripts/factory-v3/observer.cjs` est un observateur local **indépendant du
+runner et de la session OpenCode**. Il combine :
+
+* `fs.watch` pour réagir aux événements de fichiers ;
+* une réconciliation Git périodique pour valider l'état réel ;
+* un état structuré persistant sous `scripts/factory-v3/state/observer/`
+  (`CURRENT_STATE.json`, `LOCAL_CHANGES.json`, `WORKLOG.jsonl`,
+  `TEST_RESULTS.json`, `BLOCKERS.json`, `NEXT_ACTIONS.json`,
+  `events.jsonl`, `history.jsonl`).
+
+Le répertoire d'état est déjà ignoré par Git. L'observateur peut être relancé
+sans perdre l'historique.
+
+### Usage
+
+```bash
+node scripts/factory-v3/observer.cjs --root . --state scripts/factory-v3/state/observer
+node scripts/factory-v3/publish-observer-state.cjs --state scripts/factory-v3/state/observer
+```
+
+Le second script publie un instantané expurgé (aucun secret, aucune donnée
+personnelle) sur un canal externe GitHub, par défaut `aveca/factory-control`.
+Les diffs locaux non suivis sont inclus, tronqués à 20 000 caractères et
+redactés.

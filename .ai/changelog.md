@@ -1,3 +1,11 @@
+## 2026-11-15 — Factory V3 : observateur local indépendant + canal externe expurgé
+
+- **Observateur local indépendant** (`scripts/factory-v3/lib/observer.cjs`, `scripts/factory-v3/observer.cjs`) : `fs.watch` + réconciliation Git périodique. Il écrit un état structuré persistant (`CURRENT_STATE.json`, `LOCAL_CHANGES.json`, `WORKLOG.jsonl`, `TEST_RESULTS.json`, `BLOCKERS.json`, `NEXT_ACTIONS.json`, `events.jsonl`, `history.jsonl`) et peut être relancé sans perte d'historique. Les répertoires générés sont exclus de l'état observé.
+- **Canal externe expurgé** (`scripts/factory-v3/publish-observer-state.cjs`) : publie un instantané local vers `aveca/factory-control` par `gh issue create`/`comment`. Le diff exact des modifications locales est inclus, tronqué à 20 000 caractères, et les motifs de secrets (tokens, `Bearer`, clés, e-mails) sont redactés avant publication.
+- **Preuve réelle du canal** : issue `aveca/factory-control#107` créée depuis le poste et relue via `gh issue view`, avec `generatedAt`, branche, SHA, état local et diff local.
+- **Tests** : `node --test tests/unit/factory-v3-observer.test.cjs` → **3/3 PASS** ; `node --test tests/unit/factory-v3-observer-publish.test.cjs` → **2/2 PASS**.
+- **Limite honnête** : l'observateur ne remplace pas encore le pilote de session OpenCode ; il observe et publie l'état réel, sans décider de la suite du travail.
+
 ## 2026-11-15 — Factory V3 : durcissement fail-closed des jobs et des worktrees
 
 - **Verrou de claim réel** : `updateJob()` refuse désormais de muter un job `RUNNING` sans token exact ou avec un token différent ; `claimStillOwned()` permet à un worker de vérifier qu'il détient toujours le claim avant les étapes lourdes (agent, publication). Un mauvais token produit une preuve `JOB_UPDATE_REJECTED` au lieu d'un faux succès.
