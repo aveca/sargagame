@@ -2123,11 +2123,14 @@ export function sgMyReferralCode(){try{let c=localStorage.getItem("sg_referral_c
 // (16 abos historiques). Retourne la réponse du backend actif (préserve trialEnd/
 // status pour les appelants). Avant : 100% Stripe → tout abonné Mollie échouait.
 export async function sgVerifySub(email){
-  const one=(url)=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"verify_subscription",email})}).then(r=>r.json()).catch(()=>({active:false}))
-  const[m,s]=await Promise.all([one("/api/mollie.php"),one("/api/create-checkout.php")])
-  if(m&&m.active)return m
-  if(s&&s.active)return s
-  return m||s||{active:false}
+  const onePass=(url)=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"verify_subscription",email,kind:"pass"})}).then(r=>r.json()).catch(()=>({active:false}))
+  const oneSub=(url)=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"verify_subscription",email,kind:"subscription"})}).then(r=>r.json()).catch(()=>({active:false}))
+  const[mPass,mSub,sPass,sSub]=await Promise.all([onePass("/api/mollie.php"),oneSub("/api/mollie.php"),onePass("/api/create-checkout.php"),oneSub("/api/create-checkout.php")])
+  if(mSub&&mSub.active)return mSub
+  if(mPass&&mPass.active)return mPass
+  if(sSub&&sSub.active)return sSub
+  if(sPass&&sPass.active)return sPass
+  return mSub||mPass||sSub||sPass||{active:false}
 }
 export function sgReferredBy(){try{const raw=localStorage.getItem("sg_referred_by");if(!raw)return "";let code="",ts=0;try{const o=JSON.parse(raw);code=o.code||"";ts=o.ts||0}catch(_){code=raw}/* rétro-compat string legacy */if(!/^REF-[A-Z0-9]{6}$/.test(code))return "";if(ts&&Date.now()-ts>30*86400000)return ""/* attribution expirée */;if(code===sgMyReferralCode())return ""/* anti-auto-parrainage */;return code}catch(_){return ""}}
 
