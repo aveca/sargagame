@@ -85,11 +85,23 @@ function main() {
   if (planPath && fs.existsSync(planPath)) {
     try { plan = JSON.parse(fs.readFileSync(planPath, 'utf8')); } catch (_) { plan = {}; }
   }
-  const entry = (plan.models && plan.models[model]) || plan.default || { behavior: 'success' };
-
-  const sid = parsed.session || `ses_stub_${Math.random().toString(16).slice(2, 12)}`;
+  let entry = (plan.models && plan.models[model]) || plan.default || { behavior: 'success' };
 
   const logPath = process.env.FACTORY_STUB_LOG;
+  // Séquence déterministe : chaque appel du même modèle consomme l'entrée
+  // suivante (`sequence: [...]`). L'index est calculé depuis le journal réel.
+  if (Array.isArray(entry.sequence) && entry.sequence.length) {
+    let callIndex = 0;
+    if (logPath && fs.existsSync(logPath)) {
+      try {
+        callIndex = fs.readFileSync(logPath, 'utf8').split(/\r?\n/).filter(Boolean)
+          .map((line) => { try { return JSON.parse(line); } catch (_) { return null; } })
+          .filter((call) => call && call.model === model).length;
+      } catch (_) { callIndex = 0; }
+    }
+    entry = entry.sequence[Math.min(callIndex, entry.sequence.length - 1)];
+  }
+  const sid = entry.sessionId || parsed.session || `ses_stub_${Math.random().toString(16).slice(2, 12)}`;
   if (logPath) {
     try {
       fs.appendFileSync(logPath, JSON.stringify({
@@ -103,7 +115,9 @@ function main() {
     } catch (_) {}
   }
 
-  logLine(sid, provider, modelId);
+  const observedProvider = entry.observedProvider || provider;
+  const observedModel = entry.observedModel || modelId;
+  logLine(sid, observedProvider, observedModel);
 
   // Effets sur le dépôt (travail réellement visible dans l'arbre de travail).
   if (entry.writeFile) {
@@ -115,6 +129,22 @@ function main() {
   if (entry.commit) gitCommit(dir, entry.commitMessage || `chore(stub): ${model}`);
 
   const behavior = entry.behavior || 'success';
+
+  if (behavior === 'assert_write_ahead') {
+    // Le runner doit avoir persisté la tentative AVANT d'appeler le
+    // fournisseur. Le stub vérifie cette preuve depuis le processus enfant.
+    const contextPath = process.env.FACTORY_STUB_CONTEXT;
+    let writeAheadOk = false;
+    try {
+      const context = JSON.parse(fs.readFileSync(contextPath, 'utf8'));
+      writeAheadOk = Array.isArray(context.attempts)
+        && context.attempts.some((attempt) => attempt.ref === model && attempt.outcome === 'in_progress');
+    } catch (_) {}
+    if (!writeAheadOk) {
+      try { process.stderr.write('FACTORY_WRITE_AHEAD_MISSING\n'); } catch (_) {}
+      process.exit(2);
+    }
+  }
 
   if (behavior === 'timeout') {
     // Ne produit AUCUNE sortie : le moteur doit détecter le hang (timeout d'inactivité).
@@ -128,19 +158,46 @@ function main() {
     process.exit(1);
   }
 
-  if (behavior === 'quota_daily' || behavior === 'rate_limit' || behavior === 'provider_unavailable' || behavior === 'credit_error' || behavior === 'partial_then_quota') {
+  if (behavior === 'quota_daily' || behavior === 'quota_daily_reset' || behavior === 'rate_limit'
+    || behavior === 'provider_unavailable' || behavior === 'credit_error' || behavior === 'partial_then_quota'
+    || behavior === 'content_safety' || behavior === 'auth_error' || behavior === 'model_invalid') {
     const messages = {
       quota_daily: entry.message || 'Daily free messages exhausted for this model. Upgrade or try again tomorrow.',
+      quota_daily_reset: entry.message || 'Daily free messages exhausted for this model.',
       rate_limit: entry.message || 'Rate limit exceeded (HTTP 429). Too many requests.',
       provider_unavailable: entry.message || 'Provider temporarily unavailable (503). Please retry.',
       credit_error: entry.message || 'Payment required (HTTP 402): insufficient credit balance.',
       partial_then_quota: entry.message || 'Daily free messages exhausted for this model.',
+      content_safety: entry.message || 'Content safety screening unavailable (temporarily).',
+      auth_error: entry.message || 'Provider not authenticated: missing credentials (HTTP 401).',
+      model_invalid: entry.message || 'Model not found: no such model on this provider.',
     };
+    const defaultStatus = {
+      quota_daily: null,
+      quota_daily_reset: null,
+      rate_limit: 429,
+      provider_unavailable: /\b503\b/.test(String(entry.message || '')) ? 503 : null,
+      credit_error: 402,
+      partial_then_quota: null,
+      content_safety: 503,
+      auth_error: 401,
+      model_invalid: 404,
+    };
+    const data = {
+      message: messages[behavior],
+      ref: 'err_stub_' + Math.random().toString(16).slice(2, 8),
+    };
+    if (entry.statusCode != null || defaultStatus[behavior] != null) {
+      data.statusCode = entry.statusCode != null ? entry.statusCode : defaultStatus[behavior];
+    }
+    if (entry.headers) data.headers = entry.headers;
+    if (entry.retryAfter != null) data.retryAfter = entry.retryAfter;
+    if (entry.resetAt) data.resetAt = entry.resetAt;
     emit({
       type: 'error',
       timestamp: Date.now(),
       sessionID: sid,
-      error: { name: 'ProviderError', data: { message: messages[behavior], ref: 'err_stub_' + Math.random().toString(16).slice(2, 8) } },
+      error: { name: 'ProviderError', data },
     });
     process.exit(1);
   }

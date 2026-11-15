@@ -20,10 +20,11 @@ scripts/factory-v3/
 ├── proofs/                  Preuves réelles versionnées (JSON)
 ├── install-scheduled-task.ps1 / uninstall-scheduled-task.ps1   Autonomie 24/7
 └── lib/
-    ├── failover.cjs         Moteur de bascule (orchestration des tentatives)
+    ├── failover.cjs         Moteur retry + bascule (orchestration des tentatives)
     ├── inventory.cjs        Découverte dynamique des modèles (via OpenCode)
-    ├── model-registry.cjs   Mémoire persistante des quotas (cooldowns, breaker)
-    ├── error-classifier.cjs Classification quota / rate limit / provider / code
+    ├── model-registry.cjs   Mémoire quotas / cache / breaker fournisseur+modèle
+    ├── error-classifier.cjs Classification quota / 429 / safety / provider / code
+    ├── retry-policy.cjs     Backoff + jitter + Retry-After strict
     └── exec.cjs             Exécution de processus robuste (timeout, kill d'arbre)
 ```
 
@@ -57,20 +58,54 @@ PENDING → (claim atomique) → RUNNING → agent (failover) → gates → verd
 
 `lib/error-classifier.cjs` distingue :
 
-| Catégorie | Signatures | Bascule ? | Cooldown |
-|---|---|---|---|
-| `DAILY_QUOTA_EXHAUSTED` | `Daily free messages exhausted`, `daily quota exceeded`, `insufficient quota` | oui | jusqu'à minuit UTC (+5 min) |
-| `RATE_LIMITED` | `rate limit`, `HTTP 429`, `too many requests` | oui | exponentiel, plafonné à 30 min |
-| `QUOTA_CREDIT` | `HTTP 402`, `payment required`, `insufficient credit` | oui | 24 h (jamais de modèle payant) |
-| `PROVIDER_UNAVAILABLE` | `provider unavailable`, `model overloaded`, `5xx`, `ECONNRESET` | oui | 10 min |
-| `TIMEOUT` | aucune sortie / délai dépassé | oui | 10 min |
-| `MODEL_INVALID` | `model not found`, `unknown model` | oui | 10 min |
-| `CODE_ERROR` | `SyntaxError`, `npm ERR!`, `test failed`, `ENOENT` | **NON** | 0 |
+| Catégorie | Signatures | Retry même modèle ? | Bascule ? | Cooldown |
+|---|---|---|---|---|
+| `DAILY_QUOTA_EXHAUSTED` | `Daily free messages exhausted`, `daily quota exceeded`, `insufficient quota` | non | oui (autre modèle du provider) | reset connu, sinon progressif ≤ 1 h |
+| `RATE_LIMITED` | `HTTP 429`, `rate limit`, `too many requests` | oui (≤ 3) | oui (autre provider) | `Retry-After` respecté, sinon exponentiel ≤ 30 min |
+| `QUOTA_CREDIT` | `HTTP 402`, `payment required`, `insufficient credit` | non | oui (autre provider) | 24 h (jamais de modèle payant) |
+| `PROVIDER_UNAVAILABLE` | `provider unavailable`, `model overloaded`, `5xx`, `ECONNRESET` | oui (≤ 3) | oui (autre provider) | 10 min puis breaker 1 h |
+| `CONTENT_SAFETY_UNAVAILABLE` | safety / moderation / screening indisponible | **une seule fois** | oui | 2 min |
+| `AUTH_ERROR` | `401`, `403`, provider non authentifié | non | oui (autre provider) | sans retry |
+| `TIMEOUT` | aucune sortie / délai dépassé | oui (≤ 3) | oui | 10 min |
+| `MODEL_INVALID` | `model not found`, `unknown model` | non | oui | 10 min |
+| `CODE_ERROR` | `SyntaxError`, `npm ERR!`, `test failed`, `ENOENT` | non | **NON** | 0 |
 
 > Une simple erreur de code **ne change jamais de modèle** : le job échoue
-> honnêtement (`FAILED`) au lieu de consuming du quota.
+> honnêtement (`FAILED`) au lieu de consommer du quota. Un contrôle de sécurité
+> n'est **jamais désactivé** : le safety screening indisponible provoque une
+> seule reprise différée, puis un failover.
 
-### 3.2 Inventaire dynamique
+### 3.2 Retry intelligent (`lib/retry-policy.cjs`)
+
+* Backoff de base : **2 s → 5 s → 10 s → 20 s → 60 s maximum**, avec jitter
+  additif (0 à +25 %, jamais sous la valeur de base).
+* **3 tentatives maximum sur le même modèle** pour une erreur transitoire.
+* `Retry-After` (secondes ou date HTTP) est lu dans l'erreur OpenCode et
+  respecté **strictement** : il ne peut jamais être raccourci, même s'il
+  dépasse le plafond de 60 s du backoff.
+* Quota épuisé : aucun retry immédiat ; cooldown jusqu'au reset connu. Sans
+  reset communiqué : cooldown progressif borné, sans boucle infinie.
+* Safety screening indisponible : **une seule** reprise différée, puis
+  failover. Authentification et modèle inexistant : aucun retry.
+* Chaque tentative et chaque failover est persisté dans le registre et dans
+  `state/context/<jobId>.json`.
+
+### 3.3 Circuit breaker, cache et concurrence fournisseur
+
+Le registre `state/model-registry.json` distingue :
+
+* le breaker **modèle** (3 échecs → 1 h) ;
+* le breaker **fournisseur** (`closed` / `open` / `half_open`) ;
+* un cache de disponibilité par modèle (évite les sondes répétitives) ;
+* des slots de concurrence **leased** par fournisseur : Nvidia/OpenCode 2,
+  Ollama local 1, défaut 2. Les bails expirés récupèrent un runner crashé.
+
+À l'expiration d'un cooldown fournisseur, le circuit passe en `half_open` :
+**une seule sonde** est autorisée. Un succès referme le circuit ; un échec le
+rouvre. La sélection privilégie alors un autre fournisseur, ce qui empêche
+plusieurs agents de marteler simultanément un fournisseur en erreur.
+
+### 3.4 Inventaire dynamique
 
 L'inventaire n'est **jamais** écrit en dur :
 
@@ -85,7 +120,7 @@ Seuls sont retenus : statut `active`, sortie texte, support des outils et
 `paidAllowed` est false). Pour Ollama, l'inventaire est recoupé avec
 `ollama list` : un modèle catalogue mais non installé n'est pas proposé.
 
-### 3.3 Priorité (mission)
+### 3.5 Priorité (mission)
 
 1. Meilleurs modèles **Nvidia gratuits** via OpenCode
 2. Autres modèles **gratuits** accessibles via OpenCode
@@ -98,7 +133,7 @@ contexte, famille, validité par usage réel). La liste `models` de la
 configuration (priorité mission) domine le classement : son bonus (100 par
 rang) reste supérieur à **tous** les bonus de capacité réunis (≤ 50).
 
-### 3.4 Continuité de session
+### 3.6 Continuité de session
 
 À chaque bascule :
 
@@ -107,11 +142,12 @@ rang) reste supérieur à **tous** les bonus de capacité réunis (≤ 50).
   mission, raison de l'échec, dernier commit confirmé, fichiers déjà modifiés
   (`git status --porcelain -uall`), session à poursuivre ;
 * le contexte est **persisté** dans `state/context/<jobId>.json` : il survit
-  au redémarrage du runner ;
+  au redémarrage du runner. Au démarrage d'une nouvelle tentative, la session
+  et l'historique des tentatives sont relus avant tout appel ;
 * le travail déjà fait n'est **jamais** annulé (`git checkout`/`reset` absents
   du moteur).
 
-### 3.5 Vérification du modèle réellement utilisé
+### 3.7 Vérification du modèle réellement utilisé
 
 Le runner lance OpenCode avec `--print-logs --log-level INFO` et parse :
 
@@ -122,7 +158,7 @@ message=stream providerID=<provider> modelID=<model> session.id=<session>
 Le modèle observé est comparé au modèle demandé (`modelVerified`). La preuve
 est conservée dans l'évidence du job.
 
-### 3.6 Mémoire des quotas et circuit breaker
+### 3.8 Mémoire des quotas et circuit breaker
 
 `state/model-registry.json` (écriture atomique + **verrou de fichier** pour les
 agents concurrents) conserve pour chaque modèle : fournisseur, nature du quota,
@@ -135,13 +171,13 @@ failovers/reprises, dépense cumulée.
 * `ALL_MODELS_IN_COOLDOWN` → verdict `WAIT_QUOTA` → le job est reprogrammé à
   l'heure de la première réinitialisation, **sans** consommer de tentative.
 
-### 3.7 Dépense
+### 3.9 Dépense
 
 `paidAllowed: false` par défaut. Le coût réel remonté par OpenCode
 (`step_finish.cost`) est cumulé dans le registre et affiché par le tableau de
 bord. **Dépense observée : 0.**
 
-### 3.8 Vérification du résultat réellement produit
+### 3.10 Vérification du résultat réellement produit
 
 Un modèle peut répondre « j'ai créé le fichier et commité » **sans l'avoir
 fait** (observé le 2026-11-14 avec un petit modèle local : appels d'outils
@@ -161,7 +197,7 @@ Si le contrat n'est pas satisfait, la tentative est classée
 modèle suivant. Sans ce contrat, `DONE_NO_CHANGE` reste possible (une tâche
 qui n'exige aucun changement est légitime).
 
-### 3.9 Sondes de bascule (`probeModels`)
+### 3.11 Sondes de bascule (`probeModels`)
 
 Une **sonde** est un modèle volontairement appelé **en premier** pour éprouver
 la mécanique de bascule sur une **vraie** erreur de fournisseur :
@@ -176,7 +212,9 @@ failover: { probeModels: ['nvidia/nvidia/model-quota-probe-introuvable'] }
 ```
 
 Les sondes servent à la preuve et au test de la chaîne de secours ; en
-production, la chaîne est découverte par l'inventaire dynamique.
+production, la chaîne est découverte par l'inventaire dynamique. Une sonde
+déjà en cooldown n'est **plus re-sondée** ; son état est lu dans le registre
+et dans le cache de disponibilité.
 
 ---
 
@@ -227,10 +265,26 @@ Journal type :
 [19:32] Reprise de la mission
 ```
 
-Événements structured (JSONL) : `MODEL_ATTEMPT_START`,
-`MODEL_ATTEMPT_FAILED`, `MODEL_FAILOVER`, `MODEL_ATTEMPT_SUCCESS`,
-`MODEL_REINSTATED`, `INVENTORY_REFRESHED`, `FAILOVER_CANDIDATES`,
-`INTERRUPTED_BUT_COMMITTED`, `JOB_QUOTA_WAIT`.
+Événements structurés (JSONL) : `MODEL_ATTEMPT_START`,
+`MODEL_RETRY_SCHEDULED`, `MODEL_ATTEMPT_FAILED`, `MODEL_FAILOVER`,
+`MODEL_ATTEMPT_SUCCESS`, `MODEL_REINSTATED`, `INVENTORY_REFRESHED`,
+`FAILOVER_CANDIDATES`, `INTERRUPTED_BUT_COMMITTED`, `JOB_QUOTA_WAIT`.
+
+Les marqueurs humains obligatoires sont également écrits tels quels :
+
+```text
+[MODEL] requested=nvidia/nvidia/nemotron-…
+[MODEL] resolved=nvidia/nemotron-…
+[FAILOVER] reason=HTTP_429
+[FAILOVER] provider=nvidia unavailable
+[FAILOVER] next_model=opencode/…
+[MODEL] execution_resumed=true
+```
+
+Chaque tentative conserve : modèle demandé, modèle observé, fournisseur,
+catégorie, code HTTP, `Retry-After`, nombre de tentatives, modèle de
+remplacement, résultat et durée. Le résultat global contient en plus la durée
+totale et la dépense cumulée.
 
 ---
 
@@ -254,9 +308,10 @@ pour retirer la tâche planifiée.
 ## 7. Tests
 
 ```bash
-node --test tests/unit/factory-v3-failover.test.cjs   # 20 cas (failover, quotas, concurrence, hang, faux succès)
-node --test tests/unit/factory-v3-runner.test.cjs     # 9 cas (runner, lock, queue, verdicts)
-node scripts/factory-v3/test-real-failover.cjs        # test RÉEL (OpenCode, vrais modèles)
+node --test tests/unit/factory-v3-failover.test.cjs       # 20 cas (failover, quotas, concurrence, hang, faux succès)
+node --test tests/unit/factory-v3-resilience.test.cjs     # 11 cas (9 scénarios P0 + restart + Retry-After strict)
+node --test tests/unit/factory-v3-runner.test.cjs         # 9 cas (runner, lock, queue, verdicts)
+node scripts/factory-v3/test-real-failover.cjs            # test RÉEL (OpenCode, vrais modèles)
 ```
 
 Le test réel utilise le **vrai** CLI OpenCode, en deux phases :
@@ -271,16 +326,17 @@ Le test réel utilise le **vrai** CLI OpenCode, en deux phases :
   faux succès.
 
 La preuve complète est écrite dans `state/evidence/real-failover-*.json` (runtime
-éphémère, non versionné) et **une copie de la preuve de référence est
-versionnée** dans `scripts/factory-v3/proofs/real-failover-1794685860227.json`
-(25 Ko) pour que la PR porte sa preuve.
+éphémère, non versionné) ou directement dans le dossier versionné via
+`--proof-dir scripts/factory-v3/proofs`.
 
-**Résultat réel du 2026-11-14** (`proofs/real-failover-1794685860227.json`) :
+**Résultat réel du 2026-11-14 après durcissement résilience**
+(`proofs/real-failover-1794691007644.json`) :
 
 | Phase | Résultat |
 |---|---|
 | Inventaire | 135 modèles découverts, 38 éligibles, 59 gratuits, **9 fournisseurs authentifiés** |
-| Phase A | `ollama/qwen2.5-coder:7b` **vérifié** (22 s, coût 0) · `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` **vérifié** (9 s, coût 0) |
-| Phase B | sonde `nvidia/nvidia/model-quota-probe-introuvable` → `PROVIDER_UNAVAILABLE` → **bascules = 1** → Nvidia Nemotron **réussit** (22 s, modèle observé `nvidia/nemotron-3.5-super-vl-120b-a12b`) |
-| Preuve de résultat | fichier `factory-real-proof.txt` = `FACTORY_REAL_OK`, **commit réel `742ce09e122fa21a7c6d06d7e2681d49d803dffd`** |
+| Phase A | `ollama/qwen2.5-coder:7b` **vérifié** (24 s, coût 0) · `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` **vérifié** (8 s, coût 0) |
+| Phase B | sonde réelle `nvidia/nvidia/model-quota-probe-introuvable` → erreur OpenCode réelle → **aucun retry inutile** → **bascules = 1**, **reprises = 1** → Nvidia Nemotron réussit (26 s) |
+| Preuve de résultat | fichier `factory-real-proof.txt` = `FACTORY_REAL_OK`, **commit réel `8473e6dd5886822f104c2134d4cbacbeb02a9a76`** |
+| Transparence | logs `[MODEL] requested/resolved/execution_resumed=true` et `[FAILOVER] reason/next_model` dans la preuve |
 | Dépense | **0** |

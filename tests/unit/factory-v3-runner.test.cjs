@@ -14,6 +14,8 @@ const os = require('os');
 const { spawn } = require('child_process');
 
 const runner = require('../../scripts/factory-v3/run.cjs');
+const registryLib = require('../../scripts/factory-v3/lib/model-registry.cjs');
+const dashboard = require('../../scripts/factory-v3/dashboard.cjs');
 
 function tempStateDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'factory-v3-test-'));
@@ -74,13 +76,121 @@ test('queue: enqueue + claimNextJob anti-doublon (RUNNING jamais re-claimé)', (
   const j1 = runner.enqueue(dir, { repo: 'sargagame', task: 'tâche de test numéro un' });
   const j2 = runner.enqueue(dir, { repo: 'botwow', task: 'tâche de test numéro deux' });
   const c1 = runner.claimNextJob(dir, cfg);
-  assert.equal(c1.jobId, j1.jobId, 'ordre FIFO respecté');
+  assert.equal(c1.jobId, j2.jobId, 'priorité absolue BOT-WOW avant Sargasses');
   assert.equal(c1.status, 'RUNNING');
   assert.equal(c1.claimedBy.pid, process.pid);
   const c2 = runner.claimNextJob(dir, cfg);
-  assert.equal(c2.jobId, j2.jobId, 'le job RUNNING n\'est pas re-claimé (anti-doublon)');
+  assert.equal(c2.jobId, j1.jobId, 'le job RUNNING n\'est pas re-claimé (anti-doublon)');
   const c3 = runner.claimNextJob(dir, cfg);
   assert.equal(c3, null, 'plus de job → null');
+});
+
+test('queue fail-closed: corruption sans backup → erreur ; avec backup → restauration conservée', () => {
+  const dir = tempStateDir();
+  fs.writeFileSync(path.join(dir, 'queue.json'), '{broken');
+  assert.throws(() => runner.readQueue(dir), (error) => error && error.code === 'QUEUE_CORRUPT');
+
+  const recoveredDir = tempStateDir();
+  const validQueue = {
+    version: 2,
+    updatedAt: new Date().toISOString(),
+    jobs: [{ jobId: 'job-backup', repo: 'botwow', task: 'backup sain', status: 'PENDING', createdAt: new Date().toISOString() }],
+  };
+  fs.writeFileSync(path.join(recoveredDir, 'queue.json'), '{broken');
+  fs.writeFileSync(path.join(recoveredDir, 'queue.json.bak'), JSON.stringify(validQueue));
+  const recovered = runner.readQueue(recoveredDir);
+  assert.equal(recovered.jobs.length, 1);
+  assert.equal(recovered.jobs[0].jobId, 'job-backup');
+  const restored = JSON.parse(fs.readFileSync(path.join(recoveredDir, 'queue.json'), 'utf8'));
+  assert.equal(restored.jobs[0].jobId, 'job-backup', 'le backup sain est réinstallé comme état principal');
+  const proofs = fs.readdirSync(recoveredDir).filter((name) => name.startsWith('queue.json.corrupt-'));
+  assert.equal(proofs.length, 1, 'la copie corrompue est conservée pour diagnostic');
+  const backup = JSON.parse(fs.readFileSync(path.join(recoveredDir, 'queue.json.bak'), 'utf8'));
+  assert.equal(backup.jobs[0].jobId, 'job-backup', 'le backup sain n\'est jamais écrasé');
+});
+
+test('claims tokenisés: un mauvais token ne peut pas muter le job claimed', () => {
+  const dir = tempStateDir();
+  const cfg = mkCfg(dir);
+  const job = runner.enqueue(dir, { repo: 'botwow', task: 'mutation protégée par token' });
+  const claimed = runner.claimNextJob(dir, cfg);
+  assert.equal(claimed.jobId, job.jobId);
+  assert.ok(claimed.claimToken, 'le claim possède un token');
+  const rejected = runner.updateJob(dir, job.jobId, { status: 'DONE' }, { expectedClaimToken: 'token-faux' });
+  assert.equal(rejected, null, 'mutation rejetée');
+  assert.equal(runner.readQueue(dir).jobs[0].status, 'RUNNING', 'job toujours claimed');
+  const accepted = runner.updateJob(dir, job.jobId, { status: 'DONE' }, { expectedClaimToken: claimed.claimToken });
+  assert.ok(accepted, 'mutation du propriétaire acceptée');
+  assert.equal(accepted.status, 'DONE');
+});
+
+test('queue concurrente: plusieurs processus claim/enqueue sans perte ni double mission', async () => {
+  const dir = tempStateDir();
+  const runnerPath = path.resolve(__dirname, '../../scripts/factory-v3/run.cjs');
+  const claimCode = `
+    const runner = require(${JSON.stringify(runnerPath)});
+    const cfg = runner.loadConfig(process.argv[1]);
+    const job = runner.claimNextJob(process.argv[1], cfg);
+    if (job) process.stdout.write(job.jobId);
+  `;
+  const enqueueCode = `
+    const runner = require(${JSON.stringify(runnerPath)});
+    runner.enqueue(process.argv[1], { repo: 'botwow', task: 'mission concurrente sufficiently descriptive' });
+  `;
+
+  const runChild = (code) => new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ['-e', code, dir], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (exitCode) => resolve({ exitCode, stdout: stdout.trim(), stderr }));
+  });
+
+  await Promise.all([runChild(enqueueCode), runChild(enqueueCode), runChild(enqueueCode)]);
+  const queue = runner.readQueue(dir);
+  assert.equal(queue.jobs.length, 3, 'aucune enqueue concurrente perdue');
+  assert.equal(new Set(queue.jobs.map((job) => job.jobId)).size, 3, 'aucun jobId dupliqué');
+
+  const claims = await Promise.all([runChild(claimCode), runChild(claimCode), runChild(claimCode)]);
+  assert.ok(claims.every((claim) => claim.exitCode === 0), `claims sans crash: ${JSON.stringify(claims)}`);
+  const claimedIds = claims.map((claim) => claim.stdout).filter(Boolean);
+  assert.equal(claimedIds.length, 3, 'chaque mission disponible est claimée une fois');
+  assert.equal(new Set(claimedIds).size, 3, 'aucune mission claimée par deux processus');
+  const after = runner.readQueue(dir);
+  assert.equal(after.jobs.filter((job) => job.status === 'RUNNING').length, 3, 'trois missions RUNNING, pas de doublon');
+});
+
+test('registre fail-closed: corruption structurelle sans backup → erreur, avec backup → restauration', () => {
+  const noBackup = tempStateDir();
+  const file = path.join(noBackup, 'model-registry.json');
+  fs.writeFileSync(file, JSON.stringify({ version: registryLib.REGISTRY_VERSION, models: [], providers: {}, availability: {}, stats: {} }));
+  assert.throws(() => registryLib.readRegistry(file), (error) => error && error.code === 'MODEL_REGISTRY_CORRUPT');
+
+  const withBackup = tempStateDir();
+  const backupFile = path.join(withBackup, 'model-registry.json');
+  const first = registryLib.emptyRegistry();
+  first.stats.attempts = 1;
+  registryLib.writeRegistry(backupFile, first);
+  const second = registryLib.emptyRegistry();
+  second.stats.attempts = 2;
+  registryLib.writeRegistry(backupFile, second);
+  fs.writeFileSync(backupFile, '{broken');
+  const recovered = registryLib.readRegistry(backupFile);
+  assert.equal(recovered.stats.attempts, 1, 'le backup preceding est restauré, pas un registre vide');
+});
+
+test('dashboard: registre/queue corrompus sont affichés explicitement', () => {
+  const dir = tempStateDir();
+  fs.writeFileSync(path.join(dir, 'model-registry.json'), '{broken');
+  fs.writeFileSync(path.join(dir, 'queue.json'), '{broken');
+  const dash = dashboard.buildDashboard(dir);
+  assert.equal(dash.registryHealthy, false);
+  assert.equal(dash.queueHealthy, false);
+  const rendered = dashboard.render(dash);
+  assert.match(rendered, /ERREUR REGISTRE \(MODEL_REGISTRY_CORRUPT\)/);
+  assert.match(rendered, /ERREUR QUEUE \(QUEUE_CORRUPT\)/);
 });
 
 test('recoverOrphans: RUNNING de runner mort → PENDING avec backoff ; RUNNING vivant → intact', () => {
@@ -109,13 +219,32 @@ test('computeBackoff: exponentiel plafonné', () => {
   assert.equal(runner.computeBackoff(cfg, 9), 60 * 60e3, 'plafond respecté');
 });
 
-test('computeVerdict STRICT: jamais VERIFIED sans agent ok + gates verts + commit', () => {
+test('computeVerdict STRICT: jamais VERIFIED sans agent ok + gates verts + commit réel', () => {
+  const sha = 'a'.repeat(40);
+  const completeAgent = {
+    ok: true,
+    dirtyFiles: 0,
+    committedSha: sha,
+    commitVerified: true,
+    modelVerified: true,
+    providerVerified: true,
+    sessionSeen: true,
+    completionMarker: true,
+  };
   assert.equal(runner.computeVerdict(null, null).verdict, 'FAILED', 'pas d\'agent = FAILED');
   assert.equal(runner.computeVerdict({ ok: false, error: 'x' }, { allPassed: true }).verdict, 'FAILED');
-  assert.equal(runner.computeVerdict({ ok: true, dirtyFiles: 0, committedSha: 'abc' }, { allPassed: false }).verdict, 'FAILED', 'gates rouges = FAILED');
-  assert.equal(runner.computeVerdict({ ok: true, dirtyFiles: 3, committedSha: null }, { allPassed: true }).verdict, 'BLOCKED_UNCOMMITTED', 'fichiers non commités = BLOCKED');
-  assert.equal(runner.computeVerdict({ ok: true, dirtyFiles: 0, committedSha: 'abc123' }, { allPassed: true }).verdict, 'VERIFIED', 'preuves complètes = VERIFIED');
-  assert.equal(runner.computeVerdict({ ok: true, dirtyFiles: 0, committedSha: null }, { allPassed: true }).verdict, 'DONE_NO_CHANGE', 'aucun changement légitime = DONE_NO_CHANGE');
+  assert.equal(runner.computeVerdict(Object.assign({}, completeAgent, { committedSha: null }), { allPassed: false }).verdict, 'FAILED', 'gates rouges = FAILED');
+  assert.equal(runner.computeVerdict(Object.assign({}, completeAgent, { dirtyFiles: 3, committedSha: null }), { allPassed: true }).verdict, 'BLOCKED_UNCOMMITTED', 'fichiers non commités = BLOCKED');
+  assert.equal(runner.computeVerdict(Object.assign({}, completeAgent, { committedSha: 'abc123' }), { allPassed: true }).verdict, 'FAILED', 'SHA non 40 hexadécimaux = FAILED');
+  assert.equal(runner.computeVerdict(Object.assign({}, completeAgent, { commitVerified: false }), { allPassed: true }).verdict, 'FAILED', 'commit non reachable = FAILED');
+  assert.equal(runner.computeVerdict(completeAgent, { allPassed: true }).verdict, 'VERIFIED', 'preuves complètes = VERIFIED');
+  assert.equal(runner.computeVerdict(Object.assign({}, completeAgent, { committedSha: null }), { allPassed: true }).verdict, 'DONE_NO_CHANGE', 'aucun changement légitime = DONE_NO_CHANGE');
+});
+
+test('computeVerdict WAIT: quota et fournisseur restent distincts des échecs de mission', () => {
+  assert.equal(runner.computeVerdict({ ok: false, errorCategory: 'ALL_MODELS_IN_COOLDOWN', error: 'quota' }, { allPassed: true }).verdict, 'WAIT_QUOTA');
+  assert.equal(runner.computeVerdict({ ok: false, errorCategory: 'ALL_MODELS_PROVIDER_UNAVAILABLE', error: 'provider' }, { allPassed: true }).verdict, 'WAIT_PROVIDER');
+  assert.equal(runner.computeVerdict({ ok: false, errorCategory: 'COST_VIOLATION', error: 'cost' }, { allPassed: true }).verdict, 'FAILED');
 });
 
 test('loadConfig: state/config.json surcharge les défauts (repos fusionnés)', () => {
@@ -135,7 +264,7 @@ test('execStep: code de sortie réel + timeout réel', async () => {
   assert.equal(ok.exitCode, 0);
   const ko = await runner.execStep('exit 3', { cwd: os.tmpdir(), timeoutMs: 15_000 });
   assert.equal(ko.exitCode, 3, 'code de sortie propagé');
-  const slow = await runner.execStep('Start-Sleep -Seconds 30', { cwd: os.tmpdir(), timeoutMs: 1500 });
+  const slow = await runner.execStep('node -e "setTimeout(()=>{},30000)"', { cwd: os.tmpdir(), timeoutMs: 1500 });
   assert.equal(slow.timedOut, true, 'timeout détecté');
   assert.notEqual(slow.exitCode, 0, 'timeout = pas un succès');
 });

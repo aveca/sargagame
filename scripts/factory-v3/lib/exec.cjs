@@ -68,9 +68,25 @@ function resolveOpencodeBin(configured) {
 
 function killTree(pid) {
   if (!pid) return false;
+  if (process.platform !== 'win32') {
+    // Sous POSIX, le runner lance chaque commande dans son propre groupe.
+    // kill(-pid) terminates le groupe (shell + petits-fils) sans laisser de
+    // processus orphelin après un timeout.
+    try {
+      process.kill(-pid, 'SIGKILL');
+      return true;
+    } catch (_) {
+      try {
+        process.kill(pid, 'SIGKILL');
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+  }
   try {
-    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true, timeout: 20000 });
-    return true;
+    const killed = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true, timeout: 20000 });
+    return !!(killed && killed.status === 0);
   } catch (_) {
     return false;
   }
@@ -139,6 +155,8 @@ function runProcess(opts = {}) {
         cwd,
         env,
         windowsHide: true,
+        // POSIX : groupe de processus dédié pour tuer toute la descendance.
+        detached: process.platform !== 'win32',
         stdio: ['ignore', outFd, errFd], // FICHIERS : aucun handle hérité par les petits-fils
       });
     } catch (e) {
@@ -190,11 +208,17 @@ function runProcess(opts = {}) {
   });
 }
 
-/** Exécute une commande shell (powershell) — utilisé par les gates. */
+/** Exécute une commande shell — utilisé par les gates. */
 function runShell(cmd, opts = {}) {
+  // La production Factory est Windows (tâche planifiée), mais la CI Linux
+  // doit exécuter les mêmes gates. On conserve PowerShell sous Windows et on
+  // utilise un shell POSIX ailleurs.
+  const windows = process.platform === 'win32';
   return runProcess({
-    file: 'powershell.exe',
-    args: ['-NoProfile', '-NonInteractive', '-Command', cmd],
+    file: windows ? 'powershell.exe' : 'sh',
+    args: windows
+      ? ['-NoProfile', '-NonInteractive', '-Command', cmd]
+      : ['-c', cmd],
     cwd: opts.cwd,
     timeoutMs: opts.timeoutMs,
     idleTimeoutMs: opts.idleTimeoutMs,

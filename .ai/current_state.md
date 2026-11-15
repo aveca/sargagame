@@ -1,3 +1,78 @@
+## 2026-11-15 00:00 UTC · Agent: DevOps (Factory V3 — durcissement fail-closed + observabilité)
+
+### Travail effectué
+- **Résumé 1 ligne** : les jobs Factory V3 ne peuvent plus être mutés, publiés ou déclarés réussis par un worker non propriétaire, et les worktrees reçoivent désormais une base dédiée et vérifiée.
+- **Détails** : `updateJob()` exige le token de claim exact pour un job `RUNNING`, `claimStillOwned()` vérifie la propriété avant les étapes lourdes, la publication valide la branche/base et la sortie GitHub, et un job sans worktree explicite obtient un worktree dédié hors checkout principal. La preuve `job.verify` reste obligatoire pour tout verdict positif.
+
+### Fichiers modifiés
+- `scripts/factory-v3/run.cjs` — claims tokenisés, worktrees dédiés et publication durcie.
+- `scripts/factory-v3/lib/model-registry.cjs` — persistance, backups, verrous et slots fournisseur.
+- `scripts/factory-v3/lib/failover.cjs` — retry/failover, coûts et preuves modèle/fournisseur/session.
+- `scripts/factory-v3/dashboard.cjs` — erreurs registre/queue et disponibilité.
+- `tests/unit/factory-v3-runner.test.cjs`, `tests/unit/factory-v3-failover.test.cjs`, `tests/unit/factory-v3-resilience.test.cjs` — non-régression et scénarios de résilience.
+
+### Tests réalisés
+- [x] `node --check` sur les fichiers JS/CJS modifiés et non suivis → exit 0.
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs tests/unit/factory-v3-failover.test.cjs tests/unit/factory-v3-resilience.test.cjs` → **53/53 PASS**.
+
+### Problèmes restants
+- [ ] Les tests lock/registre/queue/claim/workspace/publication spécifiques restent à étendre.
+- [ ] L'observateur local indépendant et son état structuré ne sont pas encore implémentés.
+- [ ] Le canal GitHub vers `aveca/factory-control` n'expose pas encore les diffs locaux exacts expurgés.
+
+### Prochaine action recommandée
+1. Committer et pousser cette unité testée, puis vérifier la CI de la PR #1472 — Rôle : devops.
+2. Implémenter l'observateur local indépendant et son état structuré persistant — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer
+
+## 2026-11-14 21:25 UTC · Agent: DevOps (Factory V3 — résilience modèle/fournisseur)
+
+### Travail effectué
+- **Résumé 1 ligne** : Factory V3 ne gaspille plus de quota en boucle et garantit qu'une indisponibilité temporaire (429, quota, safety screening, timeout, fournisseur HS) transfère réellement la mission à un autre modèle/fournisseur, avec reprise de session et preuve.
+- **Détails** : politique de retry centralisée (`2/5/10/20/60 s` + jitter, 3 essais max), `Retry-After` respecté strictement (jamais raccourci), quota sans reset → cooldown progressif, auth/modèle inexistant → aucun retry, safety screening → une seule reprise différée. Circuit breaker par **fournisseur et modèle**, réouverture `half_open` progressive, cache de disponibilité, sondes en cooldown non rejouées, slots de concurrence atomiques/leased par fournisseur. Le contexte et la session persistés sont restaurés après restart. Logs et preuves contiennent modèle demandé/résolu, fournisseur, HTTP, `Retry-After`, tentatives, remplacement, résultat et durée totale.
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/retry-policy.cjs` — **nouveau** : backoff, jitter, Retry-After strict, décision de retry.
+- `scripts/factory-v3/lib/error-classifier.cjs` — HTTP/Retry-After/reset, safety screening, auth, quota progressif, categoriesProvider/Model.
+- `scripts/factory-v3/lib/model-registry.cjs` — cache de disponibilité, compteurs retry, breaker fournisseur `closed/open/half_open`, slots leased.
+- `scripts/factory-v3/lib/failover.cjs` — boucle retry par modèle, sélection failover par périmètre, reprise persistée, transparence `[MODEL]/[FAILOVER]`.
+- `scripts/factory-v3/run.cjs`, `scripts/factory-v3/dashboard.cjs` — configuration, preuve de résilience, état fournisseurs/cache/retries.
+- `scripts/factory-v3/lib/exec.cjs`, `tests/unit/factory-v3-runner.test.cjs` — exécution shell Windows/POSIX et kill de groupe, pour que la CI Linux valide réellement les gates Factory.
+- `scripts/factory-v3/test-real-failover.cjs`, `scripts/factory-v3/proofs/real-failover-1794691007644.json` — preuve réelle versionnée.
+- `tests/unit/factory-v3-resilience.test.cjs` — **nouveau** : 9 scénarios P0 + restart + Retry-After strict.
+- `tests/unit/factory-v3-failover.test.cjs`, `tests/fixtures/factory-v3-opencode-stub.cjs` — non-régression + réponses 429/safety/auth/quota.
+- `scripts/factory-v3/README.md` — contrat, observabilité et procédure.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-failover.test.cjs` → **20/20 PASS**.
+- [x] `node --test tests/unit/factory-v3-resilience.test.cjs` → **11/11 PASS**.
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **9/9 PASS**.
+- [x] `node scripts/factory-v3/test-real-failover.cjs --proof-dir scripts/factory-v3/proofs` → **exit 0** : 2/2 gratuit vérifié, 1 bascule réelle, 1 reprise, commit réel `8473e6d`, dépense 0.
+- [x] `npm test` → **205/205 fichiers PASS**.
+- [x] `npm run build` → exit 0 ; `node scripts/check-bundle-budget.cjs` → **206,7 Ko ≤ 210 Ko**.
+- [x] `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`.
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts --workers=1` (preview Sargagame isolé sur port 4187) → **4/4 PASS**.
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0.
+- [x] `git diff --check` → exit 0.
+
+### Problèmes restants
+- [ ] `FAILOVER-QUOTA-REAL` : impossible de provoquer honnêtement un quota réel épuisé ou un 429 fournisseur → classes couvertes par simulation déterministe ; la bascule réelle est prouvée sur une vraie erreur OpenCode.
+- [ ] `FACTORY-TASK-OLD` : `FactoryV3-Dispatcher` pointe encore sur l'ancien runner ; re-pointage après merge de `main`.
+- [ ] PR #1472 : mettre à jour avec ce commit et vérifier la CI sur le SHA exact.
+
+### Prochaine action recommandée
+1. Committer/pousser la résilience et mettre à jour la PR #1472 — Rôle : devops.
+2. Après merge, re-pointer la tâche planifiée sur le moteur failover — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer
+
 ## 2026-11-14 19:55 UTC · Agent: DevOps (autonomie Factory V3)
 
 ### Travail effectué

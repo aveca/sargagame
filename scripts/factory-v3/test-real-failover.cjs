@@ -24,11 +24,12 @@
  * sans consommer un quota réel. Le test prouve la MÊME mécanique de bascule
  * sur une erreur de fournisseur RÉELLE ; les classes « quota journalier » et
  * « HTTP 429 » sont couvertes par les tests déterministes
- * (tests/unit/factory-v3-failover.test.cjs, 16/16).
+ * (tests/unit/factory-v3-failover.test.cjs, 20/20) et
+ * (tests/unit/factory-v3-resilience.test.cjs, 11/11).
  *
  * Usage : node scripts/factory-v3/test-real-failover.cjs [--state-dir X]
  *                [--models "sonde,reel"] [--availability-models "a,b"]
- *                [--timeout-ms N]
+ *                [--timeout-ms N] [--proof-dir <chemin>]
  */
 
 const fs = require('fs');
@@ -74,7 +75,7 @@ async function callRealModel(opencodeBin, modelRef, repoDir, prompt, timeoutMs) 
   const texts = events.filter((e) => e.type === 'text' && e.part && e.part.text).map((e) => e.part.text);
   const sessionId = events.find((e) => e.sessionID) ? events.find((e) => e.sessionID).sessionID : null;
   const verify = failover.verifyModelUsed(r.stderr, modelRef, sessionId);
-  const cost = finish.reduce((acc, e) => acc + Number((e.cost || 0)), 0);
+  const cost = failover.extractObservedCost(finish);
   return {
     model: modelRef,
     ok: !errors.length && r.exitCode === 0 && (finish.length > 0 || texts.join('').trim().length > 0) && !r.timedOut && !r.idleTimedOut,
@@ -86,7 +87,7 @@ async function callRealModel(opencodeBin, modelRef, repoDir, prompt, timeoutMs) 
     modelVerified: verify.verified,
     observedModel: verify.observedModel,
     observedProvider: verify.observedProvider,
-    tokens: finish.reduce((acc, e) => acc + Number((e.tokens && e.tokens.total) || 0), 0),
+    tokens: failover.extractObservedTokens(finish),
     cost,
     reply: texts.join(' ').trim().slice(0, 300),
     errorText: errors.length ? JSON.stringify(errors[0]).slice(0, 600) : String(r.stderr || '').slice(-400),
@@ -97,6 +98,7 @@ async function main() {
   const args = process.argv.slice(2);
   const get = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
   const stateDir = path.resolve(get('--state-dir', STATE_DIR_DEFAULT));
+  const proofDir = path.resolve(get('--proof-dir', path.join(stateDir, 'evidence')));
   const timeoutMs = Number(get('--timeout-ms', 12 * 60 * 1000));
   const modelsArg = get('--models', 'nvidia/nvidia/model-quota-probe-introuvable,nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b');
   const [probeModel, realModel] = modelsArg.split(',').map((s) => s.trim()).filter(Boolean);
@@ -104,6 +106,7 @@ async function main() {
     .split(',').map((s) => s.trim()).filter(Boolean);
 
   fs.mkdirSync(path.join(stateDir, 'evidence'), { recursive: true });
+  fs.mkdirSync(proofDir, { recursive: true });
   // Dépôt de preuve hors du dépôt Factory (sinon .gitignore/state rend le commit vide)
   const repoDir = initRepo(fs.mkdtempSync(path.join(os.tmpdir(), 'factory-v3-real-')));
   const opencodeBin = resolveOpencodeBin('opencode');
@@ -165,6 +168,10 @@ async function main() {
     paidAllowed: false,
     failover: {
       maxModelSwitches: 3,
+      // La sonde n'existe pas dans l'inventaire : ce test explicite vérifie
+      // uniquement la resolution du modèle. L'autorisation porte sur cette
+      // ref EXACTE ; un booléen global n'est jamais accepté.
+      allowUnknownCostProbeRefs: [probeModel],
       agentTimeoutMs: timeoutMs,
       agentIdleTimeoutMs: 5 * 60 * 1000,
       inventoryMaxAgeMs: 30 * 60 * 1000,
@@ -211,6 +218,12 @@ async function main() {
     result: {
       ok: result.ok,
       model: result.model,
+      requestedModel: result.requestedModel,
+      resolvedModel: result.resolvedModel,
+      provider: result.provider,
+      replacementModel: result.replacementModel,
+      finalResult: result.finalResult,
+      totalDurationMs: result.totalDurationMs,
       failovers: result.failovers,
       resumes: result.resumes,
       sessionId: result.sessionId,
@@ -221,9 +234,17 @@ async function main() {
     },
     attempts: (result.attempts || []).map((a) => ({
       ref: a.ref,
+      requestedModel: a.requestedModel,
+      resolvedModel: a.resolvedModel,
+      provider: a.provider,
       isProbe: a.isProbe,
+      attemptNumber: a.attemptNumber,
+      modelAttempt: a.modelAttempt,
       outcome: a.outcome,
       category: a.category,
+      httpStatus: a.httpStatus,
+      retryAfterMs: a.retryAfterMs,
+      replacementModel: a.replacementModel,
       exitCode: a.exitCode,
       durationMs: a.durationMs,
       sessionId: a.sessionId,
@@ -246,12 +267,15 @@ async function main() {
       models: Object.fromEntries(Object.entries(registry.models || {}).map(([k, v]) => [k, {
         status: v.status, cooldownUntil: v.cooldownUntil, lastResult: v.lastResult,
         lastFailureCategory: v.lastFailureCategory, verifiedByUse: v.verifiedByUse, observedModel: v.observedModel,
+        totalRetries: v.totalRetries || 0,
       }])),
+      providers: registry.providers || {},
+      availability: registry.availability || {},
     },
     events,
   };
 
-  const outFile = path.join(stateDir, 'evidence', `real-failover-${Date.now()}.json`);
+  const outFile = path.join(proofDir, `real-failover-${Date.now()}.json`);
   fs.writeFileSync(outFile, JSON.stringify(evidence, null, 2));
   console.log('\n=== PREUVE RÉELLE ===');
   console.log(`PHASE A : ${verifiedFree.length}/${availability.length} modèle(s) gratuit(s) vérifié(s) — coût ${availability.reduce((a, b) => a + b.cost, 0)}`);

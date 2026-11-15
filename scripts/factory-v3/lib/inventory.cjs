@@ -247,11 +247,16 @@ function parseOllamaInstalled(text) {
 }
 
 function isFree(model) {
-  const c = model.cost;
-  if (!c) return false; // coût inconnu → jamais présumé gratuit
-  const cache = c.cache || {};
-  const zero = (v) => Number(v || 0) === 0;
-  return zero(c.input) && zero(c.output) && zero(cache.read) && zero(cache.write);
+  const c = model && model.cost;
+  if (!c || typeof c !== 'object') return false; // coût inconnu → jamais présumé gratuit
+  const finiteZero = (value) => value != null
+    && Number.isFinite(Number(value))
+    && Number(value) === 0;
+  // Input/output sont obligatoires : un champ absent ne vaut pas 0. Les frais
+  // de cache ne sont exigés que si le fournisseur les publie explicitement.
+  if (!finiteZero(c.input) || !finiteZero(c.output)) return false;
+  if (c.cache == null) return true;
+  return finiteZero(c.cache.read) && finiteZero(c.cache.write);
 }
 
 function isChatCapable(model) {
@@ -430,15 +435,18 @@ function rankModels(inventory, opts = {}) {
   const { preferred = [], registry = null, now = Date.now(), paidAllowed = false } = opts;
   const scored = [];
   for (const m of inventory.models || []) {
-    if (!m.eligible && !(paidAllowed && m.status === 'active')) continue;
-    if (!m.free && !paidAllowed) continue;
+    // Le coût est RECALCULÉ à partir des métadonnées courantes : un cache
+    // ancien qui prétend `free:true` ne peut pas contourner l'interdiction.
+    const free = isFree(m);
+    if (m.status !== 'active' || !isChatCapable(m) || !hasToolSupport(m)) continue;
+    if (!free && !paidAllowed) continue;
     const entry = registry && registry.models ? registry.models[m.ref] : null;
     const { score, reasons } = scoreModel(m, { preferred, now, installedOllama: inventory.installedOllama, registryEntry: entry });
     scored.push({
       ref: m.ref,
       provider: m.provider,
       name: m.name,
-      free: m.free,
+      free,
       status: m.status,
       cost: m.cost,
       capabilities: m.capabilities,

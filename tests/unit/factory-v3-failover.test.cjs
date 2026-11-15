@@ -136,19 +136,25 @@ async function runFailover({ plan, cfg = makeCfg(), job = makeJob(), inventory =
   process.env.FACTORY_STUB_LOG = logFile;
 
   const logs = [];
+  const sleeps = [];
+  const clock = { value: Date.now() };
   const result = await failover.executeJobWithFailover({
     stateDir,
     cfg,
     job,
     repoCfg: { local: repoDir, gates: [] },
     log: (e, d) => logs.push({ e, d }),
+    now: () => clock.value,
+    // Les délais de retry sont vérifiés sans réellement attendre ; l'horloge
+    // injectée avance exactement du délai pour respecter les deadlines partagées.
+    sleep: async (ms) => { sleeps.push(Number(ms)); clock.value += Number(ms) || 0; },
   });
 
   const calls = fs.existsSync(logFile)
     ? fs.readFileSync(logFile, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l))
     : [];
   const registry = registryLib.readRegistry(path.join(stateDir, 'model-registry.json'));
-  return { stateDir, repoDir, result, calls, registry, logFile, logs };
+  return { stateDir, repoDir, result, calls, registry, logFile, logs, sleeps };
 }
 
 // ===========================================================================
@@ -189,7 +195,10 @@ test('2. HTTP 429 → classé rate limit, bascule avec cooldown court', async ()
   assert.equal(entry.quota.type, 'short_term');
   const cooldownMs = Date.parse(entry.cooldownUntil) - Date.parse(entry.quota.detectedAt);
   assert.ok(cooldownMs <= 30 * 60 * 1000, 'le cooldown d’un rate limit reste court');
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 4, '3 tentatives sur le modèle 429 puis un fournisseur différent');
+  assert.equal(result.model, FREE_C, 'un fournisseur différent prend le relais après le 429');
+  assert.equal(result.attempts.filter((a) => a.ref === FREE_A).length, 3, 'retry borné à 3 tentatives');
+  assert.ok(result.attempts[0].httpStatus === 429, 'code HTTP mémorisé');
 });
 
 // ===========================================================================
@@ -222,8 +231,8 @@ test('4. tous les modèles en échec → échec HONNÊTE, aucune boucle infinie'
     cfg: makeCfg({ models: [FREE_A, FREE_B, FREE_C, LOCAL], failover: { maxModelSwitches: 4, agentTimeoutMs: 15000, agentIdleTimeoutMs: 2500, inventoryMaxAgeMs: 1800000, circuitThreshold: 3 } }),
   });
   assert.equal(result.ok, false, 'aucun faux succès');
-  assert.match(result.error, /ALL_MODELS_FAILED/);
-  assert.equal(calls.length, 4, 'chaque candidat est essayé une seule fois');
+  assert.match(result.error, /ALL_MODELS_PROVIDER_UNAVAILABLE/);
+  assert.equal(calls.length, 8, '2 échecs non transitoires + 2 échecs transitoires × 3 tentatives');
   assert.ok(registry.models[FREE_A].cooldownUntil);
   assert.ok(registry.models[FREE_B].cooldownUntil);
   assert.ok(registry.models[FREE_C].cooldownUntil);
@@ -276,6 +285,7 @@ test('7. le modèle initial redevient prioritaire après expiration de son coold
   const regFile = path.join(first.stateDir, 'model-registry.json');
   const reg = registryLib.readRegistry(regFile);
   reg.models[FREE_A].cooldownUntil = new Date(Date.now() - 1000).toISOString();
+  reg.models[FREE_A].notBefore = new Date(Date.now() - 1000).toISOString();
   registryLib.writeRegistry(regFile, reg);
 
   const plan2 = makePlan(first.stateDir, { [FREE_A]: { behavior: 'success' }, [FREE_B]: { behavior: 'success' } });
@@ -380,9 +390,31 @@ test('12. modèle muet (hang fournisseur) → timeout d\'activité puis bascule'
     plan: { [FREE_A]: { behavior: 'timeout', sleepMs: 30000 }, [FREE_B]: { behavior: 'success' } },
   });
   assert.equal(result.ok, true, 'la bascule doit permettre la poursuite');
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 4, '3 tentatives de timeout bornées puis bascule');
   assert.equal(result.attempts[0].category, CATEGORY.TIMEOUT);
   assert.ok(result.attempts[0].idleTimedOut || result.attempts[0].timedOut);
+});
+
+test('12b. preuve modèle/fournisseur/session : les trois faits doivent être sur la même ligne', () => {
+  const split = failover.verifyModelUsed(
+    'modelID=nvidia/model-a\nproviderID=nvidia\nsession.id=ses_same_line\n',
+    'nvidia/model-a',
+    'ses_same_line',
+    'nvidia',
+  );
+  assert.equal(split.verified, false, 'des lignes séparées ne constituent pas une preuve');
+  assert.equal(split.evidenceRecord, null);
+
+  const bound = failover.verifyModelUsed(
+    'timestamp=2026-11-15T00:00:00Z level=INFO message=stream providerID=nvidia modelID=nvidia/model-a session.id=ses_same_line\n',
+    'nvidia/model-a',
+    'ses_same_line',
+    'nvidia',
+  );
+  assert.equal(bound.verified, true);
+  assert.match(bound.evidenceRecord, /providerID=nvidia/);
+  assert.match(bound.evidenceRecord, /modelID=nvidia\/model-a/);
+  assert.match(bound.evidenceRecord, /session\.id=ses_same_line/);
 });
 
 // ===========================================================================
@@ -406,6 +438,10 @@ test('13. classifieur : quotas / rate limit / provider / code', () => {
   const code = classifyFailure({ stderr: 'SyntaxError: Unexpected token' });
   assert.equal(code.category, CATEGORY.CODE_ERROR);
   assert.equal(code.switchModel, false, 'une erreur de code ne doit jamais provoquer de bascule');
+
+  const codeOnStdout = classifyFailure({ stdout: 'SyntaxError: Unexpected token in test build output' });
+  assert.equal(codeOnStdout.category, CATEGORY.CODE_ERROR, 'stdout porte aussi les erreurs de code');
+  assert.equal(codeOnStdout.switchModel, false, 'stdout ne doit jamais autoriser une bascule');
 });
 
 // ===========================================================================
@@ -431,7 +467,7 @@ test('14. inventaire : parsing du format réel, filtre gratuit, priorité Nvidia
   const ranked = inventoryLib.rankModels({
     models: [
       Object.assign(model(FREE_A), { eligible: true, free: true }),
-      Object.assign(model(PAID), { eligible: true, free: false }),
+      Object.assign(model(PAID, { free: false }), { eligible: true }),
       Object.assign(model(LOCAL), { eligible: true, free: true }),
     ],
     installedOllama: ['qwen2.5-coder:7b'],
@@ -494,7 +530,11 @@ test('18. sonde hors inventaire → échec réel → bascule vers le modèle gra
       [PROBE]: { behavior: 'provider_unavailable', message: 'Provider returned an error (model not found).' },
       [FREE_B]: { behavior: 'success' },
     },
-    cfg: makeCfg({ models: [FREE_B], probeModels: [PROBE] }),
+    cfg: makeCfg({
+      models: [FREE_B],
+      probeModels: [PROBE],
+      failover: Object.assign({}, makeCfg().failover, { allowUnknownCostProbeRefs: [PROBE] }),
+    }),
   });
   assert.equal(result.ok, true, 'la bascule doit réussir');
   assert.equal(result.failovers, 1, 'une bascule comptabilisée');
@@ -542,6 +582,23 @@ test('20. réponse sans résultat réel → bascule (RESULT_NOT_PRODUCED)', asyn
   assert.equal(result.attempts[1].outcome, 'success');
 });
 
+test('20b. contrat job-level: le résultat produit avant failover satisfait le job complet', async () => {
+  const { result, calls } = await runFailover({
+    plan: {
+      [FREE_A]: { behavior: 'partial_then_quota', writeFile: 'factory-job-proof.txt', content: 'FACTORY_JOB_OK\n' },
+      [FREE_B]: { behavior: 'success' },
+    },
+    job: Object.assign(makeJob('job-verify-job-level'), {
+      verify: { requiredFiles: [{ path: 'factory-job-proof.txt', contains: 'FACTORY_JOB_OK' }] },
+    }),
+  });
+  assert.equal(result.ok, true, 'le contrat est évalué sur le job, pas sur une tentative isolée');
+  assert.equal(result.model, FREE_B, 'le failover a bien eu lieu');
+  assert.equal(calls.length, 2);
+  assert.ok(result.attempts[1].resultCheck.checks.find((check) => check.id === 'file:factory-job-proof.txt').ok,
+    'le fichier produit par la première tentative est reconnu au niveau job');
+});
+
 // ===========================================================================
 // 21. Registre : circuit breaker et réintégration
 // ===========================================================================
@@ -558,5 +615,64 @@ test('16. registre : circuit breaker après N échecs, réintégration à l\'exp
   const restored = registryLib.expireCooldowns(reg, Date.now());
   assert.deepEqual(restored, ['x/model'], 'le modèle est réintégré automatiquement');
   assert.equal(reg.models['x/model'].status, 'available');
-  assert.equal(reg.models['x/model'].consecutiveFailures, 0);
+  assert.equal(reg.models['x/model'].consecutiveFailures, 3, 'le compteur reste pour que la prochaine sonde rouvre le breaker');
+  registryLib.recordFailure(reg, 'x/model', cls, { circuitThreshold: 3 });
+  assert.equal(reg.models['x/model'].status, 'circuit_open', 'une nouvelle défaillance rouvre immédiatement le breaker');
+});
+
+// ===========================================================================
+// 22. Coût observé non nul → COST_VIOLATION terminal et comptabilisé
+// ===========================================================================
+test('22. coût observé non nul → aucun faux succès, aucun retry/failover, dépense comptabilisée', async () => {
+  const { result, calls, registry } = await runFailover({
+    plan: {
+      [FREE_A]: { behavior: 'success', cost: 0.25 },
+      [FREE_B]: { behavior: 'success' },
+    },
+  });
+  assert.equal(result.ok, false, 'un coût non nul refuse le succès');
+  assert.equal(result.errorCategory, CATEGORY.COST_VIOLATION);
+  assert.equal(calls.length, 1, 'aucun autre appel après la violation de coût');
+  assert.equal(result.failovers, 0, 'aucun failover payant');
+  assert.equal(result.spend, 0.25, 'le coût observé reste comptabilisé dans le résultat');
+  assert.equal(registry.stats.spend, 0.25, 'le coût observé reste comptabilisé dans le registre');
+  assert.equal(result.attempts[0].cost, 0.25, 'le coût est lu depuis part.cost');
+  assert.equal(result.attempts[0].category, CATEGORY.COST_VIOLATION);
+});
+
+// ===========================================================================
+// 23. paidAllowed=true est refusé avant tout appel
+// ===========================================================================
+test('23. paidAllowed=true → refus immédiat avant tout fournisseur', async () => {
+  await assert.rejects(
+    () => failover.executeJobWithFailover({
+      stateDir: tmpDir(),
+      cfg: makeCfg({ paidAllowed: true }),
+      job: makeJob('job-paid-forbidden'),
+      repoCfg: { local: tmpDir(), gates: [] },
+      log: () => {},
+    }),
+    (error) => error && error.code === 'PAID_MODELS_FORBIDDEN',
+  );
+});
+
+// ===========================================================================
+// 24. Sonde de coût inconnu : allowlist exacte obligatoire
+// ===========================================================================
+test('24. sonde inconnue sans allowlist exacte → refusée avant tout appel', async () => {
+  const PROBE = 'nvidia/nvidia/model-quota-probe-introuvable';
+  const { result, calls } = await runFailover({
+    plan: {
+      [PROBE]: { behavior: 'provider_unavailable' },
+      [FREE_B]: { behavior: 'success' },
+    },
+    cfg: makeCfg({
+      models: [FREE_B],
+      probeModels: [PROBE],
+      failover: Object.assign({}, makeCfg().failover, { allowUnknownCostProbeRefs: [] }),
+    }),
+  });
+  assert.equal(result.ok, true, 'le modèle gratuit reste utilisable');
+  assert.ok(!calls.some((c) => c.model === PROBE), 'la sonde sans allowlist exacte n\'est jamais appelée');
+  assert.ok(result.skipped.some((s) => s.ref === PROBE && s.state === 'UNKNOWN_COST_REFUSED'));
 });
