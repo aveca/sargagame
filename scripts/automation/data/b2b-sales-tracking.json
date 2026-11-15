@@ -1,0 +1,6 @@
+{
+  "_note": "Tableau de suivi des ventes B2B Phase 8 — une entrée par établissement prospecté.\n12 colonnes requises : Hôtel, Contact, Email, Offre, Lien de paiement, Email envoyé, Clic, Checkout commencé, Paiement confirmé, Abonnement actif, Accès Premium activé, CA encaissé.\nCe fichier est le registre de vérité des conversions hôtels (B2B). Il est mis à jour par les scripts d'outreach et par le webhook Mollie.\nPricing source unique (CLAUDE.md) : pro_monthly 79€ / brief_monthly 29€ (mensuel), pro_annual 690€ / brief_annual 290€ (annuel).",
+  "updatedAt": "2026-11-15T00:00:00Z",
+  "version": 1,
+  "entries": []
+}

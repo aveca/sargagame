@@ -107,6 +107,10 @@ try {
         $metadata['lang'] = $data['lang'] ?? 'fr';
         if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
         if (!empty($data['myReferralCode'])) $metadata['myReferralCode'] = $data['myReferralCode'];
+        // Attribution hôtel (Phase 8) : traçabilité établissement + prospect
+        if (!empty($data['hotel_id']))   $metadata['hotel_id']   = $data['hotel_id'];
+        if (!empty($data['prospect_id'])) $metadata['prospect_id'] = $data['prospect_id'];
+        if (!empty($data['offer_type']))  $metadata['offer_type']  = $data['offer_type'];
 
         // ── Redirect 3DS : retour sur la page principale avec ?mollie_return=1 ──
         // On n'inclut pas le paymentId ici car il est généré par Mollie
@@ -166,6 +170,10 @@ try {
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';
         $metadata['plan'] = $planKey;
+        // Attribution hôtel (Phase 8) : traçabilité établissement + prospect
+        if (!empty($data['hotel_id']))   $metadata['hotel_id']   = $data['hotel_id'];
+        if (!empty($data['prospect_id'])) $metadata['prospect_id'] = $data['prospect_id'];
+        if (!empty($data['offer_type']))  $metadata['offer_type']  = $data['offer_type'];
 
         $plans = mol_b2b_plans();
         if (!isset($plans[$planKey])) {

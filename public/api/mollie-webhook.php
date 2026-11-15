@@ -86,11 +86,10 @@ try {
                 $grant = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
                 $mirrorOk = $grant['mirror_ok'] ?? false;
                 if (!$mirrorOk) {
-                    http_response_code(500);
-                    echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
-                    exit;
+                    error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                } else {
+                    error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id mirror_ok=$mirrorOk");
                 }
-                error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id");
             } elseif (in_array($source, ['b2b_monthly'], true)) {
                 // B2B monthly - grant handled by subscription webhook
                 error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
@@ -100,11 +99,10 @@ try {
                 $grant = mol_b2c_pass_grant($id, $pass, $email, $metadata);
                 $mirrorOk = $grant['mirror_ok'] ?? false;
                 if (!$mirrorOk) {
-                    http_response_code(500);
-                    echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
-                    exit;
+                    error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                } else {
+                    error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id mirror_ok=$mirrorOk");
                 }
-                error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id mirror_ok=$mirrorOk");
             }
         }
         http_response_code(200);
@@ -128,9 +126,9 @@ try {
                      $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
                      $mirrorOk = $grant['mirror_ok'] ?? false;
                      if (!$mirrorOk) {
-                         http_response_code(500);
-                         echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
-                         exit;
+                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                     } else {
+                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId mirror_ok=$mirrorOk");
                      }
                  }
              }
@@ -141,11 +139,10 @@ try {
                  $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
                  $mirrorOk = $grant['mirror_ok'] ?? false;
                  if (!$mirrorOk) {
-                     http_response_code(500);
-                     echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
-                     exit;
+                     error_log("[mollie-webhook] subscription.paid id=$id plan=$planKey customer=$customerId mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                 } else {
+                     error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId mirror_ok=$mirrorOk");
                  }
-                 error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId mirror_ok=$mirrorOk");
              }
          }
 
