@@ -1,5 +1,46 @@
 ﻿---
 
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
+
+### Travail effectué (Phase 3 — Modèle de données cible Supabase)
+
+- **Résumé 1 ligne** : Proposition du modèle de données cible pour la migration Google Sheets/Apps Script → Supabase : 10 tables, mapping 13 onglets, RLS strict, règles de déduplication, clés sources préservées.
+- **Détails** :
+  - `docs/migration-google-sheets/target-data-model.md` : documentation complète (règles R1-R6, mapping source→cible, schéma, dédup, RLS, index)
+  - `scripts/supabase-schema-target.sql` : DDL idempotent (10 tables, 12 index, 6 contraintes UNIQUE, 11 politiques RLS)
+  - Tables cibles : b2b_contact_emails, contact_feedback, contact_payments, contact_subscriptions, email_campaigns, email_messages, email_suppressions, contact_consents, automation_runs, source_sync_runs
+  - RLS : `anon` bloqué sur toutes les tables B2C (sauf INSERT public sur b2b_contact_emails pour newsletter), `service_role` uniquement
+
+### Fichiers modifiés
+- `docs/migration-google-sheets/target-data-model.md` (nouveau)
+- `scripts/supabase-schema-target.sql` (nouveau)
+
+### Tests réalisés
+- [ ] npm run build → non requis (DDL + documentation uniquement)
+- [ ] check-bundle-budget → non requis
+- [ ] php -l → non requis
+- [ ] ux-smoke → non requis
+
+### Problèmes restants
+- [ ] clasp non authentifié — `clasp login` requis pour lister triggers, déploiements, versions, web app URLs
+- [ ] GOOGLE_SERVICE_ACCOUNT_JSON non défini localement — scripts automation Node.js bloqués localement
+- [ ] SUPABASE_SERVICE_KEY non défini — audit Phase 2 bloqué (nécessaire pour créer les tables dans Supabase)
+- [ ] GitHub gh CLI indisponible — création PR bloquée
+- [ ] TASK-P0-001 webhook secret Mollie : code prêt sur branche `agent/coding/BUG-2026-001-webhook-secret` (commit `cb71169e8`), **non mergé sur `main`, non déployé**
+- [ ] BUG-2026-015 : CTA paywall fermé hors fenêtre satellite — décision fondateur requise
+
+### Prochaine action recommandée
+1. Phase 2 : audit schéma Supabase existant (nécessite SUPABASE_SERVICE_KEY) — Rôle : coding_agent + data_agent
+2. Phase 4 : script d'import reproductible (staging → production) — Rôle : coding_agent
+3. Valider le modèle de données cible avec architect_agent — Rôle : architect_agent
+
+### Branche / PR
+- Branche : `feat/sargagame-supabase-google-migration` (sur ce dépôt, commit `ad4dd269e`)
+- PR : non créée (outils GitHub indisponibles)
+- Commit head : `ad4dd269e`
+
+---
+
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 12e1959ef
 
 ### Travail effectué (Phase 1 migration Google Sheets → Supabase — inventaire et documentation)

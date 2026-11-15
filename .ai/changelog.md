@@ -1,5 +1,21 @@
 ﻿---
 
+## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
+
+**Migration Google Sheets/Apps Script → Supabase : Phase 3 (modèle de données cible) proposée.**
+
+- `docs/migration-google-sheets/target-data-model.md` : règles R1-R6, mapping 13 onglets → 10 tables cibles, schéma, déduplication, RLS, index
+- `scripts/supabase-schema-target.sql` : DDL idempotent (10 tables, 12 index, 6 contraintes UNIQUE, 11 politiques RLS)
+- RLS : `anon` bloqué sur toutes les tables B2C (sauf INSERT public sur b2b_contact_emails pour newsletter), `service_role` uniquement
+
+**Tests :** build non requis (DDL + documentation uniquement).
+
+**Statut :** Phase 1 terminée (inventaire). Phase 3 proposée (modèle cible). Phase 2 (audit Supabase) bloquée sur `SUPABASE_SERVICE_KEY`. Phase 1.5 (clasp auth) bloquée sur authentification Google.
+
+**Fichiers modifiés :** `docs/migration-google-sheets/target-data-model.md`, `scripts/supabase-schema-target.sql`.
+
+---
+
 ## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 12e1959ef
 
 **Migration Google Sheets/Apps Script → Supabase : Phase 1 (inventaire) livrée.**

@@ -62,6 +62,14 @@
 - **Statut** : [x] done by coding_agent — branche `feat/sargagame-supabase-google-migration`, commit `12e1959ef`
 - **Suivant** : Phase 2 (audit Supabase) requiert SUPABASE_SERVICE_KEY ; Phase 1.5 (clasp login) requise pour triggers/déployements/versions
 
+### TASK-P1-005 Migration Google Sheets/Apps Script → Supabase (Phase 3 : modèle de données cible)
+- **Priorité** : P1
+- **Rôle** : coding_agent + architect_agent
+- **Description** : Proposer le modèle de données cible Supabase pour remplacer les 13 onglets Google Sheets + 3 projets Apps Script. 10 tables cibles, mapping source→cible, RLS strict, règles de déduplication, clés sources préservées.
+- **Estimation** : 3h
+- **Statut** : [x] done by coding_agent — `docs/migration-google-sheets/target-data-model.md` + `scripts/supabase-schema-target.sql`, branche `feat/sargagame-supabase-google-migration`, commit `ad4dd269e`
+- **Suivant** : Valider avec architect_agent ; Phase 2 (audit Supabase) requiert SUPABASE_SERVICE_KEY ; Phase 4 (import données) ensuite
+
 ---
 
 ## P2 — Backlog normal
