@@ -8,9 +8,11 @@
 
 ## Récemment complété
 
+- [x] P1 - Inventaire migration Supabase complet + infrastructure : 10 onglets identifiés depuis Code.js (emails, feedback, payments, subscription_events, email_log, digest_log, email_tracking, email_events, beach_reports, analytics_events), colonnes connues, volumes partiels (22 paiements, 639 emails, 1 feedback, 260 envoyés). Blocages documentés (SUPABASE_SERVICE_KEY, Supabase MCP OAuth, Google Sheets accès, Cloudflare token). `docs/migration-google-sheets/MIGRATION-STATUS.md` créé. `scripts/automation/migrate-sheets-to-supabase.cjs` créé (runner idempotent, dry-run OK, journal de migration). Export script read-only déployé (`AKfycbxMVorrZ8Z_...`, nécessite consentement OAuth). (@coding_agent, 2026-11-15, branche feat/sargagame-supabase-google-migration)
+- [x] P1 - Journal durable webhook Mollie + réconciliation avec backoff : webhook_journal_write() intégré dans mollie-webhook.php (3 blocs : subscription.created/updated, subscription.paid, payment.paid b2b_annual), script scripts/automation/webhook-reconcile.cjs avec retry backoff exponentiel (cap 300s), data/webhook-events/ dans .gitignore (PII) (@coding_agent, 2026-11-15, branche agent/coding/verify-subscription-b2b-pro, commit 61a1ab9df) — PR non créée (gh CLI indisponible), SUPABASE_SERVICE_KEY non défini → skip propre
+- [x] P1 - verify_subscription b2b_pro + CORS whitelist b2b-create-checkout : mol_b2b_grant_once() étendu avec paramètre $email, verify_subscription distingue type=eq.b2c_pass vs type=eq.b2b_pro via paramètre kind, CORS whitelist sur b2b-create-checkout.php (@coding_agent, 2026-11-15, branche agent/coding/verify-subscription-b2b-pro, commit 673494c43) — PR non créée (gh CLI indisponible), SUPABASE_SERVICE_KEY non défini → lookup_failed en best-effort
 - [x] P0 - Cycle 2/3 fulfillment recovery : webhook Mollie → RPC sg_upsert_payment_grant, alias p7→trip7 durci (coupure 2026-08-01), logs sans PII (cid opaque), 21 tests, backfill DRY RUN audité, branche publiée sur origin (@coding_agent, 2026-11-04, branche fix/p0-mollie-fulfillment, commit 747af8376d972c9bd4712abb7b02b7f614f00b9c) — PR à créer, routage/backfill en attente approbation
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
-
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
 - [x] P0 - Mollie payment flow fixes (@coding_agent, 2026-07-30)
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
@@ -86,7 +88,7 @@
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [~] TASK-P2-002 — in_progress by coding_agent
+- **Statut** : [x] TASK-P2-002 done by coding_agent — liens de paiement B2B par hôtel avec attribution (hotel_id, prospect_id, offer_type) sur mollie.php, b2b-create-checkout.php, webhook 500 fix, générateur b2b-hotel-paylinks.cjs, registre b2b-sales-tracking.json. Branche `agent/coding/phase8-b2b-hotel-sales`, commit `3ac2886c7`, poussée sur origin.
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2
@@ -105,13 +107,11 @@
 ---
 
 ## P3 — Améliorations
-
 - [ ] Spliter paywall comic/plan B en composants séparés
 - [ ] Améliorer PrenderDelivery légères des Mails monitoring de la
 - [ ] Ajouter le sinning de Sílbano dans un scratch
 
 ### Backlog futur / idées
-
 - B2C abo Chrome (pas d'Vous voulez vous-en)
 - widgets B2B OHPA en JS wash
 - Business mobile iOS/Play/
@@ -120,7 +120,6 @@
 ---
 
 ## Règles pour les agents
-
 1. **Lire** `.ai/current_state.md` avant tout
 2. **Réclamer** une tâche : `[ ] ... → [~] in_progress by <agent>`
 3. **Créer branche** : `agent/<nom>/<tache>`

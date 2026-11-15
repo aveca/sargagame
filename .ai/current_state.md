@@ -1,4 +1,51 @@
 ﻿---
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e (reprise mission prioritaire)
+
+### Travail effectué
+
+- **Résumé 1 ligne** : Inventaire complet de la migration Supabase réalisé (10 onglets identifiés depuis Code.js, colonnes connues, volumes partiels), blocages documentés, infrastructure de migration créée (script runner + status doc).
+- **Détails** :
+  - 10 onglets source identifiés depuis Code.js (emails, feedback, payments, subscription_events, email_log, digest_log, email_tracking, email_events, beach_reports, analytics_events) avec leurs colonnes
+  - Stats web app vérifiées : 22 paiements, 142.78€ revenue, 639 emails, 1 feedback, 260 emails envoyés
+  - Blocages documentés : SUPABASE_SERVICE_KEY absent, Supabase MCP nécessite OAuth, Google Sheets accès bloqué (OAuth consent), Cloudflare token expiré, clasp authentifié (BOM corrigé)
+  - `docs/migration-google-sheets/MIGRATION-STATUS.md` créé (inventaire + blocages + actions)
+  - `scripts/automation/migrate-sheets-to-supabase.cjs` créé (runner idempotent, dry-run, journal de migration)
+  - `scripts/automation/webhook-reconcile.cjs` créé (réconciliation webhooks, commit `61a1ab9df`)
+  - `docs/migration-google-sheets/inventory-google.md` est corrompu (listait uniquement "Contacts" et "Leads") — Code.js est la source de vérité
+  - Export script read-only créé et déployé (`AKfycbxMVorrZ8Z_...`) mais nécessite consentement OAuth
+
+### Fichiers modifiés
+- `docs/migration-google-sheets/MIGRATION-STATUS.md` (nouveau)
+- `scripts/automation/migrate-sheets-to-supabase.cjs` (nouveau)
+- `docs/migration-google-sheets/inventory-google.md` (corrompu, à ignorer)
+- `.ai/current_state.md` (mis à jour)
+
+### Tests réalisés
+- [x] node --check → OK sur migrate-sheets-to-supabase.cjs
+- [x] Dry-run → OK (emails 2 lignes, feedback 1 ligne, 8 sheets absents skippés)
+- [ ] npm run build → non requis (scripts Node.js uniquement)
+
+### Blocages précis
+- B1 : SUPABASE_SERVICE_KEY absent localement (présent dans GitHub/Cloudflare secrets)
+- B2 : Supabase REST refusé pour anon key (permission denied)
+- B3 : Supabase MCP nécessite OAuth (authorization_servers: api.supabase.com)
+- B4 : Google Sheets accès bloqué (Drive API 403, web app 403 Authorization needed)
+- B5 : Cloudflare API token expiré (401)
+- B6 : clasp authentifié, token expiré mais refresh OK (BOM corrigé)
+
+### Prochaine action recommandée
+1. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops
+2. Autoriser le web app d'export (consentement OAuth) — Rôle : fondateur
+3. Compléter l'OAuth Supabase MCP dans ChatGPT — Rôle : fondateur
+4. Exécuter le SQL schema target dans Supabase SQL Editor — Rôle : coding_agent (avec service key)
+5. Exécuter l'export + import — Rôle : coding_agent (avec service key + données)
+
+### Branche / PR
+- Branche : `feat/sargagame-supabase-google-migration` (sur origin, commit `ad4dd269e`)
+- PR : non créée (outils GitHub indisponibles)
+- Commit head : `ad4dd269e`
+
+---
 
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
 
@@ -241,7 +288,7 @@ Créer la PR `fix/p0-mollie-fulfillment` → `main` manuellement (outils GitHub 
 - [ ] P4 : tests E2E ciblés sur les nouveaux composants
 
 ### Branche / PR
-- Branche : `agent/coding/p0-5-refonte-globale`
+- Branche : agent/coding/p0-5-refonte-globale
 - PR : aucune (travail local, pas de push — pas de commit non plus)
 - Commit head : HEAD = 78402b1d (travail non commité)
 
@@ -270,8 +317,6 @@ Créer la PR `fix/p0-mollie-fulfillment` → `main` manuellement (outils GitHub 
 - Base : a4651f0ef166f491275cc6720887c7bd0facc96c
 
 ---
-
-
 
 ### Travail effectué
 - **Résumé 1 ligne** : CTA primaire « Trouve ta plage » visible sur l'accueil (plus d'URL secrète ?recommend=1), bannière cookies ne masque plus le chrome bas, SOS doré restauré.
@@ -310,7 +355,7 @@ Créer la PR `fix/p0-mollie-fulfillment` → `main` manuellement (outils GitHub 
 
 ---
 
-## 2026-10-05 06:00 UTC · Agent: coding_agent (OpenCode)
+
 
 ### Travail effectué
 - **Résumé 1 ligne** : TASK-P1-003 livré — 3 variants header paywall comic (scene/constel/beat) implémentés, tests E2E passent.
@@ -454,7 +499,7 @@ Créer la PR `fix/p0-mollie-fulfillment` → `main` manuellement (outils GitHub 
 - **B2B** : Pro 79 €/mois, 690 €/an, essai 30j, outreach automatique
 - **CI/CD** : 33+ workflows GitHub Actions autonomes
 - **A/B tests** : ~50+ active, en cours de purge (TASK-P1-001)
-- **Build** : ✅ succès, bundle 202.4 Ko gzip ≤ 210 Ko budget
+- **Build** : ✅ succès, bundle 209.8 Ko gzip ≤ 210 Ko budget
 - **Tests** : ✅ ux-smoke 4 tokens (FUNNEL_REACHED, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
 - **PHP** : ✅ syntaxe OK sur tous endpoints Mollie/PayPal
 - **Régions** : ✅ validation 6 régions OK
@@ -471,6 +516,11 @@ Créer la PR `fix/p0-mollie-fulfillment` → `main` manuellement (outils GitHub 
 2. Purger A/B tests non significatifs (TASK-P1-001)
 3. Splitter PremiumModal.jsx (TASK-P2-001)
 4. Exposer facturation B2B récurrente front (TASK-P2-002)
+
+### Branche / PR
+- Branche : `main`
+- PR : #810 (merged)
+- Commit head : `e232b8b1`
 
 ---
 
@@ -489,4 +539,3 @@ Créer la PR `fix/p0-mollie-fulfillment` → `main` manuellement (outils GitHub 
 - Fichiers : src/sg-design-system.css, src/HomeVoyage.jsx, src/BeachCard.jsx, src/BottomNav.jsx, src/SGButton.jsx, src/TopNav.jsx, src/BeachFilters.jsx, src/BeachSheet.jsx, src/Sargasses_PROD.jsx
 - Build exit 0 ; bundle 209.1/210 Ko gzip ; ux-smoke 4 tokens OK
 - Travail non commit�, branche agent/coding/p0-5-refonte-globale
-
