@@ -29,7 +29,7 @@
 - B1 : SUPABASE_SERVICE_KEY absent localement (présent dans GitHub/Cloudflare secrets)
 - B2 : Supabase REST refusé pour anon key (permission denied)
 - B3 : ~~Supabase MCP nécessite OAuth~~ RÉSOLU — le connecteur fonctionne dans ChatGPT (projet ACTIVE_HEALTHY, PG 17.6, 13 migrations). Ne plus considérer comme blocage.
-- B4 : ~~Google Sheets accès bloqué~~ RÉSOLU — OAuth propriétaire fonctionnel (projet sargagame-sheets, 992354181512). Client ID: 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3. Scopes: spreadsheets.readonly + drive.readonly. Testeur yacovassaraf@gmail.com ajouté. Token avec refresh_token sauvegardé et refresh testé (succès). 13 onglets lus avec succès. Google Drive : 9 fichiers Sargagame trouvés.
+- B4 : ~~Google Sheets accès bloqué~~ RÉSOLU — OAuth propriétaire fonctionnel (projet sargagame-sheets, 992354181512). Client ID: 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3. Scopes: spreadsheets.readonly + drive.readonly. Testeur yacovassaraf@gmail.com ajouté. Token avec refresh_token sauvegardé et refresh testé (succès). 13 onglets lus avec succès. Volumes réels vérifiés (column A) : Emails 639, subscription_events 15, analytics_events 466098, email_events 2318, drip_log 194, feedback_requests 3, Feuille 3 vide, email_tracking 5882, beach_reports 1247, payments 22, email_log 22, Feuille 2 vide, feedback 1. Google Drive : 9 fichiers Sargagame trouvés. Écart beach_reports : Sheet 1247 vs Supabase ~405 (à investiguer).
 - B5 : Cloudflare API token expiré (401)
 - B6 : clasp authentifié, token expiré mais refresh OK (BOM corrigé)
 

@@ -88,9 +88,24 @@ Titre : "Sargasses Emails"
 
 ### B4 — ~~Accès Google Sheets bloqué~~ RÉSOLU
 - **Preuve** : OAuth propriétaire fonctionnel. Client ID `992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3` dans le projet `sargagame-sheets` (992354181512). Scopes: `spreadsheets.readonly` + `drive.readonly`. Testeur `yacovassaraf@gmail.com` ajouté. Token avec refresh_token sauvegardé et refresh testé (succès).
-- **13 onglets lus avec succès** via l'API Google Sheets REST (lecture seule) :
-  - Emails (896), subscription_events (1000), analytics_events (466099), email_events (2319), drip_log (1000), feedback_requests (1000), Feuille 3 (vide), email_tracking (5883), beach_reports (1248), payments (1000), email_log (1000), Feuille 2 (vide), feedback (1000)
+- **13 onglets lus avec succès** via l'API Google Sheets REST (lecture seule). **Vérification des volumes réels** (column A, non-empty rows) :
+  - Emails: 639 données (896 grid)
+  - subscription_events: 15 données (1000 grid)
+  - analytics_events: 466 098 données (466 099 grid)
+  - email_events: 2 318 données (2 319 grid)
+  - drip_log: 194 données (1000 grid)
+  - feedback_requests: 3 données (1000 grid)
+  - Feuille 3: 0 données (vide)
+  - email_tracking: 5 882 données (5 883 grid)
+  - beach_reports: 1 247 données (1 248 grid)
+  - payments: 22 données (1000 grid)
+  - email_log: 22 données (1000 grid)
+  - Feuille 2: 0 données (vide)
+  - feedback: 1 donnée (1000 grid)
+- **Note** : Les "1000 lignes" observées précédemment étaient la taille de la grille (max rows), pas le nombre de données. Les vrais volumes sont beaucoup plus petits pour la plupart des onglets.
 - **Google Drive** : 9 fichiers Sargagame/Sargasses trouvés (spreadsheet principal, 2 Apps Scripts, 1 Google Doc, 4 spreadsheets SEO, 1 Lead Guadeloupe)
+- **Supabase** : connecteur MCP fonctionnel dans ChatGPT. Projet ACTIVE_HEALTHY, PG 17.6, 13 migrations. `analytics_events` (~464 608) et `beach_reports` (~405) existent déjà. 12 alertes RLS sans policies (informatives).
+- **Écart beach_reports** : Sheet 1 247 données vs Supabase ~405 lignes. Écart significatif. Explications possibles : (a) le Sheet contient des données de test/seed, (b) l'import Supabase n'a importé qu'une partie, (c) les données Supabase sont filtrées (par date, par statut). À investiguer avant l'import.
 - **Action** : OAuth opérationnel et durable. Token refreshable. Accès lecture seule confirmé.
 
 ### B5 — Cloudflare API token expiré
