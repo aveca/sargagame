@@ -35,6 +35,43 @@ const crypto = require('crypto');
 const { spawn } = require('child_process');
 
 // ============================================================
+// VERROU GLOBAL DES REQUETES IA (mission quotas)
+// ============================================================
+// Ce runner lance `opencode run -m <modele>` : chaque tentative CONSOMME un
+// appel fournisseur. A l'origine il ne consultait AUCUN etat de quota et
+// pouvait donc ecraser les sessions OpenCode manuelles de l'utilisateur
+// (symptome : erreurs 421/429 pendant son travail manuel).
+//
+// Le runner consulte maintenant l etat partage du verrou global. En mode
+// MANUAL_PRIORITY ou PAUSED, il NE FAIT PAS d appel IA : les jobs restent en
+// file (queue.json intacte, aucun travail perdu) et le runner attend.
+//
+// L etat est un simple JSON : aucune dependance entre depots.
+const IA_GATE_FILE = process.env.FACTORY_IA_GATE_FILE
+  || 'C:\\factory\\.autopilot\\state\\ia-gate\\state.json';
+const IA_GATE_MODE_ALLOWED = 'FACTORY_ACTIVE';
+
+/**
+ * Lit le mode courant du verrou global.
+ * En cas d'absence de fichier ou d'erreur : MANUAL_PRIORITY (on protege).
+ */
+function readGateMode() {
+  try {
+    const raw = fs.readFileSync(IA_GATE_FILE, 'utf8');
+    const j = JSON.parse(raw);
+    return String(j.mode || 'MANUAL_PRIORITY');
+  } catch (_) {
+    return 'MANUAL_PRIORITY'; // fichier absent : defaut prudent
+  }
+}
+
+/** Le runner a-t-il le droit de lancer un appel IA ? */
+function iaAllowed() {
+  const mode = readGateMode();
+  return { allowed: mode === IA_GATE_MODE_ALLOWED, mode };
+}
+
+// ============================================================
 // Configuration
 // ============================================================
 const STATE_DIR_DEFAULT = path.resolve(__dirname, 'state');
@@ -468,6 +505,24 @@ async function runLoop(stateDir, cfg, { once = false, maxCycles = Infinity } = {
       writeHeartbeat(stateDir, null, cycles);
       const recovered = recoverOrphans(stateDir, cfg);
       if (recovered) console.log(`[factory] ${recovered} job(s) orphelin(s) récupéré(s)`);
+
+      // ── VERROU GLOBAL : aucun appel IA hors mode FACTORY_ACTIVE ──
+      // Le job reste PENDING dans queue.json (aucun travail perdu, aucun
+      // retry consomme). On ecrit un heartbeat temoin pour prouver que le
+      // runner est vivant mais suspendu.
+      const gate = iaAllowed();
+      if (!gate.allowed) {
+        const pendingCount = readQueue(stateDir).jobs.filter(j => j.status === 'PENDING').length;
+        writeHeartbeat(stateDir, null, cycles);
+        appendLog(stateDir, 'IA_SUSPENDED', { mode: gate.mode, pending: pendingCount, cycle: cycles });
+        if (cycles === 1 || cycles % 10 === 0) {
+          console.log(`[factory] appel IA SUSPENDU (mode ${gate.mode}) — ${pendingCount} job(s) en attente, aucun quota consommé`);
+        }
+        if (once) break;
+        await new Promise(r => setTimeout(r, cfg.cycleDelayMs));
+        continue;
+      }
+
       const job = claimNextJob(stateDir, cfg);
       if (job) {
         console.log(`[factory] job ${job.jobId} (${job.repo}) → exécution réelle`);
