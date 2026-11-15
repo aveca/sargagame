@@ -1,5 +1,51 @@
 ﻿---
 
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche agent/coding/verify-subscription-b2b-pro · commit 61a1ab9df
+
+### Travail effectué
+
+- **Résumé 1 ligne** : Journal durable des événements webhook Mollie + réconciliation avec backoff exponentiel, pour rattraper le mirror Supabase quand il est indisponible.
+- **Détails** :
+  - `public/api/mollie-webhook.php` : quand `mol_supabase_mirror` échoue (SUPABASE_SERVICE_KEY absent ou erreur mirror), l'événement est écrit dans le journal durable `data/webhook-events/` (idempotent par `"$event.$id"`) avant le retour HTTP 200. Couvre `subscription.created/updated`, `subscription.paid` et `payment.paid b2b_annual`.
+  - `scripts/automation/webhook-reconcile.cjs` : nouveau script qui lit `webhook_journal_due()`, retente le mirror Supabase avec backoff exponentiel (5s→10s→20s… cap 300s), marque `status=done`/`processed_at` ou `status=failed` avec `next_retry_at`. Mode `--dry` par défaut, `--send` pour exécuter.
+  - `.gitignore` : `data/webhook-events/` ajouté (PII : emails clients, IDs de paiement — jamais committé).
+  - PHP syntax OK (`php -l`) sur mollie-webhook.php et mollie-lib.php ; `node --check` OK sur webhook-reconcile.cjs.
+  - SUPABASE_SERVICE_KEY non défini → `verify_subscription` retourne `lookup_failed`, pas d'écriture BDD B2B (best-effort mirror uniquement).
+
+### Fichiers modifiés
+- `public/api/mollie-webhook.php` (modifié — intégration `webhook_journal_write` sur 3 blocs)
+- `scripts/automation/webhook-reconcile.cjs` (nouveau)
+- `.gitignore` (déjà commité dans 673494c43 : `data/webhook-events/`)
+
+### Tests réalisés
+- [x] php -l → OK sur mollie-webhook.php, mollie-lib.php
+- [x] node --check → OK sur webhook-reconcile.cjs
+- [ ] npm run build → non requis (PHP uniquement)
+- [ ] check-bundle-budget → non requis
+- [ ] ux-smoke → non requis (pas de changement UI/frontend)
+
+### Problèmes restants
+- [ ] SUPABASE_SERVICE_KEY non défini → verify_subscription retourne lookup_failed, pas d'écriture BDD B2B
+- [ ] gh CLI indisponible — création PR bloquée (branche poussée sur origin)
+- [ ] Test parcours Mollie TEST (payé, refusé, annulé, webhook répété, webhook invalide) → nécessite approval fondateur
+- [ ] Front Sargasses_PROD.jsx doit envoyer kind:"subscription" pour requêtes b2b_pro (actuellement appelle verify_subscription avec {action, email} uniquement)
+- [ ] Générer les vrais liens de paiement par hôtel → nécessite clé MOLLIE_API_KEY
+- [ ] Tâche suivante : préparer les liens de paiement hôtel (dry-run uniquement)
+
+### Prochaine action recommandée
+1. Mettre à jour `.ai/tasks.md` (TASK journal durable + réconciliation marquée done) — Rôle : coding_agent
+2. Préparer les liens de paiement hôtel (dry-run uniquement, pas de clé production) — Rôle : coding_agent
+3. Préparer l'architecture Gmail (OAuth, secrets Cloudflare, file d'envoi durable, idempotence) — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/verify-subscription-b2b-pro` (poussée sur origin)
+- PR : non créée (gh CLI indisponible) — https://github.com/aveca/sargagame/pull/new/agent/coding/verify-subscription-b2b-pro
+- Commit head : `61a1ab9df`
+
+---
+
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche agent/coding/verify-subscription-b2b-pro · commit 673494c43
+
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche agent/coding/phase8-b2b-hotel-sales · commit 3ac2886c7
 
 ### Travail effectué (Phase 8 — Vente directe aux hôtels : liens de paiement avec attribution)

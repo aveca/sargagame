@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] P1 - Journal durable webhook Mollie + réconciliation avec backoff : webhook_journal_write() intégré dans mollie-webhook.php (3 blocs : subscription.created/updated, subscription.paid, payment.paid b2b_annual), script scripts/automation/webhook-reconcile.cjs avec retry backoff exponentiel (cap 300s), data/webhook-events/ dans .gitignore (PII) (@coding_agent, 2026-11-15, branche agent/coding/verify-subscription-b2b-pro, commit 61a1ab9df) — PR non créée (gh CLI indisponible), SUPABASE_SERVICE_KEY non défini → skip propre
+- [x] P1 - verify_subscription b2b_pro + CORS whitelist b2b-create-checkout : mol_b2b_grant_once() étendu avec paramètre $email, verify_subscription distingue type=eq.b2c_pass vs type=eq.b2b_pro via paramètre kind, CORS whitelist sur b2b-create-checkout.php (@coding_agent, 2026-11-15, branche agent/coding/verify-subscription-b2b-pro, commit 673494c43) — PR non créée (gh CLI indisponible), SUPABASE_SERVICE_KEY non défini → lookup_failed en best-effort
 - [x] P0 - Cycle 2/3 fulfillment recovery : webhook Mollie → RPC sg_upsert_payment_grant, alias p7→trip7 durci (coupure 2026-08-01), logs sans PII (cid opaque), 21 tests, backfill DRY RUN audité, branche publiée sur origin (@coding_agent, 2026-11-04, branche fix/p0-mollie-fulfillment, commit 747af8376d972c9bd4712abb7b02b7f614f00b9c) — PR à créer, routage/backfill en attente approbation
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
 

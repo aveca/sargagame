@@ -1,5 +1,38 @@
 ﻿---
 
+## 2026-11-15 — coding_agent (OpenCode) · branche agent/coding/verify-subscription-b2b-pro · commit 61a1ab9df
+
+**Journal durable des événements webhook Mollie + réconciliation avec backoff.**
+
+- `public/api/mollie-webhook.php` : quand le mirror Supabase échoue (SUPABASE_SERVICE_KEY absent ou erreur), l'événement webhook est écrit dans le journal durable `data/webhook-events/` (idempotent par event_id) pour retry asynchrone. Couvre `subscription.created/updated`, `subscription.paid` et `payment.paid b2b_annual`. Les emails clients sont stockés (PII) : répertoire dans `.gitignore`.
+- `scripts/automation/webhook-reconcile.cjs` : nouveau script de réconciliation qui lit `webhook_journal_due()`, retente le mirror Supabase avec backoff exponentiel (cap 300s), marque `status=done`/`processed_at` ou `status=failed` avec `next_retry_at`. Mode `--dry` par défaut, `--send` pour exécuter.
+- `.gitignore` : `data/webhook-events/` ajouté (PII, jamais committé).
+
+**Tests :** `php -l` OK sur mollie-webhook.php et mollie-lib.php ; `node --check` OK sur webhook-reconcile.cjs. `SUPABASE_SERVICE_KEY` non défini → skip propre (best-effort uniquement).
+
+**Fichiers modifiés :** `public/api/mollie-webhook.php` (modifié), `scripts/automation/webhook-reconcile.cjs` (nouveau), `.gitignore` (déjà commité dans 673494c43).
+
+**Statut :** Branche pushée sur origin. PR non créée (gh CLI indisponible).
+
+---
+
+## 2026-11-15 — coding_agent (OpenCode) · branche agent/coding/verify-subscription-b2b-pro · commit 673494c43
+
+**verify_subscription étendu b2b_pro + CORS whitelist b2b-create-checkout (B2B abonnements mensuels).**
+
+- `public/api/mollie-lib.php` : `mol_b2b_grant_once()` accepte un 5ème paramètre optionnel `$email`, stocké dans le mirror Supabase `payment_grants` pour permettre `verify_subscription` par email (type=`b2b_pro`, cross-device)
+- `public/api/mollie-webhook.php` : récupère l'email du customer Mollie et le passe aux appels `mol_b2b_grant_once` (`subscription.created/updated`, `subscription.paid`)
+- `public/api/mollie.php` : `verify_subscription` étendu avec paramètre `kind` (`pass`|`subscription`), distingue `type=eq.b2c_pass` vs `type=eq.b2b_pro` dans Supabase `payment_grants` ; rétrocompatible (défaut `kind=pass`)
+- `public/api/b2b-create-checkout.php` : CORS `Access-Control-Allow-Origin: *` remplacé par whitelist identique à `mollie.php` / `create-checkout.php`
+
+**Tests :** `php -l` OK sur les 4 fichiers PHP.
+
+**Statut :** Branche pushée sur origin. PR non créée (gh CLI indisponible). `SUPABASE_SERVICE_KEY` non défini → `verify_subscription` retourne `lookup_failed` (best-effort mirror uniquement).
+
+**Fichiers modifiés :** `public/api/mollie-lib.php`, `public/api/mollie-webhook.php`, `public/api/mollie.php`, `public/api/b2b-create-checkout.php`.
+
+---
+
 ## 2026-11-15 — coding_agent (OpenCode) · branche agent/coding/phase8-b2b-hotel-sales · commit 3ac2886c7
 
 **Phase 8 : infrastructure liens de paiement par hôtel avec attribution (B2B).**
