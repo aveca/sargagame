@@ -11,7 +11,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 
 const runner = require('../../scripts/factory-v3/run.cjs');
 const registryLib = require('../../scripts/factory-v3/lib/model-registry.cjs');
@@ -245,6 +245,79 @@ test('computeVerdict WAIT: quota et fournisseur restent distincts des échecs de
   assert.equal(runner.computeVerdict({ ok: false, errorCategory: 'ALL_MODELS_IN_COOLDOWN', error: 'quota' }, { allPassed: true }).verdict, 'WAIT_QUOTA');
   assert.equal(runner.computeVerdict({ ok: false, errorCategory: 'ALL_MODELS_PROVIDER_UNAVAILABLE', error: 'provider' }, { allPassed: true }).verdict, 'WAIT_PROVIDER');
   assert.equal(runner.computeVerdict({ ok: false, errorCategory: 'COST_VIOLATION', error: 'cost' }, { allPassed: true }).verdict, 'FAILED');
+});
+
+test('computeVerdict evidence gate: espace de travail réel + tests réellement exécutés', () => {
+  const sha = 'b'.repeat(40);
+  const completeAgent = {
+    ok: true,
+    dirtyFiles: 0,
+    committedSha: sha,
+    commitVerified: true,
+    modelVerified: true,
+    providerVerified: true,
+    sessionSeen: true,
+    completionMarker: true,
+  };
+  const buildOnly = { allPassed: true, results: [{ id: 'build', cmd: 'npm run build', exitCode: 0 }] };
+
+  // VERIFIED exige un test exécuté quand la preuve l'impose (fail-closed).
+  assert.equal(
+    runner.computeVerdict(completeAgent, buildOnly, { workspaceClean: true, testGateRan: false, requireTestGate: true }).verdict,
+    'FAILED',
+    'aucun test exécuté = FAILED même avec commit + gates verts',
+  );
+  assert.equal(
+    runner.computeVerdict(completeAgent, buildOnly, { workspaceClean: true, testGateRan: true, requireTestGate: true }).verdict,
+    'VERIFIED',
+  );
+
+  // Espace de travail réellement sale au moment du verdict → BLOCKED.
+  assert.equal(
+    runner.computeVerdict(completeAgent, buildOnly, { workspaceClean: false, testGateRan: true, requireTestGate: true }).verdict,
+    'BLOCKED_UNCOMMITTED',
+  );
+
+  // DONE_NO_CHANGE exige une preuve d'espace de travail PROUVÉE propre.
+  const noChange = Object.assign({}, completeAgent, { committedSha: null });
+  assert.equal(
+    runner.computeVerdict(noChange, buildOnly, { workspaceClean: true, testGateRan: true, requireTestGate: true }).verdict,
+    'DONE_NO_CHANGE',
+  );
+  assert.equal(
+    runner.computeVerdict(noChange, buildOnly, { workspaceClean: false, testGateRan: true, requireTestGate: true }).verdict,
+    'BLOCKED_UNCOMMITTED',
+  );
+  assert.equal(
+    runner.computeVerdict(noChange, buildOnly, { workspaceClean: null, testGateRan: true, requireTestGate: true }).verdict,
+    'FAILED',
+    'preuve illisible = FAILED, jamais un faux DONE',
+  );
+
+  // Rétrocompatibilité : sans preuve, le comportement historique est conservé.
+  assert.equal(runner.computeVerdict(completeAgent, buildOnly).verdict, 'VERIFIED');
+  assert.equal(runner.computeVerdict(noChange, buildOnly).verdict, 'DONE_NO_CHANGE');
+});
+
+test('computeWorkspaceProof: preuve git réelle (propre vs sale)', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'factory-v3-proof-'));
+  execFileSync('git', ['init', '-q'], { cwd: dir });
+  execFileSync('git', ['config', 'user.email', 'factory-proof@example.invalid'], { cwd: dir });
+  execFileSync('git', ['config', 'user.name', 'Factory Proof Test'], { cwd: dir });
+  fs.writeFileSync(path.join(dir, 'a.txt'), 'base\n', 'utf8');
+  execFileSync('git', ['add', 'a.txt'], { cwd: dir });
+  execFileSync('git', ['commit', '-q', '-m', 'base'], { cwd: dir });
+
+  const clean = await runner.computeWorkspaceProof(dir);
+  assert.equal(clean.readable, true);
+  assert.equal(clean.clean, true);
+  assert.equal(clean.dirtyCount, 0);
+
+  fs.writeFileSync(path.join(dir, 'b.txt'), 'modifié\n', 'utf8');
+  const dirty = await runner.computeWorkspaceProof(dir);
+  assert.equal(dirty.readable, true);
+  assert.equal(dirty.clean, false);
+  assert.equal(dirty.dirtyCount, 1);
 });
 
 test('loadConfig: state/config.json surcharge les défauts (repos fusionnés)', () => {

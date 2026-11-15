@@ -1,3 +1,32 @@
+## 2026-11-15 10:20 UTC · Agent: DevOps (Factory V3 — porte de preuve evidence gate)
+
+### Travail effectué
+- **Résumé 1 ligne** : aucune mission ne peut plus être déclarée COMPLETED sans preuve réelle d'espace de travail propre et de tests réellement exécutés.
+- **Détails** : `computeVerdict` accepte une preuve réelle (3e argument optionnel) fournie par le pipeline depuis un vrai `git status` (`computeWorkspaceProof`) ; espace sale → `BLOCKED_UNCOMMITTED`, preuve illisible → `FAILED`, `DONE_NO_CHANGE` exige une propreté prouvée, et un commit sans gate de test réel ne peut plus donner `VERIFIED`. botwow reçoit la gate `unit-tests` (`npm test`). Preuves écrites dans `evidence.workspaceProof` et `evidence.testEvidence`.
+
+### Fichiers modifiés
+- `scripts/factory-v3/run.cjs` — computeVerdict (proof optionnel), computeWorkspaceProof, câblage pipeline, gate unit-tests botwow.
+- `tests/unit/factory-v3-runner.test.cjs` — 2 nouveaux tests (evidence gate + preuve git réelle).
+- `.ai/changelog.md`, `NEXT_SESSION.md`, `.ai/tasks.md` — documentation.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **17/17 PASS**.
+- [x] `node --test tests/unit/factory-v3-failover.test.cjs tests/unit/factory-v3-resilience.test.cjs` → **38/38 PASS**.
+
+### Problèmes restants
+- [ ] Dashboard central n'agrège pas encore registre + observateur.
+- [ ] Consultation ChatGPT (boucle bidirectionnelle) à livrer via bridge 4187.
+- [ ] CI à re-vérifier sur le prochain push.
+
+### Prochaine action recommandée
+1. Committer/pousser l'evidence gate, vérifier CI — Rôle : devops.
+2. Dashboard central (extension de `dashboard.cjs` avec SESSION_REGISTRY) — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472
+- Commit head : à committer
+
 ## 2026-11-15 10:00 UTC · Agent: DevOps (Factory V3 — registre d'états de sessions)
 
 ### Travail effectué

@@ -110,7 +110,8 @@ const DEFAULT_CONFIG = {
       defaultBranch: 'main',
       baseBranch: 'main',
       gates: [
-        { id: 'build', cmd: 'npm run build' }
+        { id: 'build', cmd: 'npm run build' },
+        { id: 'unit-tests', cmd: 'npm test' }
       ]
     }
   }
@@ -1061,8 +1062,11 @@ async function runGateStage(stateDir, cfg, job, repoCfg) {
 
 // ============================================================
 // Verdict — STRICT : jamais de succès sans preuve complète
+// `proof` (optionnel, fourni par le pipeline depuis un git status RÉEL) :
+//   { workspaceClean: true|false|null, testGateRan: bool, requireTestGate: bool }
+// Sans preuve, le comportement historique est conservé (tests unitaires).
 // ============================================================
-function computeVerdict(agent, gate) {
+function computeVerdict(agent, gate, proof = null) {
   if (!agent) return { verdict: 'FAILED', reason: 'agent non exécuté' };
   // Quota épuisé partout : ce n'est PAS un échec de mission → reprise programmée.
   if (agent.errorCategory === 'ALL_MODELS_IN_COOLDOWN') {
@@ -1082,6 +1086,10 @@ function computeVerdict(agent, gate) {
   }
   if (agent.dirtyFiles > 0) return { verdict: 'BLOCKED_UNCOMMITTED', reason: `${agent.dirtyFiles} fichier(s) modifié(s) non commités par l'agent` };
   if (!gate || !gate.allPassed) return { verdict: 'FAILED', reason: 'gates de livraison en échec' };
+  const p = proof && typeof proof === 'object' ? proof : null;
+  if (p && p.workspaceClean === false) {
+    return { verdict: 'BLOCKED_UNCOMMITTED', reason: 'git status réel détecte des fichiers modifiés au moment du verdict — rien n\'est déclaré terminé' };
+  }
   if (agent.committedSha) {
     if (!/^[0-9a-f]{40}$/i.test(String(agent.committedSha))) {
       return { verdict: 'FAILED', reason: `SHA de commit invalide: ${agent.committedSha}` };
@@ -1089,9 +1097,33 @@ function computeVerdict(agent, gate) {
     if (agent.commitVerified !== true) {
       return { verdict: 'FAILED', reason: `commit ${agent.committedSha} introuvable ou non reachable depuis HEAD` };
     }
+    if (p && p.requireTestGate === true && p.testGateRan === false) {
+      return { verdict: 'FAILED', reason: 'aucun test exécuté dans les gates — preuve de non-régression absente (fail-closed)' };
+    }
     return { verdict: 'VERIFIED', reason: `commit ${agent.committedSha} + gates verts` };
   }
+  if (p) {
+    // Avec preuve réelle, DONE_NO_CHANGE n'est légitime que si l'espace de
+    // travail est PROUVÉ propre ; une preuve illisible reste un échec.
+    if (p.workspaceClean === true) {
+      return { verdict: 'DONE_NO_CHANGE', reason: 'aucune modification nécessaire (prouvé par git status réel) + gates verts' };
+    }
+    return { verdict: 'FAILED', reason: 'preuve d\'espace de travail illisible — fail-closed, aucun faux DONE' };
+  }
   return { verdict: 'DONE_NO_CHANGE', reason: 'aucune modification nécessaire (légitime) + gates verts' };
+}
+
+/** Preuve RÉELLE d'espace de travail (git status) au moment du verdict. */
+async function computeWorkspaceProof(localDir) {
+  const r = await runShell('git status --porcelain -uall', { cwd: localDir, timeoutMs: 30_000 });
+  const readable = r.exitCode === 0 && !r.timedOut;
+  const dirty = String(r.stdout || '').split(/\r?\n/).filter((l) => l.trim().length);
+  return {
+    readable,
+    clean: readable ? dirty.length === 0 : null,
+    dirtyCount: dirty.length,
+    dirtyList: dirty.slice(0, 20),
+  };
 }
 
 /** Date de fin de cooldown la plus proche (tous modèles) — sert à reprogrammer un job. */
@@ -1205,7 +1237,22 @@ async function processJob(stateDir, cfg, job) {
   evidence.gates = gate; evidence.timestamps.gates = new Date().toISOString(); saveEvidence();
 
   // --- Verdict strict de l'AGENT (avant publication) ---
-  let { verdict, reason } = computeVerdict(agent, gate);
+  // Preuve RÉELLE d'espace de travail au moment du verdict + evidence gate de
+  // tests : aucune mission ne devient VERIFIED sans test réellement exécuté.
+  const workspaceProof = await computeWorkspaceProof(repoCfg.local);
+  const testGateRan = Array.isArray(gate.results) && gate.results.some(
+    (r) => /test/i.test(`${String(r && r.id || '')} ${String(r && r.cmd || '')}`),
+  );
+  const requireTestGate = repoCfg.requireTestGate !== false;
+  evidence.workspaceProof = workspaceProof;
+  evidence.testEvidence = { requireTestGate, ran: testGateRan };
+  evidence.timestamps.workspaceProofAt = new Date().toISOString();
+  saveEvidence();
+  let { verdict, reason } = computeVerdict(agent, gate, {
+    workspaceClean: workspaceProof.readable ? workspaceProof.clean : null,
+    testGateRan,
+    requireTestGate,
+  });
   evidence.agentVerdict = verdict;
   evidence.agentReason = reason;
   evidence.timestamps.agentVerdictAt = new Date().toISOString();
@@ -1459,5 +1506,5 @@ module.exports = {
   pidAlive, lockIsStale, acquireLock, releaseLock, clearStaleLock,
   readQueue, writeQueue, enqueue, claimNextJob, recoverOrphans, updateJob,
   transitionJob, prepareJobWorkspace, publishJob,
-  computeBackoff, computeVerdict, loadConfig, execStep, DEFAULT_CONFIG
+  computeBackoff, computeVerdict, computeWorkspaceProof, loadConfig, execStep, DEFAULT_CONFIG
 };

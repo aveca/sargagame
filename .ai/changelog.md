@@ -1,3 +1,11 @@
+## 2026-11-15 — Factory V3 : porte de preuve avant complétion de mission (evidence gate)
+
+- **Preuve d'espace de travail réelle** (`run.cjs`) : au moment du verdict, le runner exécute un vrai `git status --porcelain -uall` (`computeWorkspaceProof`). Un espace de travail réellement sale → `BLOCKED_UNCOMMITTED` même si l'agent a commité ; une preuve illisible → `FAILED` (fail-closed, jamais un faux `DONE_NO_CHANGE`).
+- **Tests réellement exécutés exigés** : un job avec commit ne peut plus devenir `VERIFIED` sans gate de test réel (`requireTestGate`, défaut true ; détecté via id/cmd des gate results). botwow reçoit sa gate `unit-tests` (`npm test`) en plus de `build` ; sargagame avait déjà build + bundle + unit-tests. Timeout des gates : 20 min (largement suffisant).
+- **Rétrocompatibilité** : `computeVerdict(agent, gate)` à 2 args conserve le comportement historique (tests unitaires existants inchangés) ; le pipeline passe désormais la preuve réelle en 3e argument.
+- **Preuve enregistrée** : `evidence.workspaceProof` (readable, clean, dirtyCount, dirtyList) et `evidence.testEvidence` (requireTestGate, ran) écrits dans `state/evidence/<jobId>.json`.
+- **Tests** : `node --test tests/unit/factory-v3-runner.test.cjs` → **17/17 PASS** (dont 2 nouveaux) ; failover + résilience → **38/38 PASS**.
+
 ## 2026-11-15 — Factory V3 : registre d'états de sessions normalisés
 
 - **Registre persistant** (`scripts/factory-v3/lib/session-registry.cjs`, CLI `scripts/factory-v3/session-registry.cjs`) : fusion des jobs de la queue et des sessions OpenCode réelles (CLI local via `resolveOpencodeBin`), états normalisés `PLANNING/RUNNING/WAITING/BLOCKED/RECOVERING/VERIFYING/COMPLETED/FAILED`, sortie `SESSION_REGISTRY.json` + historique de transitions horodaté `SESSION_HISTORY.jsonl` (plafonné, tracé `ABSENT` pour toute disparition).
