@@ -77,7 +77,11 @@ function readBundle(stateDir, rootDir) {
     .filter((file) => file.status === 'untracked')
     .map((file) => {
       try {
-        return execFileSync('git', ['diff', '--no-index', '--unified=0', '--', 'NUL', file.path], {
+        // Périphérique nul dépendant de la plateforme : `NUL` sous Windows,
+        // `/dev/null` ailleurs. `git diff --no-index` renvoie 1 quand il y a
+        // une différence ; c'est un succès pour notre usage.
+        const nullDevice = process.platform === 'win32' ? 'NUL' : '/dev/null';
+        return execFileSync('git', ['diff', '--no-index', '--unified=0', '--', nullDevice, file.path], {
           cwd: rootDir,
           encoding: 'utf8',
           stdio: ['ignore', 'pipe', 'pipe'],
