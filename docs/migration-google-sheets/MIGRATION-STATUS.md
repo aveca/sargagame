@@ -87,7 +87,8 @@ Titre : "Sargasses Emails"
 - **Action** : Aucune reconnexion nécessaire. Le connecteur est opérationnel.
 
 ### B4 — ~~Accès Google Sheets bloqué~~ RÉSOLU
-- **Preuve** : OAuth propriétaire fonctionnel. Client ID `992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3` dans le projet `sargagame-sheets` (992354181512). Scopes: `spreadsheets.readonly` + `drive.readonly`. Testeur `yacovassaraf@gmail.com` ajouté. Token avec refresh_token sauvegardé et refresh testé (succès).
+- **Preuve** : OAuth propriétaire fonctionnel. Client ID `992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3` dans le projet `sargagame-sheets` (992354181512). Scopes: `spreadsheets.readonly` + `drive.readonly`. Testeur `yacovassaraf@gmail.com` ajouté.
+- **Sécurité** : Token stocké dans Windows Credential Manager (target: `SargagameGoogleOAuth`, type: Generic, persist: LOCAL_MACHINE). Temp file supprimé. Récupération testée avec succès. Refresh token fonctionnel. Persistance vérifiée.
 - **13 onglets lus avec succès** via l'API Google Sheets REST (lecture seule). **Vérification des volumes réels** (column A, non-empty rows) :
   - Emails: 639 données (896 grid)
   - subscription_events: 15 données (1000 grid)
@@ -144,11 +145,13 @@ Titre : "Sargasses Emails"
 - Front `Sargasses_PROD.jsx` doit envoyer `kind:"subscription"` (non fait)
 - Liens de paiement par hôtel : `scripts/automation/b2b-hotel-paylinks.cjs` (dry-run uniquement)
 
-### Stripe (statut à vérifier — ne pas classer legacy/inactif sans preuve)
+### Stripe (ACTIF — ne pas classer legacy/inactif)
 - **Config locale** : `public/api/stripe-config.php` existe (gitignoré) avec `sk` (sk_live_*) et `webhook_secret` présents
 - **Endpoints** : `public/api/stripe-webhook.php` et `public/api/create-checkout.php` existent
-- **Catalogue** : `docs/stripe-live-catalog-2026-11-13.md` classe Stripe comme "legacy run-off, lecture seule"
-- **Action requise** : vérifier le profil Sargasses dans Stripe (dashboard), les clés (sk_live, webhook_secret), les webhooks configurés et le MRR réel avant de confirmer le statut. Ne pas supposer inactif.
+- **MRR réel** (daily-metrics.json) : 14 abonnés actifs, 69.86€ MRR, 0 past due, 0 cancel scheduled
+- **Par source** : map_scrub_forecast (1, 4.99€), forecast_teaser (1, 4.99€), (none) (12, 59.88€)
+- **Catalogue** : `docs/stripe-live-catalog-2026-11-13.md` classe Stripe comme "legacy run-off, lecture seule" — **À VÉRIFIER** car Stripe génère encore du revenu (69.86€ MRR)
+- **Action requise** : vérifier le profil Sargasses dans Stripe (dashboard), les webhooks configurés, les abonnements actifs et le MRR réel. Ne pas supposer inactif. Stripe est actuellement le seul fournisseur avec du MRR récurrent (Mollie B2C n'a que 4 paiements one-time, Mollie B2B a 0).
 - **MRR source** : `scripts/automation/data/daily-metrics.json` bloc `stripe` (à lire dynamiquement, jamais figé en dur)
 
 ## 6. Prochaines actions (par ordre de priorité)
