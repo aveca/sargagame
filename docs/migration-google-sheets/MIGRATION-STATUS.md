@@ -145,13 +145,14 @@ Titre : "Sargasses Emails"
 - Front `Sargasses_PROD.jsx` doit envoyer `kind:"subscription"` (non fait)
 - Liens de paiement par hôtel : `scripts/automation/b2b-hotel-paylinks.cjs` (dry-run uniquement)
 
-### Stripe (ACTIF — ne pas classer legacy/inactif)
+### Stripe (CLÉ EXPIRÉE — statut à vérifier)
 - **Config locale** : `public/api/stripe-config.php` existe (gitignoré) avec `sk` (sk_live_*) et `webhook_secret` présents
 - **Endpoints** : `public/api/stripe-webhook.php` et `public/api/create-checkout.php` existent
-- **MRR réel** (daily-metrics.json) : 14 abonnés actifs, 69.86€ MRR, 0 past due, 0 cancel scheduled
+- **MRR rapporté** (daily-metrics.json) : 14 abonnés actifs, 69.86€ MRR, 0 past due, 0 cancel scheduled
 - **Par source** : map_scrub_forecast (1, 4.99€), forecast_teaser (1, 4.99€), (none) (12, 59.88€)
-- **Catalogue** : `docs/stripe-live-catalog-2026-11-13.md` classe Stripe comme "legacy run-off, lecture seule" — **À VÉRIFIER** car Stripe génère encore du revenu (69.86€ MRR)
-- **Action requise** : vérifier le profil Sargasses dans Stripe (dashboard), les webhooks configurés, les abonnements actifs et le MRR réel. Ne pas supposer inactif. Stripe est actuellement le seul fournisseur avec du MRR récurrent (Mollie B2C n'a que 4 paiements one-time, Mollie B2B a 0).
+- **Test API** : la clé sk_live_ est **EXPIRÉE** ("Expired API Key provided"). Impossible de vérifier le profil, les abonnements ou les webhooks via l'API.
+- **Catalogue** : `docs/stripe-live-catalog-2026-11-13.md` classe Stripe comme "legacy run-off, lecture seule" — **À VÉRIFIER** car Stripe génère encore du revenu (69.86€ MRR rapporté)
+- **Action requise** : le fondateur doit vérifier le profil Sargasses dans le dashboard Stripe, renouveler la clé API si nécessaire, et confirmer le statut réel. Ne pas supposer inactif.
 - **MRR source** : `scripts/automation/data/daily-metrics.json` bloc `stripe` (à lire dynamiquement, jamais figé en dur)
 
 ## 6. Prochaines actions (par ordre de priorité)

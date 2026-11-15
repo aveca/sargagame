@@ -14,7 +14,7 @@
   - Volumes réels vérifiés (column A, non-empty rows) : Emails 639, subscription_events 15, analytics_events 466098, email_events 2318, drip_log 194, feedback_requests 3, Feuille 3 vide, email_tracking 5882, beach_reports 1247, payments 22, email_log 22, Feuille 2 vide, feedback 1
   - Google Drive : 9 fichiers Sargagame/Sargasses trouvés (spreadsheet principal, 2 Apps Scripts, 1 Google Doc, 4 spreadsheets SEO, 1 Lead Guadeloupe)
   - Écart beach_reports : Sheet 1247 vs Supabase ~405 (à investiguer avant import)
-  - Stripe : ACTIF — 14 abonnés, 69.86€ MRR, 0 past due (daily-metrics.json). Ne pas classer legacy/inactif. Config locale existe avec sk_live + webhook_secret. Endpoints stripe-webhook.php et create-checkout.php existent. À vérifier dans le dashboard Stripe.
+  - Stripe : CLÉ EXPIRÉE — 14 abonnés rapportés, 69.86€ MRR, 0 past due (daily-metrics.json). Clé sk_live_ est expirée (test API → "Expired API Key provided"). Config locale existe avec sk_live + webhook_secret. Endpoints stripe-webhook.php et create-checkout.php existent. Le fondateur doit vérifier le profil dans le dashboard Stripe et renouveler la clé. Ne pas classer legacy sans vérification.
 
 ### Fichiers modifiés
 - `docs/migration-google-sheets/MIGRATION-STATUS.md` (volumes réels, écart beach_reports, Stripe à vérifier)
