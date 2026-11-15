@@ -1506,7 +1506,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _topName=_nameOf(_topBeach)
   const _topScore=_topBeach?.score||null
   // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.
-  const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]
+  // `beach_sheet` is the primary CTA emitted by BeachSheetComic; keep its selected beach in the paywall context.
+  const _bcSrcs=["beach_sheet","forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]
   const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))
   const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null
   const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null
