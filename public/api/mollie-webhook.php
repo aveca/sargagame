@@ -82,7 +82,7 @@ try {
             $pass = $metadata['pass'] ?? '';
             $email = $metadata['email'] ?? '';
 
-            if (in_array($source, ['b2b_annual'], true)) {
+            if (in_array($source, ['b2b_annual', 'b2b_first'], true)) {
                 $grant = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
                 $mirrorOk = $grant['mirror_ok'] ?? false;
                 if (!$mirrorOk) {

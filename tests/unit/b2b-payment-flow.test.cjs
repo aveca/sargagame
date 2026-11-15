@@ -41,12 +41,15 @@ test('mol_b2b_grant_once existe', mollieLib && mollieLib.includes('function mol_
 test('mol_supabase_mirror existe', mollieLib && mollieLib.includes('function mol_supabase_mirror'));
 test('webhook_journal_write existe (sur branche verify-subscription)', mollieLib && mollieLib.includes('function webhook_journal_write') || true); // Sur cette branche, le journal est sur verify-subscription
 test('mol_b2b_grant_once accepte paramètre email', mollieLib && mollieLib.includes('?string $email = null'));
+test('plans annuels: pro_annual (690€)', mollieLib && mollieLib.includes("'pro_annual'") && mollieLib.includes('690.00'));
+test('plans annuels: brief_annual (290€)', mollieLib && mollieLib.includes("'brief_annual'") && mollieLib.includes('290.00'));
 
 // Test 2: Vérifier que le webhook gère les sources B2B
 console.log('\n2. Vérification mollie-webhook.php :');
 const webhook = readFile('public/api/mollie-webhook.php');
 test('webhook gère b2b_annual', webhook && webhook.includes("b2b_annual"));
 test('webhook gère b2b_monthly', webhook && webhook.includes("b2b_monthly"));
+test('webhook gère b2b_first (nouveau)', webhook && webhook.includes("b2b_first"));
 test('webhook récupère customerEmail', webhook && webhook.includes('customerEmail'));
 test('webhook utilise webhook_journal_write (sur branche verify-subscription)', webhook && webhook.includes('webhook_journal_write') || true); // Sur cette branche, le journal est sur verify-subscription
 test('webhook retourne 200 (pas 500) — a corriger (phase8 a supprime le 500)', true); // Le 500 est encore present sur cette branche, corrige sur phase8
@@ -68,6 +71,7 @@ if (b2bCheckout) {
   test('requires b2b-db.php', b2bCheckout.includes("require_once __DIR__ . '/b2b-db.php'"));
   test('metadata hotel_id', b2bCheckout.includes('hotel_id'));
   test('metadata offer_type', b2bCheckout.includes('offer_type'));
+  test('CORS whitelist (pas *)', b2bCheckout && !b2bCheckout.includes("Access-Control-Allow-Origin: *") && b2bCheckout.includes("Access-Control-Allow-Origin: $origin"));
 } else {
   console.log('  ⚠️  b2b-create-checkout.php absent de cette branche (sur phase8)');
 }

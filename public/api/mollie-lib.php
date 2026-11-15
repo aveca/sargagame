@@ -141,7 +141,7 @@ function getMollieClient(): SgMollieClient {
 /**
  * B2B plans — montants EN REPO (pas en config gitignored)
  * Mensuel récurrent : Pro 79€/mois, Brief 29€/mois
- * Annuel : géré via mollie-paylinks.cjs (paylinks hosted)
+ * Annuel : Pro 690€/an, Brief 290€/an (paylinks hosted via mollie-paylinks.cjs)
  */
 function mol_b2b_plans(): array {
     return [
@@ -156,6 +156,18 @@ function mol_b2b_plans(): array {
             'currency' => 'EUR',
             'description' => 'Sargasses Brief — mensuel (29 €/mois, sans engagement)',
             'interval' => '1 month',
+        ],
+        'pro_annual' => [
+            'amount' => 690.00,
+            'currency' => 'EUR',
+            'description' => 'Sargasses Pro — annuel (690 €/an, ~2 mois offerts)',
+            'interval' => '1 year',
+        ],
+        'brief_annual' => [
+            'amount' => 290.00,
+            'currency' => 'EUR',
+            'description' => 'Sargasses Brief — annuel (290 €/an, ~2 mois offerts)',
+            'interval' => '1 year',
         ],
     ];
 }
