@@ -1,5 +1,23 @@
 ﻿---
 
+## 2026-11-15 — coding_agent (OpenCode) · branche agent/coding/phase8-b2b-hotel-sales · commit 3ac2886c7
+
+**Phase 8 : infrastructure liens de paiement par hôtel avec attribution (B2B).**
+
+- `public/api/mollie-webhook.php` : suppression des `http_response_code(500)` sur `subscription.created/updated` et `subscription.paid` quand le mirror Supabase échoue → warning log uniquement, webhook continue (plus jamais de blocage HTTP 500)
+- `public/api/mollie.php` : métadonnées d'attribution `hotel_id`, `prospect_id`, `offer_type` ajoutées sur `create_payment` et `create_subscription`
+- `public/api/b2b-create-checkout.php` : métadonnées d'attribution `hotel_id`, `offer_type` ajoutées (nouveau fichier)
+- `scripts/automation/b2b-hotel-paylinks.cjs` : nouveau générateur de liens Mollie `v2/payments` par hôtel avec metadata d'attribution, idempotent, `--dry`, `--all`, cible par hotel_id/email/nom
+- `scripts/automation/data/b2b-sales-tracking.json` : registre 12 colonnes réinitialisé (0 entrée), prêt pour les vrais liens de paiement
+
+**Tests :** php -l OK sur 3 fichiers PHP ; node --check OK sur le script ; dry-run validé sur 158 contacts (fichier de suivi réinitialisé).
+
+**Statut :** Branche poussée sur origin. PR non créée (gh CLI indisponible). Test parcours Mollie TEST + génération vrais liens en attente (approval fondateur + clé API requises).
+
+**Fichiers modifiés :** `public/api/mollie-webhook.php`, `public/api/mollie.php`, `public/api/b2b-create-checkout.php` (nouveau), `scripts/automation/b2b-hotel-paylinks.cjs` (nouveau), `scripts/automation/data/b2b-sales-tracking.json` (nouveau).
+
+---
+
 ## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
 
 **Migration Google Sheets/Apps Script → Supabase : Phase 3 (modèle de données cible) proposée.**

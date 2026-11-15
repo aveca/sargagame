@@ -86,7 +86,7 @@
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [~] TASK-P2-002 — in_progress by coding_agent
+- **Statut** : [x] TASK-P2-002 done by coding_agent — liens de paiement B2B par hôtel avec attribution (hotel_id, prospect_id, offer_type) sur mollie.php, b2b-create-checkout.php, webhook 500 fix, générateur b2b-hotel-paylinks.cjs, registre b2b-sales-tracking.json. Branche `agent/coding/phase8-b2b-hotel-sales`, commit `3ac2886c7`, poussée sur origin.
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2

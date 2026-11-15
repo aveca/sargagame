@@ -1,5 +1,50 @@
 ﻿---
 
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche agent/coding/phase8-b2b-hotel-sales · commit 3ac2886c7
+
+### Travail effectué (Phase 8 — Vente directe aux hôtels : liens de paiement avec attribution)
+
+- **Résumé 1 ligne** : Infrastructure Phase 8 committée : webhook mollie sans blocage 500, métadonnées d'attribution hôtel sur tous les points de paiement, générateur de liens Mollie par hôtel, registre de suivi réinitialisé.
+- **Détails** :
+  - `public/api/mollie-webhook.php` : suppression des `http_response_code(500)` sur `subscription.created/updated` et `subscription.paid` quand le mirror Supabase échoue → warning log uniquement, webhook continue
+  - `public/api/mollie.php` : métadonnées `hotel_id`, `prospect_id`, `offer_type` ajoutées sur `create_payment` et `create_subscription`
+  - `public/api/b2b-create-checkout.php` : métadonnées `hotel_id`, `offer_type` ajoutées
+  - `scripts/automation/b2b-hotel-paylinks.cjs` : nouveau — génère des `v2/payments` Mollie par hôtel avec metadata d'attribution, idempotent, `--dry`, `--all`, cible par hotel_id/email/nom
+  - `scripts/automation/data/b2b-sales-tracking.json` : réinitialisé, 0 entrée, registre 12 colonnes prêt
+
+### Fichiers modifiés
+- `public/api/mollie-webhook.php` (modifié)
+- `public/api/mollie.php` (modifié)
+- `public/api/b2b-create-checkout.php` (nouveau)
+- `scripts/automation/b2b-hotel-paylinks.cjs` (nouveau)
+- `scripts/automation/data/b2b-sales-tracking.json` (nouveau)
+
+### Tests réalisés
+- [x] php -l → OK sur mollie-webhook.php, mollie.php, b2b-create-checkout.php
+- [x] node --check → OK sur b2b-hotel-paylinks.cjs
+- [x] dry-run → logique OK sur 158 contacts (fichier de suivi réinitialisé après test)
+- [ ] Test parcours Mollie TEST complet → bloqué (nécessite approval fondateur + clé API)
+- [ ] ux-smoke → non requis (pas de changement UI/frontend)
+
+### Problèmes restants
+- [ ] SUPABASE_SERVICE_KEY non défini → verify_subscription retourne lookup_failed, pas d'écriture BDD B2B
+- [ ] gh CLI indisponible — création PR bloquée (branche poussée sur origin)
+- [ ] Test parcours Mollie TEST (payé, refusé, annulé, webhook répété, webhook invalide) → nécessite approval fondateur
+- [ ] Générer les vrais liens de paiement par hôtel → nécessite clé MOLLIE_API_KEY
+- [ ] Vérifier verify_subscription pour les grants b2b_pro (abonnements mensuels)
+
+### Prochaine action recommandée
+1. Tester le parcours Mollie TEST complet (nécessite approval fondateur) — Rôle : coding_agent
+2. Générer les vrais liens de paiement par hôtel (b2b-hotel-paylinks.cjs) — Rôle : coding_agent
+3. Vérifier verify_subscription pour les grants b2b_pro — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/phase8-b2b-hotel-sales` (poussée sur origin)
+- PR : non créée (gh CLI indisponible)
+- Commit head : `3ac2886c7`
+
+---
+
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
 
 ### Travail effectué (Phase 3 — Modèle de données cible Supabase)
