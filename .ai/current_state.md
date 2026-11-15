@@ -29,17 +29,17 @@
 - B1 : SUPABASE_SERVICE_KEY absent localement (présent dans GitHub/Cloudflare secrets)
 - B2 : Supabase REST refusé pour anon key (permission denied)
 - B3 : ~~Supabase MCP nécessite OAuth~~ RÉSOLU — le connecteur fonctionne dans ChatGPT (projet ACTIVE_HEALTHY, PG 17.6, 13 migrations). Ne plus considérer comme blocage.
-- B4 : ~~Google Sheets accès bloqué~~ RÉSOLU — OAuth propriétaire fonctionnel (client ID: 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3, scopes: spreadsheets.readonly + drive.readonly). 13 onglets lus avec succès. Token avec refresh_token sauvegardé.
+- B4 : ~~Google Sheets accès bloqué~~ RÉSOLU — OAuth propriétaire fonctionnel (projet sargagame-sheets, 992354181512). Client ID: 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3. Scopes: spreadsheets.readonly + drive.readonly. Testeur yacovassaraf@gmail.com ajouté. Token avec refresh_token sauvegardé et refresh testé (succès). 13 onglets lus avec succès. Google Drive : 9 fichiers Sargagame trouvés.
 - B5 : Cloudflare API token expiré (401)
 - B6 : clasp authentifié, token expiré mais refresh OK (BOM corrigé)
 
 ### Prochaine action recommandée
-1. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops. Ne pas demander la clé dans ChatGPT ; injection sécurisée dans l'environnement d'exécution.
-2. Autoriser le web app d'export (consentement OAuth par le propriétaire) — Rôle : fondateur. Procédure courte : ouvrir l'URL du script déployé dans un navigateur connecté au compte Google propriétaire et autoriser.
-3. Comparer le schéma réel Supabase (tables, colonnes, contraintes, index, RLS) avec supabase-schema-target.sql via ChatGPT — Rôle : coding_agent. Identifier analytics_events (~464K) et beach_reports (~405) déjà présents. Éviter les doublons.
-4. Exécuter le SQL schema target (tables manquantes uniquement) dans Supabase SQL Editor — Rôle : coding_agent (avec service key)
-5. Exécuter l'export (web app) + import (migrate-sheets-to-supabase.cjs --send) — Rôle : coding_agent (avec service key + données)
-6. Vérifier la recherche de contacts depuis ChatGPT — Rôle : coding_agent + fondateur
+1. Comparer le schéma réel Supabase (tables, colonnes, contraintes, index, RLS) avec supabase-schema-target.sql via ChatGPT (connecteur actif) — Rôle : coding_agent. Identifier analytics_events (~464K) et beach_reports (~405) déjà présents. Éviter les doublons.
+2. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops. Ne pas demander la clé dans ChatGPT ; injection sécurisée dans l'environnement d'exécution.
+3. Exécuter le SQL schema target (tables manquantes uniquement) dans Supabase SQL Editor — Rôle : coding_agent (avec service key)
+4. Exécuter l'import (migrate-sheets-to-supabase.cjs --send) avec les données lues via l'API Google Sheets — Rôle : coding_agent (avec service key + données)
+5. Vérifier la recherche de contacts depuis ChatGPT — Rôle : coding_agent + fondateur
+6. Préparer les segments et modèles d'emails Gmail — Rôle : coding_agent + fondateur
 
 ### Branche / PR
 - Branche : `feat/sargagame-supabase-google-migration` (sur origin, commit `ad4dd269e`)

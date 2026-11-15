@@ -86,10 +86,12 @@ Titre : "Sargasses Emails"
   - 12 alertes informatives RLS sans policies : ne pas ouvrir les tables publiquement
 - **Action** : Aucune reconnexion nécessaire. Le connecteur est opérationnel.
 
-### B4 — Accès Google Sheets bloqué
-- **Preuve** : Drive API export → `403 The user has not granted the app read access to the file`. Web app (nouveau script) → `403 Authorization needed`. clasp `run` → `NOT_FOUND` (pas de déploiement API).
-- **Impact** : impossible de lire les données brutes des 10 onglets sans consentement OAuth interactif.
-- **Contournement partiel** : le web app existant (@35, deployment `AKfycbxc4Fw_...`) expose `action=stats` → `{payments:22, revenue:142.78, emails:639, feedbacks:1, avgRating:4, emailsSent:260, lastDispatch:"2026-06-19T22:14:28.244Z"}`. Et `action=emails&island=X` retourne uniquement le count, pas les emails. `action=feedback` retourne les 20 derniers items.
+### B4 — ~~Accès Google Sheets bloqué~~ RÉSOLU
+- **Preuve** : OAuth propriétaire fonctionnel. Client ID `992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3` dans le projet `sargagame-sheets` (992354181512). Scopes: `spreadsheets.readonly` + `drive.readonly`. Testeur `yacovassaraf@gmail.com` ajouté. Token avec refresh_token sauvegardé et refresh testé (succès).
+- **13 onglets lus avec succès** via l'API Google Sheets REST (lecture seule) :
+  - Emails (896), subscription_events (1000), analytics_events (466099), email_events (2319), drip_log (1000), feedback_requests (1000), Feuille 3 (vide), email_tracking (5883), beach_reports (1248), payments (1000), email_log (1000), Feuille 2 (vide), feedback (1000)
+- **Google Drive** : 9 fichiers Sargagame/Sargasses trouvés (spreadsheet principal, 2 Apps Scripts, 1 Google Doc, 4 spreadsheets SEO, 1 Lead Guadeloupe)
+- **Action** : OAuth opérationnel et durable. Token refreshable. Accès lecture seule confirmé.
 
 ### B5 — Cloudflare API token expiré
 - **Preuve** : `GET /accounts/.../workers/scripts` avec token `cfk_...` → `401 Authentication error`.
