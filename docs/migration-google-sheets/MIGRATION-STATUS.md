@@ -7,22 +7,39 @@
 
 ---
 
-## 1. Inventaire des 10 onglets source (depuis Code.js Apps Script)
+## 1. Inventaire des 13 onglets source (vérifié via API Google Sheets, lecture seule)
 
-Source de vérité : `docs/migration-google-sheets/appscript-code-backup/Code.js` (fonction `getOrCreateSheet`).
+Source de vérité : API Google Sheets REST (OAuth propriétaire, scope `spreadsheets.readonly`).
+Spreadsheet ID : `1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ`
+Titre : "Sargasses Emails"
 
-| # | Onglet | Colonnes (headers) | Volume (stats web app) | Table cible |
-|---|--------|-------------------|------------------------|-------------|
-| 1 | `emails` | date, email, island, source (+ unsubscribed) | 639 | `b2b_contact_emails` |
-| 2 | `feedback` | date, rating, text, island | 1 | `contact_feedback` |
-| 3 | `payments` | date, session_id, email, amount, currency, status, island, ref | 22 (revenue 142.78€) | `contact_payments` |
-| 4 | `subscription_events` | date, event_type, object_id, email, customer, subscription, amount, currency, island | ? | `contact_subscriptions` |
-| 5 | `email_log` | date, island, subject, sent, total_subscribers | 260 sent | `email_campaigns` |
-| 6 | `digest_log` | date, island, digest | ? | `email_campaigns` |
-| 7 | `email_tracking` | date, resend_id, to, subject, email_type, island, status, plan, source, ab_tests | ? | `email_messages` |
-| 8 | `email_events` | date, event_type, resend_id, to, subject, from | ? | `email_messages` (événements) |
-| 9 | `beach_reports` | date, beach_id, beach_name, island, level | ? | `automation_runs` |
-| 10 | `analytics_events` | date, event_name, island, ab_lock1, ab_modal1, ab_onb1, ab_free1, ab_vp1, ab_price1, raw_params | ? | `automation_runs` |
+| # | Onglet | Colonnes (headers) | Lignes (grid) | Table cible | Existe dans Supabase ? |
+|---|--------|-------------------|---------------|-------------|----------------------|
+| 1 | `Emails` | Date, Email, Island, Source, unsubscribed | 896 | `b2b_contact_emails` | À vérifier |
+| 2 | `subscription_events` | date, event_type, object_id, email, customer, subscription, amount, currency, island | 1000 | `contact_subscriptions` | À vérifier |
+| 3 | `analytics_events` | date, event_name, island, ab_lock1, ab_modal1, ab_onb1, ab_free1, ab_vp1, ab_price1, raw_params | 466099 | `automation_runs` | **OUI** (~464 608) |
+| 4 | `email_events` | date, event_type, resend_id, to, subject, from | 2319 | `email_messages` (événements) | À vérifier |
+| 5 | `drip_log` | date, email, drip_id, island, status | 1000 | `automation_runs` (drip) | À vérifier |
+| 6 | `feedback_requests` | date, email, status | 1000 | `contact_consents` | À vérifier |
+| 7 | `Feuille 3` | (vide — pas de headers) | 1000 | — | Non applicable (feuille vide) |
+| 8 | `email_tracking` | date, resend_id, to, subject, email_type, island, status, plan, source, ab_tests | 5883 | `email_messages` | À vérifier |
+| 9 | `beach_reports` | date, beach_id, beach_name, island, level | 1248 | `automation_runs` | **OUI** (~405) |
+| 10 | `payments` | date, session_id, email, amount, currency, status, island, ref | 1000 | `contact_payments` | À vérifier |
+| 11 | `email_log` | date, island, subject, sent, total_subscribers | 1000 | `email_campaigns` | À vérifier |
+| 12 | `Feuille 2` | (vide — pas de headers) | 1000 | — | Non applicable (feuille vide) |
+| 13 | `feedback` | date, rating, text, island | 1000 | `contact_feedback` | À vérifier |
+
+### Mapping corrigé (vs target-data-model.md original)
+
+| Onglet | Table cible originale | Correction |
+|--------|----------------------|------------|
+| `analytics_events` | `automation_runs` | **Table existe déjà** dans Supabase (~464 608 lignes). Ne pas recréer. Importer uniquement les données manquantes ou faire un upsert. |
+| `beach_reports` | `automation_runs` | **Table existe déjà** dans Supabase (~405 lignes). Ne pas recréer. Importer uniquement les données manquantes ou faire un upsert. |
+| `drip_log` | `automation_runs` (drip) | Nouveau onglet non dans le mapping original. Même table cible. |
+| `feedback_requests` | `contact_consents` | Nouveau onglet non dans le mapping original. Même table cible. |
+| `Feuille 2`, `Feuille 3` | — | Feuilles vides (pas de headers). À ignorer pour la migration. |
+| `digest_log` | `email_campaigns` | **Absent du Sheet réel.** Cet onglet n'existe pas dans le Spreadsheet. Soit il a été supprimé, soit il n'a jamais été créé. |
+| `b2b_contact_emails` | `b2b_contact_emails` | L'onglet s'appelle `Emails` (pas `emails` en minuscule). Adapter le mapping. |
 
 > Note : l'inventaire précédent (`inventory-google.md`) était corrompu (listait uniquement "Contacts" et "Leads"). Le Code.js est la source de vérité.
 

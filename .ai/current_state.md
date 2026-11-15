@@ -29,7 +29,7 @@
 - B1 : SUPABASE_SERVICE_KEY absent localement (présent dans GitHub/Cloudflare secrets)
 - B2 : Supabase REST refusé pour anon key (permission denied)
 - B3 : ~~Supabase MCP nécessite OAuth~~ RÉSOLU — le connecteur fonctionne dans ChatGPT (projet ACTIVE_HEALTHY, PG 17.6, 13 migrations). Ne plus considérer comme blocage.
-- B4 : Google Sheets accès bloqué (Drive API 403, web app 403 Authorization needed)
+- B4 : ~~Google Sheets accès bloqué~~ RÉSOLU — OAuth propriétaire fonctionnel (client ID: 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3, scopes: spreadsheets.readonly + drive.readonly). 13 onglets lus avec succès. Token avec refresh_token sauvegardé.
 - B5 : Cloudflare API token expiré (401)
 - B6 : clasp authentifié, token expiré mais refresh OK (BOM corrigé)
 
