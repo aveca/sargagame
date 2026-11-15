@@ -1,8 +1,30 @@
 ﻿---
 
-## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 72ea7ccd1
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.6 (SecretManager) · commit 72ea7ccd1
 
 ### Travail effectué
+
+- **Résumé 1 ligne** : SecretManager (coffre central AES-256-GCM) implémenté et testé (21/21), matrice d'intégration créée, 8 tests d'audit fournisseurs ajoutés et passés (99 tests au total), coffre initialisé vide (fondateur doit ajouter les secrets), interface `list`/`status`/`test-vault` validée.
+- **Détails** :
+  - `scripts/secret-manager.mjs` : commandes setup/add/get/delete/list/status/test-vault, valeurs masquées + préfixe côté logs, `.vault/` gitignoré, hygiène (pas de secret en dur).
+  - `tests/unit/secret-manager.test.cjs` : 21/21 passés.
+  - `tests/unit/mollie-api-auth.test.cjs` : 13/13.
+  - `tests/unit/stripe-api-auth.test.cjs` : 16/16.
+  - `tests/unit/paypal-api-auth.test.cjs` : 18/18.
+  - `tests/unit/webhook-signature.test.cjs` : 12/12.
+  - `tests/unit/supabase-availability.test.cjs` : 17/17.
+  - `tests/unit/smtp-resend-config.test.cjs` : 17/17.
+  - `tests/unit/cloudflare-permissions.test.cjs` : 19/19.
+  - `tests/unit/ftps-availability.test.cjs` : 15/15.
+  - `.ai/integration-matrix.md` : 12 domaines (présent vs opérationnel) + liste intervention fondateur (P0→P3).
+  - `npm run build` : exit 0, bundle 209.2 Ko gzip ≤ 210 Ko.
+  - `check-bundle-budget.cjs` : OK.
+  - `node scripts/run-tests.cjs` : 228/277 OK (échecs préexistants uniquement).
+  - `secret-manager list` : tous les fournisseurs vides (coffre initialisé, aucun secret ajouté).
+  - `secret-manager status` : JSON CI-lisible, tous les fournisseurs non-opérationnels, `testsReady: false`.
+  - `secret-manager test-vault` : PERSISTANCE OK.
+
+### Travail précédent (déjà commit 72ea7ccd1)
 
 - **Résumé 1 ligne** : Webhook Mollie `b2b_first` ajouté aux sources B2B, plans annuels centralisés dans `mol_b2b_plans()`, `b2b-create-checkout.php` créé avec CORS whitelist, 31 tests B2B payment flow ajoutés et passés.
 - **Détails** :

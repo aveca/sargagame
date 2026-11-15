@@ -1,8 +1,28 @@
 ﻿---
 
-## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 72ea7ccd1
+## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.6 (SecretManager)
 
-**Webhook Mollie `b2b_first` + plans annuels centralisés + b2b-create-checkout avec CORS whitelist.**
+**SecretManager (coffre central), matrice d'intégration, 8 tests d'audit fournisseurs, interface de config initiale.**
+
+- `scripts/secret-manager.mjs` : coffre AES-256-GCM, commandes setup/add/get/delete/list/status/test-vault, valeurs masquées (jamais en clair), préfixe côté logs, `.vault/` gitignoré (.gitignore ligne 187).
+- `tests/unit/secret-manager.test.cjs` : 21/21 (setup, add masqué + préfixe, get masqué, list, delete, persistance après recharge, status JSON, hygiène script).
+- `tests/unit/mollie-api-auth.test.cjs` : 13/13 (audit source, pas de console.log valeur brute).
+- `tests/unit/stripe-api-auth.test.cjs` : 16/16.
+- `tests/unit/paypal-api-auth.test.cjs` : 18/18.
+- `tests/unit/webhook-signature.test.cjs` : 12/12 (Mollie HMAC-SHA256, Stripe v1, PayPal API).
+- `tests/unit/supabase-availability.test.cjs` : 17/17.
+- `tests/unit/smtp-resend-config.test.cjs` : 17/17.
+- `tests/unit/cloudflare-permissions.test.cjs` : 19/19.
+- `tests/unit/ftps-availability.test.cjs` : 15/15.
+- `.ai/integration-matrix.md` : 12 fournisseurs/domains (présent vs opérationnel) + liste d'intervention fondateur (P0→P3).
+
+**Tests :** `npm run build` → exit 0 (bundle 209.2 Ko gzip ≤ 210 Ko), `check-bundle-budget.cjs` → OK, `node scripts/run-tests.cjs` → 228/277 OK (échecs préexistants uniquement), `php -l` N/A (aucun PHP touché), `secret-manager list`/`status`/`test-vault` → OK (coffre vide, fondateur doit ajouter les secrets), `test-vault` → PERSISTANCE OK.
+
+**Statut :** Branche `feat/sargagame-supabase-google-migration`, non mergée sur `main`. PR non créée (outils GitHub indisponibles). Accès fournisseurs en attente du fondateur (P0 : clé Mollie test révocation/remplacement, webhook secret Mollie, clé Stripe LIVE renouvellement, webhook secret Stripe, SUPABASE_SERVICE_KEY).
+
+**Fichiers modifiés :** `scripts/secret-manager.mjs` (nouveau), `tests/unit/secret-manager.test.cjs` (nouveau), `tests/unit/mollie-api-auth.test.cjs` (nouveau), `tests/unit/stripe-api-auth.test.cjs` (nouveau), `tests/unit/paypal-api-auth.test.cjs` (nouveau), `tests/unit/webhook-signature.test.cjs` (nouveau), `tests/unit/supabase-availability.test.cjs` (nouveau), `tests/unit/smtp-resend-config.test.cjs` (nouveau), `tests/unit/cloudflare-permissions.test.cjs` (nouveau), `tests/unit/ftps-availability.test.cjs` (nouveau), `.ai/integration-matrix.md` (nouveau).
+
+---
 
 - `public/api/mollie-webhook.php` : `b2b_first` maintenant traité comme `b2b_annual` (grant pro 365j sur subscription.created/updated + subscription.paid)
 - `public/api/mollie-lib.php` : `mol_b2b_plans()` centralise pro_annual (690€) et brief_annual (290€)
