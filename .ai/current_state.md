@@ -1,54 +1,61 @@
 ﻿---
-## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e (reprise mission prioritaire)
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 374f2ae2f
 
 ### Travail effectué
 
-- **Résumé 1 ligne** : Inventaire complet de la migration Supabase réalisé (10 onglets identifiés depuis Code.js, colonnes connues, volumes partiels), blocages documentés, infrastructure de migration créée (script runner + status doc).
+- **Résumé 1 ligne** : Connexion Google OAuth propriétaire sécurisée (token dans Windows Credential Manager), 13 onglets lus avec volumes réels vérifiés, Google Drive inventorié (9 fichiers), écart beach_reports documenté.
 - **Détails** :
-  - 10 onglets source identifiés depuis Code.js (emails, feedback, payments, subscription_events, email_log, digest_log, email_tracking, email_events, beach_reports, analytics_events) avec leurs colonnes
-  - Stats web app vérifiées : 22 paiements, 142.78€ revenue, 639 emails, 1 feedback, 260 emails envoyés
-  - Blocages documentés : SUPABASE_SERVICE_KEY absent, Supabase MCP nécessite OAuth, Google Sheets accès bloqué (OAuth consent), Cloudflare token expiré, clasp authentifié (BOM corrigé)
-  - `docs/migration-google-sheets/MIGRATION-STATUS.md` créé (inventaire + blocages + actions)
-  - `scripts/automation/migrate-sheets-to-supabase.cjs` créé (runner idempotent, dry-run, journal de migration)
-  - `scripts/automation/webhook-reconcile.cjs` créé (réconciliation webhooks, commit `61a1ab9df`)
-  - `docs/migration-google-sheets/inventory-google.md` est corrompu (listait uniquement "Contacts" et "Leads") — Code.js est la source de vérité
-  - Export script read-only créé et déployé (`AKfycbxMVorrZ8Z_...`) mais nécessite consentement OAuth
+  - OAuth Google propriétaire fonctionnel : projet sargagame-sheets (992354181512), client ID 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3, scopes spreadsheets.readonly + drive.readonly
+  - Testeur yacovassaraf@gmail.com ajouté (mode test)
+  - Token stocké dans Windows Credential Manager (target: SargagameGoogleOAuth, type Generic, persist LOCAL_MACHINE)
+  - Fichier temp google-oauth-token.json supprimé (credential validé et refreshable)
+  - Refresh token testé avec succès (nouveau access token obtenu)
+  - 13 onglets lus avec succès via l'API Google Sheets REST (lecture seule)
+  - Volumes réels vérifiés (column A, non-empty rows) : Emails 639, subscription_events 15, analytics_events 466098, email_events 2318, drip_log 194, feedback_requests 3, Feuille 3 vide, email_tracking 5882, beach_reports 1247, payments 22, email_log 22, Feuille 2 vide, feedback 1
+  - Google Drive : 9 fichiers Sargagame/Sargasses trouvés (spreadsheet principal, 2 Apps Scripts, 1 Google Doc, 4 spreadsheets SEO, 1 Lead Guadeloupe)
+  - Écart beach_reports : Sheet 1247 vs Supabase ~405 (à investiguer avant import)
+  - Stripe : statut à vérifier (config locale existe avec sk_live + webhook_secret, ne pas classer legacy sans vérification)
 
 ### Fichiers modifiés
-- `docs/migration-google-sheets/MIGRATION-STATUS.md` (nouveau)
-- `scripts/automation/migrate-sheets-to-supabase.cjs` (nouveau)
-- `docs/migration-google-sheets/inventory-google.md` (corrompu, à ignorer)
-- `.ai/current_state.md` (mis à jour)
+- `docs/migration-google-sheets/MIGRATION-STATUS.md` (volumes réels, écart beach_reports, Stripe à vérifier)
+- `.ai/current_state.md` (B4 résolu, volumes réels documentés)
+- `.ai/tasks.md` (inventaire migration + infrastructure)
 
 ### Tests réalisés
-- [x] node --check → OK sur migrate-sheets-to-supabase.cjs
-- [x] Dry-run → OK (emails 2 lignes, feedback 1 ligne, 8 sheets absents skippés)
+- [x] Google Sheets API REST — 13 onglets lus avec succès
+- [x] Token refresh — succès (nouveau access token obtenu)
+- [x] Windows Credential Manager — credential stocké et récupéré avec succès
+- [x] Sheets API test avec credential récupéré — "Sargasses Emails" confirmé
+- [x] Google Drive API — 9 fichiers Sargagame trouvés
+- [x] Dry-run migration — OK (emails 2, feedback 1, 8 sheets skippés)
 - [ ] npm run build → non requis (scripts Node.js uniquement)
+- [ ] check-bundle-budget → non requis
 
-### Blocages précis
-- B1 : SUPABASE_SERVICE_KEY absent localement (présent dans GitHub/Cloudflare secrets)
-- B2 : Supabase REST refusé pour anon key (permission denied)
-- B3 : ~~Supabase MCP nécessite OAuth~~ RÉSOLU — le connecteur fonctionne dans ChatGPT (projet ACTIVE_HEALTHY, PG 17.6, 13 migrations). Ne plus considérer comme blocage.
-- B4 : ~~Google Sheets accès bloqué~~ RÉSOLU — OAuth propriétaire fonctionnel (projet sargagame-sheets, 992354181512). Client ID: 992354181512-3fbb8brlqa3qfgv9q4ss08jeuum5vag3. Scopes: spreadsheets.readonly + drive.readonly. Testeur yacovassaraf@gmail.com ajouté. Token avec refresh_token sauvegardé et refresh testé (succès). 13 onglets lus avec succès. Volumes réels vérifiés (column A) : Emails 639, subscription_events 15, analytics_events 466098, email_events 2318, drip_log 194, feedback_requests 3, Feuille 3 vide, email_tracking 5882, beach_reports 1247, payments 22, email_log 22, Feuille 2 vide, feedback 1. Google Drive : 9 fichiers Sargagame trouvés. Écart beach_reports : Sheet 1247 vs Supabase ~405 (à investiguer).
-- B5 : Cloudflare API token expiré (401)
-- B6 : clasp authentifié, token expiré mais refresh OK (BOM corrigé)
+### Problèmes restants
+- [ ] SUPABASE_SERVICE_KEY absent localement → verify_subscription retourne lookup_failed
+- [ ] Cloudflare API token expiré → 401
+- [ ] Stripe statut à vérifier (ne pas classer legacy sans vérification du profil, clés, webhooks)
+- [ ] Écart beach_reports : Sheet 1247 vs Supabase ~405 (à investiguer)
+- [ ] Front Sargasses_PROD.jsx doit envoyer kind:"subscription" pour requêtes b2b_pro
+- [ ] b2b-create-checkout.php dépend de b2b-db.php (à vérifier)
 
 ### Prochaine action recommandée
-1. Comparer le schéma réel Supabase (tables, colonnes, contraintes, index, RLS) avec supabase-schema-target.sql via ChatGPT (connecteur actif) — Rôle : coding_agent. Identifier analytics_events (~464K) et beach_reports (~405) déjà présents. Éviter les doublons.
-2. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops. Ne pas demander la clé dans ChatGPT ; injection sécurisée dans l'environnement d'exécution.
+1. Comparer le schéma réel Supabase avec supabase-schema-target.sql via ChatGPT (connecteur actif) — Rôle : coding_agent
+2. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops
 3. Exécuter le SQL schema target (tables manquantes uniquement) dans Supabase SQL Editor — Rôle : coding_agent (avec service key)
-4. Exécuter l'import (migrate-sheets-to-supabase.cjs --send) avec les données lues via l'API Google Sheets — Rôle : coding_agent (avec service key + données)
+4. Exécuter l'import (migrate-sheets-to-supabase.cjs --send) — Rôle : coding_agent (avec service key + données)
 5. Vérifier la recherche de contacts depuis ChatGPT — Rôle : coding_agent + fondateur
-6. Préparer les segments et modèles d'emails Gmail — Rôle : coding_agent + fondateur
+6. Vérifier le statut Stripe (profil, clés, webhooks, MRR) — Rôle : coding_agent + fondateur
+7. Préparer les segments et modèles d'emails Gmail — Rôle : coding_agent + fondateur
 
 ### Branche / PR
-- Branche : `feat/sargagame-supabase-google-migration` (sur origin, commit `ad4dd269e`)
+- Branche : `feat/sargagame-supabase-google-migration` (sur origin)
 - PR : non créée (outils GitHub indisponibles)
-- Commit head : `ad4dd269e`
+- Commit head : `374f2ae2f`
 
 ---
 
-## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit ad4dd269e (reprise mission prioritaire)
 
 ### Travail effectué (Phase 3 — Modèle de données cible Supabase)
 
