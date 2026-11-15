@@ -199,38 +199,52 @@ create index if not exists idx_source_sync_runs_source
   on public.source_sync_runs(source_table, created_at desc);
 
 -- =====================================================================
--- Contraintes de déduplication
+-- Contraintes de déduplication (idempotentes : drop if exists + add)
+-- PostgreSQL ne supporte pas `ADD CONSTRAINT IF NOT EXISTS`.
 -- =====================================================================
 
 alter table public.b2b_contact_emails
-  add constraint if not exists uk_b2b_contact_emails_email_hash_island
+  drop constraint if exists uk_b2b_contact_emails_email_hash_island;
+alter table public.b2b_contact_emails
+  add constraint uk_b2b_contact_emails_email_hash_island
   unique (email_hash, island);
 
 alter table public.contact_subscriptions
-  add constraint if not exists uk_contact_subscriptions_event_object
+  drop constraint if exists uk_contact_subscriptions_event_object;
+alter table public.contact_subscriptions
+  add constraint uk_contact_subscriptions_event_object
   unique (event_type, object_id);
 
 alter table public.automation_runs
-  add constraint if not exists uk_automation_runs_email_drip_day
+  drop constraint if exists uk_automation_runs_email_drip_day;
+alter table public.automation_runs
+  add constraint uk_automation_runs_email_drip_day
   unique (email, drip_id, drip_day);
 
 alter table public.email_messages
-  add constraint if not exists uk_email_messages_resend_id
+  drop constraint if exists uk_email_messages_resend_id;
+alter table public.email_messages
+  add constraint uk_email_messages_resend_id
   unique (resend_id);
 
 alter table public.email_suppressions
-  add constraint if not exists uk_email_suppressions_email
+  drop constraint if exists uk_email_suppressions_email;
+alter table public.email_suppressions
+  add constraint uk_email_suppressions_email
   unique (email);
 
 alter table public.source_sync_runs
-  add constraint if not exists uk_source_sync_runs_table_start
+  drop constraint if exists uk_source_sync_runs_table_start;
+alter table public.source_sync_runs
+  add constraint uk_source_sync_runs_table_start
   unique (source_table, sync_started_at);
 
 -- =====================================================================
 -- Row Level Security (RLS)
 -- Règle : aucune donnée B2C accessible par le rôle `anon`
--- Seule `service_role` peut lire/écrire les tables B2C
--- Exception : `anon` peut INSERT dans `b2b_contact_emails` (newsletter publique)
+-- Seule `service_role` peut lire/écrire toutes les tables B2C.
+-- Aucune exception INSERT public (pas de newsletter publique via anon).
+-- PostgreSQL ne supporte pas `CREATE POLICY IF NOT EXISTS` → drop + recreate.
 -- =====================================================================
 
 alter table public.b2b_contact_emails enable row level security;
@@ -244,35 +258,77 @@ alter table public.contact_consents enable row level security;
 alter table public.automation_runs enable row level security;
 alter table public.source_sync_runs enable row level security;
 
--- b2b_contact_emails : INSERT public autorisé (newsletter), SELECT/UPDATE service_role uniquement
-create policy if not exists b2b_contact_emails_insert_public
-  on public.b2b_contact_emails for insert
-  to anon
+-- b2b_contact_emails : service_role uniquement (pas d'accès anon)
+drop policy if exists b2b_contact_emails_insert_public on public.b2b_contact_emails;
+create policy b2b_contact_emails_service_role_all
+  on public.b2b_contact_emails
+  to service_role
+  using (true)
   with check (true);
 
-create policy if not exists b2b_contact_emails_service_role_all
-  on public.b2b_contact_emails
-  using (true);
-
 -- Toutes les autres tables B2C : service_role uniquement
-create policy if not exists contact_feedback_service_role_all
-  on public.contact_feedback using (true);
-create policy if not exists contact_payments_service_role_all
-  on public.contact_payments using (true);
-create policy if not exists contact_subscriptions_service_role_all
-  on public.contact_subscriptions using (true);
-create policy if not exists email_campaigns_service_role_all
-  on public.email_campaigns using (true);
-create policy if not exists email_messages_service_role_all
-  on public.email_messages using (true);
-create policy if not exists email_suppressions_service_role_all
-  on public.email_suppressions using (true);
-create policy if not exists contact_consents_service_role_all
-  on public.contact_consents using (true);
-create policy if not exists automation_runs_service_role_all
-  on public.automation_runs using (true);
-create policy if not exists source_sync_runs_service_role_all
-  on public.source_sync_runs using (true);
+drop policy if exists contact_feedback_service_role_all on public.contact_feedback;
+create policy contact_feedback_service_role_all
+  on public.contact_feedback
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists contact_payments_service_role_all on public.contact_payments;
+create policy contact_payments_service_role_all
+  on public.contact_payments
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists contact_subscriptions_service_role_all on public.contact_subscriptions;
+create policy contact_subscriptions_service_role_all
+  on public.contact_subscriptions
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists email_campaigns_service_role_all on public.email_campaigns;
+create policy email_campaigns_service_role_all
+  on public.email_campaigns
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists email_messages_service_role_all on public.email_messages;
+create policy email_messages_service_role_all
+  on public.email_messages
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists email_suppressions_service_role_all on public.email_suppressions;
+create policy email_suppressions_service_role_all
+  on public.email_suppressions
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists contact_consents_service_role_all on public.contact_consents;
+create policy contact_consents_service_role_all
+  on public.contact_consents
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists automation_runs_service_role_all on public.automation_runs;
+create policy automation_runs_service_role_all
+  on public.automation_runs
+  to service_role
+  using (true)
+  with check (true);
+
+drop policy if exists source_sync_runs_service_role_all on public.source_sync_runs;
+create policy source_sync_runs_service_role_all
+  on public.source_sync_runs
+  to service_role
+  using (true)
+  with check (true);
 
 -- =====================================================================
 -- Note : les tables B2B existantes (b2b_leads, b2b_subscriptions, b2c_alerts,
