@@ -163,8 +163,10 @@ function mol_b2b_plans(): array {
 /**
  * Grant Pro token once per subscription (idempotent via subscriptionId)
  * Gère mensuel (renouvelable 30j) vs annuel (365j)
+ * $email optionnel : stocké dans le mirror Supabase pour permettre
+ * verify_subscription par email (b2b_pro cross-device).
  */
-function mol_b2b_grant_once(string $customerId, string $planKey, string $subscriptionId, ?int $durationDaysOverride = null): array {
+function mol_b2b_grant_once(string $customerId, string $planKey, string $subscriptionId, ?int $durationDaysOverride = null, ?string $email = null): array {
     require_once __DIR__ . '/widget-token.php';
 
     $grantKey = 'mollie_grant_' . $subscriptionId;
@@ -187,15 +189,20 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
 
     set_transient($grantKey, $token, $durationDays * 86400 + 86400); // TTL = durée + 1 jour
 
-    // Supabase mirror (best-effort)
-    $mirrorOk = mol_supabase_mirror('payment_grants', [
+    // Supabase mirror (best-effort). L'email est inclus quand disponible pour
+    // permettre verify_subscription par email (type=b2b_pro).
+    $mirrorData = [
         'subscription_id' => $subscriptionId,
         'type' => 'b2b_pro',
         'plan' => $planKey,
         'customer_id' => $customerId,
         'expires_at' => date('c', $expiresAt),
         'granted_at' => date('c', time()),
-    ]);
+    ];
+    if ($email !== null) {
+        $mirrorData['email'] = $email;
+    }
+    $mirrorOk = mol_supabase_mirror('payment_grants', $mirrorData);
 
     error_log("[mol_b2b_grant_once] granted plan=$planKey customer=$customerId sub=$subscriptionId expires=" . date('c', $expiresAt));
 

@@ -119,16 +119,26 @@ try {
 
         error_log("[mollie-webhook] subscription.$event id=$id status=$status plan=$planKey customer=$customerId");
 
+        // Récupère l'email du customer Mollie pour le stocker dans le grant
+        // (permet verify_subscription par email, type=b2b_pro, cross-device).
+        $customerEmail = '';
+        try {
+            $customer = $mollie->customers->get($customerId);
+            $customerEmail = $customer->email ?? '';
+        } catch (Throwable $e) {
+            error_log("[mollie-webhook] customer fetch failed id=$customerId: " . $e->getMessage());
+        }
+
         // Grant Pro token for B2B monthly subscriptions (active/pending)
          if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
                  if (in_array($status, ['active', 'pending'], true)) {
-                     $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                     $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $customerEmail);
                      $mirrorOk = $grant['mirror_ok'] ?? false;
                      if (!$mirrorOk) {
-                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId email=$customerEmail mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
                      } else {
-                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId mirror_ok=$mirrorOk");
+                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId email=$customerEmail mirror_ok=$mirrorOk");
                      }
                  }
              }
@@ -136,12 +146,12 @@ try {
 
          if ($event === 'subscription.paid') {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
-                 $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                 $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $customerEmail);
                  $mirrorOk = $grant['mirror_ok'] ?? false;
                  if (!$mirrorOk) {
-                     error_log("[mollie-webhook] subscription.paid id=$id plan=$planKey customer=$customerId mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                     error_log("[mollie-webhook] subscription.paid id=$id plan=$planKey customer=$customerId email=$customerEmail mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
                  } else {
-                     error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId mirror_ok=$mirrorOk");
+                     error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId email=$customerEmail mirror_ok=$mirrorOk");
                  }
              }
          }

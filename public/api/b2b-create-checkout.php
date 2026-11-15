@@ -8,7 +8,10 @@
  */
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
+// CORS whitelist — SYNC avec mollie.php / create-checkout.php
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com','https://sargassummiami.com','https://sargassumcancun.com'];
+if (in_array($origin, $allowed, true)) header("Access-Control-Allow-Origin: $origin");
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
