@@ -298,15 +298,25 @@ try {
             echo json_encode(['active' => false, 'reason' => 'lookup_failed']);
             exit;
         }
-        // Select le grant le plus récent pour cet email, type=b2c_pass, non expiré.
-        // select=pass,expires_at,payment_id — ne remonte pas PII inutile (customer_id).
+        // kind = 'pass' (b2c_pass) | 'subscription' (b2b_pro). Défaut 'pass' pour
+        // compatibilité ascendante avec sgVerifySub existant.
+        $kind = $data['kind'] ?? 'pass';
+        $grantType = ($kind === 'subscription' || $kind === 'b2b_pro') ? 'b2b_pro' : 'b2c_pass';
+
+        // Select le grant le plus récent pour cet email, non expiré.
+        // select ne remonte pas PII inutile (customer_id).
+        if ($grantType === 'b2c_pass') {
+            $select = 'pass,expires_at,payment_id';
+        } else {
+            $select = 'plan,expires_at,payment_id,subscription_id,customer_id';
+        }
         $qs = http_build_query([
-            'select' => 'pass,expires_at,payment_id',
-            'type'   => 'eq.b2c_pass',
-            'email'  => 'eq.' . $email,
+            'select'   => $select,
+            'type'     => 'eq.' . $grantType,
+            'email'    => 'eq.' . $email,
             'expires_at' => 'gt.now()',
-            'order'  => 'expires_at.desc',
-            'limit'  => '1',
+            'order'    => 'expires_at.desc',
+            'limit'    => '1',
         ]);
         $url = rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?' . $qs;
         $ch = curl_init();
@@ -325,37 +335,49 @@ try {
         $code  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         if ($err || $code >= 400) {
-            error_log("[mollie.php] verify_subscription: Supabase err=$err code=$code");
+            error_log("[mollie.php] verify_subscription kind=$kind: Supabase err=$err code=$code");
             echo json_encode(['active' => false, 'reason' => 'lookup_failed']);
             exit;
         }
         $rows = json_decode($resp, true) ?? [];
         if (!is_array($rows) || empty($rows)) {
-            echo json_encode(['active' => false, 'reason' => 'no_pass_grant']);
+            echo json_encode(['active' => false, 'reason' => 'no_' . $grantType . '_grant']);
             exit;
         }
         $row = $rows[0];
         $expiresAtIso = $row['expires_at'] ?? null;
         if (!$expiresAtIso) {
-            echo json_encode(['active' => false, 'reason' => 'no_pass_grant']);
+            echo json_encode(['active' => false, 'reason' => 'no_' . $grantType . '_grant']);
             exit;
         }
         $passEnd = strtotime($expiresAtIso);
         if ($passEnd === false || $passEnd <= time()) {
             // Double-garde : Supabase a déjà filtré expires_at>now() mais on revérifie
             // au cas où l'horloge PHP soit skewée.
-            echo json_encode(['active' => false, 'reason' => 'no_pass_grant']);
+            echo json_encode(['active' => false, 'reason' => 'no_' . $grantType . '_grant']);
             exit;
         }
         // passEnd en ms (epoch) — aligné sur le format lu par le front
         // (sg_premium_pass_end = Date.now()+days*86400000).
-        echo json_encode([
-            'active'  => true,
-            'kind'    => 'pass',
-            'pass'    => $row['pass'] ?? null,
-            'passEnd' => $passEnd * 1000,
-            'status'  => 'paid',
-        ]);
+        if ($grantType === 'b2b_pro') {
+            echo json_encode([
+                'active'  => true,
+                'kind'    => 'b2b_pro',
+                'plan'    => $row['plan'] ?? null,
+                'subscription_id' => $row['subscription_id'] ?? null,
+                'customer_id' => $row['customer_id'] ?? null,
+                'passEnd' => $passEnd * 1000,
+                'status'  => 'paid',
+            ]);
+        } else {
+            echo json_encode([
+                'active'  => true,
+                'kind'    => 'pass',
+                'pass'    => $row['pass'] ?? null,
+                'passEnd' => $passEnd * 1000,
+                'status'  => 'paid',
+            ]);
+        }
         exit;
     }
 
