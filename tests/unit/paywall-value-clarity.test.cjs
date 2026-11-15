@@ -71,7 +71,7 @@ assert.ok(/Vérifier la prévision de ma plage →/.test(pw),
 assert.ok(!/garanti[^<]{0,30}sans sargasse/i.test(pw), 'aucune promesse de plage sans sargasses');
 
 // ── 5. CTA principal de la fiche plage → contexte réel ─────────────────────
-const beachCtxSources = pw.match(/const _bcSrcs=\\[([^\\]]+)\\]/);
+const beachCtxSources = pw.match(/const _bcSrcs=\[(.*?)\]/);
 assert.ok(beachCtxSources && /[\\"']beach_sheet[\\"']/.test(beachCtxSources[1]),
   'the main beach-sheet CTA must preserve the selected beach in the paywall context');
 
