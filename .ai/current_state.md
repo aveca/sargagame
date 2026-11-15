@@ -28,17 +28,18 @@
 ### Blocages précis
 - B1 : SUPABASE_SERVICE_KEY absent localement (présent dans GitHub/Cloudflare secrets)
 - B2 : Supabase REST refusé pour anon key (permission denied)
-- B3 : Supabase MCP nécessite OAuth (authorization_servers: api.supabase.com)
+- B3 : ~~Supabase MCP nécessite OAuth~~ RÉSOLU — le connecteur fonctionne dans ChatGPT (projet ACTIVE_HEALTHY, PG 17.6, 13 migrations). Ne plus considérer comme blocage.
 - B4 : Google Sheets accès bloqué (Drive API 403, web app 403 Authorization needed)
 - B5 : Cloudflare API token expiré (401)
 - B6 : clasp authentifié, token expiré mais refresh OK (BOM corrigé)
 
 ### Prochaine action recommandée
-1. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops
-2. Autoriser le web app d'export (consentement OAuth) — Rôle : fondateur
-3. Compléter l'OAuth Supabase MCP dans ChatGPT — Rôle : fondateur
-4. Exécuter le SQL schema target dans Supabase SQL Editor — Rôle : coding_agent (avec service key)
-5. Exécuter l'export + import — Rôle : coding_agent (avec service key + données)
+1. Obtenir SUPABASE_SERVICE_KEY (fondateur ou rotation token Cloudflare) — Rôle : fondateur/devops. Ne pas demander la clé dans ChatGPT ; injection sécurisée dans l'environnement d'exécution.
+2. Autoriser le web app d'export (consentement OAuth par le propriétaire) — Rôle : fondateur. Procédure courte : ouvrir l'URL du script déployé dans un navigateur connecté au compte Google propriétaire et autoriser.
+3. Comparer le schéma réel Supabase (tables, colonnes, contraintes, index, RLS) avec supabase-schema-target.sql via ChatGPT — Rôle : coding_agent. Identifier analytics_events (~464K) et beach_reports (~405) déjà présents. Éviter les doublons.
+4. Exécuter le SQL schema target (tables manquantes uniquement) dans Supabase SQL Editor — Rôle : coding_agent (avec service key)
+5. Exécuter l'export (web app) + import (migrate-sheets-to-supabase.cjs --send) — Rôle : coding_agent (avec service key + données)
+6. Vérifier la recherche de contacts depuis ChatGPT — Rôle : coding_agent + fondateur
 
 ### Branche / PR
 - Branche : `feat/sargagame-supabase-google-migration` (sur origin, commit `ad4dd269e`)

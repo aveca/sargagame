@@ -57,10 +57,17 @@ Source de vérité : `docs/migration-google-sheets/appscript-code-backup/Code.js
 - **Preuve** : `GET /rest/v1/b2b_leads` avec anon key → `42501 permission denied for table b2b_leads`. Le GRANT SELECT n'a pas été donné au rôle anon.
 - **Impact** : impossible de vérifier les tables/volumes depuis l'agent sans service key.
 
-### B3 — Supabase MCP nécessite OAuth
-- **Preuve** : `GET https://mcp.supabase.com/mcp?project_ref=rswdmjtdzrucqzzukfmd` → `401 No access token provided`. Metadata OAuth : `authorization_servers: ["https://api.supabase.com"]`, scopes: `database:read`, `projects:read`, etc.
-- **Impact** : le connecteur Supabase dans opencode.json (`.mcp.json` n'a que higgsfield ; opencode.json a `supabase-sargagame`) nécessite un flow OAuth interactif. ChatGPT ne peut pas encore interroger Supabase sans que l'utilisateur complète l'OAuth.
-- **Config actuelle** : `opencode.json` → `mcpServers.supabase-sargagame` → URL `https://mcp.supabase.com/mcp?project_ref=rswdmjtdzrucqzzukfmd&read_only=true&features=database,docs,debugging,development,functions`
+### B3 — ~~Supabase MCP nécessite OAuth~~ RÉSOLU
+- **Mise à jour** : Le connecteur Supabase fonctionne désormais directement dans ChatGPT pour le projet `rswdmjtdzrucqzzukfmd`. Ne plus considérer comme blocage.
+- **Vérifications effectuées** :
+  - Projet sargagame : ACTIVE_HEALTHY
+  - PostgreSQL 17.6
+  - 13 migrations enregistrées jusqu'au 7 novembre 2026
+  - `analytics_events` existe déjà (~464 608 lignes estimées)
+  - `beach_reports` existe déjà (~405 lignes estimées)
+  - Tables B2B et `payment_grants` existent également
+  - 12 alertes informatives RLS sans policies : ne pas ouvrir les tables publiquement
+- **Action** : Aucune reconnexion nécessaire. Le connecteur est opérationnel.
 
 ### B4 — Accès Google Sheets bloqué
 - **Preuve** : Drive API export → `403 The user has not granted the app read access to the file`. Web app (nouveau script) → `403 Authorization needed`. clasp `run` → `NOT_FOUND` (pas de déploiement API).
@@ -103,33 +110,39 @@ Source de vérité : `docs/migration-google-sheets/appscript-code-backup/Code.js
 - Front `Sargasses_PROD.jsx` doit envoyer `kind:"subscription"` (non fait)
 - Liens de paiement par hôtel : `scripts/automation/b2b-hotel-paylinks.cjs` (dry-run uniquement)
 
-### Stripe (legacy, lecture seule)
-- 16 abonnés EUR, MRR surveillé uniquement
-- Aucun CTA, liens USD désactivés
+### Stripe (statut à vérifier — ne pas classer legacy/inactif sans preuve)
+- **Config locale** : `public/api/stripe-config.php` existe (gitignoré) avec `sk` (sk_live_*) et `webhook_secret` présents
+- **Endpoints** : `public/api/stripe-webhook.php` et `public/api/create-checkout.php` existent
+- **Catalogue** : `docs/stripe-live-catalog-2026-11-13.md` classe Stripe comme "legacy run-off, lecture seule"
+- **Action requise** : vérifier le profil Sargasses dans Stripe (dashboard), les clés (sk_live, webhook_secret), les webhooks configurés et le MRR réel avant de confirmer le statut. Ne pas supposer inactif.
+- **MRR source** : `scripts/automation/data/daily-metrics.json` bloc `stripe` (à lire dynamiquement, jamais figé en dur)
 
 ## 6. Prochaines actions (par ordre de priorité)
 
 ### P0 — Débloquer l'accès aux données
 1. **Obtenir SUPABASE_SERVICE_KEY** : le fondateur doit soit (a) fournir la valeur, soit (b) autoriser l'agent à l'extraire depuis GitHub Secrets via `gh` CLI (indisponible) ou Cloudflare API (token expiré). Alternative : rotation du token Cloudflare puis extraction.
-2. **Autoriser le web app d'export** : visiter l'URL du script déployé (`AKfycbxMVorrZ8Z_...`) pour autoriser l'accès OAuth. Ou accorder les scopes `spreadsheets.readonly` au clasp OAuth.
-3. **Compléter l'OAuth Supabase MCP** : l'utilisateur doit autoriser le flow OAuth sur `https://api.supabase.com` pour activer le connecteur dans ChatGPT.
+   - **Ne pas demander la clé service_role dans ChatGPT.** Préparer son injection sécurisée dans l'environnement d'exécution (GitHub Secrets / Cloudflare Secrets / wrangler secret put).
+2. **Autoriser le web app d'export** : le propriétaire doit effectuer le consentement OAuth du Web App déployé (`AKfycbxMVorrZ8Z_O7ueLVA1mHA35wpeL4BO52iIIV-SuPhAB2Z7sIEEzR_AmibZWyP2tFsRew`). Procédure : ouvrir l'URL `https://script.google.com/macros/s/AKfycbxMVorrZ8Z_O7ueLVA1mHA35wpeL4BO52iIIV-SuPhAB2Z7sIEEzR_AmibZWyP2tFsRew/exec?action=all` dans un navigateur connecté au compte Google propriétaire, puis autoriser l'accès. Le script est read-only (ne modifie aucune donnée).
+3. **~~Compléter l'OAuth Supabase MCP~~** : RÉSOLU — le connecteur fonctionne dans ChatGPT. Ne plus considérer comme blocage.
 
-### P1 — Exécuter la migration
-4. Créer les tables cibles dans Supabase (exécuter `scripts/supabase-schema-target.sql` dans le SQL Editor).
-5. Exécuter le script d'export pour récupérer les données des 10 onglets.
-6. Importer par lots avec journal de migration et déduplication.
-7. Vérifier les volumes source/cible.
+### P1 — Comparer et exécuter la migration
+4. **Comparer le schéma réel** : interroger Supabase (via ChatGPT ou service key) pour lister les tables existantes, leurs colonnes, contraintes, index et politiques RLS. Comparer avec `scripts/supabase-schema-target.sql`. Identifier les tables déjà présentes (analytics_events ~464K, beach_reports ~405) et éviter les doublons.
+5. **Corriger le mapping** : `analytics_events` et `beach_reports` correspondent déjà à des tables existantes dans Supabase. Ne pas recréer. Adapter le mapping pour ces deux onglets (importer uniquement les données manquantes ou faire un upsert).
+6. **Vérifier les données déjà migrées** : interroger Supabase pour identifier les contacts/emails déjà présents (éviter la duplication).
+7. **Exécuter le SQL schema target** (uniquement les tables manquantes) dans Supabase SQL Editor.
+8. **Exécuter l'export** : obtenir le JSON complet des 10 onglets via le web app (après consentement OAuth).
+9. **Importer par lots** avec `migrate-sheets-to-supabase.cjs --send`, journal de migration et déduplication.
+10. **Vérifier les volumes** source/cible.
 
 ### P2 — Paiements et droits
-8. Vérifier `b2b-create-checkout.php` → `b2b-db.php` dépendance.
-9. Ajouter `kind:"subscription"` dans `Sargasses_PROD.jsx`.
-10. Tester les parcours B2C/B2B (TEST uniquement, avec approbation).
+11. Vérifier `b2b-create-checkout.php` → `b2b-db.php` dépendance.
+12. Ajouter `kind:"subscription"` dans `Sargasses_PROD.jsx`.
+13. Tester les parcours B2C/B2B (TEST uniquement, avec approbation).
 
 ### P3 — ChatGPT + Gmail
-11. Configurer le connecteur Supabase MCP dans ChatGPT.
-12. Vérifier la recherche de contacts par email/hôtel/statut/segment.
-13. Préparer les segments et modèles d'emails.
-14. Configurer OAuth Gmail (scopes minimaux).
+14. Vérifier la recherche de contacts par email/hôtel/statut/segment depuis ChatGPT.
+15. Préparer les segments et modèles d'emails.
+16. Configurer OAuth Gmail (scopes minimaux).
 
 ## 7. Fichiers clés
 
