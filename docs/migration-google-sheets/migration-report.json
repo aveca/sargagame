@@ -1,0 +1,150 @@
+{
+  "project_ref": "rswdmjtdzrucqzzukfmd",
+  "project_name": "sargagame",
+  "region": "us-east-1",
+  "postgres_version": 17,
+  "branch": "feat/sargagame-supabase-google-migration",
+  "commit_sha": null,
+  "pr_number": null,
+  "pr_url": null,
+  "migration_started": "2026-11-15",
+  "migration_completed": null,
+  "phase1_inventory": {
+    "google_sheet_id": "1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ",
+    "google_sheet_url": "https://docs.google.com/spreadsheets/d/1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ/edit",
+    "sheets_tabs_count": 13,
+    "tabs": [
+      "emails", "feedback", "payments", "subscription_events", "email_log",
+      "beach_reports", "email_tracking", "analytics_events", "drip_log",
+      "feedback_requests", "email_events", "digest_log"
+    ],
+    "other_google_sheets": 0,
+    "importrange_detected": false,
+    "appscript_projects": 3,
+    "appscript_project_ids": {
+      "main_backend": null,
+      "stripe_webhook": null,
+      "weekly_digest": "1v23rVvp2Oa7bergwETnODYRf-kRbxRiIvGtY3bKonNtxp6ZR1UfpAsRV"
+    },
+    "automation_scripts_nodejs": [
+      "scripts/automation/fetch-subscribers.cjs",
+      "scripts/automation/fetch-payers.cjs",
+      "scripts/automation/referral-from-sheet.cjs",
+      "scripts/automation/ab-fetch-ga4.cjs"
+    ],
+    "clasp_authenticated": false,
+    "triggers_inventoried": false,
+    "deployments_inventoried": false
+  },
+  "phase2_supabase_audit": {
+    "existing_tables": [
+      "analytics_events", "b2b_prospects", "b2b_contacts", "b2b_leads",
+      "b2b_events", "b2b_scores", "b2b_concierge", "b2b_forecast_deliveries",
+      "b2b_payments", "b2b_subscriptions", "b2c_alerts", "b2c_alert_deliveries",
+      "beach_reports", "planner_alerts", "payment_grants", "photos"
+    ],
+    "existing_edge_functions": ["quick-action", "moderate", "submit-report"],
+    "rls_alert": "12 tables avec RLS activé mais sans policies — vérification requise",
+    "supabase_service_key_configured": false,
+    "supabase_url": "https://rswdmjtdzrucqzzukfmd.supabase.co"
+  },
+  "phase3_data_model": {
+    "tables_proposed": [
+      "b2b_contact_emails", "email_campaigns", "email_messages",
+      "email_suppressions", "contact_consents", "automation_runs",
+      "source_sync_runs"
+    ],
+    "tables_adapted": [],
+    "idempotency_key": "source_file_id + source_sheet_name + source_row_id",
+    "b2b_b2c_separation": true
+  },
+  "phase4_data_migration": {
+    "files_read": 0,
+    "tabs_read": 0,
+    "rows_read": 0,
+    "rows_imported": 0,
+    "duplicates": 0,
+    "rows_rejected": 0,
+    "missing_fields": 0,
+    "count_differences": [],
+    "errors": [],
+    "success_rate": null,
+    "idempotence_proven": false,
+    "staging_used": false
+  },
+  "phase5_automation_migration": {
+    "appscript_functions_documented": 21,
+    "triggers_sql_created": 0,
+    "edge_functions_created": 0,
+    "cron_jobs_created": 0,
+    "task_queue_created": false,
+    "gmail_integration_migrated": false
+  },
+  "phase6_observability": {
+    "secure_views_created": 0,
+    "security_invoker_used": false,
+    "public_views_created": 0,
+    "sql_report_ready": false
+  },
+  "phase7_tests": {
+    "tests_written": 0,
+    "tests_executed": 0,
+    "tests_passed": 0,
+    "tests_failed": 0,
+    "test_suites": [],
+    "rls_tested": false,
+    "no_b2c_leak": false,
+    "no_double_send": false,
+    "idempotence_tested": false
+  },
+  "phase8_cutover": {
+    "full_export_done": false,
+    "backup_done": false,
+    "initial_import_done": false,
+    "reconciliation_done": false,
+    "edge_functions_deployed": false,
+    "automation_tests_done": false,
+    "parallel_sync_done": false,
+    "cutover_done": false,
+    "legacy_readonly": false,
+    "legacy_triggers_disabled": false
+  },
+  "phase9_delivery": {
+    "branch_created": false,
+    "pr_created": false,
+    "pr_merged": false,
+    "inventory_delivered": false,
+    "scripts_backed_up": false,
+    "schema_delivered": false,
+    "migrations_sql_delivered": false,
+    "edge_functions_delivered": false,
+    "cron_config_delivered": false,
+    "import_script_delivered": false,
+    "tests_delivered": false,
+    "reconciliation_reports_delivered": false,
+    "security_report_delivered": false,
+    "rollback_procedure_delivered": false,
+    "disaster_recovery_procedure_delivered": false,
+    "documentation_delivered": false,
+    "migration_report_json": null
+  },
+  "rules_compliance": {
+    "sheets_not_deleted": true,
+    "historical_data_not_overwritten": true,
+    "no_secrets_in_git": true,
+    "legacy_automations_not_disabled": true,
+    "no_mass_campaigns": true,
+    "payments_tariffs_checkout_unchanged": true,
+    "b2c_data_not_public": true,
+    "ids_timestamps_relations_preserved": true,
+    "every_step_has_proof": false,
+    "no_invented_data": true
+  },
+  "blockers": [
+    "clasp non authentifié — impossible de lister triggers, déploiements, versions",
+    "GOOGLE_SERVICE_ACCOUNT_JSON non défini localement",
+    "SUPABASE_SERVICE_KEY non défini localement — audit Phase 2 bloqué",
+    "GitHub gh CLI indisponible — création PR bloquée"
+  ],
+  "next_actions": []
+}
