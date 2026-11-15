@@ -1,3 +1,12 @@
+## 2026-11-15 — Factory V3 : registre d'états de sessions normalisés
+
+- **Registre persistant** (`scripts/factory-v3/lib/session-registry.cjs`, CLI `scripts/factory-v3/session-registry.cjs`) : fusion des jobs de la queue et des sessions OpenCode réelles (CLI local via `resolveOpencodeBin`), états normalisés `PLANNING/RUNNING/WAITING/BLOCKED/RECOVERING/VERIFYING/COMPLETED/FAILED`, sortie `SESSION_REGISTRY.json` + historique de transitions horodaté `SESSION_HISTORY.jsonl` (plafonné, tracé `ABSENT` pour toute disparition).
+- **Contrats fail-closed** : `DONE` sans verdict `VERIFIED` → `FAILED` ; silence d'une session → `WAITING` + `stale`, jamais `BLOCKED` ; `RECOVERING` sur preuve réelle de failover ≤ 15 min (preuve `agent` ou `MODEL_FAILOVER` des logs) ; `VERIFYING` quand l'agent a réussi et que les gates tournent ; sessions déjà portées par un job non dupliquées.
+- **Portabilité CI corrigée** (`publish-observer-state.cjs`) : périphérique nul `NUL` (Windows) vs `/dev/null` (Linux) — le test publisher passe désormais sur les deux plateformes.
+- **CI verte sur `e5ed478a`** : `test-frontend` PASS (2m47s), perf PASS, lighthouse PASS, GitGuardian PASS.
+- **Tests** : `node --test tests/unit/factory-v3-session-registry.test.cjs` → **7/7 PASS** ; `node --test tests/unit/factory-v3-observer-publish.test.cjs tests/unit/factory-v3-observer.test.cjs` → **5/5 PASS**.
+- **Preuve réelle** : `session-registry.cjs` sur les données du poste → 12 sessions OpenCode réelles découvertes, 12 transitions enregistrées, `errors: []`, 0 job en queue (état honnête).
+
 ## 2026-11-15 — Factory V3 : observateur local indépendant + canal externe expurgé
 
 - **Observateur local indépendant** (`scripts/factory-v3/lib/observer.cjs`, `scripts/factory-v3/observer.cjs`) : `fs.watch` + réconciliation Git périodique. Il écrit un état structuré persistant (`CURRENT_STATE.json`, `LOCAL_CHANGES.json`, `WORKLOG.jsonl`, `TEST_RESULTS.json`, `BLOCKERS.json`, `NEXT_ACTIONS.json`, `events.jsonl`, `history.jsonl`) et peut être relancé sans perte d'historique. Les répertoires générés sont exclus de l'état observé.

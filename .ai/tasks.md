@@ -8,6 +8,7 @@
 
 ## Récemment complété
 
+- [x] P0 - **Factory V3 : registre d'états de sessions normalisés** (@devops_agent, 2026-11-15, branche `agent/devops/factory-v3-model-failover`) : fusion queue + sessions OpenCode réelles, états `PLANNING/RUNNING/WAITING/BLOCKED/RECOVERING/VERIFYING/COMPLETED/FAILED`, contrats fail-closed (silence ≠ BLOCKED, DONE sans verdict vérifié = FAILED), historique horodaté plafonné. Preuve réelle : 12 sessions découvertes via CLI. Tests : **7/7 PASS**. Fix CI portable (`/dev/null` vs `NUL`) : CI verte sur `e5ed478a`.
 - [x] P0 - **Factory V3 : observateur local indépendant + canal externe expurgé** (@devops_agent, 2026-11-15, branche `agent/devops/factory-v3-model-failover`) : observateur `fs.watch` + réconciliation Git, état structuré persistant (`CURRENT_STATE`, `LOCAL_CHANGES`, `WORKLOG`, `TEST_RESULTS`, `BLOCKERS`, `NEXT_ACTIONS`), publication `gh` vers `aveca/factory-control` avec diff exact expurgé. Preuve réelle : issue `#107`. Tests : **3/3** observateur + **2/2** publication.
 
 - [x] P0 - **Factory V3 : durcissement fail-closed des jobs et des worktrees** (@devops_agent, 2026-11-15, branche `agent/devops/factory-v3-model-failover`) : un job `RUNNING` ne peut plus être muté sans le token de claim exact, `claimStillOwned()` vérifie la propriété avant les étapes lourdes, la publication valide la base/branche et la sortie GitHub, et tout job sans worktree explicite reçoit un worktree dédié hors checkout principal. Revalidation complète : **53/53 PASS** sur les suites runner/failover/resilience après ces changements.

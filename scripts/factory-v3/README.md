@@ -369,3 +369,45 @@ Le second script publie un instantané expurgé (aucun secret, aucune donnée
 personnelle) sur un canal externe GitHub, par défaut `aveca/factory-control`.
 Les diffs locaux non suivis sont inclus, tronqués à 20 000 caractères et
 redactés.
+
+---
+
+## 9. Registre d'états de sessions normalisés
+
+`scripts/factory-v3/session-registry.cjs` (lib : `lib/session-registry.cjs`)
+fusionne deux sources réelles — la queue Factory (`state/queue.json`) et les
+sessions OpenCode découvertes par le CLI local — et produit un registre
+persistant avec des états normalisés imposés :
+
+```
+PLANNING · RUNNING · WAITING · BLOCKED · RECOVERING · VERIFYING · COMPLETED · FAILED
+```
+
+Contrats d'honnêteté :
+
+* `DONE` sans verdict `VERIFIED` → `FAILED` (fail-closed, aucun faux succès) ;
+* une session sans activité récente → `WAITING` + `stale` (le silence seul ne
+  produit **jamais** `BLOCKED`) ;
+* `RECOVERING` uniquement sur preuve réelle de failover récent (preuve `agent`
+  ou événement `MODEL_FAILOVER` des logs runner ≤ 15 min) ;
+* `VERIFYING` uniquement quand l'agent a réussi et que les gates tournent ;
+* les sessions déjà portées par un job (mêmes `sessionId`) ne sont pas
+  dupliquées ;
+* une entrée qui disparaît de la source est tracée `ABSENT` dans l'historique.
+
+Sorties persistées sous `scripts/factory-v3/state/observer/` :
+
+| Fichier | Contenu |
+|---|---|
+| `SESSION_REGISTRY.json` | instantané courant (entrées, comptes, erreurs sources honnêtes) |
+| `SESSION_HISTORY.jsonl` | transitions horodatées `{ ts, id, kind, from, to, reason }` (plafonné) |
+
+### Usage
+
+```bash
+node scripts/factory-v3/session-registry.cjs --state scripts/factory-v3/state
+node scripts/factory-v3/session-registry.cjs --state scripts/factory-v3/state --print
+```
+
+Preuve réelle du 2026-11-15 : 12 sessions OpenCode réelles découvertes via le
+CLI local, 12 transitions enregistrées, aucune erreur source.

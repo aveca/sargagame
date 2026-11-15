@@ -1,3 +1,36 @@
+## 2026-11-15 10:00 UTC · Agent: DevOps (Factory V3 — registre d'états de sessions)
+
+### Travail effectué
+- **Résumé 1 ligne** : la CI de la PR #1472 est revenue verte (`e5ed478a`) et la Factory V3 maintient désormais un registre persistant d'états de sessions normalisés.
+- **Détails** : cause CI identifiée par lecture du log (périphérique `NUL` absent sous Linux) et corrigée par périphérique nul dépendant de la plateforme ; registre fusionnant queue Factory + sessions OpenCode réelles, états `PLANNING/RUNNING/WAITING/BLOCKED/RECOVERING/VERIFYING/COMPLETED/FAILED`, contrats fail-closed (`DONE` sans verdict vérifié → `FAILED`, silence → `WAITING`+`stale` jamais `BLOCKED`), historique de transitions horodaté plafonné.
+
+### Fichiers modifiés
+- `scripts/factory-v3/publish-observer-state.cjs` — périphérique nul portable (fix CI).
+- `scripts/factory-v3/lib/session-registry.cjs` — noyau du registre normalisé (nouveau).
+- `scripts/factory-v3/session-registry.cjs` — CLI registre (queue + CLI OpenCode + logs failover) (nouveau).
+- `tests/unit/factory-v3-session-registry.test.cjs` — 7 tests (nouveau).
+- `scripts/factory-v3/README.md`, `.ai/changelog.md`, `NEXT_SESSION.md`, `.ai/tasks.md` — documentation.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-session-registry.test.cjs` → **7/7 PASS**.
+- [x] `node --test tests/unit/factory-v3-observer-publish.test.cjs tests/unit/factory-v3-observer.test.cjs` → **5/5 PASS**.
+- [x] CI PR #1472 sur `e5ed478a` : `test-frontend` PASS, perf PASS, lighthouse PASS, GitGuardian PASS.
+- [x] Preuve réelle : `session-registry.cjs` → 12 sessions OpenCode réelles, 12 transitions, `errors: []`.
+
+### Problèmes restants
+- [ ] Le registre n'est pas encore intégré au dashboard central ni au canal externe.
+- [ ] La porte de preuve avant complétion de mission (evidence gate) reste à implémenter dans `run.cjs`.
+- [ ] L'agent de consultation ChatGPT (boucle bidirectionnelle réelle) reste à livrer.
+
+### Prochaine action recommandée
+1. Committer/pousser le registre, puis implémenter l'evidence-gate de complétion dans `run.cjs` — Rôle : devops.
+2. Ajouter consultation ChatGPT via le bridge local existant (port 4187 vivant, santé OK) — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer (base CI verte `e5ed478a`)
+
 ## 2026-11-15 09:41 UTC · Agent: DevOps (Factory V3 — observateur local indépendant)
 
 ### Travail effectué

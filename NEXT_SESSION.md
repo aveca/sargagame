@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> **2026-11-15 — registre de sessions + CI verte (handoff actuel)** : CI verte sur `e5ed478a` (test-frontend PASS). Registre d'états de sessions normalisés livré (`session-registry.cjs`, preuve réelle 12 sessions). Reprendre par : (1) evidence-gate de complétion dans `run.cjs` (aucun COMPLETED sans preuve), (2) dashboard central agrégeant registre + observateur, (3) consultation ChatGPT via le bridge local 4187 (vivant, santé OK). Lire `.ai/current_state.md` (entrée 10:00 UTC).
+
 > **2026-11-15 — observateur local + canal externe (handoff actuel)** : observateur local indépendant et canal `aveca/factory-control` expurgé livrés sur `agent/devops/factory-v3-model-failover`. Preuve réelle : issue `#107`. Reprendre en branchant l'observateur sur le pilotage de session et le dashboard central.
 
 > **2026-11-15 — durcissement fail-closed Factory V3 (handoff actuel)** : claims tokenisés, worktrees dédiés et publication durcie sont testés localement (53/53 PASS) sur `agent/devops/factory-v3-model-failover` ; committer/pousser sur la PR #1472 puis reprendre l'observateur local indépendant et le canal `aveca/factory-control`. Lire `.ai/current_state.md` (entrée 2026-11-15) avant toute reprise.
