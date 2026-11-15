@@ -1,10 +1,25 @@
 ﻿---
 
-## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.6 (SecretManager) · commit 72ea7ccd1
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.7 (encaissements hôteliers) · commit be433e8e9
 
-### Travail effectué
+### Travail effectué (cette session)
 
-- **Résumé 1 ligne** : SecretManager (coffre central AES-256-GCM) implémenté et testé (21/21), matrice d'intégration créée, 8 tests d'audit fournisseurs ajoutés et passés (99 tests au total), coffre initialisé vide (fondateur doit ajouter les secrets), interface `list`/`status`/`test-vault` validée.
+- **Résumé 1 ligne** : `mol_supabase_mirror()` rendu autonome (charge sa config via `@include`, plus de `global $cfg` fragile) ; blocage `SUPABASE_SERVICE_KEY` documenté (BUG-2026-012) + checklist fondateur P3 (5 secrets manquants) écrite.
+- **Détails** :
+  - `public/api/mollie-lib.php` : `mol_supabase_mirror()` ne dépend plus d'une variable `$cfg` globale portée par l'appelant ; il charge sa propre config (`@include mollie-config.php` + fallback `getenv`). Best-effort préservé (jamais bloquant).
+  - `php -l public/api/mollie-lib.php` → OK.
+  - `node tests/unit/b2b-payment-flow.test.cjs` → 31/31 passés.
+  - `.ai/bugs.md` : ajout BUG-2026-012 (SUPABASE_SERVICE_KEY absent → verify_subscription lookup_failed) + Checklist fondateur P3 (Mollie API key, webhook secret, Supabase service_role, Resend key, Stripe legacy).
+  - `.ai/changelog.md` : entrée ajoutée.
+  - Webhook Mollie vérifié : fail-closed (503 si pas de secret, 403 si signature invalide), grant uniquement sur `paid`/`settled`/`subscription.paid`, révocation sur `canceled`/`expired`, idempotent via transient → **aucun accès Pro sur simple redirection navigateur** (grant côté webhook serveur-à-serveur uniquement).
+  - Liens de paiement mensuel/annuel : déjà en place via `payOf(tier)` → `/api/b2b-paylinks.json` (généré par `scripts/automation/mollie-paylinks.cjs`), prix Pro 79€/mois + 690€/an dans `mol_b2b_plans()` cohérents. Aucun changement de prix.
+
+### État des blocages
+
+- `SUPABASE_SERVICE_KEY` absent localement → `mol_supabase_mirror` skip + `verify_subscription` retourne `lookup_failed` (persistance Supabase des grants non fonctionnelle en local). Nécessite le secret fondateur (voir checklist P3 dans bugs.md).
+- Clé Mollie test exposée dans `mollie-config.php` (gitignoré) — fondateur doit révoquer/remplacer.
+- Webhook secret Mollie non déployé en production (TASK-P0-001).
+
 - **Détails** :
   - `scripts/secret-manager.mjs` : commandes setup/add/get/delete/list/status/test-vault, valeurs masquées + préfixe côté logs, `.vault/` gitignoré, hygiène (pas de secret en dur).
   - `tests/unit/secret-manager.test.cjs` : 21/21 passés.
@@ -43,30 +58,33 @@
 - `public/api/b2b-create-checkout.php` — nouveau fichier, CORS whitelist
 - `tests/unit/b2b-payment-flow.test.cjs` — 31 tests B2B payment flow
 
-### Tests réalisés
+### Tests réalisés (Phase 0.6 — re-confirmé)
 - [x] npm run build → exit 0 (bundle 180.87 kB gzip)
 - [x] check-bundle-budget → 209.2 Ko ≤ 210 Ko gzip, OK
-- [x] php -l → OK sur mollie-webhook.php, mollie-lib.php, b2b-create-checkout.php
-- [x] node tests/unit/b2b-payment-flow.test.cjs → 31/31 passés
-- [x] git push origin feat/sargagame-supabase-google-migration → OK
+- [x] node scripts/run-tests.cjs → 228/277 OK (échecs préexistants uniquement, sans lien avec Phase 0.6)
+- [x] secret-manager.test.cjs → 21/21 ; mollie-api-auth 13/13 ; stripe-api-auth 16/16 ; paypal-api-auth 18/18 ; webhook-signature 12/12 ; supabase-availability 17/17 ; smtp-resend-config 17/17 ; cloudflare-permissions 19/19 ; ftps-availability 15/15
+- [x] secret-manager list/status/test-vault → OK (coffre vide, fondateur doit ajouter les secrets)
+- [x] git push origin feat/sargagame-supabase-google-migration → OK (origin sync avec HEAD be433e8e9)
 
-### Problèmes restants
+### Problèmes restants (bloquants fondateur)
 - [ ] SUPABASE_SERVICE_KEY absent localement → verify_subscription retourne lookup_failed
 - [ ] Stripe live key expirée → fondateur doit renouveler dans le dashboard Stripe
+- [ ] Mollie test key exposée (test_HR4K…) → révocation/remplacement par fondateur
+- [ ] Mollie webhook secret manquant → signature webhook non vérifiée (fail-closed 503)
+- [ ] Cloudflare API token expiré (401), scope Workers Routes:Edit manquant
 - [ ] BUG-2026-015 : CTA paywall fermé hors fenêtre satellite 12h → décision fondateur requise
 - [ ] TASK-P0-001 webhook secret Mollie non déployé en production
 
 ### Prochaine action recommandée
-1. Fondateur renouvelle la clé Stripe live dans le dashboard — Rôle : fondateur
-2. Fondateur fournit SUPABASE_SERVICE_KEY — Rôle : fondateur/devops
-3. Fondateur décide sur BUG-2026-015 — Rôle : product/fondateur
-4. Générer les 158 liens de paiement B2B (dry-run → réel avec approbation) — Rôle : coding_agent
-5. Préparer campagne pilote B2B — Rôle : growth_agent
+1. **ATTENTE FONDATEUR** : renouveler clé Stripe live, fournir SUPABASE_SERVICE_KEY, révoquer/remplacer clé Mollie test, créer webhook secrets Mollie + Stripe, renouveler token Cloudflare — Rôle : fondateur
+2. Fondateur décide sur BUG-2026-015 — Rôle : product/fondateur
+3. Générer les 158 liens de paiement B2B (dry-run → réel avec approbation) — Rôle : coding_agent
+4. Préparer campagne pilote B2B — Rôle : growth_agent
 
 ### Branche / PR
-- Branche : `feat/sargagame-supabase-google-migration` (sur origin)
+- Branche : `feat/sargagame-supabase-google-migration` (sur origin, synchronisée)
 - PR : non créée (outils GitHub indisponibles)
-- Commit head : `72ea7ccd1`
+- Commit head : `be433e8e9` (Phase 0.6 — SecretManager + matrice intégration + 8 tests audit fournisseurs)
 
 ---
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · commit 374f2ae2f

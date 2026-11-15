@@ -272,7 +272,14 @@ function set_transient(string $key, string $value, int $ttl): void {
  * Retourne true si la requête HTTP a réussi (2xx), false sinon.
  */
 function mol_supabase_mirror(string $table, array $data): bool {
-    global $cfg;  // BUG-2026-011 : $cfg chargé par require_once mollie-config.php (caller side)
+    // Charger la config soi-même (@include, pas require_once) afin de fonctionner
+    // depuis n'importe quel contexte appelant (webhook, b2b-trial, mollie.php…)
+    // sans dépendre d'une variable $cfg globale qui pourrait ne pas être portée.
+    // Re-exécuter mollie-config.php est sans effet (il se contente de return [...]).
+    // Si le fichier est absent (local sans config), on tombe en grâce sur getenv
+    // puis sur chaîne vide → mirror skip silencieusement (best-effort, jamais bloquant).
+    $cfg = @include __DIR__ . '/mollie-config.php';
+    if (!is_array($cfg)) $cfg = [];
     $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
     $serviceKey = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
     if (!$serviceKey) return false; // skip silently if not configured

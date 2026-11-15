@@ -31,6 +31,8 @@
 - **Estimation** : 30 min
 - **Statut** : [~] TASK-P0-001 ?" in_progress by coding_agent_agent code_ready, [ ] deployed_to_prod
 
+- [x] P0 - Fix mol_supabase_mirror autonome (supprime dépendance `global $cfg`) + doc BUG-2026-012 (SUPABASE_SERVICE_KEY → lookup_failed) + Checklist fondateur P3 (5 secrets manquants) par coding_agent (2026-11-15, branche feat/sargagame-supabase-google-migration) — `php -l` OK, `b2b-payment-flow.test.cjs` 31/31, webhook fail-closed vérifié (aucun accès Pro sur redirection navigateur seule). SUPABASE_SERVICE_KEY toujours absent localement en attente secret fondateur.
+
 ---
 
 ## P1 — Haute priorité
@@ -111,6 +113,7 @@
 - [ ] Spliter paywall comic/plan B en composants séparés
 - [ ] Améliorer PrenderDelivery légères des Mails monitoring de la
 - [ ] Ajouter le sinning de Sílbano dans un scratch
+- [x] Checklist fondateur P3 — secrets manquants (Mollie API key, webhook secret, Supabase service_role, Resend key, Stripe legacy) par coding_agent (2026-11-15, dans .ai/bugs.md)
 
 ### Backlog futur / idées
 - B2C abo Chrome (pas d'Vous voulez vous-en)

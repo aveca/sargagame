@@ -1,4 +1,17 @@
 ﻿---
+## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.7 (encaissements hôteliers) — fix mol_supabase_mirror + checklist P3 secrets
+
+**Correction de robustesse :** `public/api/mollie-lib.php` — `mol_supabase_mirror()` charge désormais sa propre config via `@include` (supprime la dépendance fragile à `global $cfg`, cohérent BUG-2026-011 dans mollie.php). Fonctionne depuis n'importe quel contexte appelant (webhook, b2b-trial, mollie.php). Best-effort préservé : si `SUPABASE_SERVICE_KEY` absent, mirror skip silencieusement, jamais bloquant.
+
+**Documentation :** `.ai/bugs.md` — BUG-2026-012 (SUPABASE_SERVICE_KEY absent → verify_subscription lookup_failed) + Checklist fondateur P3 (5 secrets manquants : Mollie API key, webhook secret, Supabase service_role, Resend key, Stripe legacy).
+
+**Tests :** `php -l public/api/mollie-lib.php` → OK, `node tests/unit/b2b-payment-flow.test.cjs` → 31/31 passés. Bundle et build inchangés (aucun fichier front touché).
+
+**Statut :** Branche `feat/sargagame-supabase-google-migration`, non mergée sur `main`. `SUPABASE_SERVICE_KEY` toujours absent localement → miroir Supabase désactivé en attendant le secret fondateur (checklist P3).
+
+**Fichiers modifiés :** `public/api/mollie-lib.php`, `.ai/bugs.md`.
+
+---
 
 ## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.6 (SecretManager)
 
