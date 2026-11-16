@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-09T21:42:51.895Z",
+  "generatedAt": "2026-11-16T21:15:16.331Z",
   "sites": {
     "mq": {
       "pageCount": 366,
-      "noIncomingCount": 195,
+      "noIncomingCount": 197,
       "fewIncomingCount": 44,
       "phantomCount": 16,
       "noIncoming": [
@@ -30,7 +30,7 @@
         {
           "url": "/bulletin-sargasses-martinique/",
           "in": 0,
-          "out": 10
+          "out": 11
         },
         {
           "url": "/comic-cartes.html",
@@ -40,7 +40,7 @@
         {
           "url": "/conditions/",
           "in": 0,
-          "out": 8
+          "out": 10
         },
         {
           "url": "/confidentialite/",
@@ -93,6 +93,11 @@
           "out": 0
         },
         {
+          "url": "/merci/",
+          "in": 0,
+          "out": 1
+        },
+        {
           "url": "/neptunes_fury.html",
           "in": 0,
           "out": 0
@@ -120,7 +125,12 @@
         {
           "url": "/sargasses-aujourdhui/",
           "in": 0,
-          "out": 10
+          "out": 11
+        },
+        {
+          "url": "/sargasses-novembre-2026/",
+          "in": 0,
+          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -130,7 +140,7 @@
         {
           "url": "/sargasses-pres-de-moi/",
           "in": 0,
-          "out": 9
+          "out": 10
         },
         {
           "url": "/themes-lab/arena-app.html",
@@ -246,53 +256,43 @@
           "url": "/widget/embed/anse-belleville/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-bertrand-nord/",
-          "in": 0,
-          "out": 0
-        },
-        {
-          "url": "/widget/embed/anse-bonneville/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 7
+          "out": 8
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 7
+          "out": 8
         },
         {
           "url": "/en/sargassum-health/",
           "in": 1,
-          "out": 4
+          "out": 6
         },
         {
           "url": "/en/satellite-sargassum-detection/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
           "url": "/en/what-to-do-sargassum-martinique/",
           "in": 1,
-          "out": 4
+          "out": 6
         },
         {
           "url": "/lexique/",
           "in": 1,
-          "out": 7
+          "out": 9
         },
         {
           "url": "/nettoyer-sargasses/",
           "in": 1,
-          "out": 4
+          "out": 5
         },
         {
           "url": "/pro/en/sargassum-forecast-miami-hotels/",
@@ -302,22 +302,12 @@
         {
           "url": "/que-faire-sargasses-martinique/",
           "in": 1,
-          "out": 12
+          "out": 14
         },
         {
           "url": "/sargasses-martinique-cette-semaine/",
           "in": 1,
-          "out": 11
-        },
-        {
-          "url": "/sargasses-novembre-2026/",
-          "in": 1,
-          "out": 3
-        },
-        {
-          "url": "/sargasses-octobre-2026/",
-          "in": 1,
-          "out": 3
+          "out": 12
         },
         {
           "url": "/veilleur-mvp/anse-mitan/",
@@ -372,146 +362,156 @@
         {
           "url": "/bilan-sargasses-2025/",
           "in": 2,
-          "out": 4
+          "out": 5
         },
         {
           "url": "/en/best-beaches-martinique/",
           "in": 2,
-          "out": 1
+          "out": 3
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
           "in": 2,
-          "out": 2
+          "out": 4
         },
         {
           "url": "/en/sargassum-season/",
           "in": 2,
-          "out": 2
+          "out": 4
         },
         {
           "url": "/en/understanding-sargassum/",
           "in": 2,
-          "out": 1
+          "out": 3
         },
         {
           "url": "/es/alertas-sargazo/",
           "in": 2,
-          "out": 2
+          "out": 4
         },
         {
           "url": "/es/mapa-sargazo/",
           "in": 2,
-          "out": 2
+          "out": 4
         },
         {
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 2,
-          "out": 2
+          "out": 4
+        },
+        {
+          "url": "/es/temporada-sargazo/",
+          "in": 2,
+          "out": 4
+        },
+        {
+          "url": "/faq/",
+          "in": 2,
+          "out": 8
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 190,
-          "out": 17
+          "in": 232,
+          "out": 18
+        },
+        {
+          "url": "/offres/",
+          "in": 128,
+          "out": 2
         },
         {
           "url": "/previsions/",
-          "in": 98,
-          "out": 7
+          "in": 97,
+          "out": 8
         },
         {
           "url": "/carte-sargasses/",
           "in": 94,
-          "out": 13
+          "out": 14
         },
         {
           "url": "/alertes/",
           "in": 91,
-          "out": 6
+          "out": 7
         },
         {
           "url": "/plages/",
           "in": 63,
-          "out": 55
+          "out": 57
         },
         {
           "url": "/fiabilite/",
-          "in": 48,
+          "in": 46,
           "out": 8
         },
         {
           "url": "/saison-sargasses-martinique/",
           "in": 28,
-          "out": 14
+          "out": 15
         },
         {
           "url": "/meilleures-plages-martinique-sargasses/",
           "in": 27,
-          "out": 12
+          "out": 13
         },
         {
           "url": "/a-propos/",
-          "in": 25,
+          "in": 24,
           "out": 9
-        },
-        {
-          "url": "/plages/plages-cote-caraibe-martinique/",
-          "in": 22,
-          "out": 24
         }
       ],
       "topDonors": [
         {
           "url": "/plages/",
           "in": 63,
-          "out": 55
+          "out": 57
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
           "in": 22,
-          "out": 24
+          "out": 26
         },
         {
           "url": "/plages/plages-sud-martinique/",
           "in": 19,
-          "out": 21
+          "out": 23
         },
         {
           "url": "/plages/plages-cote-atlantique-martinique/",
           "in": 18,
-          "out": 20
-        },
-        {
-          "url": "/",
-          "in": 190,
-          "out": 17
+          "out": 22
         },
         {
           "url": "/sargasses-la-trinite/",
           "in": 3,
-          "out": 16
+          "out": 18
         },
         {
           "url": "/sargasses-sainte-anne-martinique/",
           "in": 9,
-          "out": 16
+          "out": 18
+        },
+        {
+          "url": "/",
+          "in": 232,
+          "out": 18
         },
         {
           "url": "/sargasses-sainte-luce/",
           "in": 6,
-          "out": 14
+          "out": 16
         },
         {
           "url": "/saison-sargasses-martinique/",
           "in": 28,
-          "out": 14
+          "out": 15
         },
         {
-          "url": "/pro/",
-          "in": 15,
-          "out": 13
+          "url": "/que-faire-sargasses-martinique/",
+          "in": 1,
+          "out": 14
         }
       ],
       "phantom": [
@@ -619,7 +619,7 @@
     },
     "gp": {
       "pageCount": 405,
-      "noIncomingCount": 201,
+      "noIncomingCount": 203,
       "fewIncomingCount": 44,
       "phantomCount": 20,
       "noIncoming": [
@@ -636,7 +636,7 @@
         {
           "url": "/algues-guadeloupe/",
           "in": 0,
-          "out": 11
+          "out": 13
         },
         {
           "url": "/articles/alerte-saison-2026-gp-2026-04-09/",
@@ -651,7 +651,7 @@
         {
           "url": "/bulletin-sargasses-guadeloupe/",
           "in": 0,
-          "out": 10
+          "out": 11
         },
         {
           "url": "/comic-cartes.html",
@@ -661,7 +661,7 @@
         {
           "url": "/conditions/",
           "in": 0,
-          "out": 8
+          "out": 10
         },
         {
           "url": "/confidentialite/",
@@ -681,7 +681,7 @@
         {
           "url": "/en/sargassum-season/",
           "in": 0,
-          "out": 0
+          "out": 2
         },
         {
           "url": "/en/widget/",
@@ -691,7 +691,7 @@
         {
           "url": "/es/temporada-sargazo/",
           "in": 0,
-          "out": 0
+          "out": 2
         },
         {
           "url": "/es/widget/",
@@ -724,6 +724,11 @@
           "out": 0
         },
         {
+          "url": "/merci/",
+          "in": 0,
+          "out": 1
+        },
+        {
           "url": "/neptunes_fury.html",
           "in": 0,
           "out": 0
@@ -751,22 +756,27 @@
         {
           "url": "/sargasses-aujourdhui/",
           "in": 0,
-          "out": 10
+          "out": 11
         },
         {
           "url": "/sargasses-bouillante/",
           "in": 0,
-          "out": 13
+          "out": 15
         },
         {
           "url": "/sargasses-les-saintes/",
           "in": 0,
-          "out": 12
+          "out": 14
         },
         {
           "url": "/sargasses-marie-galante/",
           "in": 0,
-          "out": 12
+          "out": 14
+        },
+        {
+          "url": "/sargasses-novembre-2026/",
+          "in": 0,
+          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -776,7 +786,7 @@
         {
           "url": "/sargasses-pres-de-moi/",
           "in": 0,
-          "out": 8
+          "out": 9
         },
         {
           "url": "/themes-lab/arena-app.html",
@@ -862,73 +872,63 @@
           "url": "/widget/embed/anse-a-l-ane/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-a-l-eau/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-a-la-barque-ste-anne/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 7
+          "out": 8
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 7
+          "out": 8
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
           "in": 1,
-          "out": 0
+          "out": 2
         },
         {
           "url": "/en/sargassum-health/",
           "in": 1,
-          "out": 3
+          "out": 5
         },
         {
           "url": "/en/satellite-sargassum-detection/",
           "in": 1,
-          "out": 0
+          "out": 2
         },
         {
           "url": "/en/what-to-do-sargassum-guadeloupe/",
           "in": 1,
-          "out": 4
+          "out": 6
         },
         {
           "url": "/es/alertas-sargazo/",
           "in": 1,
-          "out": 0
+          "out": 2
         },
         {
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 1,
-          "out": 0
+          "out": 2
         },
         {
           "url": "/lexique/",
           "in": 1,
-          "out": 7
+          "out": 9
         },
         {
           "url": "/meteo-sargasses-guadeloupe/",
           "in": 1,
-          "out": 7
+          "out": 8
         },
         {
           "url": "/nettoyer-sargasses/",
           "in": 1,
-          "out": 4
+          "out": 5
         },
         {
           "url": "/pro/en/sargassum-forecast-miami-hotels/",
@@ -938,27 +938,17 @@
         {
           "url": "/que-faire-sargasses-guadeloupe/",
           "in": 1,
-          "out": 10
+          "out": 12
         },
         {
           "url": "/sargasses-guadeloupe-cette-semaine/",
           "in": 1,
-          "out": 11
-        },
-        {
-          "url": "/sargasses-novembre-2026/",
-          "in": 1,
-          "out": 3
-        },
-        {
-          "url": "/sargasses-octobre-2026/",
-          "in": 1,
-          "out": 3
+          "out": 12
         },
         {
           "url": "/sargasses-saint-francois/",
           "in": 1,
-          "out": 12
+          "out": 14
         },
         {
           "url": "/veilleur-mvp/anse-mitan/",
@@ -1013,121 +1003,131 @@
         {
           "url": "/bilan-sargasses-2025/",
           "in": 2,
-          "out": 6
+          "out": 7
         },
         {
           "url": "/comprendre-sargasses/",
           "in": 2,
-          "out": 8
+          "out": 9
         },
         {
           "url": "/en/best-beaches-guadeloupe/",
           "in": 2,
-          "out": 1
+          "out": 3
+        },
+        {
+          "url": "/en/understanding-sargassum/",
+          "in": 2,
+          "out": 2
+        },
+        {
+          "url": "/es/mapa-sargazo/",
+          "in": 2,
+          "out": 2
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 314,
-          "out": 15
+          "in": 366,
+          "out": 16
+        },
+        {
+          "url": "/offres/",
+          "in": 167,
+          "out": 2
         },
         {
           "url": "/previsions/",
-          "in": 136,
-          "out": 7
+          "in": 135,
+          "out": 8
         },
         {
           "url": "/carte-sargasses/",
           "in": 133,
-          "out": 13
+          "out": 14
         },
         {
           "url": "/alertes/",
           "in": 127,
-          "out": 6
+          "out": 7
         },
         {
           "url": "/plages/",
           "in": 94,
-          "out": 85
+          "out": 87
         },
         {
           "url": "/fiabilite/",
-          "in": 48,
+          "in": 46,
           "out": 8
         },
         {
           "url": "/plages/plages-sud-grande-terre/",
           "in": 36,
-          "out": 38
+          "out": 40
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
           "in": 34,
-          "out": 16
+          "out": 17
         },
         {
           "url": "/saison-sargasses-guadeloupe/",
           "in": 33,
-          "out": 12
-        },
-        {
-          "url": "/a-propos/",
-          "in": 25,
-          "out": 9
+          "out": 14
         }
       ],
       "topDonors": [
         {
           "url": "/plages/",
           "in": 94,
-          "out": 85
+          "out": 87
         },
         {
           "url": "/plages/plages-sud-grande-terre/",
           "in": 36,
-          "out": 38
+          "out": 40
         },
         {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
           "in": 25,
-          "out": 27
+          "out": 29
         },
         {
           "url": "/plages/plages-iles-guadeloupe/",
           "in": 23,
-          "out": 25
-        },
-        {
-          "url": "/meilleures-plages-guadeloupe-sargasses/",
-          "in": 34,
-          "out": 16
+          "out": 27
         },
         {
           "url": "/sargasses-sainte-rose/",
           "in": 3,
-          "out": 15
+          "out": 17
         },
         {
           "url": "/sargasses-terre-de-haut-les-saintes/",
           "in": 3,
-          "out": 15
+          "out": 17
         },
         {
-          "url": "/",
-          "in": 314,
-          "out": 15
+          "url": "/meilleures-plages-guadeloupe-sargasses/",
+          "in": 34,
+          "out": 17
         },
         {
           "url": "/sargasses-la-desirade/",
           "in": 3,
-          "out": 14
+          "out": 16
+        },
+        {
+          "url": "/",
+          "in": 366,
+          "out": 16
         },
         {
           "url": "/sargasses-bouillante/",
           "in": 0,
-          "out": 13
+          "out": 15
         }
       ],
       "phantom": [

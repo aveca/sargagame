@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-09T21:42:52.458Z",
+  "generatedAt": "2026-11-16T21:15:17.068Z",
   "sites": {
     "mq": {
       "pageCount": 366,
       "uniqueTitles": 208,
-      "uniqueDescs": 186,
+      "uniqueDescs": 185,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 2,
       "duplicateTitlePages": 3,
@@ -40,7 +40,7 @@
           ]
         }
       ],
-      "issueCount": 565,
+      "issueCount": 564,
       "issues": [
         {
           "file": "404.html",
@@ -208,7 +208,7 @@
     "gp": {
       "pageCount": 405,
       "uniqueTitles": 247,
-      "uniqueDescs": 226,
+      "uniqueDescs": 225,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 2,
       "duplicateTitlePages": 3,
@@ -243,7 +243,7 @@
           ]
         }
       ],
-      "issueCount": 618,
+      "issueCount": 617,
       "issues": [
         {
           "file": "404.html",

@@ -1,24 +1,14 @@
 {
-  "generatedAt": "2026-11-09T21:42:43.334Z",
+  "generatedAt": "2026-11-16T21:15:08.295Z",
   "kind": "delta",
   "changes": [
     {
-      "site": "gp",
+      "site": "florida",
       "formFactor": "combined",
-      "metric": "LCP",
-      "from": 1790,
-      "to": 1530,
-      "delta": -260,
-      "kind": "improvement",
-      "crossesThreshold": false
-    },
-    {
-      "site": "mq",
-      "formFactor": "combined",
-      "metric": "LCP",
-      "from": 1667,
-      "to": 1422,
-      "delta": -245,
+      "metric": "INP",
+      "from": 376,
+      "to": 271,
+      "delta": -105,
       "kind": "improvement",
       "crossesThreshold": false
     },
@@ -26,10 +16,20 @@
       "site": "mq",
       "formFactor": "combined",
       "metric": "INP",
-      "from": 460,
-      "to": 519,
-      "delta": 59,
-      "kind": "regression",
+      "from": 519,
+      "to": 421,
+      "delta": -98,
+      "kind": "improvement",
+      "crossesThreshold": false
+    },
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 517,
+      "to": 429,
+      "delta": -88,
+      "kind": "improvement",
       "crossesThreshold": false
     }
   ]
