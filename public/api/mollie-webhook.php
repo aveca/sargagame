@@ -69,7 +69,59 @@ try {
         $payment = $mollie->payments->get($id);
         $status = $payment->status ?? '';
         $metadata = (array)($payment->metadata ?? []);
-        // Vérification indépendante du montant et de la devise (anti-tampering).
+        $source = $metadata['source'] ?? 'unknown';
+        $pass = $metadata['pass'] ?? '';
+        $email = $metadata['email'] ?? '';
+        $currency = strtoupper((string)($payment->amount->currency ?? ''));
+        $value = (float)($payment->amount->value ?? 0);
+
+        // ── B2B one-shot (paiement annuel) ──────────────────────────────────
+        // RÈGLE : le MONTANT réellement payé fait foi. La metadata est
+        // forgeable par le client : sans ce contrôle, un pass B2C `sos`
+        // (1,00 EUR) combiné à source=b2b_annual déclencherait un grant
+        // Pro 365 jours.
+        if (in_array($source, ['b2b_annual', 'b2b_first'], true)) {
+            $planMeta = (isset($metadata['plan']) && is_string($metadata['plan'])) ? $metadata['plan'] : null;
+            $planCheck = mol_b2b_validate_plan_amount($planMeta, $currency, $value);
+            if (!$planCheck['ok']) {
+                // Repli : le lien annuel statique n'envoie aucune metadata.
+                $planCheck = mol_b2b_plan_by_amount($currency, $value);
+            }
+            if (!$planCheck['ok']) {
+                error_log("[mollie-webhook] payment.paid B2B REFUSE source=$source amount=$currency $value reason=" . $planCheck['error']);
+                http_response_code(400);
+                echo json_encode(['error' => $planCheck['error']]);
+                exit;
+            }
+            $planKey = $planCheck['plan'];
+            $durationDays = (int)$planCheck['duration_days'];
+
+            // Grant uniquement sur confirmation serveur du paiement.
+            if (in_array($status, ['paid', 'settled'], true)) {
+                $grant = mol_b2b_grant_once($email, $planKey, $id, $durationDays, $email);
+                $mirrorOk = $grant['mirror_ok'] ?? false;
+                if (!$mirrorOk) {
+                    error_log("[mollie-webhook] payment.paid b2b plan=$planKey paymentId=$id mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                    webhook_journal_write("$event.$id", [
+                        'type' => 'payment',
+                        'event' => $event,
+                        'id' => $id,
+                        'plan_key' => $planKey,
+                        'customer_id' => null,
+                        'customer_email' => $email,
+                        'status' => $status,
+                        'action' => 'b2b_grant',
+                    ]);
+                } else {
+                    error_log("[mollie-webhook] payment.paid b2b plan=$planKey paymentId=$id mirror_ok=$mirrorOk");
+                }
+            }
+            http_response_code(200);
+            echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status]);
+            exit;
+        }
+
+        // ── B2C : validation du pass (allowlist anti-tampering) ──────────────
         $amountCheck = validateMollieAmountPHP($payment);
         if(!$amountCheck['ok']){
             http_response_code(400);
@@ -78,29 +130,7 @@ try {
         }
 
         if ($status === 'paid') {
-            $source = $metadata['source'] ?? 'unknown';
-            $pass = $metadata['pass'] ?? '';
-            $email = $metadata['email'] ?? '';
-
-            if (in_array($source, ['b2b_annual', 'b2b_first'], true)) {
-                $grant = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
-                $mirrorOk = $grant['mirror_ok'] ?? false;
-                if (!$mirrorOk) {
-                    error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
-                    webhook_journal_write("$event.$id", [
-                        'type' => 'payment',
-                        'event' => $event,
-                        'id' => $id,
-                        'plan_key' => 'pro_monthly',
-                        'customer_id' => null,
-                        'customer_email' => $email,
-                        'status' => 'paid',
-                        'action' => 'b2b_grant',
-                    ]);
-                } else {
-                    error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id mirror_ok=$mirrorOk");
-                }
-            } elseif (in_array($source, ['b2b_monthly'], true)) {
+            if (in_array($source, ['b2b_monthly'], true)) {
                 // B2B monthly - grant handled by subscription webhook
                 error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
             } elseif ($pass && in_array($pass, ['p30', 'trip7', 'p7', 'season', 'sos'], true)) {
@@ -139,52 +169,109 @@ try {
             error_log("[mollie-webhook] customer fetch failed id=$customerId: " . $e->getMessage());
         }
 
-        // Grant Pro token for B2B monthly subscriptions (active/pending)
-         if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
-             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
-                 if (in_array($status, ['active', 'pending'], true)) {
-                     $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $customerEmail);
-                     $mirrorOk = $grant['mirror_ok'] ?? false;
-                     if (!$mirrorOk) {
-                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId email=$customerEmail mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
-                         webhook_journal_write("$event.$id", [
-                             'type' => 'subscription',
-                             'event' => $event,
-                             'id' => $id,
-                             'plan_key' => $planKey,
-                             'customer_id' => $customerId,
-                             'customer_email' => $customerEmail,
-                             'status' => $status,
-                             'action' => 'b2b_grant',
-                         ]);
-                     } else {
-                         error_log("[mollie-webhook] subscription.created/updated id=$id plan=$planKey customer=$customerId email=$customerEmail mirror_ok=$mirrorOk");
-                     }
-                 }
-             }
-         }
+        // Allowlist serveur des plans B2B (source unique : mol_b2b_plans()).
+        $b2bPlans = ['pro_monthly', 'brief_monthly', 'pro_annual', 'brief_annual'];
 
-         if ($event === 'subscription.paid') {
-             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
-                 $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $customerEmail);
-                 $mirrorOk = $grant['mirror_ok'] ?? false;
-                 if (!$mirrorOk) {
-                     error_log("[mollie-webhook] subscription.paid id=$id plan=$planKey customer=$customerId email=$customerEmail mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
-                     webhook_journal_write("$event.$id", [
-                         'type' => 'subscription',
-                         'event' => $event,
-                         'id' => $id,
-                         'plan_key' => $planKey,
-                         'customer_id' => $customerId,
-                         'customer_email' => $customerEmail,
-                         'status' => $status,
-                         'action' => 'b2b_grant',
-                     ]);
-                 } else {
-                     error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId email=$customerEmail mirror_ok=$mirrorOk");
-                 }
-             }
-         }
+        // Grant Pro token pour les abonnements B2B.
+        //
+        // SÉCURITÉ FINANCIÈRE :
+        //  - 'pending' n'est PAS une confirmation de paiement. On exige 'active'
+        //    (Mollie bascule l'abonnement en active après encaissement) ou un
+        //    événement subscription.paid (renouvellement facturé).
+        //  - le montant + la devise payés sont validés contre l'allowlist
+        //    serveur des plans : la metadata est forgeable, le montant fait foi.
+        if (in_array($event, ['subscription.created', 'subscription.updated', 'subscription.activated'], true)) {
+            if ($planKey && in_array($planKey, $b2bPlans, true) && $status === 'active') {
+                $amt = mol_b2b_subscription_amount($subscription);
+                $subCurrency = $amt['currency'];
+                $subValue = $amt['value'];
+                if ($subCurrency === '' || $subValue <= 0) {
+                    error_log("[mollie-webhook] subscription.$event REFUSE id=$id plan=$planKey raison=montant_absent");
+                    webhook_journal_write("$event.$id", ['type' => 'subscription', 'event' => $event, 'id' => $id, 'plan_key' => $planKey, 'customer_id' => $customerId, 'customer_email' => $customerEmail, 'status' => $status, 'action' => 'refused_amount_missing']);
+                    http_response_code(400);
+                    echo json_encode(['error' => 'subscription_amount_missing']);
+                    exit;
+                }
+                $planCheck = mol_b2b_validate_plan_amount($planKey, $subCurrency, $subValue);
+                if (!$planCheck['ok']) {
+                    error_log("[mollie-webhook] subscription.$event REFUSE id=$id plan=$planKey montant=$subCurrency $subValue raison=" . $planCheck['error']);
+                    webhook_journal_write("$event.$id", ['type' => 'subscription', 'event' => $event, 'id' => $id, 'plan_key' => $planKey, 'customer_id' => $customerId, 'customer_email' => $customerEmail, 'status' => $status, 'action' => 'refused_' . $planCheck['error']]);
+                    http_response_code(400);
+                    echo json_encode(['error' => $planCheck['error']]);
+                    exit;
+                }
+                $durationDays = (int)$planCheck['duration_days'];
+
+                // Idempotence STRICTE ici (created / updated / activated) :
+                // pas de prolongation d'accès — seule l'ouverture de la période
+                // accorde la fenêtre. La prolongation se fait sur subscription.paid.
+                $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id, $durationDays, $customerEmail);
+                $mirrorOk = $grant['mirror_ok'] ?? false;
+                if (!$mirrorOk) {
+                    error_log("[mollie-webhook] subscription.$event id=$id plan=$planKey customer=$customerId email=$customerEmail mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                    webhook_journal_write("$event.$id", [
+                        'type' => 'subscription',
+                        'event' => $event,
+                        'id' => $id,
+                        'plan_key' => $planKey,
+                        'customer_id' => $customerId,
+                        'customer_email' => $customerEmail,
+                        'status' => $status,
+                        'action' => 'b2b_grant',
+                    ]);
+                } else {
+                    error_log("[mollie-webhook] subscription.$event id=$id plan=$planKey customer=$customerId email=$customerEmail mirror_ok=$mirrorOk");
+                }
+            }
+        }
+
+        if ($event === 'subscription.paid') {
+            if ($planKey && in_array($planKey, $b2bPlans, true)) {
+                // Renouvellement CONFIRME par le serveur Mollie (subscription.paid) :
+                // $renewable = true prolonge la fenêtre d'accès (30j mensuel, 365j annuel).
+                // Sans ce flag, le transient 'mollie_grant_<subId>' faisait court-circuit
+                // (already_granted) et l'hôtel perdait son accès au jour 31 malgré son
+                // paiement du mois 2. Idempotent dans la période : deux événements le
+                // même jour donnent la même expiration.
+                $amt = mol_b2b_subscription_amount($subscription);
+                $subCurrency = $amt['currency'];
+                $subValue = $amt['value'];
+                if ($subCurrency === '' || $subValue <= 0) {
+                    error_log("[mollie-webhook] subscription.paid REFUSE id=$id plan=$planKey raison=montant_absent");
+                    webhook_journal_write("$event.$id", ['type' => 'subscription', 'event' => $event, 'id' => $id, 'plan_key' => $planKey, 'customer_id' => $customerId, 'customer_email' => $customerEmail, 'status' => $status, 'action' => 'refused_amount_missing']);
+                    http_response_code(400);
+                    echo json_encode(['error' => 'subscription_amount_missing']);
+                    exit;
+                }
+                $planCheck = mol_b2b_validate_plan_amount($planKey, $subCurrency, $subValue);
+                if (!$planCheck['ok']) {
+                    error_log("[mollie-webhook] subscription.paid REFUSE id=$id plan=$planKey montant=$subCurrency $subValue raison=" . $planCheck['error']);
+                    webhook_journal_write("$event.$id", ['type' => 'subscription', 'event' => $event, 'id' => $id, 'plan_key' => $planKey, 'customer_id' => $customerId, 'customer_email' => $customerEmail, 'status' => $status, 'action' => 'refused_' . $planCheck['error']]);
+                    http_response_code(400);
+                    echo json_encode(['error' => $planCheck['error']]);
+                    exit;
+                }
+                $durationDays = (int)$planCheck['duration_days'];
+
+                $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id, $durationDays, $customerEmail, true);
+                $mirrorOk = $grant['mirror_ok'] ?? false;
+                if (!$mirrorOk) {
+                    error_log("[mollie-webhook] subscription.paid id=$id plan=$planKey customer=$customerId email=$customerEmail mirror SKIPPED (SUPABASE_SERVICE_KEY absent ou erreur mirror)");
+                    webhook_journal_write("$event.$id", [
+                        'type' => 'subscription',
+                        'event' => $event,
+                        'id' => $id,
+                        'plan_key' => $planKey,
+                        'customer_id' => $customerId,
+                        'customer_email' => $customerEmail,
+                        'status' => $status,
+                        'action' => 'b2b_renewal',
+                    ]);
+                } else {
+                    error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId email=$customerEmail mirror_ok=$mirrorOk");
+                }
+            }
+        }
 
          if ($event === 'subscription.charge_failed') {
              error_log("[mollie-webhook] subscription.charge_failed id=$id plan=$planKey customer=$customerId");

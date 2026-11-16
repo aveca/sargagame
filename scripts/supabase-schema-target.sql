@@ -512,6 +512,45 @@ create policy source_sync_runs_service_role_all
   with check (true);
 
 -- =====================================================================
+-- payment_grants : entitlements payants (B2C pass + B2B Pro)
+-- Miroir Supabase du webhook Mollie. Source de vérité de verify_subscription
+-- (filtre : expires_at > now()). Idempotence : unique(payment_id) /
+-- unique(subscription_id) + upsert PostgREST (on_conflict).
+--
+-- RÉVOCATION : aucune colonne dédiée n'est nécessaire — mol_b2b_revoke()
+-- place expires_at dans le passé, ce qui exclut la ligne du filtre
+-- serveur. Le schéma reste donc aligné sur la table déjà en production
+-- (supabase/schema.sql) : ce bloc est idempotent (if not exists) et
+-- n'exige aucune migration destructive.
+-- =====================================================================
+create table if not exists public.payment_grants (
+  id              bigint generated always as identity primary key,
+  created_at      timestamptz not null default now(),
+  payment_id      text,           -- B2C : paymentId Mollie (pay_once)
+  subscription_id text,           -- B2B : subscriptionId Mollie
+  type            text not null,  -- 'b2c_pass' | 'b2b_pro'
+  pass            text,           -- B2C : 'p30' | 'trip7' | 'season' | 'sos'
+  plan            text,           -- B2B : 'pro_monthly' | 'brief_monthly' | 'pro_annual' | 'brief_annual'
+  email           text,           -- B2C : email payeur ; B2B : email hôtel (cross-device)
+  customer_id     text,           -- B2B : customerId Mollie
+  currency        text,           -- devise payée (EUR)
+  expires_at      timestamptz not null,
+  granted_at      timestamptz not null,
+  metadata        jsonb,          -- metadata complète du paiement
+  unique (payment_id),
+  unique (subscription_id)
+);
+
+alter table public.payment_grants enable row level security;
+
+drop policy if exists payment_grants_service_role_all on public.payment_grants;
+create policy payment_grants_service_role_all
+  on public.payment_grants
+  to service_role
+  using (true)
+  with check (true);
+
+-- =====================================================================
 -- Note : les tables B2B existantes (b2b_leads, b2b_subscriptions, b2c_alerts,
 -- b2b_prospects, b2b_contact_people, b2b_scores, b2b_concierge,
 -- b2b_forecast_deliveries, b2b_payments, b2b_events) sont conservées

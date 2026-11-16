@@ -54,6 +54,120 @@
 ---
 ﻿---
 
+## 2026-11-16 01:05 UTC · Agent: coding_agent (OpenCode) · branche fix/phase-0.7-mollie-supabase · Phase 0.7/0.9 — CONTINUITÉ APRÈS ERREUR FOURNISSEUR HTTP 429
+
+### Travail effectué
+- **Résumé 1 ligne** : reprise sans abandon après 429 ; invariants du chemin de paiement PHP corrigés et prouvés (44/44), et **découverte structurante** : le chemin servi en production est le Worker Cloudflare `sg-payments`, pas le PHP — avec une clé Mollie LIVE refusée par Mollie (401).
+- **Détails** :
+  - Aucune opération validée n'a été refaite : branche/HEAD/staging vérifiés d'abord (`fix/phase-0.7-mollie-supabase`, `b59a84d53`, staging vide).
+  - PHP `public/api/mollie-webhook.php` : branche `subscription` réécrite — allowlist des 4 plans B2B, validation **montant + devise** contre `mol_b2b_plans()`, refus si montant absent, **plus aucun grant sur `pending`** (exige `active` ou `subscription.paid`), ajout `subscription.activated` (défensif), `subscription.paid` → renouvellement.
+  - PHP `public/api/mollie-lib.php` : `mol_b2b_grant_once(..., bool $renewable)` avec **anti-empilement** (le 1er encaissement déclenche `created` + `paid` → une seule fenêtre, pas 60j pour un paiement), helpers `mol_b2b_plan_duration_days()`, `mol_b2b_validate_plan_amount()`, `mol_b2b_plan_by_amount()`, `mol_b2b_subscription_amount()`, `mol_b2b_token_payload()`, `webhook_journal_write()` (journal JSONL), `mol_supabase_patch()` (révocation durable), mirror Supabase en **upsert** (`on_conflict` + `resolution=merge-duplicates`) + repli flux natif si `curl` absent, garde `SG_TEST_NO_SUPABASE` pour qu'un test n'écrive jamais en production.
+  - Branche `payment` du webhook : la **metadata ne suffit plus** — le montant payé fait foi (allowlist serveur). Fin du trou « `pass=sos` 1,00 EUR + `source=b2b_annual` ⇒ grant Pro 365j ».
+  - `.gitignore` : `.vault/`, backups de configs porteuses de secrets, `data/webhook-events/` (PII) désormais ignorés.
+  - `scripts/supabase-schema-target.sql` : table `payment_grants` ajoutée (bloc **idempotent**, aligné sur la prod, sans colonne `revoked_at` : la révocation passe par `expires_at` dans le passé).
+  - `public/api/b2b-db.php` : dépendance de `b2b-create-checkout.php` **non suivie** → ajoutée au suivi (elle lit la clé depuis la config, aucun secret en dur).
+
+### Faits décisifs vérifiés par requête (lecture seule)
+- `GET https://sargasses-martinique.com/api/mollie-mode` → `{"ok":true,"mode":"live","api_mode":"unauthorized"}` (idem Guadeloupe) ⇒ **le Worker est en 401 Mollie**.
+- `POST /api/b2b-create-checkout.php` (corps vide) → **HTTP 410 `use_pricing_page`** ⇒ le checkout hôtelier PHP **n'est pas servi** ; la vente passe par `/pro/pricing/`.
+- Clé LIVE du coffre Windows (`SARGAGAME_MOLLIE_LIVE_API_KEY`, fp `42a6a8309cf1`) → `GET /v2/payments?limit=1` = **200** ⇒ la clé du fondateur est **valide** : l'écart est un **provisioning** côté Worker, pas un compte Mollie.
+- Clé TEST Windows (`fp dcfee3526d73`) → `/v2/payments?limit=1` = 200 ; `/v2/organizations/me` = 400 (mode test) ; `/v2/profiles/{id}` = 403 (token lié à un profil — comportement normal).
+- Source live `sg-payments` récupérée en lecture seule (`GET content/v2`) : **175 264 o** ; `origin/main:workers/sg-payments/index.js` = **180 083 o** (build de `src/index.ts`) ⇒ **le live n'est pas reproductible depuis le dépôt** (`stripeLinkCheckout` et `use_pricing_page` n'existent que dans le live).
+
+### Fichiers modifiés / créés
+- `public/api/mollie-lib.php`, `public/api/mollie-webhook.php` — invariants du chemin de paiement
+- `public/api/b2b-db.php` — ajouté au suivi (dépendance PHP)
+- `scripts/supabase-schema-target.sql` — DDL `payment_grants` (idempotent)
+- `.gitignore` — coffre, backups de secrets, journal webhook PII
+- `scripts/verify-windows-secrets.ps1`, `scripts/provision-local-mollie-config.ps1`, `scripts/provision-mollie-config.php`, `scripts/verify-mollie-config.php`, `scripts/verify-payment-providers.php`, `scripts/verify-live-worker-script.ps1`, `scripts/verify-mollie-live-key.ps1` — outillage secrets/provisioning/vérification (aucune valeur affichée)
+- `tests/unit/b2b-grant-renewal.test.php` — test fonctionnel du cycle de vie du grant
+
+### Tests réalisés
+- [x] `php -l` → OK sur les 7 PHP touchés
+- [x] `php tests/unit/b2b-grant-renewal.test.php` → **44/44 PASS**
+- [x] `node tests/unit/b2b-payment-flow.test.cjs` → 31/31 ; `webhook-signature.test.cjs` → 12/12
+- [x] `npm run build` → exit 0 ; `check-bundle-budget.cjs` → **209,2 Ko ≤ 210 Ko**
+- [x] `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `regions/index.cjs assertAllRegionsValid()` → OK
+- [ ] `npx playwright test funnel-payment` → **NON TESTÉ** (timeout 900 s, aucun output — à rejouer, hors périmètre des fichiers modifiés)
+- [ ] `tests/unit/mollie-webhook.test.cjs` → **FAIL** (non suivi,来自 autre branche, attend un 500/retry sur échec mirror — divergence inter-branches, hors CI de #1473)
+
+### Problèmes restants (bloquants — action fondateur requise)
+- [ ] **P0 · Secret Worker `MOLLIE_API_KEY` désynchronisé** : Worker en 401, clé Windows valide. Action : re-provisionner le secret dans le dashboard Cloudflare (ne jamais le lire/le lire en clair).
+- [ ] **P0 · Checkout hôtelier non servi** : `/api/b2b-create-checkout.php` → 410 `use_pricing_page`. Décision commerciale (pricing page vs checkout dédié) — **non tranchée, non modifiée**.
+- [ ] **P0 · Source live non reproductible** : `workers/sg-payments/index.js` du dépôt ≠ live (180 083 o vs 175 264 o). Tout redéploiement depuis le dépôt changerait le comportement commercial (Stripe links, 410).
+- [ ] **P0 · Défauts sécurité du Worker live** (identiques au dépôt) : grant sur `pending`, renouvellement qui n'étend pas, montant B2B accepté de 1× à 12×, lookup B2B par email cassé (`type=eq.b2c_pass`), aucun email Pro sur le renouvellement Mollie.
+- [ ] **P0 · Aucun canal de livraison du jeton Pro payé** sur le chemin Mollie (PHP et Worker).
+- [ ] **Rotation recommandée de la clé Mollie TEST** : sa valeur est apparue dans une sortie d'outil de l'audit (considérée exposée). Aucune valeur reproduite ici.
+- [ ] `workers/supabase-proxy` : endpoint `/api/supabase/debug` atteignable via `workers.dev` (non routé sur les 6 domaines) — à supprimer avant toute ajout de binding de clé.
+- [ ] `b2b-concierge.php action=payment_confirmed` : confirmation B2B forgeable (hors chemin hôtelier Pro, mais à authentifier).
+- [ ] GitGuardian `IN_PROGRESS` sans accès API ; CI sans run visible sur la branche.
+
+### Prochaine action recommandée
+1. Re-provisionner le secret `MOLLIE_API_KEY` du Worker avec la clé LIVE du coffre Windows, puis re-proposer `GET /api/mollie-mode` → attendre `api_mode:"live"` — Rôle : **devops/fondateur**.
+2. Trancher le routage commercial B2B (410 pricing page vs checkout dédié) — Rôle : **produit/fondateur**.
+3. Resynchroniser `workers/sg-payments/index.js` sur le live (v411) et ré-appliquer les garde-fous du chemin de paiement (montant exact, pas de `pending`, renouvellement idempotent, email B2B persisté, email de renouvellement) — Rôle : **coding** (branche dédiée depuis `origin/main`).
+4. Choisir un canal de livraison du jeton Pro payé — Rôle : **produit/fondateur**.
+
+### Branche / PR
+- Branche : `fix/phase-0.7-mollie-supabase`
+- PR : #1473 (ouverte, **non mergeée**)
+- Commit head : `b59a84d53` (avant ce commit)
+
+---
+
+## 2026-11-15 · Agent: coding_agent (OpenCode) · branche fix/phase-0.7-mollie-supabase · Phase 0.7/0.9 (encaissements hôteliers) · commit b59a84d53 — PR #1473 ouverte (non mergeée)
+
+### Travail effectué (cette session)
+
+- **Résumé 1 ligne** : Phase 0.9 préparée — rapports de provisionnement, script de vérification de config (sans révéler les valeurs), plan de tests détaillé (Mollie mensuel/annuel, webhook, idempotence, révocation, Supabase), préparation commerciale (emails templates + liste 18 hôtels Grade A), procédure GitGuardian/CI. Aucun secret lu/affiché/transmis.
+- **Détails** :
+  - Vérifié conservation des documents Phase 0.7 : `.ai/phase-07-operational-checklist.md` et `.ai/phase-07-test-scenarios.md` bien présents (untracked, non perdus)
+  - `git status` confirmé : branche `fix/phase-0.7-mollie-supabase`, commit `b59a84d53`, PR #1473 ouverte non mergeée
+  - Créé `.ai/phase-09-provisioning-report.md` : variables à provisionner par environnement et domaine (5 variables, 6 domaines, webhooks à déclarer, Supabase RLS)
+  - Créé `scripts/verify-mollie-config.php` : vérifie présence des variables (OK/MISSING) sans jamais afficher leurs valeurs
+  - Créé `.ai/phase-09-test-plan.md` : tests 1 (Mollie mensuel 79€), 2 (Mollie annuel 690€), 3 (webhook/sécurité/idempotence), 4 (révocation), 5 (Supabase cross-device), critères de succès
+  - Créé `.ai/phase-09-commercial-prep.md` : templates emails FR/EN/ES (non envoyés) + liste 18 hôtels Grade A (Martinique 5, Guadeloupe 4, Miami 3, Cancún 3, Punta Cana 3) + ordre d'appel
+  - Créé `.ai/phase-09-gitguardian-ci.md` : procédure d'investigation GitGuardian + CI (nécessite token GitHub, pas d'accès agent)
+  - Build OK (209.2 Ko ≤ 210 Ko), PHP lint OK, tests 31/31 (Phase 0.7, non re-audités)
+
+### Fichiers modifiés / créés
+- `.ai/phase-09-provisioning-report.md` — nouveau : rapport provisionnement par environnement/domaine
+- `scripts/verify-mollie-config.php` — nouveau : script vérification config (pas de valeur secrète affichée)
+- `.ai/phase-09-test-plan.md` — nouveau : plan de tests détaillé Phase 0.9
+- `.ai/phase-09-commercial-prep.md` — nouveau : préparation commerciale (emails + liste hôtels)
+- `.ai/phase-09-gitguardian-ci.md` — nouveau : procédure GitGuardian/CI
+- `.ai/changelog.md` — entrée ajoutée
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (Phase 0.7, non re-exécuté Phase 0.9 — aucun fichier front touché)
+- [x] `check-bundle-budget.cjs` → 209.2 Ko ≤ 210 Ko gzip, OK (Phase 0.7)
+- [x] `php -l` → OK sur mollie-lib.php, mollie-webhook.php, mollie.php, b2b-create-checkout.php (Phase 0.7)
+- [x] `node tests/unit/b2b-payment-flow.test.cjs` → 31/31 passés (Phase 0.7)
+- [x] `php -l scripts/verify-mollie-config.php` → OK (nouveau script Phase 0.9)
+- [ ] Vérification post-provisioning (nécessite secrets fondateur) — en attente
+
+### Problèmes restants (bloquants fondateur)
+- [ ] `SUPABASE_SERVICE_KEY` absent → `verify_subscription` retourne `lookup_failed`, `mol_supabase_mirror` skip silencieusement (BUG-2026-012)
+- [ ] Clé Mollie test exposée dans `mollie-config.php` (gitignoré) — fondateur doit révoquer/remplacer
+- [ ] Webhook secret Mollie non déployé → `mollie-webhook.php` retourne 503 (BUG-2026-001, TASK-P0-001)
+- [ ] GitGuardian sur PR #1473 : passé `FAILURE` → `IN_PROGRESS` (alerte exacte toujours non identifiable sans accès GitHub API / gh CLI indisponible, aucun token). À surveiller jusqu'à résolution.
+- [ ] CI : `gh run list` vide — aucun run visible sur la branche `fix/phase-0.7-mollie-supabase` (tous sur `main`). Aucun merge possible sans CI verte + autorisation fondateur.
+
+### Prochaine action recommandée
+1. Fondateur : injecter `SUPABASE_SERVICE_KEY`, `MOLLIE_WEBHOOK_SECRET`, `MOLLIE_API_KEY` (test) dans `mollie-config.php` sur chaque serveur — Rôle : fondateur
+2. Fondateur : révoquer/remplacer la clé Mollie test exposée — Rôle : fondateur
+3. Fondateur : configurer `webhook_secret` dans le dashboard Mollie pour chaque webhook URL — Rôle : fondateur
+4. Après provisioning : exécuter `scripts/verify-mollie-config.php` puis `.ai/phase-09-test-plan.md` (tests 1 à 5) — Rôle : QA_agent / coding_agent
+5. Identifier l'alerte GitGuardian exacte sur PR #1473 (nécessite accès GitHub) — Rôle : release_agent / fondateur
+
+### Branche / PR
+- Branche : `fix/phase-0.7-mollie-supabase`
+- PR : #1473 (https://github.com/aveca/sargagame/pull/1473), ouverte, non mergeée
+- Commit head : `b59a84d53`
+
+---
+
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.7 (encaissements hôteliers) · commit be433e8e9
 
 ### Travail effectué (cette session)

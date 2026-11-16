@@ -193,3 +193,16 @@ scripts/veilleurs/_artifacts/
 # Autonomous factory runtime state/logs — local only
 scripts/local-factory/state/
 scripts/local-factory/logs/
+
+# Coffre central des secrets (scripts/secret-manager.mjs) : cle maitre + secrets chiffres.
+# JAMAIS committable (contient la cle de dechiffrement du coffre).
+.vault/
+
+# Backups de configs porteuses de secrets (provisioning / rotation) : JAMAIS committables.
+**/mollie-config.php.bak*
+**/stripe-config.php.bak*
+**/paypal-config.php.bak*
+**/mollie-config.*.bak
+
+# Journal des evenements webhook non reconcilies (PII : email, customer_id) - JAMAIS committable.
+data/webhook-events/
