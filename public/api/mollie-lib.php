@@ -463,6 +463,47 @@ function mol_supabase_mirror(string $table, array $data): bool {
 }
 
 /**
+ * Supabase mirror PATCH — met à jour une ligne via filtre sur l'URL.
+ * Best-effort, ne lève jamais. Retourne true si 2xx.
+ * Usage : mol_supabase_patch('diagnostic_orders', ['status'=>'paid'], '?payment_id=eq.tr_xxx')
+ */
+function mol_supabase_patch(string $table, array $data, string $filter = ''): bool {
+    global $cfg;
+    $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
+    if (!$serviceKey) return false;
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $supabaseUrl . '/rest/v1/' . $table . $filter,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => 'PATCH',
+        CURLOPT_POSTFIELDS => json_encode($data),
+        CURLOPT_HTTPHEADER => [
+            'apikey: ' . $serviceKey,
+            'Authorization: Bearer ' . $serviceKey,
+            'Content-Type: application/json',
+            'Prefer: return=minimal',
+        ],
+        CURLOPT_TIMEOUT => 10,
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if (curl_errno($ch)) {
+        error_log('[mol_supabase_patch] cURL error: ' . curl_error($ch));
+        curl_close($ch);
+        return false;
+    }
+    if ($httpCode >= 400) {
+        error_log('[mol_supabase_patch] HTTP error ' . $httpCode . ' on ' . $table . $filter);
+        curl_close($ch);
+        return false;
+    }
+    curl_close($ch);
+    return true;
+}
+
+/**
  * Écriture IDEMPOTENTE du grant B2C via la RPC `public.sg_upsert_payment_grant`.
  *
  * P0 2026-11-09 : le miroir Supabase passait par un POST direct sur

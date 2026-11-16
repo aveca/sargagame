@@ -260,6 +260,20 @@ try {
                 exit;
             }
             error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id mirror_ok=$mirrorOk");
+        } elseif ($offerKind === 'diagnostic_express' || ($metadata['product'] ?? '') === 'diagnostic_express') {
+            // Diagnostic Express 49 € — marquer la commande comme payée.
+            // Le worker sg-payments gère ce chemin en priorité ; ce bloc est le
+            // repli PHP pour les domaines qui ne passent pas par le worker.
+            $updated = mol_supabase_patch('diagnostic_orders', [
+                'status' => 'paid',
+                'paid_at' => date('c'),
+                'updated_at' => date('c'),
+            ], '?payment_id=eq.' . urlencode($id));
+            error_log("[mollie-webhook] payment.paid diagnostic_express paymentId=$id updated=" . ($updated ? '1' : '0'));
+            set_transient($markerKey, '1', 86400);
+            http_response_code(200);
+            echo json_encode(['received' => true, 'type' => 'payment', 'status' => $status, 'event' => $event, 'kind' => 'diagnostic_express']);
+            exit;
         } else {
             // Paiement payé sans pass connu : rien n'est délivré, et le refus est
             // tracé (pas de trou muet). 400 → Mollie rejoue (le cas se rare).
