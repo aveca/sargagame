@@ -10,7 +10,16 @@ const checks = [
   ['form', h.includes('<form')],
   ['cta demande', h.includes('Demander mon diagnostic')],
   ['premium link', h.includes('premium/')],
-  ['b2b capture', h.includes('sgB2BCapture') || h.includes('b2b-capture')],
+  ['b2b capture helper', h.includes('b2b-capture.js')],
+  ['real endpoint (not placeholder)', !h.includes('AKfycbw-placeholder')],
+  ['real endpoint present', h.includes('AKfycbwkV1tQSEmrZ')],
+  ['sgB2BCapture call', h.includes('sgB2BCapture')],
+  ['form-started tracking', h.includes('sg_diagnostic_form_start')],
+  ['form-submit tracking', h.includes('sg_diagnostic_form_submit')],
+  ['capture confirmed tracking', h.includes('sg_diagnostic_capture_confirmed')],
+  ['double-submit prevention', h.includes('submitted = false') || h.includes('if(submitted) return')],
+  ['email validation', h.includes('indexOf(\'@\')')],
+  ['fiabilite link', h.includes('fiabilite')],
 ];
 let pass = 0;
 for (const [name, ok] of checks) {

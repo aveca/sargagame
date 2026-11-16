@@ -249,6 +249,31 @@
   </div>
 </section>
 
+<section style="background:var(--sg-bg-d)">
+  <div class="wrap px">
+    <p class="sec-eyebrow">Pourquoi nous faire confiance</p>
+    <h2>Des données réelles, vérifiables, jamais inventées.</h2>
+    <p class="sub">Notre différence : l'honnêteté. Chaque chiffre que nous publions est traçable à sa source.</p>
+    <div class="cards">
+      <div class="card">
+        <div class="ic">🛰️</div>
+        <h3>Données satellite Copernicus/NOAA</h3>
+        <p>Pas de carte générique. Chaque prévision est basée sur l'observation satellite la plus récente, avec son horodatage exact.</p>
+      </div>
+      <div class="card">
+        <div class="ic">📊</div>
+        <h3>Palmarès public et auditable</h3>
+        <p>Nous publions notre taux de réussite avec la taille d'échantillon. Consultez <a href="https://sargasses-martinique.com/fiabilite/" style="color:var(--sg-teal);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(0,158,142,.3)">/fiabilite/</a>.</p>
+      </div>
+      <div class="card">
+        <div class="ic">🚫</div>
+        <h3>Zéro donnée inventée</h3>
+        <p>Si les données sont périmées, nous l'affichons. Jamais de fausse fraîcheur, jamais de timestamp hardcodé.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section>
   <div class="wrap px">
     <p class="sec-eyebrow">Questions fréquentes</p>
@@ -292,13 +317,27 @@
   <p>© Sargasses Pro · <a href="https://sargasses-martinique.com/">Accueil</a> · <a href="https://sargasses-martinique.com/pro/hotels/">Pro hôtels</a> · <a href="https://sargasses-martinique.com/fiabilite/">Fiabilité</a></p>
 </footer>
 
+<script src="/b2b-capture.js"></script>
 <script>
-// Lead capture via B2B capture helper (si disponible) ou fallback fetch
+// Lead capture via B2B capture helper (accusé serveur réel)
 (function(){
   var form = document.getElementById('diagForm');
   if(!form) return;
+  var submitted = false; // prévention double soumission
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
+
+  // Tracking : formulaire commencé (premier focus sur un champ)
+  var formStarted = false;
+  form.addEventListener('focusin', function(){
+    if(!formStarted){
+      formStarted = true;
+      try { if(window.gtag) window.gtag('event','sg_diagnostic_form_start',{source:'landing',lang:'fr'}); } catch(_){}
+    }
+  }, true);
+
   form.addEventListener('submit', function(e){
     e.preventDefault();
+    if(submitted) return; // prévention double soumission
     var btn = form.querySelector('button[type="submit"]');
     var ok = document.getElementById('formOk');
     var email = (document.getElementById('email').value||'').trim();
@@ -307,27 +346,62 @@
     var island = (document.getElementById('island').value||'').trim();
     var message = (document.getElementById('message').value||'').trim();
     if(!email || !establishment || !sector){ return; }
+    // Validation email basique
+    if(email.indexOf('@') < 1 || email.indexOf('.') < 3){ 
+      var emailField = document.getElementById('email');
+      if(emailField) emailField.focus();
+      return;
+    }
+    submitted = true;
     if(btn) btn.disabled = true;
-    var payload = { email: email, establishment: establishment, sector: sector, island: island, message: message, source: 'diagnostic-express', lang: 'fr' };
-    var endpoint = 'https://script.google.com/macros/s/AKfycbw-placeholder/exec';
-    // Use b2b-capture helper if loaded
+    var payload = {
+      email: email,
+      establishment: establishment,
+      sector: sector,
+      island: island,
+      message: message,
+      source: 'diagnostic-express',
+      lang: 'fr',
+      date: new Date().toISOString()
+    };
+    try { if(window.gtag) window.gtag('event','sg_diagnostic_form_submit',{source:'landing',lang:'fr'}); } catch(_){}
+    // Use b2b-capture helper (accusé serveur réel)
     if(typeof window.sgB2BCapture === 'function'){
-      window.sgB2BCapture(endpoint, payload, {
+      window.sgB2BCapture(ENDPOINT, payload, {
         form: form, lang: 'fr', source: 'diagnostic-express', button: btn,
-        onSuccess: function(){ if(ok) ok.style.display='block'; form.reset(); },
-        onFailure: function(){ if(btn) btn.disabled=false; }
+        onSuccess: function(data){
+          try { if(window.gtag) window.gtag('event','sg_diagnostic_capture_confirmed',{source:'landing',lang:'fr'}); } catch(_){}
+          if(ok) ok.style.display='block';
+          form.reset();
+          submitted = false;
+        },
+        onFailure: function(err){
+          submitted = false;
+          if(btn) btn.disabled = false;
+          try { if(window.gtag) window.gtag('event','sg_diagnostic_capture_failed',{source:'landing',lang:'fr'}); } catch(_){}
+        }
       });
     } else {
-      fetch(endpoint, {method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
+      // Fallback si helper non chargé
+      fetch(ENDPOINT, {method:'POST',mode:'cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)})
         .then(function(r){return r.json()})
         .then(function(d){
-          if(d && d.ok===true){ if(ok) ok.style.display='block'; form.reset(); }
-          else { if(btn) btn.disabled=false; }
+          if(d && d.ok===true){
+            try { if(window.gtag) window.gtag('event','sg_diagnostic_capture_confirmed',{source:'landing',lang:'fr'}); } catch(_){}
+            if(ok) ok.style.display='block';
+            form.reset();
+          } else {
+            if(btn) btn.disabled=false;
+            try { if(window.gtag) window.gtag('event','sg_diagnostic_capture_failed',{source:'landing',lang:'fr'}); } catch(_){}
+          }
+          submitted = false;
         })
-        .catch(function(){ if(btn) btn.disabled=false; });
+        .catch(function(){
+          if(btn) btn.disabled=false;
+          try { if(window.gtag) window.gtag('event','sg_diagnostic_capture_failed',{source:'landing',lang:'fr'}); } catch(_){}
+          submitted = false;
+        });
     }
-    // Track intent
-    try { if(window.gtag) window.gtag('event','sg_diagnostic_express_request',{source:'landing',lang:'fr'}); } catch(_){}
   });
 })();
 </script>
