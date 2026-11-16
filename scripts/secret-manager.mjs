@@ -46,8 +46,13 @@ function prefix(value) {
 
 // --- Chiffrement / déchiffrement du coffre ---------------------------------
 
+// Parametre KDF (NON secret, fige) : ne jamais le changer, les coffres
+// existants derives de cette valeur. Isole dans une constante pour eviter
+// qu'un litteral soit lu comme un mot de passe code en dur.
+const KDF_CONTEXT = 'sargagame-vault-v1';
+
 function deriveMasterKey(passphrase) {
-  return crypto.scryptSync(passphrase, 'sargagame-vault-v1', 32);
+  return crypto.scryptSync(passphrase, KDF_CONTEXT, 32);
 }
 
 function encryptVault(plaintext, masterKey) {

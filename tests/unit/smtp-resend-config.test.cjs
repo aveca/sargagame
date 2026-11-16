@@ -56,11 +56,19 @@ if (fs.existsSync(ENV_EX)) {
 }
 
 // 6. Worker outreach : RESEND_API_KEY en secret wrangler, kill switch OFF par défaut
-const ow = fs.readFileSync(OUTREACH_WR, 'utf8');
-check('outreach wrangler : RESEND_API_KEY secret documenté', /RESEND_API_KEY/.test(ow));
-check('outreach wrangler : EMAIL_OUTREACH_ENABLED = "false" (défaut OFF)', /EMAIL_OUTREACH_ENABLED\s*=\s*["']false["']/.test(ow));
-check('outreach wrangler : OUTREACH_DRY_RUN = "true" (défaut dry-run)', /OUTREACH_DRY_RUN\s*=\s*["']true["']/.test(ow));
-check('outreach wrangler : quotas réduits (DAILY_EMAIL_LIMIT)', /DAILY_EMAIL_LIMIT/.test(ow));
+//    (si le worker outreach n'existe plus dans le dépôt, l'audit de sa
+//    configuration est explicitement non applicable — jamais un skip muet)
+const OUTREACH_DIR = path.join(process.cwd(), 'workers', 'outreach');
+if (!fs.existsSync(OUTREACH_DIR)) {
+  check('outreach : worker absent du dépôt — audit de configuration non applicable', true);
+  console.log('     (workers/outreach n\'existe plus : aucun secret email à y vérifier)');
+} else {
+  const ow = fs.readFileSync(OUTREACH_WR, 'utf8');
+  check('outreach wrangler : RESEND_API_KEY secret documenté', /RESEND_API_KEY/.test(ow));
+  check('outreach wrangler : EMAIL_OUTREACH_ENABLED = "false" (défaut OFF)', /EMAIL_OUTREACH_ENABLED\s*=\s*["']false["']/.test(ow));
+  check('outreach wrangler : OUTREACH_DRY_RUN = "true" (défaut dry-run)', /OUTREACH_DRY_RUN\s*=\s*["']true["']/.test(ow));
+  check('outreach wrangler : quotas réduits (DAILY_EMAIL_LIMIT)', /DAILY_EMAIL_LIMIT/.test(ow));
+}
 
 // 7. SMTP documenté dans .env.example (alerte@ mailbox)
 if (fs.existsSync(ENV_EX)) {

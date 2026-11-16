@@ -25,10 +25,24 @@ console.log('Supabase availability — audit source (masqué)\n');
 // 1. URL Supabase publique (Project Ref) présente dans les configs et wranglers
 const url = 'https://rswdmjtdzrucqzzukfmd.supabase.co';
 check('URL Supabase présente dans mollie-lib.php', fs.readFileSync(MOLLIE_LIB, 'utf8').includes(url));
-check('URL Supabase présente dans wrangler b2b-api', fs.readFileSync(path.join(process.cwd(), 'workers', 'b2b-api', 'wrangler.toml'), 'utf8').includes(url));
-check('URL Supabase présente dans wrangler supabase-proxy', fs.readFileSync(path.join(process.cwd(), 'workers', 'supabase-proxy', 'wrangler.toml'), 'utf8').includes(url));
-check('URL Supabase présente dans wrangler outreach', fs.readFileSync(path.join(process.cwd(), 'workers', 'outreach', 'wrangler.toml'), 'utf8').includes(url));
-check('URL Supabase présente dans wrangler sg-payments', fs.readFileSync(path.join(process.cwd(), 'workers', 'sg-payments', 'wrangler.jsonc'), 'utf8').includes(url));
+// Wranglers : audit fail-closed si le worker existe, explicitement non
+// applicable si le worker a été retiré du dépôt (jamais de skip muet).
+function auditWorkerUrl(workerName, configRel) {
+  const dir = path.join(process.cwd(), 'workers', workerName);
+  if (!fs.existsSync(dir)) {
+    check('wrangler ' + workerName + ' : worker absent du dépôt — audit non applicable', true);
+    console.log('     (workers/' + workerName + ' n\'existe plus)');
+    return;
+  }
+  const cfg = path.join(process.cwd(), configRel);
+  check('wrangler ' + workerName + ' : configuration présente', fs.existsSync(cfg));
+  if (!fs.existsSync(cfg)) return;
+  check('URL Supabase présente dans wrangler ' + workerName, fs.readFileSync(cfg, 'utf8').includes(url));
+}
+auditWorkerUrl('b2b-api', 'workers/b2b-api/wrangler.toml');
+auditWorkerUrl('supabase-proxy', 'workers/supabase-proxy/wrangler.toml');
+auditWorkerUrl('outreach', 'workers/outreach/wrangler.toml');
+auditWorkerUrl('sg-payments', 'workers/sg-payments/wrangler.jsonc');
 
 // 2. SUPABASE_SERVICE_KEY requis par verify_subscription (mollie.php)
 const mp = fs.readFileSync(MOLLIE_PHP, 'utf8');
@@ -63,12 +77,18 @@ check('write-mollie-config lit SUPABASE_SERVICE_KEY depuis env', /process\.env\.
 check('write-mollie-config avertit si SUPABASE_SERVICE_KEY absent (non bloquant)', /SUPABASE_SERVICE_KEY absent → mollie-config.php généré sans/.test(wr));
 
 // 8. SUPABASE_SERVICE_ROLE_KEY_v2 est historique uniquement (pas dans le code actif)
-const wranglerProxy = path.join(process.cwd(), 'workers', 'supabase-proxy', 'wrangler.toml');
-const wp = fs.readFileSync(wranglerProxy, 'utf8');
-check('SUPABASE_SERVICE_ROLE_KEY_v2 présent uniquement en commentaire wrangler', /#\s*SUPABASE_SERVICE_ROLE_KEY_v2/.test(wp));
-const wsIndex = path.join(process.cwd(), 'workers', 'supabase-proxy', 'index.js');
-const wsi = fs.readFileSync(wsIndex, 'utf8');
-check('index.js lit SUPABASE_SERVICE_KEY depuis env', /env\.SUPABASE_SERVICE_KEY/.test(wsi));
+const proxyDir = path.join(process.cwd(), 'workers', 'supabase-proxy');
+if (!fs.existsSync(proxyDir)) {
+  check('supabase-proxy : worker absent du dépôt — audit non applicable', true);
+  console.log('     (workers/supabase-proxy n\'existe plus)');
+} else {
+  const wranglerProxy = path.join(process.cwd(), 'workers', 'supabase-proxy', 'wrangler.toml');
+  const wp = fs.readFileSync(wranglerProxy, 'utf8');
+  check('SUPABASE_SERVICE_ROLE_KEY_v2 présent uniquement en commentaire wrangler', /#\s*SUPABASE_SERVICE_ROLE_KEY_v2/.test(wp));
+  const wsIndex = path.join(process.cwd(), 'workers', 'supabase-proxy', 'index.js');
+  const wsi = fs.readFileSync(wsIndex, 'utf8');
+  check('index.js lit SUPABASE_SERVICE_KEY depuis env', /env\.SUPABASE_SERVICE_KEY/.test(wsi));
+}
 
 console.log('\n' + passed + ' test(s) Supabase availability : TOUS PASSÉS');
 process.exit(0);

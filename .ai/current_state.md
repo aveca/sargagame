@@ -1,3 +1,56 @@
+## 2026-11-16 00:15 UTC · Agent: coding_agent (OpenCode) · branche fix/phase-0.7-mollie-supabase · Phase 0.7 (encaissements hoteliers) — cloture
+
+### Travail effectué
+- **Résumé 1 ligne** : Phase 0.7 clôturée sur sa branche — 4 tests périmés réalignés sur les décisions produit validées, faux positif GitGuardian corrigé, coffre `.vault/` protégé, suite complète 66/66 verte.
+- **Détails** :
+  - `tests/unit/mollie-fulfillment-cycle2.test.cjs` : fixtures legacy p7 rendues cohérentes avec la coupure historique validée (`createdAt` AVANT `2026-08-01`) + 2 cas anti-fail-closed ajoutés (p7 sans `createdAt` → `legacy_expired` ; p7 créé APRÈS la coupure → `legacy_expired`). 22/22.
+  - `tests/unit/mollie-verify-subscription.test.cjs` : contrat réel `kind=pass|subscription` (→ `b2c_pass` / `b2b_pro`), filtre `type` dérivé, `order=expires_at.desc` + `limit=1`, et non-fail-open (`active => true` présent exactement 2 fois, dans le handler). 32 asserts.
+  - `tests/unit/cloudflare-permissions.test.cjs` : audit layout-aware — un worker absent du dépôt est explicitement « non applicable » (jamais un skip muet) ; ajout d'un audit générique « aucune VALEUR de secret en dur dans une config Workers » (les NOMS de variables restent acceptés).
+  - `tests/unit/supabase-availability.test.cjs` : idem layout-aware (wranglers absents → non applicable explicite).
+  - `tests/unit/smtp-resend-config.test.cjs` : section outreach layout-aware (worker absent → non applicable explicite).
+  - `tests/unit/mollie-live-gate.test.cjs` : normalisation CRLF → test portable Windows/CI (le contrat porte sur le contenu du workflow, pas sur la convention de checkout).
+  - `scripts/secret-manager.mjs` : le paramètre KDF `'sargagame-vault-v1'` est isolé dans `const KDF_CONTEXT` (valeur INCHANGÉE → les coffres existants restent déchiffrables). Cela supprime le faux positif GitGuardian « Generic Password » sur le littéral inline de `scryptSync(passphrase, …)`.
+  - `.gitignore` : `.vault/` désormais ignoré (clé maîtresse `.master` + coffre chiffré `secrets.enc.json` JAMAIS committables — le secret-manager affirmait déjà cette intention, la règle manquait).
+  - **Aucune modification produit** : ni `public/api/mollie*.php`, ni `workers/`, ni les prix, ni les secrets, ni la production. Les tests ont été alignés sur le produit réel, pas l'inverse.
+
+### Fichiers modifiés
+- `scripts/secret-manager.mjs` — `KDF_CONTEXT` (correction GitGuardian, valeur identique).
+- `.gitignore` — `.vault/` ignoré.
+- `tests/unit/mollie-fulfillment-cycle2.test.cjs` — fixtures legacy p7 + 2 cas anti-fail-closed.
+- `tests/unit/mollie-verify-subscription.test.cjs` — contrat `kind` réel + non-fail-open.
+- `tests/unit/mollie-live-gate.test.cjs` — portabilité CRLF.
+- `tests/unit/cloudflare-permissions.test.cjs` — layout-aware + audit générique « aucune valeur de secret en dur ».
+- `tests/unit/smtp-resend-config.test.cjs` — section outreach layout-aware.
+- `tests/unit/supabase-availability.test.cjs` — wranglers layout-aware.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — mémoire mise à jour.
+
+### Tests réalisés
+- [x] `npm test` → **66/66 fichiers de test OK, exit 0** (avant : 64/66).
+- [x] `node tests/unit/secret-manager.test.cjs` → 21/21.
+- [x] `node tests/unit/b2b-payment-flow.test.cjs` → 26/26.
+- [x] `node tests/unit/mollie-fulfillment-cycle2.test.cjs` → 22/22.
+- [x] `node tests/unit/mollie-verify-subscription.test.cjs` → 32 asserts.
+- [x] `node tests/unit/mollie-live-gate.test.cjs` → PASS.
+- [x] `php -l` → OK sur `public/api/mollie-lib.php`, `public/api/mollie-webhook.php`, `public/api/mollie.php`, `public/api/b2b-create-checkout.php`.
+- [x] `node --check scripts/secret-manager.mjs` → OK.
+
+### Problèmes restants
+- [ ] **PR #1473 GitGuardian** : le check se ré-évalue au push (le faux positif est corrigé localement ; le statut distant doit être revérifié).
+- [ ] **PR #1473 à 618 commits derrière `origin/main`** : le réalignement (merge `main`) est une décision à valider — risque money-path + déploiement automatique au merge sur `main`. **Non exécuté.**
+- [ ] **Secrets manquants (action fondateur, non contournable)** : `SUPABASE_SERVICE_KEY` (absent → `mol_supabase_mirror` skip silencieux + `verify_subscription` → `lookup_failed`), `MOLLIE_API_KEY`, `MOLLIE_WEBHOOK_SECRET` (webhook fail-closed 503), `RESEND_API_KEY`, clé Stripe legacy. Voir la checklist P3 dans `.ai/bugs.md`.
+- [ ] **CI de la PR** : `ci-tests.yml` déclenche bien sur `pull_request: branches:[main]`, mais aucun run n'est visible pour la branche — cause non tranchée.
+
+### Prochaine action recommandée
+1. Poser les 5 secrets côté fondateur via `scripts/secret-manager.mjs` (jamais en clair dans Git), puis rejouer `node tests/unit/b2b-payment-flow.test.cjs` + `tests/unit/supabase-availability.test.cjs` — Rôle : security_agent + fondateur.
+2. Vérifier le statut GitGuardian de la PR #1473 après le push de ce commit — Rôle : devops_agent.
+3. Décider du réalignement de la PR #1473 sur `main` (618 commits) — **validation requise** — Rôle : fondateur.
+
+### Branche / PR
+- Branche : `fix/phase-0.7-mollie-supabase`
+- PR : #1473 (OPEN, base `main`)
+- Commit head : (à définir — commit de clôture ci-dessous)
+
+---
 ﻿---
 
 ## 2026-11-15 · Agent: coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.7 (encaissements hôteliers) · commit be433e8e9

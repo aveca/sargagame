@@ -1,3 +1,18 @@
+## 2026-11-16 — Phase 0.7 : clôture de la branche fix/phase-0.7-mollie-supabase (tests réalignés + GitGuardian corrigé)
+
+**Clôture de la PR #1473 (Phase 0.7 — encaissements hôteliers).**
+
+- **Tests réalignés sur le produit réel (aucun changement produit)** : 4 fichiers de test de la branche étaient périmés face aux décisions validées sur `main` —
+  - `mollie-fulfillment-cycle2` : fixtures legacy p7 désormais créées AVANT la coupure historique `2026-08-01` (le worker refuse un p7 sans date de création ou créé après la coupure) ; 2 cas anti-fail-closed ajoutés. 22/22.
+  - `mollie-verify-subscription` : contrat réel `kind=pass|subscription` → `b2c_pass` / `b2b_pro` (au lieu d'un `type` figé), tri `expires_at.desc` + `limit=1`, et contrôle explicite du non-fail-open. 32 asserts.
+  - `cloudflare-permissions` / `supabase-availability` / `smtp-resend-config` : audits rendus layout-aware (workers `b2b-api`, `supabase-proxy`, `outreach` retirés de `main` → « non applicable » EXPLICITE, jamais un skip muet) + audit générique « aucune valeur de secret en dur dans une config Workers ».
+  - `mollie-live-gate` : normalisation CRLF → portable Windows/CI.
+- **Sécurité** : `scripts/secret-manager.mjs` — paramètre KDF isolé dans `const KDF_CONTEXT` (valeur inchangée, coffres existants compatibles) → suppression du faux positif GitGuardian « Generic Password ». `.gitignore` — `.vault/` (clé maîtresse + coffre chiffré) désormais réellement ignoré.
+- **Tests** : `npm test` → **66/66 fichiers OK, exit 0** (avant 64/66) ; `php -l` OK sur les 4 endpoints Mollie ; `node --check scripts/secret-manager.mjs` OK.
+- **Non touché** : aucun secret, aucun tarif, aucun endpoint de paiement, aucune production, aucun déploiement.
+- **Restant** : PR #1473 à 618 commits derrière `main` (réalignement soumis à validation) ; 5 secrets à poser par le fondateur (checklist P3 dans `.ai/bugs.md`).
+
+---
 ﻿---
 ## 2026-11-15 — coding_agent (OpenCode) · branche feat/sargagame-supabase-google-migration · Phase 0.7 (encaissements hôteliers) — fix mol_supabase_mirror + checklist P3 secrets
 

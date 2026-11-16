@@ -153,8 +153,10 @@ const assert = require("node:assert/strict");
       assert.equal(state.rpcCalls.length, 0);
     });
 
-    await test("legacy p7 EUR 7.99 → canonical trip7 grant (7 days)", async () => {
-      state.payments["tr_p7eur"] = { id: "tr_p7eur", status: "paid", amount: { currency: "EUR", value: "7.99" }, metadata: { pass: "p7", email: "legacy@example.com", source: "test" } };
+    await test("legacy p7 EUR 7.99 → canonical trip7 grant (7 jours)", async () => {
+      // createdAt AVANT la date de coupure legacy (2026-08-01) : le pass p7
+      // historique reste honorable pour les paiements antérieurs.
+      state.payments["tr_p7eur"] = { id: "tr_p7eur", status: "paid", createdAt: "2026-07-15T10:00:00Z", amount: { currency: "EUR", value: "7.99" }, metadata: { pass: "p7", email: "legacy@example.com", source: "test" } };
       const r = await worker.fetch(classicRequest("tr_p7eur"), env);
       assert.equal(r.status, 200);
       const b = await r.json();
@@ -168,7 +170,7 @@ const assert = require("node:assert/strict");
     });
 
     await test("legacy p7 USD 5.99 → canonical trip7 grant", async () => {
-      state.payments["tr_p7usd"] = { id: "tr_p7usd", status: "paid", amount: { currency: "USD", value: "5.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
+      state.payments["tr_p7usd"] = { id: "tr_p7usd", status: "paid", createdAt: "2026-07-15T10:00:00Z", amount: { currency: "USD", value: "5.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
       const r = await worker.fetch(classicRequest("tr_p7usd"), env);
       assert.equal((await r.json()).granted, true);
       assert.equal(state.rpcCalls.length, 1);
@@ -178,11 +180,30 @@ const assert = require("node:assert/strict");
 
     await test("legacy p7 with wrong amount (EUR 4.99) → amount_mismatch, no grant", async () => {
       // Prevents confusion between current trip7 price and legacy p7 price.
-      state.payments["tr_p7bad"] = { id: "tr_p7bad", status: "paid", amount: { currency: "EUR", value: "4.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
+      state.payments["tr_p7bad"] = { id: "tr_p7bad", status: "paid", createdAt: "2026-07-15T10:00:00Z", amount: { currency: "EUR", value: "4.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
       const r = await worker.fetch(classicRequest("tr_p7bad"), env);
       const b = await r.json();
       assert.equal(b.granted, false);
       assert.equal(b.reason, "amount_mismatch");
+      assert.equal(state.rpcCalls.length, 0);
+    });
+
+    await test("legacy p7 SANS createdAt → legacy_expired, no grant (fail-closed)", async () => {
+      // Date de creation inconnue : aucun acces legacy ne peut etre honore.
+      state.payments["tr_p7nodate"] = { id: "tr_p7nodate", status: "paid", amount: { currency: "EUR", value: "7.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
+      const r = await worker.fetch(classicRequest("tr_p7nodate"), env);
+      const b = await r.json();
+      assert.equal(b.granted, false);
+      assert.equal(b.reason, "legacy_expired");
+      assert.equal(state.rpcCalls.length, 0);
+    });
+
+    await test("legacy p7 cree APRES la coupure (2026-09-01) → legacy_expired, no grant", async () => {
+      state.payments["tr_p7after"] = { id: "tr_p7after", status: "paid", createdAt: "2026-09-01T10:00:00Z", amount: { currency: "EUR", value: "7.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
+      const r = await worker.fetch(classicRequest("tr_p7after"), env);
+      const b = await r.json();
+      assert.equal(b.granted, false);
+      assert.equal(b.reason, "legacy_expired");
       assert.equal(state.rpcCalls.length, 0);
     });
 
@@ -272,7 +293,7 @@ const assert = require("node:assert/strict");
     });
 
     await test("payment_status path also grants legacy p7 via RPC", async () => {
-      state.payments["tr_statusp7"] = { id: "tr_statusp7", status: "paid", amount: { currency: "EUR", value: "7.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
+      state.payments["tr_statusp7"] = { id: "tr_statusp7", status: "paid", createdAt: "2026-07-15T10:00:00Z", amount: { currency: "EUR", value: "7.99" }, metadata: { pass: "p7", email: "legacy@example.com" } };
       const r = await worker.fetch(new Request("https://worker.test/api/mollie", {
         method: "POST",
         headers: { "content-type": "application/json" },

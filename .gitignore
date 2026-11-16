@@ -32,6 +32,11 @@ gcp-*.json
 # Secrets guide (ne pas committer)
 SECRETS-GITHUB.txt
 
+# Coffre central des secrets fournisseurs (scripts/secret-manager.mjs) :
+# contient la clé maîtresse (.master) et le coffre chiffré (secrets.enc.json).
+# JAMAIS committé — la clé maîtresse en clair donnerait accès au coffre.
+.vault/
+
 # Stripe + Resend live keys — deployed via FTP manually, never in git
 # Pattern large : couvre TOUTES les copies (public/api/, *-ftp/api/, etc.) — sk_live/resend
 **/stripe-config.php

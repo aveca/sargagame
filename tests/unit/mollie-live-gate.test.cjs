@@ -2,7 +2,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const workflow = fs.readFileSync(path.join(__dirname, "../../.github/workflows/cloudflare-production.yml"), "utf8");
+// Normalisation des fins de ligne : le contrat est vérifié sur le contenu du
+// workflow, pas sur la convention de checkout (CRLF sous Windows, LF sous CI).
+const workflow = fs
+  .readFileSync(path.join(__dirname, "../../.github/workflows/cloudflare-production.yml"), "utf8")
+  .replace(/\r\n/g, "\n");
 const gateStart = workflow.indexOf("\n  mollie-live-gate:");
 const gateEnd = workflow.indexOf("\n  deploy:", gateStart);
 assert.notEqual(gateStart, -1, "production workflow defines mollie-live-gate");
