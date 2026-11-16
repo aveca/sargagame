@@ -73,6 +73,15 @@ fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
 fs.mkdirSync(LOGS_DIR, { recursive: true });
 
 // ============================================================
+// Intégration conditionnelle Factory V3 — Diagnostic Express 49 €
+// Le module conditional-resume est chargé comme bibliothèque
+// (runCheck() n'acquiert pas le verrou, seul main() le fait en CLI).
+// ============================================================
+const conditionalResume = require('./conditional-resume.cjs');
+const RESUME_SIGNAL_FILE = path.join(STATE_DIR, 'resume-signal.json');
+let lastResumeSignalTimestamp = null; // anti-double-déclenchement
+
+// ============================================================
 // Gestion du lock (single runner)
 // ============================================================
 function acquireLock() {
@@ -673,6 +682,59 @@ function cleanupSubprocesses(jobId) {
 }
 
 // ============================================================
+// Signal de reprise conditionnelle — Diagnostic Express 49 €
+//
+// Lit state/resume-signal.json écrit par conditional-resume.cjs.
+// Détecte le passage BLOCKED → READY (changement de timestamp).
+// Ne déclenche JAMAIS de déploiement, merge, paiement ou email.
+// Se contente de passer le job en état READY pour l'opérateur.
+// ============================================================
+
+function checkResumeSignal() {
+  try {
+    if (!fs.existsSync(RESUME_SIGNAL_FILE)) {
+      return { signal: null, isNew: false };
+    }
+    const signal = JSON.parse(fs.readFileSync(RESUME_SIGNAL_FILE, 'utf8'));
+    const ts = signal.timestamp || signal.at || null;
+    const isNew = ts !== null && ts !== lastResumeSignalTimestamp;
+    return { signal, isNew };
+  } catch (_) {
+    return { signal: null, isNew: false };
+  }
+}
+
+async function runConditionalResumeCycle() {
+  // 1. Exécuter le check des conditions (non verrouillé, safe depuis run.cjs)
+  let checkResult;
+  try {
+    checkResult = await conditionalResume.runCheck();
+  } catch (e) {
+    console.log(`[factory] conditional-resume runCheck error: ${e.message}`);
+    return { signal: null, isNew: false };
+  }
+
+  // 2. Vérifier si un signal de reprise nouveau est présent (BLOCKED → READY)
+  const { signal, isNew } = checkResumeSignal();
+
+  if (isNew && signal && signal.status === 'READY') {
+    lastResumeSignalTimestamp = signal.timestamp;
+    console.log(`[factory] 🚀 SIGNAL DE REPRISE DÉTECTÉ — job ${signal.job_id} passé en READY`);
+    console.log(`[factory]   Conditions : Mollie LIVE=${signal.conditions?.mollie_live?.satisfied}, Migration 009=${signal.conditions?.migration_009?.satisfied}, Checkout 49 €=${signal.conditions?.checkout_49?.satisfied}`);
+    console.log(`[factory]   ⚠️  Aucun déploiement, merge, paiement ou email n'est déclenché automatiquement.`);
+    console.log(`[factory]   L'opérateur fondateur doit autoriser explicitement chaque opération sensible.`);
+    return { signal, isNew: true };
+  }
+
+  if (checkResult && checkResult.met && !isNew) {
+    // Conditions déjà réunies et signal déjà traité — pas de re-déclenchement
+    return { signal, isNew: false };
+  }
+
+  return { signal, isNew: false };
+}
+
+// ============================================================
 // Boucle continue
 // ============================================================
 async function runContinuous() {
@@ -686,6 +748,14 @@ async function runContinuous() {
   try {
     while (true) {
       try {
+        // === Vérification du signal de reprise conditionnelle (Diagnostic Express 49 €) ===
+        // Exécutée en début de chaque cycle. Ne bloque pas le pipeline principal.
+        const resumeResult = await runConditionalResumeCycle();
+        if (resumeResult.isNew && resumeResult.signal) {
+          setJobState({ status: 'READY', task: 'Diagnostic Express 49 € — en attente autorisation fondateur' });
+          console.log('[factory] Job placé en état READY (pause opérationnelle, pas de déploiement auto).');
+        }
+
         // === Découverte de la prochaine tâche ===
         console.log('[factory] Cycle start - Discovering next job...');
         
