@@ -37,7 +37,7 @@
 | `scripts/migrations/009_diagnostic_orders.sql` | Migration commande + livraison (PK `order_id`, RLS service_role uniquement, `unique(payment_id)`, check `amount = 49.00`) | **préparé, NON appliqué** |
 | `tests/unit/diagnostic-express.test.cjs` | 38 scénarios (12 exigés + livraison unique + contrat artifact) | **38/38 OK** |
 | `tests/unit/fixtures/diagnostic-express-snapshot.json` | Fixture réelle vauclin/Pointe Faula (afai 0.06, clean, confidence 75, score 88) | — |
-| `workers/sg-payments/index.js` | Artifact live v411 (SHA `351DA951…`), catalogue `DIAGNOSTIC_PRODUCTS.diagnostic_express` = {49, EUR}, `validateDiagnosticAmount`, `validatePaymentForFulfillment`, `fulfillDiagnosticOrder` | non commité, voir PROVENANCE.md §9 |
+| `workers/sg-payments/index.js` | Artifact live v411 (SHA `351DA951…`), catalogue `DIAGNOSTIC_PRODUCTS.diagnostic_express` = {49, EUR}, `validateDiagnosticAmount`, `validatePaymentForFulfillment`, `fulfillDiagnosticOrder` | commité dans `3872de344` (branche `agent/coding/sg-payments-live-411`), non déployé en production ; voir PROVENANCE.md §9 |
 
 ## 3. Procédure de déploiement (quand autorisée)
 
@@ -114,3 +114,28 @@ Pour le Worker uniquement : redéployer la version précédente (`wrangler deplo
 | Migration 009 appliquée | ❌ bloquant (fondateur) |
 | Checkout 49 € vivant (webhook + metadata) | ❌ bloquant (fondateur) |
 | **Verdict final A→J** | **NOT READY** (3 blocages fondateur à lever avant tout déploiement/paiement/email) |
+
+## 7. Opérations de lancement A–H (prêtes à exécuter dès levée des blocages)
+
+> Rien de cette section n'a été exécuté par l'agent. Chaque étape précise la commande exacte, le résultat attendu et la méthode de rollback. Aucun secret n'est jamais affiché, loggué ni passé en CLI.
+
+| Étape | Action | Commande exacte | Résultat attendu | Rollback |
+|-------|--------|-----------------|------------------|----------|
+| **A** | Vérifier le secret Mollie LIVE (sans afficher sa valeur) | `curl -s https://sargasses-martinique.com/api/mollie-mode` | `{"ok":true,"mode":"live","api_mode":"authorized"}` (jamais `"unauthorized"` ni 401) | Si 401/unauthorized : ne rien déployer, action fondateur pour re-provisionner `MOLLIE_API_KEY` |
+| **B** | Appliquer la migration 009 (base, avant tout déploiement Worker) | `psql $DATABASE_URL < scripts/migrations/009_diagnostic_orders.sql` (fenêtre autorisée, après backup) | Table `diagnostic_orders` créée : PK `order_id`, `unique(payment_id)`, check `amount = 49.00`, RLS service_role uniquement | Restauration du backup / `DROP TABLE diagnostic_orders;` |
+| **C** | Vérifier le webhook Mollie | Vérifier dashboard Mollie : URL `https://sargasses-martinique.com/api/mollie-webhook.php` ; `curl -s https://sargasses-martinique.com/api/mollie-webhook.php` | Endpoint joignable, URL configurée côté Mollie | Désactiver/supprimer l'URL webhook côté dashboard Mollie |
+| **D** | Configurer les événements webhook | Dashboard Mollie : activer `payments.paid` et `payments.refunded` sur le webhook | Les deux événements actifs | Décocher les événements côté dashboard Mollie |
+| **E** | Créer le checkout 49 € | Test (aucun paiement) : `node scripts/diagnostic/create-checkout.mjs --email test@example.test --establishment "Village de la Pointe" --sector "Pointe Faula" --island Martinique --client-name "M. Test"`<br>Live (fondateur uniquement) : `node scripts/diagnostic/create-checkout.mjs --execute --confirm-live --email … --establishment … --sector … --island … --client-name …` | Checkout 49,00 € EUR ; metadata `offer_kind=diagnostic_express`, `product=diagnostic_express`, `webhookUrl=/api/mollie-webhook.php`, `redirectUrl=/?diagnostic_paid=1` ; commande `pending_payment` insérée | Annuler le checkout côté Mollie (si créé) ; supprimer la commande de test en `pending_payment` |
+| **F** | Déployer le Worker `sg-payments` (live v411) | `wrangler deploy --keep-vars` (jamais `--route`, jamais de secret en CLI) | Worker déployé avec catalogue `diagnostic_express` (v411, SHA `351DA951…`) | Redéployer la version précédente (`wrangler deploy --keep-vars` sur le SHA de rollback) |
+| **G** | Vérifier HTTP endpoints + 6 domaines | `curl -s <domaine>/api/mollie-mode` et `curl -s -X POST <domaine>/api/mollie-pay?pass=diagnostic_express` pour chacun des 6 domaines | HTTP 200, `"mode":"live"`, checkout 49,00 € avec metadata ; bundle à jour | Voir étape F (redéployer version précédente) |
+| **H** | Tester génération PDF, livraison idempotente, email | `node scripts/diagnostic/fulfill-order.mjs --payment-id <tr_…>` (email Resend en `dryRun=true` par défaut : aucun email réel) | PDF généré ; email en dry_run uniquement ; état `delivered` ; trace `diagnostic_deliveries` ; reprise sur le même `payment-id` = un seul envoi (idempotent) | Remettre la commande en `paid`/`processing` si nécessaire ; aucun email réel n'est envoyé (dry_run) |
+
+## 8. Blocages fondateur (lever AVANT toute étape A–H)
+
+| # | Blocage | Détail | Qui |
+|---|---------|--------|-----|
+| 1 | Secret `MOLLIE_API_KEY` LIVE désynchronisé | `/api/mollie-mode` → `api_mode: unauthorized`, 401 Mollie | Fondateur (re-provisionner le secret, jamais via l'agent) |
+| 2 | Aucun checkout 49 € vivant | `tr_V6ArjVDcsoDQwCgMHZNZJ` expiré, sans webhook, sans metadata | Fondateur / autorisation (recréer le checkout) |
+| 3 | Table `diagnostic_orders` absente en prod | Migration 009 à appliquer avant déploiement Worker | Fondateur (autorisation) avant étape B |
+
+**Règles absolues** : aucun merge, aucun déploiement prod, aucun paiement réel, aucun remboursement, aucune bascule TEST/LIVE, aucun changement de prix sans autorisation, aucun email réel, aucun secret lu/affiché/loggé, jamais le client réel comme adresse de test. PR #1474 reste inspectable, non mergée.
