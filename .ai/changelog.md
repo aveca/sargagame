@@ -1,3 +1,13 @@
+## 2026-11-16 22:15 UTC - FACTORY V3 DESKTOP AGENT : contrôleur physique Windows (robotjs) commit c66ab92e7
+
+- `scripts/factory-v3/lib/desktop.cjs` (nouveau) : abstraction robotjs — capture écran, taille écran, position souris, couleur pixel, déplacement souris, clic, saisie clavier, lancement d'appli Windows détaché.
+- `scripts/factory-v3/desktop-agent.cjs` (nouveau) : point d'entrée `--demo` (preuve physique Bloc-notes : capture avant + saisie + clic + capture après), `--exec` (commande physique unique : capture/size/mouse/pixel/move/click/type/launch/sleep), `--run` (boucle de tâches 24/7 : verrou single-instance, heartbeat, file d'attente state/tasks/, evidence state/evidence/).
+- `.gitignore` : ajout de `scripts/factory-v3/state/` (runtime éphémère, jamais committé).
+- `package.json` / `package-lock.json` : dépendance robotjs (contrôle physique Windows).
+- Tests : `node --check` OK · `--exec size` → 2560x1440 OK · `--demo` (capture + launch notepad + type + click + capture + evidence) OK · `--run` (pick 3 tâches par priorité, exécution, evidence, arrêt propre SIGTERM) OK.
+- Commit `c66ab92e7` sur `agent/coding/desktop-agent-v3`, poussé sur origin. PR #1477 (auto-merge si CI vert).
+- Prochaines étapes : connecter cerveau IA + sessions OpenCode au contrôleur ; supervision + reprise automatique (f3.py existe à C:\factory-service\v3\f3.py, non raccordé).
+
 ## 2026-11-16 17:00 UTC - TASK-P0-009 : corrections Diagnostic Express 49 € (migration 009, webhook, lib) commit 21b27d651
 
 - `scripts/migrations/009_diagnostic_orders.sql` : réécriture complète — colonnes alignées sur le code (`order_id`, `payment_id`, `client_email`, `amount`, `currency`, `metadata`, `paid_at`, `client_name`, `contact_name`, `establishment`, `sector`, `island`, `mollie_mode`, `mollie_checkout_url`, `ready_at`, `document_path`, `document_sha256`, `observation_ts`, `observation_source`, `data_age_minutes`, `error`, `delivered_at`) ; table `diagnostic_deliveries` ajoutée ; contraintes CHECK `amount = 4900` / `currency = 'EUR'` ; `unique(payment_id)` ; RLS service_role uniquement — NON appliqué en prod.

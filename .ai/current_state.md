@@ -1,3 +1,18 @@
+## 2026-11-16 22:15 UTC · Agent: OpenCode (coding) — FACTORY V3 DESKTOP AGENT — contrôleur physique Windows
+
+### Travail effectué
+- **Résumé 1 ligne** : contrôleur central Factory V3 Desktop Agent opérationnel — contrôle physique Windows (écran, clic, clavier) via robotjs, boucle de tâches, verrou single-instance, heartbeat, preuve physique vérifiée.
+- **Détails** :
+  - `scripts/factory-v3/lib/desktop.cjs` : abstraction robotjs (capture écran, taille écran, position souris, couleur pixel, déplacement souris, clic, saisie clavier, lancement d'appli Windows détaché).
+  - `scripts/factory-v3/desktop-agent.cjs` : point d'entrée `--demo` (preuve physique Bloc-notes), `--exec` (commande physique unique : capture/size/mouse/pixel/move/click/type/launch/sleep), `--run` (boucle de tâches 24/7 avec verrou single-instance, heartbeat, file d'attente state/tasks/, evidence state/evidence/).
+  - `.gitignore` : ajout de `scripts/factory-v3/state/` (runtime éphémère, jamais committé).
+  - `package.json`/`package-lock.json` : dépendance robotjs.
+- **Fichiers modifiés** : `scripts/factory-v3/lib/desktop.cjs`, `scripts/factory-v3/desktop-agent.cjs`, `.gitignore`, `package.json`, `package-lock.json`.
+- **Tests réalisés** : `node --check` OK sur desktop-agent.cjs et desktop.cjs ; `--exec size` → 2560x1440 OK ; `--demo` → capture avant + launch notepad + saisie clavier + clic + capture après + evidence OK ; `--run` → pick de 3 tâches par priorité, exécution, evidence, arrêt propre sur SIGTERM OK. Pas de build Vite impacté (pas de dépendance frontend).
+- **Problèmes restants** : Connecter le cerveau IA + sessions OpenCode au contrôleur (pas de CLI opencode trouvée en global ; le contrôleur tracke des sessions comme subprocesses). Supervision et reprise automatique à raccorder (f3.py à C:\factory-service\v3\f3.py existe mais non raccordé).
+- **Prochaine action recommandée** : connecter cerveau IA et sessions OpenCode au contrôleur ; mettre en place supervision + reprise automatique ; PR déjà créée #1477.
+- **Branche / PR** : Branche : `agent/coding/desktop-agent-v3` ; Commit : `c66ab92e7` ; Push : OK sur origin ; PR : #1477 (auto-merge si CI vert).
+
 ## 2026-11-16 17:00 UTC · Agent: OpenCode (coding) — TASK-P0-009 Diagnostic Express 49 € corrections + commit 21b27d651
 
 ### Travail effectué
