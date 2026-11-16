@@ -27,6 +27,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const https = require('https');
 const { execSync } = require('child_process');
 
 // ============================================================
@@ -157,7 +158,9 @@ function allConditionsMet() {
 // ============================================================
 function httpGet(url, timeoutMs = HTTP_TIMEOUT_MS) {
   return new Promise((resolve, reject) => {
-    const req = http.get(url, { timeout: timeoutMs }, (res) => {
+    const isHttps = url.startsWith('https://');
+    const client = isHttps ? https : http;
+    const req = client.get(url, { timeout: timeoutMs }, (res) => {
       let body = '';
       res.on('data', (chunk) => { body += chunk; });
       res.on('end', () => {

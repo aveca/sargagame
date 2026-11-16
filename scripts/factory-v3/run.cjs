@@ -22,6 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync, execFileSync, spawn } = require('child_process');
+const conditionalResume = require('./conditional-resume.cjs');
 
 // ============================================================
 // Configuration des projets
@@ -96,6 +97,28 @@ function releaseLock() {
 
 function pidAlive(pid) {
   try { process.kill(pid, 0); return true; } catch { return false; }
+}
+
+// ============================================================
+// Reprise conditionnelle Diagnostic Express 49 €
+//
+// checkResumeSignal()  → lit state/resume-signal.json (signal READY écrit par
+//                        conditional-resume quand les 3 conditions sont réunies)
+// runConditionalResumeCycle() → exécute les 3 checks non destructifs
+//                              (Mollie LIVE, migration 009, checkout 49 €)
+// Aucun déploiement, merge, paiement ou email n'est déclenché ici.
+// ============================================================
+function checkResumeSignal() {
+  const signalPath = path.join(STATE_DIR, 'resume-signal.json');
+  if (!fs.existsSync(signalPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(signalPath, 'utf8'));
+  } catch (_) { return null; }
+}
+
+async function runConditionalResumeCycle() {
+  console.log('[factory] Cycle de reprise conditionnelle (Diagnostic Express 49 €)…');
+  return await conditionalResume.runCheck();
 }
 
 // ============================================================
@@ -282,8 +305,26 @@ async function processJob(job) {
   });
 
   try {
-    // === ÉTAT 1: OBSERVE → SYNC ===
+    // === Pré-check : reprise conditionnelle (Diagnostic Express 49 €) ====
+    // Vérifie les 3 conditions non destructives AVANT tout pipeline git/build/test/deploy.
+    // Si conditions non réunies, le job est parkéd (BLOCKED) sans déployer/merger/payer.
     console.log(`[${jobId}] Starting cycle for ${repo}`);
+    const resumeSignal = checkResumeSignal();
+    const resumeCycle = await runConditionalResumeCycle();
+    if (!resumeCycle.met) {
+      console.log(`[${jobId}] Conditions de reprise non réunies, job PARKED (BLOCKED)`);
+      setJobState({ status: 'BLOCKED', task: 'Diagnostic Express 49 € — conditions de reprise non réunies' });
+      generateEvidence(jobId, {
+        ...evidence,
+        verdict: 'BLOCKED',
+        errors: [...(evidence.errors || []), { type: 'RESUME_CONDITIONS_NOT_MET', message: '3 conditions Diagnostic Express 49 € non réunies (Mollie LIVE / migration 009 / checkout 49 €)', category: 'RESUME_BLOCKED' }],
+        attempts: (evidence.attempts || 0) + 1,
+        timestamps: { ...evidence.timestamps, resumeCheckedAt: new Date().toISOString() },
+      });
+      return { status: 'PARKED', reason: 'Diagnostic Express 49 € — conditions de reprise non réunies' };
+    }
+    console.log(`[${jobId}] Conditions de reprise réunies, signal de reprise :`, resumeSignal ? 'présent' : 'absent');
+    // === ÉTAT 1: OBSERVE → SYNC ===
     setJobState({ status: 'SYNCING' });
 
     // Git fetch automatique
