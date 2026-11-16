@@ -1,3 +1,12 @@
+## 2026-11-15 — Factory V3 : continuite OpenCode (bascule + reprise verifiee)
+
+- **Probleme** : une session OpenCode bloquee par une limitation fournisseur (429) restait bloquee ; le contexte de la session etait perdu si l'on relancait une session neuve.
+- **Solution** : `scripts/factory-v3/lib/continuity.cjs` + CLI `scripts/factory-v3/continuity.cjs`. Une operation unique : detecter (session-registry) -> lire le dernier point valide (checkpoint atomique) -> classifier l'erreur (error-classifier : 429/5xx/auth) -> choisir un modele de secours (model-registry + chooseNextCandidate) -> backoff+jitter (retry-policy) -> REPRENDRE DANS LA MEME SESSION (`opencode run --session`) -> VERIFIER (preuve modele+fournisseur+session sur la meme ligne) -> journaliser (append-only, sans secret).
+- **Anti-concurrence** : verrou tokenise `state/continuity/continuity.lock` ; une seule operation de continuite a la fois.
+- **Aucun second orchestrateur** : `run.cjs` reste le seul orchestrateur ; la continuite est une operation ponctuelle qui s'y branche.
+- **Honnetete** : sans preuve de reprise, le resultat est `verified: false` et le code de sortie est 3 — jamais une reussite fabriquee.
+- **Tests** : `node --test tests/unit/factory-v3-continuity.test.cjs` -> **10/10 PASS**. Preuve reelle : `continuity.cjs --inspect` -> 12 sessions lues, 12 perimees detectees.
+- **Documentation** : `docs/factory-v3-opencode-continuity.md` (8 capacites d'integration Factory V3 + runbook + limites assumees).
 ## 2026-11-15 — Factory V3 : tableau de bord central (sessions + observateur + preuves)
 
 - **Agrégation centrale** (`scripts/factory-v3/dashboard.cjs`) : le dashboard fusionne désormais le registre de sessions normalisés (`observer/SESSION_REGISTRY.json`), l'observateur local (`CURRENT_STATE`, `TEST_RESULTS`, `BLOCKERS` avec blocages **ouverts** uniquement, `NEXT_ACTIONS`) et les données modèles/queue existantes — une seule vue, aucun nouveau port.

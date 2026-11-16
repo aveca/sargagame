@@ -1,3 +1,39 @@
+## 2026-11-15 23:55 UTC · Agent: DevOps (Factory V3 · continuite OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : continuité OpenCode opérationnelle pour Factory V3 — detection d'une session bloquee, reprise dans la MEME session apres bascule de modele, et verification factuelle de la reprise (aucun second orchestrateur).
+- **Détails** :
+  - `scripts/factory-v3/lib/continuity.cjs` — bibliotheque de continuite (detecter / lire / classifier / choisir / reprendre / verifier). Elle REUTILISE `error-classifier`, `retry-policy`, `model-registry`, `failover`, `session-registry`, `observer` et `exec` : aucune logique de retry, de selection de modele ou de lock n'est reimplementee.
+  - `scripts/factory-v3/continuity.cjs` — CLI d'UNE operation (`--inspect`, `--status`, `--resume [--dry-run]`). La boucle de jobs reste `run.cjs`.
+  - Anti-concurrence : verrou tokenise `state/continuity/continuity.lock` (une seule operation de continuite a la fois, tous runners confondus).
+  - Journal append-only `state/continuity/journal.jsonl` + checkpoints atomiques `state/continuity/checkpoints/<sessionId>.json` (dernier point valide).
+  - Reprise = reouverture de la session existante (`opencode run --session <id>`), comme un operateur humain ; le contexte est conserve.
+  - Verification : `failover.verifyModelUsed` exige modele + fournisseur + session sur LA MEME ligne ; sinon `verified: false` (jamais « reussi »).
+  - `docs/factory-v3-opencode-continuity.md` — les 8 capacites d'integration Factory V3 (OpenCode reste un outil utilise par Factory, pas un remplacement).
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/continuity.cjs` — nouveau (bibliotheque de continuite).
+- `scripts/factory-v3/continuity.cjs` — nouveau (CLI operationnelle).
+- `tests/fixtures/factory-v3-continuity-stub.cjs` — nouveau (faux binaire `opencode`, comportement `ok`/`429`/`mismatch`).
+- `tests/unit/factory-v3-continuity.test.cjs` — nouveau (10 tests).
+- `docs/factory-v3-opencode-continuity.md` — nouveau (8 capacites + runbook + limites).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — memoire mise a jour.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-continuity.test.cjs` -> **10/10 PASS** (detection, classification 429, selection de secours avec cooldown, prompt de reprise redige, checkpoint+journal, verrou, reprise reelle, refus d'une fausse preuve, bout-en-bout).
+- [x] `node scripts/factory-v3/continuity.cjs --inspect --limit 12` -> **preuve reelle** : 12 sessions OpenCode lues, 12 sessions perimees detectees (lecture seule, 0 quota).
+
+### Problèmes restants
+- [ ] Le modele actif d'une session n'est pas expose par `opencode session list --format json` : le secours doit etre donne (`--model`) ou deduit du checkpoint. A completer si l'API OpenCode expose le modele de session.
+- [ ] La reprise via CLI consomme un quota fournisseur : a n'utiliser que sur session reellement bloquee.
+
+### Prochaine action recommandée
+1. Brancher `continuity.cjs --resume` sur la detection automatique de session bloquee du tableau de bord — Role : devops_agent.
+2. Mesurer le taux de reprise verifiee sur 7 jours — Role : devops_agent.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- Commit head : (a definir)
 ## 2026-11-15 10:45 UTC · Agent: DevOps (Factory V3 — tableau de bord central)
 
 ### Travail effectué

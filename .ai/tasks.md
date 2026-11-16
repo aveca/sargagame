@@ -7,6 +7,7 @@
 ---
 
 ## Récemment complété
+- [x] P0 - **Factory V3 : continuite OpenCode (bascule modele + reprise verifiee)** (@devops_agent, 2026-11-15, branche `agent/devops/factory-v3-model-failover`) : detection de session bloquee, checkpoint du dernier point valide, classification 429, selection de secours, reprise dans la MEME session, verification factuelle, journal sans secret, verrou anti-concurrence. Tests : **10/10 PASS**. Preuve reelle : 12 sessions detectees. Doc : `docs/factory-v3-opencode-continuity.md`.
 
 - [x] P0 - **Factory V3 : tableau de bord central** (@devops_agent, 2026-11-15, branche `agent/devops/factory-v3-model-failover`) : agrégation sessions normalisées + observateur local + distinction activité/progression/résultat/validation, absences honnêtes. Tests : runner **19/19 PASS**. Preuve réelle : 12 sessions affichées.
 - [x] P0 - **Factory V3 : porte de preuve avant complétion (evidence gate)** (@devops_agent, 2026-11-15, branche `agent/devops/factory-v3-model-failover`) : `git status` réel au verdict (sale → BLOCKED_UNCOMMITTED, illisible → FAILED), `DONE_NO_CHANGE` exige propreté prouvée, `VERIFIED` exige un test réellement exécuté (botwow reçoit `npm test`). Tests : runner **17/17**, failover+resilience **38/38**.
