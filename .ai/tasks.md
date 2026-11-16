@@ -37,6 +37,17 @@
 - **Statut** : [ ] à faire
 - **Description** : issue #1273 / mission #1384. Le checker live `https://sargassumpuntacana.com/es/sargazo-para-hoteles/` et les pages `/pro/en/sargassum-forecast-punta-cana-hotels/` + `/pro/es/pronostico-sargazo-punta-cana-hoteles/` n'ont pas été sondés pour la **persistance** du prospect (accusé serveur après écriture réelle — **jamais** de fetch no-cors fictif). Les endpoints `/api/b2b-prospects.php|contacts|events|scores` répondent **410 `endpoint_retired`** → identifier le chemin d'écriture survivant avant de conclure « prospects perdus ». Objectif : **compter les prospects entrants exploitables** (sans prospection non sollicitée, sans faux témoignages, sans téléphone).
 
+### TASK-P0-009 Parcours « Diagnostic Sargasses Express » 49 € (livré, bloqué fondateur)
+- **Priorité** : P0
+- **Rôle** : coding_agent
+- **Statut** : [x] done — code livré et testé ; 3 actions fondateur bloquantes (secret Mollie LIVE, migration 009, checkout 49 €)
+- **Description** : livrer le parcours « Diagnostic Sargasses Express » 49,00 € TTC (commande → paiement Mollie → webhook `/api/mollie-webhook.php` → production PDF → livraison email Resend dry_run) pour Village de la Pointe / Pointe Faula (Martinique). Montant 49,00 € exact ±0,02 €, comparaison `Number()` (PostgREST numeric), devise EUR, non récurrent, email/sector/establishment requis. États : `pending_payment` → `paid` → `processing` → `ready` → `delivered` | `manual_review` | `refunded`. Idempotence (`deliveryIdempotencyKey`), reprise manuelle et automatique, paiement jamais perdu en cas d'échec. 12 scénarios exigés couverts.
+- **Fichiers** : `scripts/diagnostic/` (order-state, fulfillment, data-source, mailer, build-report, create-checkout, fulfill-order), `scripts/migrations/009_diagnostic_orders.sql`, `tests/unit/diagnostic-express.test.cjs` (38/38), `tests/unit/fixtures/diagnostic-express-snapshot.json`, `workers/sg-payments/PROVENANCE.md` §9, `.ai/runbooks/diagnostic-express-49.md`.
+- **Tests** : `node --check` exit 0 sur tous les `scripts/diagnostic/*.mjs` ; `node tests/unit/diagnostic-express.test.cjs` → **38/38 OK** (aucun réseau/email/secret) ; `npm run build` exit 0 ; budget **206,9 Ko ≤ 210 Ko** ; régions OK ; smoke 4 tokens.
+- **Blocages fondateur (non levés)** : (1) secret `MOLLIE_API_KEY` LIVE désynchronisé → `/api/mollie-mode` `api_mode: unauthorized` (401 Mollie) ; (2) aucun checkout 49 € vivant (checkout client expiré, sans webhook ni metadata) → recréation nécessaire ; (3) table `diagnostic_orders` absente en prod → migration 009 à appliquer. **Aucun déploiement, aucun paiement, aucun email tant que ces 3 points ne sont pas levés.**
+- **Verdict final A→J** : **NOT READY** (documenté dans `.ai/runbooks/diagnostic-express-49.md`).
+- **Branche / PR** : `agent/coding/sg-payments-live-411`, PR à créer (jamais merger), commit en attente.
+
 ### TASK-P0-001 Configurer webhook secret Mollie en prod
 - **Priorité** : P0
 - **Rôle** : coding_agent

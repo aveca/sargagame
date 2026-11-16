@@ -1,3 +1,16 @@
+## 2026-11-16 00:00 UTC - Parcours « Diagnostic Sargasses Express » 49 € (livré, non déployé, non mergé)
+
+- **Livrable** : parcours commande → paiement Mollie → webhook → production PDF → livraison email pour Village de la Pointe / Pointe Faula (Martinique), offre `diagnostic_express` **49,00 € TTC**, EUR, non récurrent.
+- `scripts/diagnostic/` (nouveau) : `lib/order-state.mjs` (machine à états), `lib/fulfillment.mjs` (orchestration idempotente), `lib/data-source.mjs` (extraction snapshot + seuils vigilance), `lib/mailer.mjs` (Resend dry_run par défaut), `build-report.mjs` (PDF Playwright Chromium), `create-checkout.mjs` (checkout Mollie + commande `pending_payment`), `fulfill-order.mjs` (CLI livraison). Tous `node --check` exit 0.
+- `scripts/migrations/009_diagnostic_orders.sql` (nouveau) : migration commande + livraison (PK `order_id`, RLS service_role uniquement, `unique(payment_id)`, check `amount = 49.00`) — **NON appliquée**.
+- `workers/sg-payments/index.js` : live v411 avec catalogue `diagnostic_express` {49, EUR} + garde-fous P1→P6/P8 — **non commité**.
+- `tests/unit/diagnostic-express.test.cjs` (nouveau) : **38/38 OK** (12 exigés + livraison unique + contrat artifact), aucun réseau/email/secret.
+- `tests/unit/fixtures/diagnostic-express-snapshot.json` (nouveau) : fixture réelle vauclin/Pointe Faula.
+- `workers/sg-payments/PROVENANCE.md` : §9 ajouté (resync live v411 SHA `351DA951…`, diff vs `origin/main` `11CD7F8E…`, patches diagnostic_express).
+- `.ai/runbooks/diagnostic-express-49.md` (nouveau) : runbook + verdict A→J **NOT READY** (3 blocages fondateur : secret Mollie LIVE, migration 009, checkout 49 €).
+- Gate de ship local : `npm run build` exit 0 · budget **206,9 Ko ≤ 210 Ko** gzip · `php -l` OK · régions OK · smoke 4 tokens (FUNNEL_REACHED ✓ ; ERRORS = défauts prod pré-existants non liés) · `npm test` 194/198 (4 échecs préexistants live, non liés).
+- **NON ACTIVÉ / BLOQUÉ** : aucun paiement réel, aucun email, aucun secret lu/affiché, aucun déploiement, aucun merge, aucune migration appliquée, aucun checkout 49 € créé.
+
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
 - **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.

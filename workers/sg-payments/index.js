@@ -1,7 +1,9 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// src/index.ts
+// index.js
+var __defProp2 = Object.defineProperty;
+var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
 var ALLOWED_ORIGINS = [
   "https://sargasses-martinique.com",
   "https://sargasses-guadeloupe.com",
@@ -18,13 +20,6 @@ var ALLOWED_HOSTS = [
   "sargassumcancun.com",
   "sargazotulum.com"
 ];
-// Grille de CRÉATION — les passes commercialement ouverts.
-// OFFRE VALIDÉE 2026-11-09 (miroir EXACT du serveur live et de
-// public/api/mollie.php $passPrices) :
-//   trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99 · season = 24,99 € / $27.99
-// `monthly` / `annual` = abonnements B2C legacy (4,99 €/mois, 49 €/an).
-// Le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du parcours client
-// (2026-11-09) : il n'est plus vendable, donc plus créable (410).
 var PASS_PRICES = {
   p30: { EUR: 14.99, USD: 16.99 },
   trip7: { EUR: 7.99, USD: 8.99 },
@@ -32,20 +27,14 @@ var PASS_PRICES = {
   monthly: { EUR: 4.99, USD: 4.99 },
   annual: { EUR: 49, USD: 49 }
 };
-// Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
-// sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
-// La CRÉATION reste interdite (cf. PASS_PRICES ci-dessus).
 var FULFILL_PRICES = {
   p30: { EUR: 14.99, USD: 16.99 },
   trip7: { EUR: 7.99, USD: 8.99 },
   season: { EUR: 24.99, USD: 27.99 },
   monthly: { EUR: 4.99, USD: 4.99 },
   annual: { EUR: 49, USD: 49 },
-  sos: { EUR: 1.00, USD: null }
+  sos: { EUR: 1, USD: null }
 };
-// Montants de l'ANCIENNE offre B2C — acceptés UNIQUEMENT pour un paiement
-// DÉJÀ encaissé avant le changement d'offre du 2026-11-09 (date de création
-// vérifiable). Un paiement NOUVEL au tarif ancien reste refusé.
 var HISTORICAL_PASS_PRICES = {
   p30: { EUR: [14.99], USD: [11.99] },
   trip7: { EUR: [4.99], USD: [5.99] },
@@ -64,10 +53,12 @@ var B2B_PLANS = {
   pro_annual: { amount: 690, currency: "EUR", description: "Sargasses Pro \u2014 annuel (690 \u20AC/an)", interval: null },
   pro_annual_usd: { amount: 790, currency: "USD", description: "Sargassum Pro \u2014 yearly ($790/yr)", interval: null }
 };
-// Read-only verified live b2b_subscriptions.plan CHECK: free, alert, dashboard, enterprise.
-// No approved mapping currently exists from B2B_PLANS keys to this schema contract.
-var B2B_SUBSCRIPTION_SCHEMA_PLANS = new Set(["free", "alert", "dashboard", "enterprise"]);
+var B2B_SUBSCRIPTION_SCHEMA_PLANS = /* @__PURE__ */ new Set(["free", "alert", "dashboard", "enterprise"]);
 var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210, monthly: 30, annual: 365, sos: 1 };
+var DIAGNOSTIC_PRODUCTS = {
+  diagnostic_express: { amount: 49, currency: "EUR", label: "Diagnostic Sargasses Express", kind: "diagnostic_express" }
+};
+var DIAGNOSTIC_ORDER_STATES = ["pending_payment", "paid", "processing", "ready", "delivered", "manual_review", "refunded"];
 var PLAN_ALIASES = {
   premium_monthly: "monthly",
   premium_mo: "monthly",
@@ -77,28 +68,15 @@ var PLAN_ALIASES = {
   pro: "pro_monthly",
   pro_yearly: "pro_annual"
 };
-function normalizePlanKey(raw) {
-  const k = String(raw || "").trim();
+function normalizePlanKey(raw2) {
+  const k = String(raw2 || "").trim();
   return PLAN_ALIASES[k] || k;
 }
 __name(normalizePlanKey, "normalizePlanKey");
-// ── P0 money path (2026-11-10) ─────────────────────────────────────────────
-// Le SERVEUR décide de l'offre, du montant, de la devise et de la cible.
-// Défauts PROUVÉS sur la version live de cette Worker, corrigés ici :
-//   E1 `Host` client → URL du webhook Mollie (exfiltration des métadonnées).
-//   E2 `metadata.source` / `metadata.plan` choisis par le client → 29 € pour
-//      365 JOURS d'accès B2B (l'offre annuelle approuvée coûte 690 €).
-//   E3 `redirectUrl` 100 % client → open redirect après paiement.
-//   E4 `MOLLIE_PROFILE_ID` lu puis JAMAIS utilisé, avec un `pfl_…` codé en dur.
-//   E5 SKU inconnu / absent → montant libre accepté (argent sans service).
-// Ces règles ne modifient AUCUN prix : le catalogue reste `PASS_PRICES`.
-
-// Host de la requête : seul un domaine de la flotte est accepté. L'en-tête
-// `Host` est fourni par le client — sans ce filtre il devenait l'URL du
-// webhook Mollie et l'URL de retour.
+__name2(normalizePlanKey, "normalizePlanKey");
 function requestHost(request) {
-  const raw = String((request && request.headers && request.headers.get("Host")) || "").toLowerCase();
-  const host = raw.split(":")[0];
+  const raw2 = String(request && request.headers && request.headers.get("Host") || "").toLowerCase();
+  const host = raw2.split(":")[0];
   if (ALLOWED_HOSTS.includes(host)) return host;
   try {
     const urlHost = new URL(request.url).hostname.toLowerCase();
@@ -108,9 +86,7 @@ function requestHost(request) {
   return ALLOWED_HOSTS[0];
 }
 __name(requestHost, "requestHost");
-
-// URL de retour : acceptée uniquement si son origine est un domaine de la
-// flotte (sinon open redirect / phishing après paiement).
+__name2(requestHost, "requestHost");
 function safeRedirectUrl(candidate, fallback) {
   try {
     const u = new URL(String(candidate || ""));
@@ -120,22 +96,13 @@ function safeRedirectUrl(candidate, fallback) {
   return fallback;
 }
 __name(safeRedirectUrl, "safeRedirectUrl");
-
-// Identifiant de profil marchand Mollie : uniquement s'il vient du binding
-// `MOLLIE_PROFILE_ID`. La valeur codée en dur (`pfl_…`) était lue mais JAMAIS
-// utilisée — un identifiant de profil en dur dans le dépôt est une fuite
-// d'information marchande et une source de divergence entre comptes.
+__name2(safeRedirectUrl, "safeRedirectUrl");
 function mollieProfileId(env) {
-  const raw = String((env && env.MOLLIE_PROFILE_ID) || "").trim();
-  return /^pfl_[A-Za-z0-9]+$/.test(raw) ? raw : "";
+  const raw2 = String(env && env.MOLLIE_PROFILE_ID || "").trim();
+  return /^pfl_[A-Za-z0-9]+$/.test(raw2) ? raw2 : "";
 }
 __name(mollieProfileId, "mollieProfileId");
-
-// Résolution SERVEUR d'une offre B2C : le catalogue de CRÉATION est la seule
-// autorité. `sos` est ABSENT de PASS_PRICES (offre retirée du parcours) : il
-// n'est donc pas créable — la LIVRAISON d'un paiement `sos` déjà encaissé
-// reste possible via FULFILL_PRICES (argent pris, accès dû).
-// Retourne null si le SKU est inconnu ou si la devise n'est pas vendue.
+__name2(mollieProfileId, "mollieProfileId");
 function resolvePassOffer(pass, currency) {
   const key = String(pass || "").trim();
   if (!key || !Object.prototype.hasOwnProperty.call(PASS_PRICES, key)) return null;
@@ -143,36 +110,27 @@ function resolvePassOffer(pass, currency) {
   const cur = String(currency || "EUR").toUpperCase();
   if (!Object.prototype.hasOwnProperty.call(row, cur)) return null;
   const value = row[cur];
-  if (value === null || value === undefined) return null;
+  if (value === null || value === void 0) return null;
   const cents = Math.round(Number(value) * 100);
   if (!Number.isFinite(cents) || cents <= 0) return null;
   return { pass: key, currency: cur, cents, amount: cents / 100, days: PASS_DURATIONS[key] || 30 };
 }
 __name(resolvePassOffer, "resolvePassOffer");
-
-// Allowlist de centimes PAR SKU, DÉRIVÉE du catalogue (source unique).
-// Une seconde table de prix écrite à la main serait une divergence de plus —
-// c'est exactement le défaut qui rendait l'ancien `trip7` USD incohérent
-// entre le front, le PHP et la Worker.
+__name2(resolvePassOffer, "resolvePassOffer");
 function passCentsAllowlist(sku) {
   const row = PASS_PRICES[String(sku || "")] || null;
   const out = {};
   if (!row) return out;
   for (const [cur, value] of Object.entries(row)) {
-    if (value === null || value === undefined) continue;
+    if (value === null || value === void 0) continue;
     const cents = Math.round(Number(value) * 100);
     if (Number.isFinite(cents) && cents > 0) out[cur] = [cents];
   }
   return out;
 }
 __name(passCentsAllowlist, "passCentsAllowlist");
-
-// Clés de métadonnées RÉSERVÉES au SERVEUR : le client ne peut ni écrire ni
-// usurper la classification d'une offre (`offer_kind`), le SKU (`pass`), le
-// plan (`plan`), l'email, l'attribution (`source`) ni les champs de
-// souscription (`customerId`, `interval`) — ces derniers déclenchaient la
-// création d'un abonnement de suivi.
-var RESERVED_METADATA_KEYS = new Set([
+__name2(passCentsAllowlist, "passCentsAllowlist");
+var RESERVED_METADATA_KEYS = /* @__PURE__ */ new Set([
   "offer_kind",
   "pass",
   "plan",
@@ -184,8 +142,6 @@ var RESERVED_METADATA_KEYS = new Set([
   "return_ref",
   "mode"
 ]);
-
-// Copie filtrée des métadonnées client : aucune clé réservée ne survit.
 function stripReservedMetadata(userMeta) {
   const out = {};
   if (userMeta && typeof userMeta === "object" && !Array.isArray(userMeta)) {
@@ -197,6 +153,7 @@ function stripReservedMetadata(userMeta) {
   return out;
 }
 __name(stripReservedMetadata, "stripReservedMetadata");
+__name2(stripReservedMetadata, "stripReservedMetadata");
 var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com", "sargazotulum.com"];
 var COLLECT_HOSTS = [
   "sargasses-martinique.com",
@@ -218,6 +175,7 @@ async function mollieReq(method, path, apiKey, body) {
   return data;
 }
 __name(mollieReq, "mollieReq");
+__name2(mollieReq, "mollieReq");
 function cors(request) {
   const origin2 = request.headers.get("Origin") || "";
   const h = { "Content-Type": "application/json; charset=utf-8" };
@@ -225,6 +183,7 @@ function cors(request) {
   return h;
 }
 __name(cors, "cors");
+__name2(cors, "cors");
 function kv(env) {
   const k = env.TRANSIENTS;
   return {
@@ -256,23 +215,14 @@ function kv(env) {
   };
 }
 __name(kv, "kv");
-// ─────────────────────────────────────────────────────────────────────────────
-// P0.7 — revocation B2C : helpers STRICTS.
-//
-// Le wrapper `kv()` ci-dessus avale volontairement les erreurs (lecture
-// best-effort). Une revocation ne peut PAS etre best-effort : si la
-// suppression du jeton ou l'ecriture Supabase echoue, on doit le savoir et
-// laisser Mollie rejouer, jamais repondre `revoked: true` a tort.
-// ─────────────────────────────────────────────────────────────────────────────
+__name2(kv, "kv");
 function sanitizeMarkerPart(value) {
   return String(value || "").replace(/[^A-Za-z0-9_.-]/g, "_");
 }
 __name(sanitizeMarkerPart, "sanitizeMarkerPart");
+__name2(sanitizeMarkerPart, "sanitizeMarkerPart");
 async function kvGetChecked(env, key) {
   const binding = env?.TRANSIENTS;
-  // Absence de binding = environnement sans KV (tests historiques). La
-  // production lie toujours TRANSIENTS ; on ne transforme pas cette absence
-  // en erreur de lecture pour ne pas casser les parcours sans KV.
   if (!binding) return { ok: true, value: null };
   try {
     return { ok: true, value: await binding.get(key) };
@@ -281,6 +231,7 @@ async function kvGetChecked(env, key) {
   }
 }
 __name(kvGetChecked, "kvGetChecked");
+__name2(kvGetChecked, "kvGetChecked");
 async function kvPutChecked(env, key, value, opts) {
   const binding = env?.TRANSIENTS;
   if (!binding) return { ok: false, error: "kv_binding_absent" };
@@ -292,6 +243,7 @@ async function kvPutChecked(env, key, value, opts) {
   }
 }
 __name(kvPutChecked, "kvPutChecked");
+__name2(kvPutChecked, "kvPutChecked");
 async function kvDeleteChecked(env, key) {
   const binding = env?.TRANSIENTS;
   if (!binding) return { ok: false, error: "kv_binding_absent" };
@@ -303,21 +255,25 @@ async function kvDeleteChecked(env, key) {
   }
 }
 __name(kvDeleteChecked, "kvDeleteChecked");
+__name2(kvDeleteChecked, "kvDeleteChecked");
 function amountToCents(amount) {
   if (!amount || typeof amount !== "object") return 0;
   const n = Math.round(Number.parseFloat(String(amount.value == null ? "" : amount.value)) * 100);
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 __name(amountToCents, "amountToCents");
+__name2(amountToCents, "amountToCents");
 function isNegativePaymentState(payment) {
   return amountToCents(payment?.amountRefunded) > 0 || amountToCents(payment?.amountChargedBack) > 0;
 }
 __name(isNegativePaymentState, "isNegativePaymentState");
+__name2(isNegativePaymentState, "isNegativePaymentState");
 var REVOKING_EVENTS = /* @__PURE__ */ new Set(["payment.refunded", "refund.refunded", "chargeback.received"]);
 function isRevokingWebhookEvent(event) {
   return REVOKING_EVENTS.has(String(event || ""));
 }
 __name(isRevokingWebhookEvent, "isRevokingWebhookEvent");
+__name2(isRevokingWebhookEvent, "isRevokingWebhookEvent");
 var RATE_LIMIT_CACHE = /* @__PURE__ */ new Map();
 var FLUSH_INTERVAL_MS = 6e4;
 var FLUSH_THRESHOLD = 100;
@@ -350,6 +306,7 @@ async function rateLimit(env, key, limit, windowSec = 86400) {
   return true;
 }
 __name(rateLimit, "rateLimit");
+__name2(rateLimit, "rateLimit");
 function cleanupRateLimitCache() {
   const now = Date.now();
   const day = Math.floor(now / 864e5);
@@ -360,14 +317,8 @@ function cleanupRateLimitCache() {
   }
 }
 __name(cleanupRateLimitCache, "cleanupRateLimitCache");
+__name2(cleanupRateLimitCache, "cleanupRateLimitCache");
 function normalizeMollieSignature(sig) {
-  // P0.118 §6 — normalisation de la signature Mollie.
-  //   Next-gen : en-tete "X-Mollie-Signature: sha256=<hex 64>"
-  //   Classique: hex 64 nu
-  // La version live comparait la signature BRUTE : toute requete Next-gen
-  // officielle etait donc rejetee en 403 (le prefixe "sha256=" n'etait pas
-  // retire). On normalise, on refuse tout ce qui n'est pas 64 hex, et on
-  // compare a temps constant.
   const v = String(sig || "").trim();
   const prefixed = /^sha256=([0-9a-fA-F]{64})$/.exec(v);
   if (prefixed) return prefixed[1].toLowerCase();
@@ -375,11 +326,12 @@ function normalizeMollieSignature(sig) {
   return "";
 }
 __name(normalizeMollieSignature, "normalizeMollieSignature");
+__name2(normalizeMollieSignature, "normalizeMollieSignature");
 async function verifyHmac(body, sig, secret) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const s = await crypto.subtle.sign("HMAC", key, enc.encode(body));
-  const expected = Array.from(new Uint8Array(s)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const expected = Array.from(new Uint8Array(s)).map((b2) => b2.toString(16).padStart(2, "0")).join("");
   const provided = normalizeMollieSignature(sig);
   if (!provided) return false;
   const a = enc.encode(expected);
@@ -390,6 +342,7 @@ async function verifyHmac(body, sig, secret) {
   return r === 0;
 }
 __name(verifyHmac, "verifyHmac");
+__name2(verifyHmac, "verifyHmac");
 async function supa(env, table, method, body, query = "") {
   if (!env.SUPABASE_SERVICE_KEY) return method === "GET" ? [] : null;
   const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
@@ -406,6 +359,7 @@ async function supa(env, table, method, body, query = "") {
   return await r.json();
 }
 __name(supa, "supa");
+__name2(supa, "supa");
 async function widgetSign(env, payload) {
   const data = btoa(JSON.stringify(payload));
   const enc = new TextEncoder();
@@ -414,6 +368,7 @@ async function widgetSign(env, payload) {
   return `${data}.${Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 __name(widgetSign, "widgetSign");
+__name2(widgetSign, "widgetSign");
 async function widgetVerify(env, k) {
   const parts = k.split(".");
   if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
@@ -427,6 +382,7 @@ async function widgetVerify(env, k) {
   return payload;
 }
 __name(widgetVerify, "widgetVerify");
+__name2(widgetVerify, "widgetVerify");
 async function supaQ(env, table, method, body, query = "") {
   if (!env.SUPABASE_SERVICE_KEY) return method === "GET" ? [] : null;
   try {
@@ -454,10 +410,12 @@ async function supaQ(env, table, method, body, query = "") {
   }
 }
 __name(supaQ, "supaQ");
+__name2(supaQ, "supaQ");
 function authSecret(env) {
   return env.AUTH_SECRET || (env.MOLLIE_WEBHOOK_SECRET || "") + "|sg-auth-v1";
 }
 __name(authSecret, "authSecret");
+__name2(authSecret, "authSecret");
 async function authSign(env, payload) {
   const data = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const enc = new TextEncoder();
@@ -466,6 +424,7 @@ async function authSign(env, payload) {
   return `${data}.${Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 __name(authSign, "authSign");
+__name2(authSign, "authSign");
 async function authVerify(env, token) {
   const parts = String(token || "").split(".");
   if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
@@ -489,12 +448,14 @@ async function authVerify(env, token) {
   }
 }
 __name(authVerify, "authVerify");
+__name2(authVerify, "authVerify");
 var JWKS_CACHE = null;
 function b64urlDecode(s) {
   const b = s.replace(/-/g, "+").replace(/_/g, "/");
   return atob(b + "=".repeat((4 - b.length % 4) % 4));
 }
 __name(b64urlDecode, "b64urlDecode");
+__name2(b64urlDecode, "b64urlDecode");
 async function verifyGoogleIdToken(env, credential) {
   if (!env.GOOGLE_CLIENT_ID) return null;
   const parts = String(credential || "").split(".");
@@ -530,6 +491,7 @@ async function verifyGoogleIdToken(env, credential) {
   return { email: String(payload.email).toLowerCase().trim(), sub: String(payload.sub), name: String(payload.name || "") };
 }
 __name(verifyGoogleIdToken, "verifyGoogleIdToken");
+__name2(verifyGoogleIdToken, "verifyGoogleIdToken");
 async function userUpsert(env, email, provider, providerUserId) {
   const now = (/* @__PURE__ */ new Date()).toISOString();
   if (providerUserId) {
@@ -550,12 +512,9 @@ async function userUpsert(env, email, provider, providerUserId) {
   return again?.[0] || null;
 }
 __name(userUpsert, "userUpsert");
+__name2(userUpsert, "userUpsert");
 async function userEntitlements(env, userId, email) {
   const filters = [];
-  // P0.118 §7 — `public.payment_grants` n'a PAS de colonne `user_id`
-  // (cf. supabase/schema.sql) : le filtre `user_id.eq.` faisait echouer la
-  // requete (400 PostgREST) et les droits n'etaient jamais lus. Le user_id
-  // est stocke dans metadata (jsonb).
   if (userId) filters.push(`metadata->>user_id.eq.${userId}`);
   if (email) filters.push(`email.eq.${encodeURIComponent(email)}`);
   if (!filters.length) return { entitlements: [], premium: { active: false } };
@@ -574,6 +533,7 @@ async function userEntitlements(env, userId, email) {
   };
 }
 __name(userEntitlements, "userEntitlements");
+__name2(userEntitlements, "userEntitlements");
 async function resendEmail(env, from, to, subject, html) {
   if (!env.RESEND_API_KEY) return;
   await fetch("https://api.resend.com/emails", {
@@ -583,36 +543,36 @@ async function resendEmail(env, from, to, subject, html) {
   });
 }
 __name(resendEmail, "resendEmail");
-class EmailDeliveryOutcomeError extends Error {
+__name2(resendEmail, "resendEmail");
+var EmailDeliveryOutcomeError = class extends Error {
+  static {
+    __name(this, "EmailDeliveryOutcomeError");
+  }
   constructor(message, deliveryOutcome = "unknown") {
     super(message);
     this.name = "EmailDeliveryOutcomeError";
     this.deliveryOutcome = deliveryOutcome;
   }
-}
-__name(EmailDeliveryOutcomeError, "EmailDeliveryOutcomeError");
+};
+__name2(EmailDeliveryOutcomeError, "EmailDeliveryOutcomeError");
 async function sendProviderRequest(url, init, provider) {
   let response;
   try {
     response = await fetch(url, init);
   } catch (_) {
-    // The provider may have accepted the message before the connection failed.
     throw new EmailDeliveryOutcomeError(provider + " transport outcome unknown", "unknown");
   }
   if (response.status === 408 || response.status >= 500) {
-    // A 5xx/timeout is ambiguous: never send the same message through another provider.
     throw new EmailDeliveryOutcomeError(provider + " response outcome unknown", "unknown");
   }
   if (!response.ok) {
-    // Explicit 4xx rejection is safe to fail over from: the request was rejected.
     throw new EmailDeliveryOutcomeError(provider + " rejected request", "rejected");
   }
   return response;
 }
 __name(sendProviderRequest, "sendProviderRequest");
+__name2(sendProviderRequest, "sendProviderRequest");
 async function sendViaNamecheap(to, subject, html, domain, env) {
-  // No credential is embedded in source. Missing binding is an explicit
-  // pre-send rejection, so the next provider may be tried safely.
   const token = env.NAMECHEAP_MAIL_TOKEN;
   if (!token) throw new EmailDeliveryOutcomeError("NAMECHEAP_MAIL_TOKEN absent", "rejected");
   const res = await sendProviderRequest(`https://${domain}/send-email.php`, {
@@ -632,6 +592,7 @@ async function sendViaNamecheap(to, subject, html, domain, env) {
   return true;
 }
 __name(sendViaNamecheap, "sendViaNamecheap");
+__name2(sendViaNamecheap, "sendViaNamecheap");
 async function sendViaSendPulse(to, subject, html, domain, env) {
   if (!env.SENDPULSE_CLIENT_ID || !env.SENDPULSE_CLIENT_SECRET) {
     throw new EmailDeliveryOutcomeError("SendPulse credentials missing", "rejected");
@@ -644,12 +605,13 @@ async function sendViaSendPulse(to, subject, html, domain, env) {
       body: JSON.stringify({ grant_type: "client_credentials", client_id: env.SENDPULSE_CLIENT_ID, client_secret: env.SENDPULSE_CLIENT_SECRET })
     });
   } catch (_) {
-    // Authentication did not submit an email; trying another provider is safe.
     throw new EmailDeliveryOutcomeError("SendPulse authentication unavailable", "rejected");
   }
   if (!tokenRes.ok) throw new EmailDeliveryOutcomeError("SendPulse authentication rejected", "rejected");
   let tokenData;
-  try { tokenData = await tokenRes.json(); } catch (_) {
+  try {
+    tokenData = await tokenRes.json();
+  } catch (_) {
     throw new EmailDeliveryOutcomeError("SendPulse authentication response invalid", "rejected");
   }
   const token = tokenData && tokenData.access_token;
@@ -662,6 +624,7 @@ async function sendViaSendPulse(to, subject, html, domain, env) {
   return true;
 }
 __name(sendViaSendPulse, "sendViaSendPulse");
+__name2(sendViaSendPulse, "sendViaSendPulse");
 async function sendViaBrevo(to, subject, html, domain, env) {
   if (!env.BREVO_API_KEY) throw new EmailDeliveryOutcomeError("Brevo key missing", "rejected");
   await sendProviderRequest("https://api.brevo.com/v3/smtp/email", {
@@ -672,6 +635,7 @@ async function sendViaBrevo(to, subject, html, domain, env) {
   return true;
 }
 __name(sendViaBrevo, "sendViaBrevo");
+__name2(sendViaBrevo, "sendViaBrevo");
 async function sendViaResend(to, subject, html, domain, env) {
   if (!env.RESEND_API_KEY) throw new EmailDeliveryOutcomeError("Resend key missing", "rejected");
   await sendProviderRequest("https://api.resend.com/emails", {
@@ -682,6 +646,7 @@ async function sendViaResend(to, subject, html, domain, env) {
   return true;
 }
 __name(sendViaResend, "sendViaResend");
+__name2(sendViaResend, "sendViaResend");
 async function sendEmail(to, subject, html, domain, env) {
   const providers = [
     { name: "namecheap", fn: sendViaNamecheap },
@@ -698,8 +663,6 @@ async function sendEmail(to, subject, html, domain, env) {
       }
     } catch (e) {
       if (e && e.deliveryOutcome === "unknown") {
-        // The message may already have been accepted. Stop: a second provider
-        // could create a duplicate. The caller records manual review/failure.
         console.log(`Email provider ${p.name} outcome unknown; stopping fallback`);
         return { success: false, provider: p.name, ambiguous: true, error: "provider_delivery_unconfirmed" };
       }
@@ -709,11 +672,13 @@ async function sendEmail(to, subject, html, domain, env) {
   return { success: false, ambiguous: false, error: "all_providers_rejected" };
 }
 __name(sendEmail, "sendEmail");
+__name2(sendEmail, "sendEmail");
 async function hashString(s) {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return Array.from(new Uint8Array(h)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 __name(hashString, "hashString");
+__name2(hashString, "hashString");
 async function b2bProspects(env, request) {
   const h = cors(request);
   const url = new URL(request.url);
@@ -748,6 +713,7 @@ async function b2bProspects(env, request) {
   return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
 }
 __name(b2bProspects, "b2bProspects");
+__name2(b2bProspects, "b2bProspects");
 async function b2bConcierge(env, request) {
   const h = cors(request);
   const url = new URL(request.url);
@@ -789,10 +755,11 @@ async function b2bConcierge(env, request) {
   return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
 }
 __name(b2bConcierge, "b2bConcierge");
+__name2(b2bConcierge, "b2bConcierge");
 var JEV_INTENTS = ["today_verdict", "when_later", "trip_planning", "which_beach", "avoid_seaweed", "b2b", "off_topic"];
 async function handleJevIntent(request, env) {
   const J = { "Content-Type": "application/json" };
-  const fb = /* @__PURE__ */ __name(() => new Response(JSON.stringify({ ok: false, fallback: true }), { headers: J }), "fb");
+  const fb = /* @__PURE__ */ __name2(() => new Response(JSON.stringify({ ok: false, fallback: true }), { headers: J }), "fb");
   const key = (env.TYPESAFE_API_KEY || "").trim();
   if (!key || key.startsWith("test")) return fb();
   let body = null;
@@ -850,6 +817,7 @@ async function handleJevIntent(request, env) {
   }
 }
 __name(handleJevIntent, "handleJevIntent");
+__name2(handleJevIntent, "handleJevIntent");
 var index_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -858,8 +826,6 @@ var index_default = {
       return new Response(JSON.stringify({ ok: true, cron: "drip" }), { headers: { "Content-Type": "application/json" } });
     }
     if (url.pathname === "/_cron/b2c") {
-      // No authenticated manual-cron contract or secret binding exists.
-      // Keep the scheduled() trigger; deny public/manual invocation by default.
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
@@ -875,6 +841,15 @@ var index_default = {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
       return handleMollie(request, env);
+    }
+    if (path === "/api/stripe-webhook" || path === "/api/stripe-webhook.php") {
+      return handleStripeWebhook(request, env);
+    }
+    if (path === "/api/stripe-status") {
+      return handleStripeStatus(request, env);
+    }
+    if (path === "/api/stripe-track") {
+      return handleStripeTrack(request, env);
     }
     if (path === "/api/mollie-webhook" || path === "/api/mollie-webhook.php") {
       if (request.method === "GET") return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
@@ -913,7 +888,7 @@ var index_default = {
       const region = String(sub.region || "").trim();
       const regionInfo = resolveB2BWidgetRegion(region);
       if (!regionInfo) {
-        return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Widget indisponible</h2><p>Région non configurée.</p></body>', {
+        return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Widget indisponible</h2><p>R\xE9gion non configur\xE9e.</p></body>', {
           status: 404,
           headers: { "Content-Type": "text/html; charset=utf-8" }
         });
@@ -947,20 +922,13 @@ var index_default = {
       return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "payfix-20261110-b2c", routes: 48 }), { headers: { "Content-Type": "application/json" } });
     }
     if (path === "/api/mollie-mode") {
-      // DIAGNOSTIC DU MODE DU BACKEND MOLLIE — LECTURE SEULE.
-      // - ne cree AUCUNE transaction : aucun POST vers api.mollie.com ;
-      // - ne retourne JAMAIS la cle ni un fragment de cle (un mode, rien de plus) ;
-      // - `mode` = contrat Mollie sur le prefixe de la cle (`live_` / `test_`) ;
-      // - `api_mode` = champ `mode` renvoye par l'API Mollie elle-meme
-      //   (GET /v2/payments?limit=1 : lecture seule, aucune creation) ;
-      // - sert a verifier le mode LIVE sur les six domaines SANS transaction.
       const key = String(env.MOLLIE_API_KEY || "");
       const mode = key.startsWith("live_") ? "live" : key.startsWith("test_") ? "test" : "unknown";
       let apiMode = "not_checked";
       if (key) {
         try {
           const r = await fetch("https://api.mollie.com/v2/payments?limit=1", {
-            headers: { Authorization: "Bearer " + key },
+            headers: { Authorization: "Bearer " + key }
           });
           if (r.status === 401) apiMode = "unauthorized";
           else if (r.ok) {
@@ -973,7 +941,7 @@ var index_default = {
         }
       }
       return new Response(JSON.stringify({ ok: true, mode, api_mode: apiMode }), {
-        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
       });
     }
     if (path === "/api/mollie-kv-test") {
@@ -1060,6 +1028,9 @@ var index_default = {
         headers: { "Content-Type": "application/json", "Cache-Control": isFree ? "public, max-age=1800" : "no-store" }
       });
     }
+    if (path === "/api/b2b-lead" || path === "/api/b2b-lead.php") {
+      return handleB2BLead(request, env);
+    }
     if (path === "/api/b2b-prospects.php" || path === "/api/b2b-concierge.php") {
       return new Response(JSON.stringify({ error: "endpoint_retired" }), {
         status: 410,
@@ -1077,25 +1048,14 @@ var index_default = {
       const island = (input.island || "mq").replace(/[^A-Za-z]/g, "").toLowerCase();
       const ISLAND_MAP = { mq: "MQ", gp: "GP", florida: "florida", puntacana: "puntacana", rivieramaya: "rivieramaya" };
       const islandNorm = ISLAND_MAP[island] || "MQ";
-      // ── CONSENTEMENT MARKETING (optionnel, JAMAIS pré-coché) ────────────────
-      // Aligné sur public/api/b2b-trial.php : version + horodatage + source
-      // sont conservés avec le lead. L'essai reste TRANSACTIONNEL : cet
-      // endpoint n'envoie AUCUNE campagne marketing (email d'essai seul).
       const CONSENT_VERSION = "2026-11-04";
       const rawConsent = input.marketingConsent;
       const marketingConsent = rawConsent === true || rawConsent === 1 || rawConsent === "1" || rawConsent === "true" || rawConsent === "on";
       const consentSource = String(input.consentSource || "b2b_trial_form").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40).toLowerCase() || "b2b_trial_form";
-      const consentTs = marketingConsent ? new Date().toISOString() : "";
+      const consentTs = marketingConsent ? (/* @__PURE__ */ new Date()).toISOString() : "";
       const domainMap = { MQ: "sargasses-martinique.com", GP: "sargasses-guadeloupe.com", florida: "sargassummiami.com", puntacana: "sargassumpuntacana.com", rivieramaya: "sargassumcancun.com" };
       const domain = domainMap[islandNorm] || "sargasses-martinique.com";
       const lang = ["florida", "puntacana", "rivieramaya"].includes(islandNorm) ? "en" : "fr";
-      // ── PERSISTANCE ATTENDUE (accusé serveur) ────────────────────────────────
-      // AVANT, les 3 écritures étaient en ctx.waitUntil (fire-and-forget) :
-      // `{ok:true}` ne prouvait RIEN — un lead perdu se voyait quand même
-      // activé (faux succès, issue #1273). Ici l'écriture du lead est ATTENDUE
-      // et son accusé est exigé : sans `{ok:true}` du sink, PAS de token et
-      // PAS de succès (fail-closed). Le sink déduplique par email → un
-      // réessai de l'hôtelier ne crée jamais de doublon.
       const leadPayload = {
         type: "email_signup",
         email,
@@ -1116,8 +1076,7 @@ var index_default = {
         leadSaved = false;
       }
       if (!leadSaved) {
-        // Aucun accusé → aucun token, aucun faux succès (message sans PII).
-        console.log("b2b_trial: lead non confirmé par le sink — refus fail-closed");
+        console.log("b2b_trial: lead non confirm\xE9 par le sink \u2014 refus fail-closed");
         return new Response(JSON.stringify({ ok: false, error: "lead_not_persisted" }), { status: 503, headers: cors(request) });
       }
       const token = await widgetSign(env, { exp: Math.floor(Date.now() / 1e3) + 30 * 86400, type: "b2b_pro" });
@@ -1126,13 +1085,10 @@ var index_default = {
       const bodyText = lang === "en" ? `Hi ${name} Your 30-day PRO trial is ready.` : `Bonjour ${name} Ton essai PRO de 30 jours est actif.`;
       const cta = lang === "en" ? "Open my dashboard" : "Ouvrir mon espace";
       const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${bodyText}</p><p><a href="${accessUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px">${cta} &rarr;</a></p></div>`;
-      // Email TRANSACTIONNEL + télémétrie : best-effort (ce ne sont pas la
-      // preuve de persistance — c'est l'écriture du lead ci-dessus qui l'est).
       ctx.waitUntil(resendEmail(env, `Sargasses Pro <alerte@${domain}>`, [email], title, html).catch(() => {
       }));
       ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_trial_started", params: { org: name, beach }, island: islandNorm }).catch(() => {
       }));
-      // Consentement marketing : on ne trace QUE l'opt-in explicite (sans envoi).
       if (marketingConsent) {
         ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_marketing_consent", params: { consent: 1, v: CONSENT_VERSION, ts: consentTs, src: consentSource }, island: islandNorm }).catch(() => {
         }));
@@ -1152,9 +1108,6 @@ var index_default = {
       const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><h2>Nouvelle demande B2B \u2014 ${org}</h2><table style="width:100%;border-collapse:collapse"><tr><td style="padding:6px 0;font-weight:700;width:100px">Email</td><td>${email}</td></tr><tr><td style="padding:6px 0;font-weight:700">Organisation</td><td>${org}</td></tr><tr><td style="padding:6px 0;font-weight:700">Littoral</td><td>${littoral}</td></tr><tr><td style="padding:6px 0;font-weight:700">T\xE9l\xE9phone</td><td>${phone}</td></tr><tr><td style="padding:6px 0;font-weight:700">\xCEle</td><td>${island}</td></tr></table></div>`;
       ctx.waitUntil(resendEmail(env, "Sargasses B2B <alerte@sargasses-martinique.com>", ["contact@sargasses-martinique.com"], `Nouvelle demande B2B \u2014 ${org}`, html).catch(() => {
       }));
-      // PERSISTANCE ATTENDUE : la demande de RDV doit être enregistrée dans le
-      // sink AVANT d'accuser réception (sinon `{ok:true}` = faux succès et le
-      // prospect est perdu — issue #1273). Échec → 503, le front réessaie.
       let meetingSaved = false;
       try {
         const r = await fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "email_signup", email, source: "b2b_territoire_meeting", island: island || "MQ", org }) });
@@ -1164,47 +1117,18 @@ var index_default = {
         meetingSaved = false;
       }
       if (!meetingSaved) {
-        console.log("b2b_meeting: demande non confirmée par le sink — refus fail-closed");
+        console.log("b2b_meeting: demande non confirm\xE9e par le sink \u2014 refus fail-closed");
         return new Response(JSON.stringify({ ok: false, error: "lead_not_persisted" }), { status: 503, headers: cors(request) });
       }
       return new Response(JSON.stringify({ ok: true, persisted: true }), { headers: cors(request) });
     }
     if (path === "/api/b2b-create-checkout.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
-      if (!await rateLimit(env, "b2b_checkout", 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
-      const input = await request.json();
-      if (!input.prospect_id || !input.concierge_id || !input.email) {
-        return new Response(JSON.stringify({ error: "prospect_id, concierge_id, email required" }), { status: 400, headers: cors(request) });
-      }
-      try {
-        const apiKey = env.MOLLIE_API_KEY;
-        const plan = B2B_PLANS.brief_monthly;
-        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
-        let cid = null;
-        for (const c of customers._embedded?.customers || []) {
-          if (c.email === input.email) {
-            cid = c.id;
-            break;
-          }
-        }
-        if (!cid) {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email: input.email, name: input.name || "", metadata: { source: "b2b_concierge_checkout" } });
-          cid = nc.id;
-        }
-        const host = requestHost(request);
-        const subscription = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-          amount: { value: plan.amount.toFixed(2), currency: plan.currency },
-          description: plan.description,
-          webhookUrl: `https://${host}/api/mollie-webhook`,
-          metadata: { source: "b2b_concierge", prospect_id: input.prospect_id, concierge_id: input.concierge_id, plan: "brief_monthly" },
-          interval: plan.interval
-        });
-        const checkoutUrl = subscription._links?.checkout?.href || null;
-        await supa(env, "b2b_payments", "POST", { prospect_id: input.prospect_id, concierge_id: input.concierge_id, amount: plan.amount, status: "pending", mollie_payment_id: subscription.id });
-        return new Response(JSON.stringify({ checkoutUrl, customerId: cid, subscriptionId: subscription.id }), { headers: cors(request) });
-      } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: cors(request) });
-      }
+      const host = requestHost(request);
+      return new Response(JSON.stringify({ error: "use_pricing_page", url: "https://" + host + "/pro/pricing/" }), {
+        status: 410,
+        headers: { ...cors(request), "Cache-Control": "no-store" }
+      });
     }
     if (path === "/api/b2b-contacts.php" || path === "/api/b2b-events.php" || path === "/api/b2b-scores.php" || path === "/api/b2b-forecast-delivery.php") {
       return new Response(JSON.stringify({ error: "endpoint_retired" }), {
@@ -1247,10 +1171,7 @@ async function runDripEmails(env) {
   console.log("Drip: starting runDripEmails");
   const now = Date.now();
   const cutoff = new Date(now - 36e5).toISOString();
-  const staleClaimCutoff = new Date(now - 30 * 60 * 1000).toISOString();
-
-  // A claim older than 30 minutes is never resent automatically: delivery
-  // may have been accepted before a Worker/database interruption.
+  const staleClaimCutoff = new Date(now - 30 * 60 * 1e3).toISOString();
   const staleClaims = await supaQ(
     env,
     "b2b_leads",
@@ -1272,7 +1193,6 @@ async function runDripEmails(env) {
       console.log("Drip: stale claim recovery not persisted lead=" + String(stale.id || "unknown"));
     }
   }
-
   const leads = await supa(
     env,
     "b2b_leads",
@@ -1284,7 +1204,6 @@ async function runDripEmails(env) {
     console.log("Drip: no eligible leads");
     return;
   }
-
   const domainByRegion = {
     do: "sargassumpuntacana.com",
     puntacana: "sargassumpuntacana.com",
@@ -1298,9 +1217,8 @@ async function runDripEmails(env) {
     riviera_maya: "sargassumcancun.com",
     tulum: "sargazotulum.com"
   };
-
   for (const lead of leads) {
-    const claimAt = new Date().toISOString();
+    const claimAt = (/* @__PURE__ */ new Date()).toISOString();
     const claim = await supaQ(
       env,
       "b2b_leads",
@@ -1311,64 +1229,36 @@ async function runDripEmails(env) {
         contact_attempts: Math.max(0, Number(lead.contact_attempts) || 0) + 1,
         last_contact_error: null
       },
-      "?id=eq." + encodeURIComponent(lead.id) +
-        "&status=eq.new&created_at=lt." + encodeURIComponent(cutoff) +
-        "&select=id,email,domain,region,created_at,status,claimed_at,contact_attempts"
+      "?id=eq." + encodeURIComponent(lead.id) + "&status=eq.new&created_at=lt." + encodeURIComponent(cutoff) + "&select=id,email,domain,region,created_at,status,claimed_at,contact_attempts"
     );
-
-    // PostgREST PATCH + status=eq.new is the atomic claim. A concurrent
-    // Worker receives zero rows and cannot send the same lead.
     if (!Array.isArray(claim) || claim.length !== 1) {
       console.log("Drip: lead not claimed; skip id=" + String(lead.id || "unknown"));
       continue;
     }
-
     const claimedLead = claim[0];
-    const regionKey = String(claimedLead.region || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "");
+    const regionKey = String(claimedLead.region || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
     const domain = String(claimedLead.domain || "").trim().toLowerCase();
     const expectedDomain = domainByRegion[regionKey];
     const email = String(claimedLead.email || "").trim();
     const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    const markManualReview = async (reason) => {
+    const markManualReview = /* @__PURE__ */ __name(async (reason) => {
       const rows = await supaQ(
         env,
         "b2b_leads",
         "PATCH",
         { status: "manual_review", claimed_at: null, last_contact_error: reason },
-        "?id=eq." + encodeURIComponent(claimedLead.id) +
-          "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) +
-          "&select=id,status"
+        "?id=eq." + encodeURIComponent(claimedLead.id) + "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) + "&select=id,status"
       );
       return Array.isArray(rows) && rows.length === 1;
-    };
-
+    }, "markManualReview");
     if (!validEmail || !expectedDomain || domain !== expectedDomain) {
       const persisted = await markManualReview(!validEmail ? "invalid_email" : "unsupported_region_domain");
       console.log("Drip: lead requires manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
       continue;
     }
-
-    const lang = ["mq", "martinique", "gp", "guadeloupe"].includes(regionKey)
-      ? "fr"
-      : ["do", "puntacana", "punta_cana", "rivieramaya", "riviera_maya", "tulum"].includes(regionKey)
-        ? "es"
-        : "en";
-    const subject = lang === "fr"
-      ? "Prévisions sargasses " + regionKey + " — observation datée"
-      : lang === "es"
-        ? "Previsión de sargazo " + regionKey + " — observación fechada"
-        : "Sargassum forecast " + regionKey + " — timestamped observation";
-    const html = lang === "fr"
-      ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Dernière observation disponible — ' + regionKey + '</h2><p>Consultez la carte et vérifiez l’heure réelle de la dernière observation AFAI avant de prendre une décision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Voir la carte et l’heure de mesure</a></p><p><a href="https://' + domain + '/fiabilite/">Méthode et fiabilité</a></p></div>'
-      : lang === "es"
-        ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Última observación disponible — ' + regionKey + '</h2><p>Consulta el mapa y comprueba la hora real de la última observación AFAI antes de decidir.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Ver mapa y hora de medición</a></p><p><a href="https://' + domain + '/fiabilite/">Método y fiabilidad</a></p></div>'
-        : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Latest available observation — ' + regionKey + '</h2><p>Check the map and the actual timestamp of the latest AFAI observation before making a decision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">View map and observation time</a></p><p><a href="https://' + domain + '/fiabilite/">Method and reliability</a></p></div>';
-
+    const lang = ["mq", "martinique", "gp", "guadeloupe"].includes(regionKey) ? "fr" : ["do", "puntacana", "punta_cana", "rivieramaya", "riviera_maya", "tulum"].includes(regionKey) ? "es" : "en";
+    const subject = lang === "fr" ? "Pr\xE9visions sargasses " + regionKey + " \u2014 observation dat\xE9e" : lang === "es" ? "Previsi\xF3n de sargazo " + regionKey + " \u2014 observaci\xF3n fechada" : "Sargassum forecast " + regionKey + " \u2014 timestamped observation";
+    const html = lang === "fr" ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Derni\xE8re observation disponible \u2014 ' + regionKey + '</h2><p>Consultez la carte et v\xE9rifiez l\u2019heure r\xE9elle de la derni\xE8re observation AFAI avant de prendre une d\xE9cision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Voir la carte et l\u2019heure de mesure</a></p><p><a href="https://' + domain + '/fiabilite/">M\xE9thode et fiabilit\xE9</a></p></div>' : lang === "es" ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>\xDAltima observaci\xF3n disponible \u2014 ' + regionKey + '</h2><p>Consulta el mapa y comprueba la hora real de la \xFAltima observaci\xF3n AFAI antes de decidir.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Ver mapa y hora de medici\xF3n</a></p><p><a href="https://' + domain + '/fiabilite/">M\xE9todo y fiabilidad</a></p></div>' : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Latest available observation \u2014 ' + regionKey + '</h2><p>Check the map and the actual timestamp of the latest AFAI observation before making a decision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">View map and observation time</a></p><p><a href="https://' + domain + '/fiabilite/">Method and reliability</a></p></div>';
     try {
       const result = await sendEmail(email, subject, html, domain, env);
       if (!result || !result.success) {
@@ -1376,20 +1266,15 @@ async function runDripEmails(env) {
         console.log("Drip: delivery unconfirmed; manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
         continue;
       }
-
-      const contactedAt = new Date().toISOString();
+      const contactedAt = (/* @__PURE__ */ new Date()).toISOString();
       const saved = await supaQ(
         env,
         "b2b_leads",
         "PATCH",
         { status: "contacted", contacted_at: contactedAt, claimed_at: null, last_contact_error: null },
-        "?id=eq." + encodeURIComponent(claimedLead.id) +
-          "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) +
-          "&select=id,status,contacted_at"
+        "?id=eq." + encodeURIComponent(claimedLead.id) + "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) + "&select=id,status,contacted_at"
       );
       if (!Array.isArray(saved) || saved.length !== 1) {
-        // Do not release the claim or resend: the provider may already have
-        // accepted the message. Stale claims move to manual_review above.
         console.log("Drip: provider accepted but contacted_at persistence failed; claim retained lead=" + String(claimedLead.id || "unknown"));
         continue;
       }
@@ -1401,6 +1286,7 @@ async function runDripEmails(env) {
   }
 }
 __name(runDripEmails, "runDripEmails");
+__name2(runDripEmails, "runDripEmails");
 var B2C_REGION_CONFIG = {
   mq: { domain: "sargasses-martinique.com", label: "Martinique", lang: "fr" },
   martinique: { domain: "sargasses-martinique.com", label: "Martinique", lang: "fr" },
@@ -1418,29 +1304,21 @@ function resolveB2BWidgetRegion(region) {
   const key = String(region || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
   return B2C_REGION_CONFIG[key] || null;
 }
+__name(resolveB2BWidgetRegion, "resolveB2BWidgetRegion");
 var B2C_ALERT_STATUSES = ["moderate", "avoid", "high"];
 function b2cObservationIsFresh(payload, now = Date.now()) {
-  // P0.46 §4 — PORTE SCIENTIFIQUE (fail-closed).
-  // L'unique horodatage autorise est `erddapTimestamp` (l'instant REEL de
-  // l'observation satellite) :
-  //   • `updatedAt` = date de republication du JSON -> jamais un substitut ;
-  //   • `dataAgeMinutes` = valeur stockee, potentiellement perimee -> jamais
-  //     un substitut ;
-  //   • `stale` doit etre EXACTEMENT false (un champ absent ou non booleen
-  //     est traite comme stale).
-  // Exigences cumulees : payload present, `levels` non vide, `stale === false`,
-  // `erddapTimestamp` valide, non futur, age reel <= 900 minutes.
   if (!payload || payload.stale !== false || !Array.isArray(payload.levels) || payload.levels.length === 0) return false;
   const observedAt = Date.parse(payload.erddapTimestamp);
   if (!Number.isFinite(observedAt) || observedAt > now) return false;
-  return now - observedAt <= 900 * 60 * 1000;
+  return now - observedAt <= 900 * 60 * 1e3;
 }
 __name(b2cObservationIsFresh, "b2cObservationIsFresh");
+__name2(b2cObservationIsFresh, "b2cObservationIsFresh");
 function b2cSelectedAlertLevels(subscription, payload) {
   if (!Array.isArray(subscription.beaches) || subscription.beaches.length === 0) return [];
   const selectedIds = subscription.beaches.map((id) => typeof id === "string" ? id.trim() : "");
   if (selectedIds.some((id) => !id) || new Set(selectedIds).size !== selectedIds.length) return [];
-  const byId = new Map();
+  const byId = /* @__PURE__ */ new Map();
   for (const level of payload.levels) {
     if (!level || typeof level.id !== "string" || !level.id.trim() || byId.has(level.id)) return [];
     byId.set(level.id, level);
@@ -1449,20 +1327,21 @@ function b2cSelectedAlertLevels(subscription, payload) {
   return selectedIds.map((id) => byId.get(id)).filter((level) => B2C_ALERT_STATUSES.includes(String(level.status || "").toLowerCase()));
 }
 __name(b2cSelectedAlertLevels, "b2cSelectedAlertLevels");
+__name2(b2cSelectedAlertLevels, "b2cSelectedAlertLevels");
 function escapeB2CHtml(value) {
   return String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
   })[char]);
 }
 __name(escapeB2CHtml, "escapeB2CHtml");
+__name2(escapeB2CHtml, "escapeB2CHtml");
 var B2C_ALERT_DELIVERY_RPC = "sg_claim_b2c_alert_delivery";
 var B2C_ALERT_DELIVERY_TABLE = "b2c_alert_deliveries";
 async function b2cDeliveryFingerprint(subscription, payload, selectedAlerts) {
-  // P0.46 §6 — Identite d'une alerte : (abonne, observation satellite, ensemble
-  // des plages). Une NOUVELLE observation = une NOUVELLE alerte (autorisee) ;
-  // la MEME observation rejouee = MEME cle => doublon supprime.
-  // Aucune PII : ni email, ni nom — id d'abonnement, region, timestamp et une
-  // empreinte SHA-256 des IDs de plage.
   const subscriptionId = typeof subscription.id === "string" ? subscription.id.trim() : "";
   if (!subscriptionId) return null;
   const observedAt = Date.parse(payload.erddapTimestamp);
@@ -1478,14 +1357,8 @@ async function b2cDeliveryFingerprint(subscription, payload, selectedAlerts) {
   };
 }
 __name(b2cDeliveryFingerprint, "b2cDeliveryFingerprint");
+__name2(b2cDeliveryFingerprint, "b2cDeliveryFingerprint");
 async function claimB2cAlertDelivery(env, fingerprint) {
-  // P0.46 §6 — RECLAMATION ATOMIQUE du marqueur de livraison.
-  // La fonction SQL `public.sg_claim_b2c_alert_delivery(...)` fait
-  // `INSERT ... ON CONFLICT DO NOTHING` sur la cle primaire
-  // (subscription_id, observation_ts, beaches_hash) : deux invocations
-  // concurrentes du cron ne peuvent obtenir le marqueur qu'une seule fois.
-  // Contrat : {claimed:true} = envoi autorise, {claimed:false} = doublon
-  // (supprime), {error} = marqueur indisponible => FAIL-CLOSED (aucun envoi).
   if (!env.SUPABASE_SERVICE_KEY) return { claimed: false, error: "SUPABASE_SERVICE_KEY absent" };
   try {
     const url = `${env.SUPABASE_URL}/rest/v1/rpc/${B2C_ALERT_DELIVERY_RPC}`;
@@ -1512,28 +1385,25 @@ async function claimB2cAlertDelivery(env, fingerprint) {
     } catch {
       data = null;
     }
-    const claimed = data === true || data === "true" || (Array.isArray(data) && (data[0] === true || data[0] === "true"));
+    const claimed = data === true || data === "true" || Array.isArray(data) && (data[0] === true || data[0] === "true");
     return { claimed: claimed === true, error: null };
   } catch (e) {
     return { claimed: false, error: String(e?.message || e).slice(0, 160) };
   }
 }
 __name(claimB2cAlertDelivery, "claimB2cAlertDelivery");
+__name2(claimB2cAlertDelivery, "claimB2cAlertDelivery");
 async function markB2cAlertDelivery(env, fingerprint, status, provider) {
-  // Mise a jour BEST EFFORT du marqueur (statut 'sent'/'failed' + provider).
-  // Un echec ici n'annule PAS l'envoi : le marqueur existe deja, donc le
-  // doublon reste impossible (le sens de securite est preserve).
-  const query = "?subscription_id=eq." + encodeURIComponent(fingerprint.subscriptionId) +
-    "&observation_ts=eq." + encodeURIComponent(fingerprint.observationTs) +
-    "&beaches_hash=eq." + encodeURIComponent(fingerprint.beachesHash);
+  const query = "?subscription_id=eq." + encodeURIComponent(fingerprint.subscriptionId) + "&observation_ts=eq." + encodeURIComponent(fingerprint.observationTs) + "&beaches_hash=eq." + encodeURIComponent(fingerprint.beachesHash);
   const result = await supaExec(env, B2C_ALERT_DELIVERY_TABLE, "PATCH", {
     status,
     provider: provider || null,
-    updated_at: new Date().toISOString()
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
   }, query);
   return result.ok;
 }
 __name(markB2cAlertDelivery, "markB2cAlertDelivery");
+__name2(markB2cAlertDelivery, "markB2cAlertDelivery");
 async function runB2CAlerts(env) {
   console.log("B2C: starting runB2CAlerts");
   const alerts = await supa(env, "b2c_alerts", "GET", null, "?status=eq.active&select=*");
@@ -1551,12 +1421,10 @@ async function runB2CAlerts(env) {
         console.log("B2C: invalid region/domain contract subscription=" + String(sub.id || "unknown"));
         continue;
       }
-      if (typeof sub.email !== "string" || !sub.email.includes("@") || /\s/.test(sub.email) ||
-          typeof sub.unsubscribe_token !== "string" || !sub.unsubscribe_token.trim()) {
+      if (typeof sub.email !== "string" || !sub.email.includes("@") || /\s/.test(sub.email) || typeof sub.unsubscribe_token !== "string" || !sub.unsubscribe_token.trim()) {
         console.log("B2C: invalid subscriber contact subscription=" + String(sub.id || "unknown"));
         continue;
       }
-      // PostgreSQL text[] is expected. Empty, NULL, display-name or unknown selections never imply consent for all beaches.
       if (!Array.isArray(sub.beaches) || sub.beaches.length === 0) {
         console.log("B2C: no explicit beach selection subscription=" + String(sub.id || "unknown"));
         continue;
@@ -1582,13 +1450,6 @@ async function runB2CAlerts(env) {
         console.log("B2C: no exact selected-beach alert subscription=" + String(sub.id || "unknown"));
         continue;
       }
-      // P0.46 §6 — Idempotence DURABLE : le marqueur de livraison est
-      // RECLAME AVANT l'envoi (ecriture atomique en base).
-      //   • marqueur indisponible (migration 005 non appliquee, reseau HS)
-      //     => FAIL-CLOSED : aucune alerte n'est envoyee ;
-      //   • marqueur deja pris (meme observation rejouee) => doublon supprime.
-      // Le marqueur vit dans une table DEDICEE : public.b2c_alerts (les
-      // abonnements) n'est JAMAIS modifie par le moteur d'alertes.
       const fingerprint = await b2cDeliveryFingerprint(sub, payload, selectedAlerts);
       if (!fingerprint) {
         console.log("B2C: delivery fingerprint unavailable subscription=" + String(sub.id || "unknown"));
@@ -1613,9 +1474,9 @@ async function runB2CAlerts(env) {
       const unsubUrl = "https://" + domain + "/unsubscribe?token=" + encodeURIComponent(token);
       const lang = regionInfo.lang;
       const regionLabel = regionInfo.label;
-      const levelEmoji = { clean: "🟢", moderate: "🟡", avoid: "🔴", high: "🔴", unknown: "⚪" };
+      const levelEmoji = { clean: "\u{1F7E2}", moderate: "\u{1F7E1}", avoid: "\u{1F534}", high: "\u{1F534}", unknown: "\u26AA" };
       const levelColor = { clean: "#16a34a", moderate: "#eab308", avoid: "#dc2626", high: "#dc2626", unknown: "#6b7280" };
-      const emoji = levelEmoji[level] || "⚠️";
+      const emoji = levelEmoji[level] || "\u26A0\uFE0F";
       const color = levelColor[level] || "#c0392b";
       const beachesList = selectedAlerts.map((beach) => escapeB2CHtml(beach.id)).join(", ");
       const weekly = payload.weekly && typeof payload.weekly === "object" ? payload.weekly : {};
@@ -1627,38 +1488,19 @@ async function runB2CAlerts(env) {
           const day = beachForecast[i];
           if (!day || typeof day.status !== "string") continue;
           const dayStatus = String(day.status).toLowerCase();
-          forecastRows.push("<tr><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
-            escapeB2CHtml(beach.id) + "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>J+" + i +
-            "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
-            (levelEmoji[dayStatus] || "") + " " + escapeB2CHtml(dayStatus) +
-            "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
-            escapeB2CHtml(day.date || "") + "</td></tr>");
+          forecastRows.push("<tr><td style='padding:6px 10px;border:1px solid #e5e7eb'>" + escapeB2CHtml(beach.id) + "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>J+" + i + "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" + (levelEmoji[dayStatus] || "") + " " + escapeB2CHtml(dayStatus) + "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" + escapeB2CHtml(day.date || "") + "</td></tr>");
         }
       }
-      const forecastHtml = forecastRows.length
-        ? "<table style='width:100%;border-collapse:collapse;margin:12px 0;font-size:13px'><tr><th>Plage</th><th>Jour</th><th>Niveau</th><th>Date</th></tr>" + forecastRows.join("") + "</table>"
-        : "";
-      const subject = lang === "en"
-        ? "⚠️ Sargassum alert — " + regionLabel + " — " + forecastDate
-        : "⚠️ Alerte sargassum — " + regionLabel + " — " + forecastDate;
-      const html = lang === "en"
-        ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Sargassum alert — ' + escapeB2CHtml(regionLabel) + '</h2><p>Hello,</p><p>The sargassum level is <strong style="color:' + color + '">' + emoji + " " + level + '</strong> in <strong>' + escapeB2CHtml(regionLabel) + '</strong> today.</p><p>Beaches concerned: <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts →</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="' + unsubUrl + '">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>'
-        : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Alerte sargassum — ' + escapeB2CHtml(regionLabel) + '</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:' + color + '">' + emoji + " " + level + '</strong> sur <strong>' + escapeB2CHtml(regionLabel) + '</strong> aujourd’hui.</p><p>Plages concernées : <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les prévisions complètes →</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous êtes abonné aux alertes SargaGame.<br><a href="' + unsubUrl + '">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>';
-      // Le marqueur de livraison est deja reclame (atomique) : un rejeu de la
-      // meme observation est supprime par la cle primaire, pas par un KV
-      // best-effort. Aucune ligne de public.b2c_alerts n'est modifiee.
+      const forecastHtml = forecastRows.length ? "<table style='width:100%;border-collapse:collapse;margin:12px 0;font-size:13px'><tr><th>Plage</th><th>Jour</th><th>Niveau</th><th>Date</th></tr>" + forecastRows.join("") + "</table>" : "";
+      const subject = lang === "en" ? "\u26A0\uFE0F Sargassum alert \u2014 " + regionLabel + " \u2014 " + forecastDate : "\u26A0\uFE0F Alerte sargassum \u2014 " + regionLabel + " \u2014 " + forecastDate;
+      const html = lang === "en" ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + " Sargassum alert \u2014 " + escapeB2CHtml(regionLabel) + '</h2><p>Hello,</p><p>The sargassum level is <strong style="color:' + color + '">' + emoji + " " + level + "</strong> in <strong>" + escapeB2CHtml(regionLabel) + "</strong> today.</p><p>Beaches concerned: <strong>" + beachesList + "</strong></p>" + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map \u2192</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts \u2192</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="' + unsubUrl + '">Unsubscribe</a> \u2014 Measured by satellite, not guessed. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>' : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + " Alerte sargassum \u2014 " + escapeB2CHtml(regionLabel) + '</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:' + color + '">' + emoji + " " + level + "</strong> sur <strong>" + escapeB2CHtml(regionLabel) + "</strong> aujourd\u2019hui.</p><p>Plages concern\xE9es : <strong>" + beachesList + "</strong></p>" + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte \u2192</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les pr\xE9visions compl\xE8tes \u2192</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous \xEAtes abonn\xE9 aux alertes SargaGame.<br><a href="' + unsubUrl + '">Se d\xE9sabonner</a> \u2014 Mesur\xE9 au satellite, pas devin\xE9. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>';
       const result = await sendEmail(sub.email, subject, html, domain, env);
       if (result.success) {
         await markB2cAlertDelivery(env, fingerprint, "sent", result.provider);
         console.log("B2C: alert sent subscription=" + String(sub.id || "unknown") + " provider=" + result.provider);
       } else {
-        // Le marqueur reste en place : la MEME observation ne sera pas
-        // rejouee (pas de doublon possible). L'observation suivante, elle, a
-        // une cle differente et reste autorisee.
         await markB2cAlertDelivery(env, fingerprint, "failed", result.provider || null);
-        console.log("B2C: email delivery not confirmed subscription=" + String(sub.id || "unknown") +
-          " provider=" + String(result.provider || "none") +
-          " ambiguous=" + String(Boolean(result.ambiguous)));
+        console.log("B2C: email delivery not confirmed subscription=" + String(sub.id || "unknown") + " provider=" + String(result.provider || "none") + " ambiguous=" + String(Boolean(result.ambiguous)));
       }
     } catch (e) {
       console.log("B2C: error subscription=" + String(sub.id || "unknown") + ": " + e.message);
@@ -1666,6 +1508,7 @@ async function runB2CAlerts(env) {
   }
 }
 __name(runB2CAlerts, "runB2CAlerts");
+__name2(runB2CAlerts, "runB2CAlerts");
 async function handleUnsubscribe(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token") || "";
@@ -1681,10 +1524,11 @@ async function handleUnsubscribe(request, env) {
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 __name(handleUnsubscribe, "handleUnsubscribe");
+__name2(handleUnsubscribe, "handleUnsubscribe");
 async function handleCollect(request, env, ctx) {
   const noSniff = { "X-Content-Type-Options": "nosniff" };
   if (request.method !== "POST") return new Response(null, { status: 405, headers: noSniff });
-  const hostOk = /* @__PURE__ */ __name((u) => {
+  const hostOk = /* @__PURE__ */ __name2((u) => {
     if (!u) return null;
     try {
       const h = new URL(u).hostname.toLowerCase();
@@ -1720,6 +1564,7 @@ async function handleCollect(request, env, ctx) {
   return new Response(null, { status: 204, headers: noSniff });
 }
 __name(handleCollect, "handleCollect");
+__name2(handleCollect, "handleCollect");
 async function handleMollie(request, env) {
   const h = cors(request);
   let body;
@@ -1733,32 +1578,19 @@ async function handleMollie(request, env) {
   if (!await rateLimit(env, `mol_${action}`, 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: h });
   try {
     const apiKey = env.MOLLIE_API_KEY;
-    const profileId = mollieProfileId(env);
     const host = requestHost(request);
     if (action === "create_payment") {
       if (String(body.pass || "") === "sos" || String(body.source || "") === "sos_plage") {
         return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: h });
       }
-      const { email, source, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
-      // ── P0 money path : le SERVEUR décide du SKU, de la devise et du montant ──
-      // AVANT : un `pass` inconnu (ou ABSENT) court-circuitait l'allowlist
-      // (montant libre accepté jusqu'à 300 €) et le montant DÉBITÉ pouvait être
-      // dicté par le client. Le catalogue serveur est la seule autorité :
-      // SKU inconnu ou devise non vendue => 400, AUCUN appel Mollie.
+      const { email, cents, amount: amountObj } = body;
       const pass = String(body.pass || "").trim();
-      // Garde explicite (fail-closed) : un SKU inconnu n'atteint jamais la
-      // résolution d'offre, ni un appel Mollie, ni une écriture de metadata.
       if (!Object.prototype.hasOwnProperty.call(PASS_PRICES, pass)) {
         return new Response(JSON.stringify({ error: "Prix invalide", reason: "unknown_offer" }), { status: 400, headers: h });
       }
       const requestedCurrency = String(body.cur || body.currency || amountObj?.currency || "EUR").toUpperCase();
       const offer = resolvePassOffer(pass, requestedCurrency);
-      // Le message d'erreur public reste « Prix invalide » (contrat affiché au
-      // client et déjà vérifié par les tests) ; `reason` porte le diagnostic
-      // technique pour les logs et la mesure.
       if (!offer) return new Response(JSON.stringify({ error: "Prix invalide", reason: "unknown_offer" }), { status: 400, headers: h });
-      // Montant ANNONCÉ par le client : il doit concorder avec le catalogue.
-      // Le montant DÉBITÉ est celui du serveur, jamais celui du client.
       let announcedCents = null;
       if (cents != null) {
         const c = parseInt(cents, 10);
@@ -1773,141 +1605,35 @@ async function handleMollie(request, env) {
       if (announcedCents != null && !allowedCents.some((n) => Math.abs(announcedCents - n) <= 2)) {
         return new Response(JSON.stringify({ error: "Prix invalide", reason: "price_mismatch" }), { status: 400, headers: h });
       }
-      // Email obligatoire : sans email, le grant durable ne peut être rattaché
-      // à personne => argent payé sans accès livré (trou de confiance).
       const normalizedEmail = String(email || "").trim().toLowerCase();
       if (!EMAIL_RE.test(normalizedEmail)) {
         return new Response(JSON.stringify({ error: "Email invalide", reason: "invalid_email" }), { status: 400, headers: h });
       }
-      const amount = { value: offer.amount.toFixed(2), currency: offer.currency };
-      // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais par
-      // le client. `source` reste l'attribution de canal (réconciliation des
-      // ventes) mais ne sélectionne plus aucun chemin de livraison.
-      const metadata = stripReservedMetadata(userMeta);
-      metadata.source = String(source || "unknown").slice(0, 40);
-      metadata.offer_kind = "b2c_pass";
-      metadata.pass = pass;
-      metadata.email = normalizedEmail;
-      metadata.lang = lang || "fr";
-      if (referredBy) metadata.referredBy = referredBy;
-      if (myReferralCode) metadata.myReferralCode = myReferralCode;
-      let userId = null;
-      if (body.authToken) {
-        const sess = await authVerify(env, String(body.authToken));
-        if (sess) userId = String(sess.uid);
+      const stripeCheckout = await stripeLinkCheckout(env, { pass, currency: offer.currency, email: normalizedEmail, days: offer.days, amount: offer.amount });
+      if (!stripeCheckout) {
+        return new Response(JSON.stringify({ error: "payment_unavailable", reason: "no_mollie_fallback" }), { status: 503, headers: h });
       }
-      if (!userId && email && String(email).includes("@")) {
-        const u = await userUpsert(env, String(email).toLowerCase().trim(), "email", null);
-        if (u) userId = u.id;
-      }
-      if (userId) metadata.user_id = userId;
-      const kind = "pass";
-      const returnRef = crypto.randomUUID();
-      const backUrl = safeRedirectUrl(userRedirect, `https://${host}/?paid=1&kind=${kind}&email=${encodeURIComponent(normalizedEmail)}&plan=${encodeURIComponent(pass)}`);
-      metadata.return_ref = returnRef;
-      const redirectUrl = `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`;
-      if (normalizedEmail) {
-        const idemKey = `mol_${await hashString(normalizedEmail + "|" + pass)}`;
-        const ex = await kv(env).get(idemKey);
-        if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
-        await kv(env).put(idemKey, "1", { expirationTtl: 60 });
-      }
-      const pd = { amount, description: `Sargasses Pass ${pass}`, redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (offer.currency === "USD" ? "en_US" : "fr_FR") };
-      if (profileId) pd.profileId = profileId;
-      if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
-      if (cardToken) pd.cardToken = cardToken;
-      if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
-      // `amount` = montant EFFECTIF que le serveur va débiter. Le front
-      // (src/PremiumModal.jsx) compare ce champ à l'affichage et émet
-      // `sg_price_mismatch` en cas d'écart : sans lui, l'écart
-      // affichage/débit resterait invisible.
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null, amount: { value: amount.value, currency: amount.currency }, pass, days: offer.days }), { headers: h });
+      return new Response(JSON.stringify(stripeCheckout), { headers: h });
     }
     if (action === "create_subscription") {
-      const { plan: rawPlan, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
+      const { plan: rawPlan, email } = body;
       const planKey = normalizePlanKey(rawPlan);
       const b2c = B2C_SUB_PLANS[planKey];
       const b2b = B2B_PLANS[planKey];
       if (!b2c && !b2b) throw new Error(`Plan inconnu: ${rawPlan || ""}`);
       const plan = b2c || b2b;
-      let cid = customerId;
-      if (!cid && email) {
-        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
-        const existing = (customers._embedded?.customers || []).find((c) => c.email === email);
-        if (existing) cid = existing.id;
-        else {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email, name: name || "", metadata: { source: b2c ? "b2c_premium_signup" : "b2b_monthly_signup" } });
-          cid = nc.id;
-        }
-      }
-      if (!cid) throw new Error("customerId ou email requis");
-      if (mandateId) {
-        const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-          amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
-          description: plan.description,
-          webhookUrl: `https://${host}/api/mollie-webhook`,
-          // `offer_kind` est écrit par le SERVEUR à partir du catalogue : le
-          // client ne peut plus choisir la classe de livraison d'un abonnement.
-          metadata: { ...stripReservedMetadata(userMeta), source: b2c ? "premium_subscription" : "b2b_monthly", offer_kind: b2c ? "b2c_subscription" : "b2b_subscription", plan: planKey, email: email || "", pass: b2c ? b2c.pass : "" },
-          interval: plan.interval || "1 month",
-          mandateId,
-          ...payMethod ? { method: payMethod } : {}
-        });
-        const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
-        if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
-        return new Response(JSON.stringify(result), { headers: h });
-      }
-      const isAnnualB2B = !!(b2b && !b2b.interval);
-      const returnRef = crypto.randomUUID();
-      const metadata = {
-        ...stripReservedMetadata(userMeta),
-        source: b2c ? String(body.source || "premium_subscription").slice(0, 40) : isAnnualB2B ? "b2b_annual" : "b2b_first",
-        offer_kind: b2c ? "b2c_subscription" : isAnnualB2B ? "b2b_annual" : "b2b_first",
-        plan: planKey,
-        email: email || "",
-        pass: b2c ? b2c.pass : "",
-        lang: body.lang || "fr",
-        customerId: cid,
-        interval: plan.interval || "",
-        return_ref: returnRef
-      };
-      const backUrl = `https://${host}/?paid=1&kind=${b2c ? "pass" : "pro"}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(planKey)}`;
-      const pd = {
-        amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
-        description: plan.description,
-        redirectUrl: `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`,
-        webhookUrl: `https://${host}/api/mollie-webhook`,
-        metadata,
-        locale: body.locale || "fr_FR",
-        customerId: cid
-      };
-      if (!isAnnualB2B) pd.sequenceType = "first";
-      if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, customerId: cid, user_id: null }), { headers: h });
+      const stripePlan = await stripeLinkCheckout(env, { pass: planKey, currency: plan.currency, email: String(email || "").trim().toLowerCase(), days: plan.interval ? 30 : 365, amount: Number(plan.amount) });
+      if (!stripePlan) return new Response(JSON.stringify({ error: "payment_unavailable", reason: "no_mollie_fallback" }), { status: 503, headers: h });
+      return new Response(JSON.stringify(stripePlan), { headers: h });
     }
     if (action === "payment_status") {
       const paymentId = String(body.paymentId || "").trim();
       if (!paymentId) throw new Error("paymentId requis");
-      // Format d'identifiant Mollie : l'endpoint ne doit pas servir d'oracle
-      // d'existence pour un identifiant arbitraire.
       if (!/^tr_[A-Za-z0-9]+$/.test(paymentId)) return new Response(JSON.stringify({ error: "invalid_payment_id" }), { status: 400, headers: h });
       const p = await mollieReq("GET", `v2/payments/${paymentId}`, apiKey);
       const status = p.status || "unknown";
-      // Un paiement de TEST (`mode:"test"`) ne débloque JAMAIS Premium : le
-      // front déverrouille sur `paid` (src/PremiumModal.jsx). L'état
-      // autoritatif est relu auprès de l'API Mollie, jamais pris du client.
       const isTestMode = String(p.mode || "") === "test";
       const paid = !isTestMode && ["paid", "settled"].includes(status);
-      // ── Contrôle du PROPRIÉTAIRE (P0 2026-11-09) ─────────────────────────
-      // La redirection navigateur ne vaut RIEN : l'état est relu auprès de
-      // l'API Mollie. Mais `payment_status` ne doit pas devenir une source de
-      // fuite : si l'appelant fournit un email, il doit être celui du
-      // paiement. Sans ce contrôle, un identifiant deviné suffit à lire le
-      // pass et l'email d'un client.
       const metadata = p.metadata && typeof p.metadata === "object" && !Array.isArray(p.metadata) ? p.metadata : {};
       const requestedEmail = String(body.email || "").trim().toLowerCase();
       const ownerEmail = String(metadata.email || "").trim().toLowerCase();
@@ -1925,25 +1651,33 @@ async function handleMollie(request, env) {
         }
       }
       const out = { paid, status, paymentId, mode: p.mode || null, terminal: ["canceled", "expired", "failed"].includes(status), granted, grant };
-      // Fin d'accès servie au client : la durée vient de la grille serveur.
       const passKey = String(metadata.pass || "");
       if (granted && passKey && PASS_DURATIONS[passKey]) {
         out.pass = passKey;
-        out.passEnd = (Math.floor(Date.now() / 1e3) + PASS_DURATIONS[passKey] * 86400) * 1000;
+        out.passEnd = (Math.floor(Date.now() / 1e3) + PASS_DURATIONS[passKey] * 86400) * 1e3;
       }
       return new Response(JSON.stringify(out), { headers: h });
     }
     if (action === "verify_subscription") {
       const email = (body.email || "").trim();
       if (!email || !email.includes("@")) return new Response(JSON.stringify({ error: "Missing email" }), { status: 400, headers: h });
-      // P0.118 §7 — `user_id` n'est pas une colonne de public.payment_grants :
-      // il est lu dans metadata (jsonb), ou create_payment l'a depose.
-      const rows = await supa(env, "payment_grants", "GET", null, `?select=pass,expires_at,payment_id,metadata&type=eq.b2c_pass&email=eq.${email}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
-      if (!rows?.length) return new Response(JSON.stringify({ active: false, reason: "no_pass_grant" }), { headers: h });
-      const passEnd = new Date(rows[0].expires_at).getTime();
-      if (!passEnd || passEnd <= Date.now()) return new Response(JSON.stringify({ active: false, reason: "no_pass_grant" }), { headers: h });
-      const grantUserId = rows[0].metadata?.user_id || null;
-      return new Response(JSON.stringify({ active: true, kind: "pass", pass: rows[0].pass, passEnd, status: "paid", user_id: grantUserId }), { headers: h });
+      const mailFilter = encodeURIComponent(email);
+      const rows = await supa(env, "payment_grants", "GET", null, `?select=pass,expires_at,payment_id,metadata&type=eq.b2c_pass&email=eq.${mailFilter}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
+      if (rows?.length) {
+        const passEnd = new Date(rows[0].expires_at).getTime();
+        if (passEnd && passEnd > Date.now()) {
+          const grantUserId = rows[0].metadata?.user_id || null;
+          return new Response(JSON.stringify({ active: true, kind: "pass", pass: rows[0].pass, passEnd, status: "paid", user_id: grantUserId }), { headers: h });
+        }
+      }
+      const b2bRows = await supa(env, "payment_grants", "GET", null, `?select=plan,expires_at,subscription_id,metadata&type=eq.b2b_pro&email=eq.${mailFilter}&expires_at=gt.now()&order=expires_at.desc&limit=1`);
+      if (b2bRows?.length) {
+        const b2bEnd = new Date(b2bRows[0].expires_at).getTime();
+        if (b2bEnd && b2bEnd > Date.now()) {
+          return new Response(JSON.stringify({ active: true, kind: "b2b_pro", plan: String(b2bRows[0].plan || ""), passEnd: b2bEnd, status: "paid", subscription_id: String(b2bRows[0].subscription_id || "") || null }), { headers: h });
+        }
+      }
+      return new Response(JSON.stringify({ active: false, reason: "no_pass_grant" }), { headers: h });
     }
     if (action === "auth_google") {
       if (!env.GOOGLE_CLIENT_ID) return new Response(JSON.stringify({ error: "google_not_configured" }), { status: 501, headers: h });
@@ -1986,40 +1720,13 @@ async function handleMollie(request, env) {
     }
     return new Response(JSON.stringify({ error: "action_inconnue" }), { status: 400, headers: h });
   } catch (e) {
-    // Un refus de PRIX est une erreur CLIENT (400), pas une panne serveur :
-    // un 500 ferait croire à un incident et déclencherait des reprises.
     const msg = String(e?.message || "payment_processing_error").slice(0, 120);
     const status = /Prix invalide/.test(msg) ? 400 : 500;
     return new Response(JSON.stringify({ error: msg }), { status, headers: h });
   }
 }
 __name(handleMollie, "handleMollie");
-// ─────────────────────────────────────────────────────────────────────────────
-// P0.118 §6/§7 — Webhook Mollie : adapters, validation autoritative et
-// fulfillment durable (grant durable VERIFIE avant tout marqueur KV).
-//
-// DEUX generations de webhook coexistent chez Mollie :
-//   CLASSIQUE : POST application/x-www-form-urlencoded, corps
-//               "id=tr_xxx&event=payment.paid". L'identifiant de l'evenement
-//               EST l'identifiant de l'entite. (La version live faisait
-//               JSON.parse() sur ce corps : le webhook Classique levait une
-//               exception et le paiement n'etait jamais honore.)
-//   NEXT-GEN  : POST application/json, corps
-//               { "resource": "payment", "id": "event_xxx",
-//                 "type": "payment.paid", "entityId": "tr_xxx" }.
-//               `id` est l'IDENTIFIANT D'EVENEMENT, `entityId` l'identifiant
-//               de l'ENTITE. Confondre les deux marque un evenement comme
-//               traite alors que l'entite n'a pas ete honoree.
-//
-// REGLES non negociables :
-//   1. Le statut n'est JAMAIS lu dans le corps du webhook : l'etat de
-//      l'entite est recupere depuis l'API Mollie (source autoritative).
-//   2. Un evenement inconnu ne cree AUCUN grant et n'est PAS marque comme
-//      traite (un rejeu ulterieur ne doit pas etre perdu).
-//   3. Le grant durable (RPC / ecriture Supabase) est ecrit ET VERIFIE
-//      AVANT tout marqueur KV. Un marqueur pose sans grant durable = argent
-//      paye sans droit servi, et plus de rejeu possible.
-// ─────────────────────────────────────────────────────────────────────────────
+__name2(handleMollie, "handleMollie");
 function deriveSnapshotEvent(resource, snapshot) {
   if (resource === "refund") {
     const status = String(snapshot?.status || "").trim();
@@ -2031,13 +1738,14 @@ function deriveSnapshotEvent(resource, snapshot) {
   return "";
 }
 __name(deriveSnapshotEvent, "deriveSnapshotEvent");
-function parseMollieWebhook(request, raw) {
+__name2(deriveSnapshotEvent, "deriveSnapshotEvent");
+function parseMollieWebhook(request, raw2) {
   const contentType = String(request.headers.get("content-type") || "").toLowerCase();
   if (contentType.includes("application/x-www-form-urlencoded")) {
-    const params = new URLSearchParams(raw);
+    const params = new URLSearchParams(raw2);
     const id = String(params.get("id") || "").trim();
     const event = String(params.get("event") || params.get("type") || "").trim();
-    const resource = event.startsWith("subscription.") ? "subscription" : "payment";
+    const resource2 = event.startsWith("subscription.") ? "subscription" : "payment";
     return {
       generation: "classic",
       eventId: id,
@@ -2045,8 +1753,8 @@ function parseMollieWebhook(request, raw) {
       // Format Classique : le corps ne contient que l'identifiant du
       // paiement. Un remboursement/chargeback est detecte plus tard sur
       // l'etat AUTORITATIF du paiement (amountRefunded / amountChargedBack).
-      paymentId: resource === "payment" ? id : "",
-      resource,
+      paymentId: resource2 === "payment" ? id : "",
+      resource: resource2,
       event,
       type: event,
       malformed: !id
@@ -2054,7 +1762,7 @@ function parseMollieWebhook(request, raw) {
   }
   let data = null;
   try {
-    data = JSON.parse(raw);
+    data = JSON.parse(raw2);
   } catch {
     data = null;
   }
@@ -2067,35 +1775,21 @@ function parseMollieWebhook(request, raw) {
   let resource = rawResource;
   let entityId = String(data.entityId || data.entity_id || "").trim();
   let paymentId = String(data.paymentId || data.payment_id || "").trim();
-  const embedded = data._embedded && typeof data._embedded === "object" && data._embedded.entity && typeof data._embedded.entity === "object"
-    ? data._embedded.entity
-    : null;
-
-  // Enveloppe Next-gen : { resource:"event", id:"event_...", type,
-  // entityId, _embedded.entity }. L'entite embarquee porte le vrai
-  // identifiant et, pour un remboursement/chargeback, le paymentId.
+  const embedded = data._embedded && typeof data._embedded === "object" && data._embedded.entity && typeof data._embedded.entity === "object" ? data._embedded.entity : null;
   if (resource === "event") {
     const prefix = type.split(".")[0];
-    resource = ["payment", "subscription", "refund", "chargeback"].includes(prefix)
-      ? prefix
-      : String(embedded?.resource || "").trim();
+    resource = ["payment", "subscription", "refund", "chargeback"].includes(prefix) ? prefix : String(embedded?.resource || "").trim();
     if (!entityId && embedded?.id) entityId = String(embedded.id).trim();
     if (!paymentId && embedded?.paymentId) paymentId = String(embedded.paymentId).trim();
   } else if (resource === "refund" || resource === "chargeback") {
-    // Snapshot direct (webhook d'entite Refunds/Chargebacks API) : le corps
-    // EST l'entite, sans champ `type`. On derive l'evenement du statut.
     if (!entityId) entityId = eventId;
     if (!type) type = deriveSnapshotEvent(resource, data);
   } else if (!resource) {
     const prefix = type.split(".")[0];
     if (["payment", "subscription", "refund", "chargeback"].includes(prefix)) resource = prefix;
   }
-
-  // Un identifiant d'evenement ("event_xxx") n'est JAMAIS un identifiant
-  // d'entite ("tr_xxx" / "sub_xxx") : on ne confond pas les deux.
   if (!entityId && /^(tr|sub|re|chb)_/.test(eventId)) entityId = eventId;
   if (!paymentId && resource === "payment") paymentId = entityId;
-
   const isNegativeResource = resource === "refund" || resource === "chargeback";
   return {
     generation: "nextgen",
@@ -2109,30 +1803,19 @@ function parseMollieWebhook(request, raw) {
   };
 }
 __name(parseMollieWebhook, "parseMollieWebhook");
+__name2(parseMollieWebhook, "parseMollieWebhook");
 function classifyPayment(metadata) {
-  // La classification vient EXCLUSIVEMENT de `offer_kind`, écrit par le
-  // SERVEUR à la création du paiement. Avant, elle dérivait de
-  // `metadata.source` / `metadata.plan` — deux champs choisis par le client :
-  // `source:"b2b_annual"` + `plan:"brief_monthly"` + 29 € suffisaient à
-  // obtenir 365 JOURS d'accès B2B (l'offre annuelle approuvée coûte 690 €).
   const kind = String(metadata?.offer_kind || "");
+  if (kind === "diagnostic_express") return "diagnostic_express";
   if (kind === "b2b_annual") return "b2b_annual";
   if (kind === "b2b_first") return "b2b_first";
   if (kind === "b2b_subscription") return "b2b_subscription_only";
   if (kind === "b2b_onboarding") return "b2b_onboarding";
   if (kind === "b2c_subscription" || kind === "b2c_pass") return "b2c";
-  // Paiement créé AVANT le correctif : aucun `offer_kind`. La source ne
-  // sélectionne plus AUCUN chemin de livraison B2B « annuel » ou « premier »
-  // sur la seule foi d'un champ client. On conserve les canaux historiques
-  // pour ne pas laisser de l'argent DÉJÀ encaissé sans accès livré, mais le
-  // droit reste dérivé du CATALOGUE du plan (durée) et le MONTANT reste
-  // validé contre ce même plan : un `offer_kind`/`source` « annuel » sur un
-  // plan MENSUEL est refusé (cf. `offer_kind_plan_mismatch`).
-  // Un pass B2C LÉGITIME reste B2C : une source forgée ne doit pas priver
-  // l'acheteur de l'accès qu'il a payé (ni le transformer en 365 jours).
   const pass = String(metadata?.pass || "");
   if (pass && Object.prototype.hasOwnProperty.call(FULFILL_PRICES, pass)) return "b2c";
   const source = String(metadata?.source || "");
+  if (source === "diagnostic_express") return "diagnostic_express";
   if (source === "b2b_annual" || source === "b2b_espace_annual") return "b2b_annual";
   if (source === "b2b_first" || source === "b2b_espace_monthly") return "b2b_first";
   if (source === "b2b_subscription") return "b2b_onboarding";
@@ -2140,6 +1823,7 @@ function classifyPayment(metadata) {
   return "b2c";
 }
 __name(classifyPayment, "classifyPayment");
+__name2(classifyPayment, "classifyPayment");
 function validateMollieAmount(payment, pass) {
   const currency = String(payment?.amount?.currency || "").toUpperCase();
   const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
@@ -2148,16 +1832,11 @@ function validateMollieAmount(payment, pass) {
   if (!expected) return { ok: false, reason: "unknown_sku" };
   const base = expected[currency];
   if (base == null) {
-    const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5000;
+    const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5e3;
     if (cents <= 50 || cents >= upper) return { ok: false, reason: "amount_out_of_range" };
     return { ok: true, currency, cents };
   }
   const acceptable = [Math.round(base * 100)];
-  // Montant de l'ANCIENNE offre : accepté UNIQUEMENT pour un paiement déjà
-  // encaissé avant la coupure du 2026-11-09 (date de création vérifiable).
-  // Sans cette fenêtre, les ventes payées à l'ancien tarif ne seraient jamais
-  // livrées (argent encaissé, accès jamais délivré). Un paiement NOUVEL au
-  // tarif ancien reste refusé.
   const historical = HISTORICAL_PASS_PRICES[pass] || {};
   if (Object.prototype.hasOwnProperty.call(historical, currency)) {
     const createdRaw = payment?.createdAt;
@@ -2170,6 +1849,7 @@ function validateMollieAmount(payment, pass) {
   return { ok: true, currency, cents };
 }
 __name(validateMollieAmount, "validateMollieAmount");
+__name2(validateMollieAmount, "validateMollieAmount");
 function validateB2BAmount(payment, planKey) {
   const currency = String(payment?.amount?.currency || "").toUpperCase();
   const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
@@ -2179,14 +1859,401 @@ function validateB2BAmount(payment, planKey) {
   if (!plan) return { ok: false, reason: "unknown_plan" };
   if (String(plan.currency).toUpperCase() !== currency) return { ok: false, reason: "currency_mismatch" };
   const base = Math.round(plan.amount * 100);
-  // 1x (periode) .. 12x (prepaiement annuel) : jamais un montant arbitraire.
-  const multiples = [];
-  for (let i = 1; i <= 12; i++) multiples.push(base * i);
-  if (!multiples.some((n) => Math.abs(cents - n) <= 2)) return { ok: false, reason: "amount_mismatch" };
+  if (Math.abs(cents - base) > 2) return { ok: false, reason: "amount_mismatch" };
   return { ok: true, currency, cents };
 }
 __name(validateB2BAmount, "validateB2BAmount");
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+__name2(validateB2BAmount, "validateB2BAmount");
+var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+async function handleB2BLead(request, env) {
+  const headers = { ...cors(request), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+  if (request.method !== "POST") return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers });
+  let body = {};
+  try {
+    body = await request.json();
+  } catch (_) {
+    return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), { status: 400, headers });
+  }
+  const email = String(body.email || "").trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return new Response(JSON.stringify({ ok: false, error: "invalid_email" }), { status: 400, headers });
+  const host = requestHost(request);
+  const region = String(body.region || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || host;
+  const organization = String(body.organization || "").replace(/[<>]/g, "").trim().slice(0, 120);
+  const row = { email, domain: host, region, status: "new" };
+  if (organization) row.organization = organization;
+  let saved = await supa(env, "b2b_leads", "POST", row);
+  if (saved == null && organization) {
+    delete row.organization;
+    saved = await supa(env, "b2b_leads", "POST", row);
+  }
+  if (saved == null) return new Response(JSON.stringify({ ok: false, error: "not_stored" }), { status: 503, headers });
+  return new Response(JSON.stringify({ ok: true, stored: "b2b_leads" }), { headers });
+}
+__name(handleB2BLead, "handleB2BLead");
+__name2(handleB2BLead, "handleB2BLead");
+var STRIPE_LIVE_LINKS = {
+  trip7_eur: { url: "https://buy.stripe.com/8x2dR95oa5S1awpbfiebu00", amount: 799, currency: "eur", kind: "b2c", pass: "trip7", days: 7 },
+  trip7_usd: { url: "https://buy.stripe.com/28EcN5bMyfsB5c53MQebu01", amount: 899, currency: "usd", kind: "b2c", pass: "trip7", days: 7 },
+  p30_eur: { url: "https://buy.stripe.com/8x200jg2O6W56g997aebu02", amount: 1499, currency: "eur", kind: "b2c", pass: "p30", days: 30 },
+  p30_usd: { url: "https://buy.stripe.com/9B69ATbMycgpeMFabeebu03", amount: 1699, currency: "usd", kind: "b2c", pass: "p30", days: 30 },
+  season_eur: { url: "https://buy.stripe.com/4gMcN55oagwF4816Z2ebu04", amount: 2499, currency: "eur", kind: "b2c", pass: "season", days: 210 },
+  season_usd: { url: "https://buy.stripe.com/4gM28r8AmfsB481eruebu05", amount: 2799, currency: "usd", kind: "b2c", pass: "season", days: 210 },
+  pro_monthly_eur: { url: "https://buy.stripe.com/4gM28rcQCeox7kd6Z2ebu06", amount: 7900, currency: "eur", kind: "b2b", plan: "pro_monthly", days: 30 },
+  pro_monthly_usd: { url: "https://buy.stripe.com/cNi4gzdUGbcl1ZTcjmebu07", amount: 8900, currency: "usd", kind: "b2b", plan: "pro_monthly_usd", days: 30 },
+  pro_annual_eur: { url: "https://buy.stripe.com/cNifZhcQC1BL1ZTbfiebu08", amount: 69e3, currency: "eur", kind: "b2b", plan: "pro_annual", days: 365 },
+  pro_annual_usd: { url: "https://buy.stripe.com/cNi8wP4k6gwF33X4QUebu09", amount: 79e3, currency: "usd", kind: "b2b", plan: "pro_annual_usd", days: 365 }
+};
+function stripeSpec(pass, currency) {
+  const raw2 = String(pass || "");
+  if (STRIPE_LIVE_LINKS[raw2]) return STRIPE_LIVE_LINKS[raw2];
+  const key = raw2 + "_" + (String(currency || "").toUpperCase() === "USD" ? "usd" : "eur");
+  return STRIPE_LIVE_LINKS[key] || null;
+}
+__name(stripeSpec, "stripeSpec");
+__name2(stripeSpec, "stripeSpec");
+function stripePriceKey(metadata, amount, currency) {
+  const meta = metadata && typeof metadata === "object" ? metadata : {};
+  const fromMeta = typeof meta.price_key === "string" ? meta.price_key : "";
+  const cur = String(currency || "").toLowerCase();
+  const cents = Number(amount);
+  let fromAmount = "";
+  for (const [key, row] of Object.entries(STRIPE_LIVE_LINKS)) {
+    if (row.amount === cents && row.currency === cur) fromAmount = key;
+  }
+  if (fromMeta && !STRIPE_LIVE_LINKS[fromMeta]) return { error: "unknown_price_key" };
+  if (fromMeta && fromAmount && fromMeta !== fromAmount) return { error: "price_key_mismatch" };
+  const priceKey = fromMeta || fromAmount;
+  if (!priceKey) return { error: "unknown_amount" };
+  return { priceKey, spec: STRIPE_LIVE_LINKS[priceKey] };
+}
+__name(stripePriceKey, "stripePriceKey");
+__name2(stripePriceKey, "stripePriceKey");
+async function stripeLinkCheckout(env, opts) {
+  const spec = stripeSpec(opts.pass, opts.currency);
+  if (!spec) return null;
+  const orderId = crypto.randomUUID();
+  const url = new URL(spec.url);
+  url.searchParams.set("client_reference_id", orderId);
+  if (opts.email && String(opts.email).includes("@")) url.searchParams.set("prefilled_email", String(opts.email).trim());
+  try {
+    await kv(env).put("stripe_order_" + orderId, JSON.stringify({ state: "pending", email: opts.email || "", currency: spec.currency }), { expirationTtl: 14 * 86400 });
+  } catch (_) {
+  }
+  return { checkoutUrl: url.toString(), provider: "stripe_link", orderId, amount: { value: (spec.amount / 100).toFixed(2), currency: spec.currency.toUpperCase() }, pass: spec.pass || spec.plan, days: spec.days };
+}
+__name(stripeLinkCheckout, "stripeLinkCheckout");
+__name2(stripeLinkCheckout, "stripeLinkCheckout");
+async function stripeSignatureOk(payload, header, secret) {
+  const items = String(header || "").split(",");
+  let t = "";
+  const v1 = [];
+  for (const item of items) {
+    const i = item.indexOf("=");
+    if (i < 0) continue;
+    const k = item.slice(0, i).trim();
+    const v = item.slice(i + 1).trim();
+    if (k === "t") t = v;
+    if (k === "v1") v1.push(v);
+  }
+  if (!t || !v1.length || !secret) return false;
+  const age = Math.abs(Date.now() / 1e3 - Number(t));
+  if (!Number.isFinite(age) || age > 300) return false;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = await crypto.subtle.sign("HMAC", key, enc.encode(t + "." + payload));
+  const hex = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return v1.some((sig) => sig.length === hex.length && sig === hex);
+}
+__name(stripeSignatureOk, "stripeSignatureOk");
+__name2(stripeSignatureOk, "stripeSignatureOk");
+function stripeCorrelation(obj, eventId) {
+  const ref = obj && (obj.client_reference_id || obj.id);
+  return String(ref || eventId || "").slice(0, 80);
+}
+__name(stripeCorrelation, "stripeCorrelation");
+__name2(stripeCorrelation, "stripeCorrelation");
+function stripeTrack(env, name, fields) {
+  const params = {
+    livemode: fields.livemode === true,
+    correlation_id: String(fields.correlation_id || "").slice(0, 80),
+    price_key: fields.price_key || null,
+    reason: fields.reason || null
+  };
+  return supa(env, "analytics_events", "POST", { event: name, params, island: "stripe" }).catch(() => {
+  });
+}
+__name(stripeTrack, "stripeTrack");
+__name2(stripeTrack, "stripeTrack");
+var STRIPE_CLIENT_EVENTS = /* @__PURE__ */ new Set(["pricing_view", "CTA_click", "checkout_started"]);
+async function handleStripeTrack(request, env) {
+  if (request.method !== "POST") return new Response(null, { status: 405 });
+  let data = {};
+  try {
+    data = await request.json();
+  } catch (_) {
+    data = {};
+  }
+  const event = String(data.event || "");
+  if (!STRIPE_CLIENT_EVENTS.has(event)) return new Response(null, { status: 204 });
+  const correlation = String(data.correlation_id || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80);
+  const priceKey = typeof data.price_key === "string" ? data.price_key.slice(0, 40) : null;
+  await stripeTrack(env, event, { livemode: data.livemode === true, correlation_id: correlation, price_key: priceKey });
+  return new Response(null, { status: 204 });
+}
+__name(handleStripeTrack, "handleStripeTrack");
+__name2(handleStripeTrack, "handleStripeTrack");
+function stripeMeta(obj) {
+  if (!obj || typeof obj !== "object") return {};
+  if (obj.metadata && Object.keys(obj.metadata).length) return obj.metadata;
+  const parent = obj.parent && obj.parent.subscription_details && obj.parent.subscription_details.metadata;
+  if (parent && Object.keys(parent).length) return parent;
+  const lines = obj.lines && Array.isArray(obj.lines.data) ? obj.lines.data : [];
+  for (const line of lines) {
+    if (line && line.metadata && Object.keys(line.metadata).length) return line.metadata;
+  }
+  return {};
+}
+__name(stripeMeta, "stripeMeta");
+__name2(stripeMeta, "stripeMeta");
+function stripeMoney(obj) {
+  const item = obj.items && Array.isArray(obj.items.data) ? obj.items.data[0] : null;
+  const price = item && (item.price || item.plan);
+  const amount = obj.amount_total != null ? obj.amount_total : obj.amount_paid != null ? obj.amount_paid : obj.plan && obj.plan.amount != null ? obj.plan.amount : price && price.unit_amount != null ? price.unit_amount : null;
+  const currency = obj.currency || obj.plan && obj.plan.currency || price && price.currency || "";
+  return { amount, currency };
+}
+__name(stripeMoney, "stripeMoney");
+__name2(stripeMoney, "stripeMoney");
+function stripeEmail(obj) {
+  return String(
+    obj.customer_details && obj.customer_details.email || obj.customer_email || obj.metadata && obj.metadata.email || ""
+  ).trim().toLowerCase();
+}
+__name(stripeEmail, "stripeEmail");
+__name2(stripeEmail, "stripeEmail");
+async function stripeEndAccess(env, grantId) {
+  const id = String(grantId || "");
+  if (!id) return false;
+  await revokeB2CAccess(env, id, "stripe_end");
+  await supaExec(env, "payment_grants", "PATCH", { expires_at: (/* @__PURE__ */ new Date()).toISOString() }, "?subscription_id=eq." + encodeURIComponent(id) + "&type=eq.b2b_pro");
+  const prev = await kv(env).get("stripe_session_" + id);
+  let rec = { state: "ended", accessUrl: null, livemode: true };
+  try {
+    if (prev) rec = Object.assign(JSON.parse(prev), { state: "ended", accessUrl: null });
+  } catch (_) {
+  }
+  await kv(env).put("stripe_session_" + id, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
+  return true;
+}
+__name(stripeEndAccess, "stripeEndAccess");
+__name2(stripeEndAccess, "stripeEndAccess");
+function stripeLiveSecret(env) {
+  const key = String(env && env.STRIPE_SECRET_KEY || "");
+  return /^sk_live_|^rk_live_/.test(key) ? key : "";
+}
+__name(stripeLiveSecret, "stripeLiveSecret");
+__name2(stripeLiveSecret, "stripeLiveSecret");
+async function stripePortalUrl(env, customerId, returnUrl) {
+  const key = stripeLiveSecret(env);
+  const customer = String(customerId || "");
+  if (!key || !customer.startsWith("cus_")) return null;
+  const body = new URLSearchParams({ customer, return_url: returnUrl });
+  const response = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + key, "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+  if (!response.ok) return null;
+  const data = await response.json().catch(() => null);
+  return data && typeof data.url === "string" && data.url.startsWith("https://") ? data.url : null;
+}
+__name(stripePortalUrl, "stripePortalUrl");
+__name2(stripePortalUrl, "stripePortalUrl");
+function proWidgetSnippet(host, token) {
+  const src = "https://" + host + "/widget/embed/?k=" + encodeURIComponent(token);
+  return '<iframe src="' + src + '" width="100%" height="168" style="border:0;width:100%" title="Sargasses"></iframe>';
+}
+__name(proWidgetSnippet, "proWidgetSnippet");
+__name2(proWidgetSnippet, "proWidgetSnippet");
+async function sendStripeProEmail(env, options) {
+  const opts = options || {};
+  const email = String(opts.email || "").trim();
+  const token = String(opts.token || "");
+  const grantId = String(opts.grantId || "").trim();
+  if (!email || !token || !grantId) return { sent: false, reason: "missing_email_or_token" };
+  if (!env.RESEND_API_KEY) return { sent: false, reason: "resend_key_missing" };
+  const markerKey = "stripe_pro_mail_" + grantId;
+  if (await kv(env).get(markerKey)) return { sent: false, reason: "already_delivered" };
+  const host = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
+  const lang = host.includes("miami") || host.includes("puntacana") ? "en" : host.includes("cancun") || host.includes("tulum") ? "es" : "fr";
+  const accessUrl = "https://" + host + "/pro/espace/?k=" + encodeURIComponent(token);
+  const snippet = proWidgetSnippet(host, token);
+  let portal = null;
+  try {
+    portal = await stripePortalUrl(env, opts.customerId, "https://" + host + "/pro/pricing/");
+  } catch (_) {
+    portal = null;
+  }
+  const subject = lang === "en" ? "Sargassum Pro \u2014 your access" : lang === "es" ? "Sargassum Pro \u2014 tu acceso" : "Sargasses Pro \u2014 votre acc\xE8s";
+  const lead = lang === "en" ? "Your Pro payment is confirmed. This email is the access." : lang === "es" ? "Tu pago Pro est\xE1 confirmado. Este correo es el acceso." : "Votre paiement Pro est confirm\xE9. Cet e-mail est l'acc\xE8s.";
+  const open = lang === "en" ? "Open Pro access" : lang === "es" ? "Abrir el acceso Pro" : "Ouvrir l'acc\xE8s Pro";
+  const widgetLabel = lang === "en" ? "Paste this widget code on the hotel website:" : lang === "es" ? "Pega este c\xF3digo del widget en el sitio del hotel:" : "Collez ce code du widget sur le site de l'h\xF4tel :";
+  const manage = portal ? lang === "en" ? "Manage or cancel the subscription: " : lang === "es" ? "Gestiona o cancela la suscripci\xF3n: " : "G\xE9rer ou r\xE9silier l'abonnement : " : lang === "en" ? "To manage or cancel, reply to this email. Support is by email only." : lang === "es" ? "Para gestionar o cancelar, responde a este correo. El soporte es solo por correo." : "Pour g\xE9rer ou r\xE9silier, r\xE9pondez \xE0 cet e-mail. Le support se fait uniquement par e-mail.";
+  const portalHtml = portal ? `<p>${manage}<a href="${portal}">${portal}</a></p>` : `<p>${manage}</p>`;
+  const html = `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:20px;color:#1a1408;line-height:1.5"><p>${lead}</p><p><a href="${accessUrl}">${open}</a></p><p>${widgetLabel}</p><pre style="white-space:pre-wrap;background:#f6f1e6;padding:12px;border-radius:8px">${snippet.replace(/</g, "&lt;")}</pre>${portalHtml}</div>`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "Sargasses Pro <alerte@" + host + ">", to: [email], subject, html })
+  });
+  if (!response.ok) throw new Error("resend_http_" + response.status);
+  await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+  return { sent: true, portal: !!portal };
+}
+__name(sendStripeProEmail, "sendStripeProEmail");
+__name2(sendStripeProEmail, "sendStripeProEmail");
+async function stripeGrantPaid(env, request, obj, priceKey, spec, livemode) {
+  const email = stripeEmail(obj);
+  if (!EMAIL_RE.test(email)) return { granted: false, reason: "missing_email" };
+  const grantId = String(obj.id || "");
+  if (!grantId) return { granted: false, reason: "missing_id" };
+  let accessUrl = null;
+  if (spec.kind === "b2c") {
+    await grantB2C(env, grantId, spec.pass, email, { price_key: priceKey, brand: "sargasses", provider: "stripe_link", livemode }, spec.currency.toUpperCase());
+  } else {
+    const granted = await grantB2B(env, String(obj.customer || email), spec.plan, grantId, spec.days, { metadata: { price_key: priceKey, brand: "sargasses", email, livemode } });
+    if (granted && granted.token) {
+      const host = requestHost(request);
+      accessUrl = "https://" + host + "/pro/espace/?k=" + encodeURIComponent(granted.token);
+      await sendStripeProEmail(env, { email, token: granted.token, grantId, host, customerId: obj.customer, planKey: spec.plan });
+    }
+  }
+  const record = { state: "paid", livemode: livemode === true, pass: spec.pass || null, plan: spec.plan || null, days: spec.days, accessUrl, price_key: priceKey };
+  const keys = ["stripe_session_" + grantId];
+  if (obj.client_reference_id) keys.push("stripe_order_" + String(obj.client_reference_id).slice(0, 200));
+  for (const key of keys) await kv(env).put(key, JSON.stringify(record), { expirationTtl: 400 * 86400 });
+  if (typeof obj.payment_intent === "string" && obj.payment_intent) await kv(env).put("stripe_pi_" + obj.payment_intent, grantId, { expirationTtl: 400 * 86400 });
+  if (typeof obj.subscription === "string" && obj.subscription) await kv(env).put("stripe_sub_" + obj.subscription, grantId, { expirationTtl: 400 * 86400 });
+  return { granted: true, price_key: priceKey };
+}
+__name(stripeGrantPaid, "stripeGrantPaid");
+__name2(stripeGrantPaid, "stripeGrantPaid");
+async function handleStripeStatus(request, env) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method !== "GET") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
+  const id = new URL(request.url).searchParams.get("session_id") || "";
+  if (!/^cs_[A-Za-z0-9_]+$/.test(id)) return new Response(JSON.stringify({ error: "invalid_session" }), { status: 400, headers });
+  const raw2 = await kv(env).get("stripe_session_" + id);
+  if (!raw2) return new Response(JSON.stringify({ state: "pending" }), { headers });
+  let rec = {};
+  try {
+    rec = JSON.parse(raw2);
+  } catch (_) {
+    rec = {};
+  }
+  if (rec.state === "ended") return new Response(JSON.stringify({ state: "ended", livemode: rec.livemode === true }), { headers });
+  if (rec.state !== "paid" || rec.livemode !== true) return new Response(JSON.stringify({ state: "pending", livemode: rec.livemode === true }), { headers });
+  return new Response(JSON.stringify({ state: "paid", livemode: true, pass: rec.pass || null, plan: rec.plan || null, days: rec.days || null, accessUrl: rec.accessUrl || null }), { headers });
+}
+__name(handleStripeStatus, "handleStripeStatus");
+__name2(handleStripeStatus, "handleStripeStatus");
+async function handleStripeWebhook(request, env) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers });
+  const payload = await request.text();
+  const sig = request.headers.get("Stripe-Signature") || request.headers.get("stripe-signature") || "";
+  if (!sig) return new Response(JSON.stringify({ error: "missing_signature" }), { status: 400, headers });
+  const secret = String(env.STRIPE_WEBHOOK_SECRET || "");
+  if (!secret || !await stripeSignatureOk(payload, sig, secret)) {
+    return new Response(JSON.stringify({ error: "invalid_signature" }), { status: 400, headers });
+  }
+  let event;
+  try {
+    event = JSON.parse(payload);
+  } catch (_) {
+    return new Response(JSON.stringify({ error: "invalid_json" }), { status: 400, headers });
+  }
+  const eventId = String(event.id || "");
+  if (eventId && await kv(env).get("stripe_evt_" + eventId)) {
+    return new Response(JSON.stringify({ ok: true, duplicate: true }), { headers });
+  }
+  const obj = event.data && event.data.object || {};
+  const type = String(event.type || "");
+  const livemode = event.livemode === true;
+  const correlation = stripeCorrelation(obj, eventId);
+  const finish = /* @__PURE__ */ __name(async (body, status) => {
+    if (eventId && status < 500) await kv(env).put("stripe_evt_" + eventId, JSON.stringify({ livemode, type }), { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify(body), { status, headers });
+  }, "finish");
+  try {
+    if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
+      if (!livemode) return finish({ ok: true, granted: false, reason: "not_live", livemode: false }, 200);
+      if (String(obj.payment_status || "") !== "paid") {
+        await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, reason: "not_paid" });
+        return finish({ ok: true, granted: false, reason: "not_paid", livemode: true }, 200);
+      }
+      const resolved = stripePriceKey(obj.metadata, obj.amount_total, obj.currency);
+      if (resolved.error) return finish({ ok: false, error: resolved.error, livemode: true }, 400);
+      await stripeTrack(env, "payment_success", { livemode, correlation_id: correlation, price_key: resolved.priceKey });
+      const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+      if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      return finish({ ok: true, granted: granted.granted === true, reason: granted.reason || null, livemode: true }, 200);
+    }
+    if (type === "checkout.session.async_payment_failed" || type === "invoice.payment_failed") {
+      await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, reason: type });
+      return finish({ ok: true, granted: false, reason: "payment_failed", livemode }, 200);
+    }
+    if (type === "invoice.paid") {
+      const invoicePaid = obj.status === "paid" || obj.paid === true;
+      if (!livemode || !invoicePaid) {
+        return finish({ ok: true, granted: false, reason: livemode ? "not_paid" : "not_live", livemode }, 200);
+      }
+      const money = stripeMoney(obj);
+      const resolved = stripePriceKey(stripeMeta(obj), money.amount, money.currency);
+      if (resolved.error) return finish({ ok: true, granted: false, reason: resolved.error, livemode: true }, 200);
+      await stripeTrack(env, "payment_success", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+      if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+      return finish({ ok: true, granted: granted.granted === true, reason: granted.reason || null, livemode: true }, 200);
+    }
+    if (type === "customer.subscription.updated") {
+      const status = String(obj.status || "");
+      const money = stripeMoney(obj);
+      const resolved = stripePriceKey(stripeMeta(obj), money.amount, money.currency);
+      if (livemode && (status === "active" || status === "trialing") && !resolved.error) {
+        const granted = await stripeGrantPaid(env, request, obj, resolved.priceKey, resolved.spec, true);
+        if (granted.granted) await stripeTrack(env, "entitlement_granted", { livemode: true, correlation_id: correlation, price_key: resolved.priceKey });
+        return finish({ ok: true, granted: granted.granted === true, status, livemode: true }, 200);
+      }
+      if (status === "canceled" || status === "unpaid" || status === "incomplete_expired") {
+        const mapped = await kv(env).get("stripe_sub_" + String(obj.id || ""));
+        await stripeEndAccess(env, mapped || obj.id);
+        await stripeTrack(env, "payment_failed", { livemode, correlation_id: correlation, price_key: resolved.priceKey || null, reason: status });
+        return finish({ ok: true, ended: true, livemode }, 200);
+      }
+      return finish({ ok: true, granted: false, status, livemode }, 200);
+    }
+    if (type === "customer.subscription.deleted" || type === "charge.refunded" || type === "charge.dispute.created") {
+      let grantId = "";
+      if (type === "customer.subscription.deleted") grantId = await kv(env).get("stripe_sub_" + String(obj.id || "")) || String(obj.id || "");
+      else {
+        const pi = typeof obj.payment_intent === "string" ? obj.payment_intent : "";
+        grantId = pi ? await kv(env).get("stripe_pi_" + pi) || "" : "";
+      }
+      if (!grantId) return finish({ ok: true, ended: false, reason: "unknown_payment", livemode }, 200);
+      await stripeEndAccess(env, grantId);
+      await stripeTrack(env, "refund", { livemode, correlation_id: correlation, reason: type });
+      return finish({ ok: true, ended: true, livemode }, 200);
+    }
+    if (eventId) await kv(env).put("stripe_evt_" + eventId, JSON.stringify({ livemode, type }), { expirationTtl: 30 * 86400 });
+    return new Response(JSON.stringify({ ok: true, ignored: true, livemode }), { headers });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e).slice(0, 160) }), { status: 500, headers });
+  }
+}
+__name(handleStripeWebhook, "handleStripeWebhook");
+__name2(handleStripeWebhook, "handleStripeWebhook");
 function validatePaymentForFulfillment(payment, metadata) {
   const problems = [];
   const mode = String(payment?.mode || "");
@@ -2196,17 +2263,12 @@ function validatePaymentForFulfillment(payment, metadata) {
   const email = String(metadata?.email || "");
   const currency = String(payment?.amount?.currency || "").toUpperCase();
   const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
-
   if (mode !== "live") problems.push("not_live_mode");
   if (status !== "paid" && status !== "settled") problems.push("not_paid");
   if (!payment?.paidAt) problems.push("missing_paid_at");
   if (!Number.isFinite(cents) || cents <= 0) problems.push("amount_invalid");
   if (!["EUR", "USD"].includes(currency)) problems.push("currency_invalid");
-
   if (kind === "b2c") {
-    // Grille de LIVRAISON (pas de CRÉATION) : un paiement `sos` DÉJÀ encaissé
-    // doit pouvoir être livré — encaisser sans livrer serait un trou de
-    // confiance. La CRÉATION de `sos` reste interdite (cf. PASS_PRICES).
     if (!pass || !FULFILL_PRICES[pass]) problems.push("invalid_sku");
     else {
       const amt = validateMollieAmount(payment, pass);
@@ -2214,14 +2276,8 @@ function validatePaymentForFulfillment(payment, metadata) {
     }
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
   } else if (kind === "b2b_annual" || kind === "b2b_first") {
-    // Le DROIT (durée) est dérivé du CATALOGUE du plan, jamais d'un indicateur
-    // choisi par le client. Un `offer_kind` « annuel » sur un plan MENSUEL
-    // (29 €) est refusé : c'est exactement le forged-metadata qui offrait
-    // 365 jours pour 29 €.
     const planKey = String(metadata?.plan || "");
     const plan = B2B_PLANS[planKey];
-    // Un paiement B2B ne porte JAMAIS de pass B2C : la contradiction est un
-    // signe de métadonnées forgées => refus explicite.
     if (String(metadata?.pass || "")) problems.push("b2b_offer_with_pass");
     if (!plan) {
       problems.push("unknown_plan");
@@ -2232,6 +2288,19 @@ function validatePaymentForFulfillment(payment, metadata) {
       if (!amt.ok) problems.push(amt.reason);
     }
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+  } else if (kind === "diagnostic_express") {
+    const productKey = String(metadata?.product || "diagnostic_express");
+    const product = DIAGNOSTIC_PRODUCTS[productKey];
+    if (!product) {
+      problems.push("unknown_product");
+    } else {
+      const amt = validateDiagnosticAmount(payment, productKey);
+      if (!amt.ok) problems.push(amt.reason);
+    }
+    if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+    if (!String(metadata?.sector || "").trim()) problems.push("missing_sector");
+    if (!String(metadata?.establishment || "").trim()) problems.push("missing_establishment");
+    if (payment?.recurring) problems.push("not_one_off");
   } else if (kind === "b2b_onboarding") {
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
     const planKey = String(metadata?.plan || "");
@@ -2243,10 +2312,8 @@ function validatePaymentForFulfillment(payment, metadata) {
   return { kind, ok: problems.length === 0, problems, mode, status, pass, email, currency, cents };
 }
 __name(validatePaymentForFulfillment, "validatePaymentForFulfillment");
+__name2(validatePaymentForFulfillment, "validatePaymentForFulfillment");
 async function supaExec(env, table, method, body, query = "") {
-  // Ecriture Supabase VERIFIEE : le statut HTTP et le corps sont exposes.
-  // L'ancien helper `supa` renvoyait `null` sur erreur, ce qui rendait TOUTE
-  // ecriture ratsee silencieusement indiscernable d'un succes.
   if (!env.SUPABASE_SERVICE_KEY) return { ok: false, status: 0, data: null, error: "SUPABASE_SERVICE_KEY absent" };
   try {
     const url = `${env.SUPABASE_URL}/rest/v1/${table}${query}`;
@@ -2256,7 +2323,7 @@ async function supaExec(env, table, method, body, query = "") {
         "apikey": env.SUPABASE_SERVICE_KEY,
         "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
         "Content-Type": "application/json",
-        "Prefer": "return=representation"
+        "Prefer": query.includes("on_conflict=") ? "resolution=merge-duplicates,return=representation" : "return=representation"
       },
       body: body !== void 0 ? JSON.stringify(body) : void 0
     });
@@ -2274,6 +2341,7 @@ async function supaExec(env, table, method, body, query = "") {
   }
 }
 __name(supaExec, "supaExec");
+__name2(supaExec, "supaExec");
 async function supaGetChecked(env, table, query) {
   if (!env.SUPABASE_SERVICE_KEY) return { ok: false, status: 0, rows: [], error: "SUPABASE_SERVICE_KEY absent" };
   try {
@@ -2301,17 +2369,11 @@ async function supaGetChecked(env, table, query) {
   }
 }
 __name(supaGetChecked, "supaGetChecked");
+__name2(supaGetChecked, "supaGetChecked");
 async function revokeB2CAccess(env, paymentId, reason) {
-  // Revocation VERIFIEE du droit B2C :
-  //   1. lire les lignes existantes (un echec Supabase doit etre visible) ;
-  //   2. expirer UNIQUEMENT les grants b2c_pass de CE paiement ;
-  //   3. relire et verifier qu'aucune ligne ne reste active ;
-  //   4. supprimer le jeton KV du pass (echec = echec, pas de faux succes) ;
-  //   5. poser le marqueur de revocation, distinct du marqueur d'attribution.
-  // Les autres paiements et les autres types de grants ne sont jamais touches.
   const pid = String(paymentId || "").trim();
   if (!pid) throw new Error("b2c_revoke_missing_payment_id");
-  const nowIso = new Date().toISOString();
+  const nowIso = (/* @__PURE__ */ new Date()).toISOString();
   const filter = `?payment_id=eq.${encodeURIComponent(pid)}&type=eq.b2c_pass`;
   const select = "&select=payment_id,type,expires_at";
   const before = await supaGetChecked(env, "payment_grants", `${filter}${select}`);
@@ -2337,9 +2399,8 @@ async function revokeB2CAccess(env, paymentId, reason) {
   return { ok: true, revokedRows: after.rows.length, previousRows: before.rows.length };
 }
 __name(revokeB2CAccess, "revokeB2CAccess");
+__name2(revokeB2CAccess, "revokeB2CAccess");
 async function verifyNegativeMollieEntity(env, apiKey, parsed) {
-  // Un webhook Refunds/Chargebacks est un SNAPSHOT : son statut n'est pas
-  // repris tel quel. On relit l'entite chez Mollie avant de revoquer.
   const event = String(parsed.event || "");
   if (parsed.resource === "refund") {
     if (event && event !== "refund.refunded") return { ok: true, revokes: false, reason: event };
@@ -2370,14 +2431,8 @@ async function verifyNegativeMollieEntity(env, apiKey, parsed) {
   return { ok: true, revokes: false, reason: "unsupported_resource" };
 }
 __name(verifyNegativeMollieEntity, "verifyNegativeMollieEntity");
+__name2(verifyNegativeMollieEntity, "verifyNegativeMollieEntity");
 async function callPaymentGrantRpc(env, args) {
-  // P0.118 §7 — le grant B2C passe par la fonction SQL
-  // public.sg_upsert_payment_grant(...) : ecriture idempotente et atomique
-  // (ON CONFLICT (payment_id) DO NOTHING). Les 7 arguments sont EXACTS
-  // (cf. scripts/migrations/001_idempotent_payment_grant.sql).
-  // Les colonnes `session_id` / `user_id` N'EXISTENT PAS dans
-  // public.payment_grants : le POST direct de la version live echouait
-  // silencieusement. Le user_id est conserve dans metadata (jsonb).
   if (!env.SUPABASE_SERVICE_KEY) return { ok: false, status: 0, error: "SUPABASE_SERVICE_KEY absent" };
   try {
     const url = `${env.SUPABASE_URL}/rest/v1/rpc/sg_upsert_payment_grant`;
@@ -2409,21 +2464,15 @@ async function callPaymentGrantRpc(env, args) {
   }
 }
 __name(callPaymentGrantRpc, "callPaymentGrantRpc");
+__name2(callPaymentGrantRpc, "callPaymentGrantRpc");
 async function maybeCreateFollowupSubscription(env, apiKey, payment, metadata, host) {
   const interval = String(metadata?.interval || "");
   const customerId = String(metadata?.customerId || "");
   const planKey = String(metadata?.plan || "");
   if (!interval || !customerId || !apiKey) return { created: false, reason: "not_recurring" };
-  // GARDE-FOU « PAS DE DOUBLON D'ABONNEMENT » (P0 argent).
-  // Le paiement de RENOUVELLEMENT herite des metadata de l'abonnement, dont
-  // `firstPaymentId` : sans ce garde-fou, chaque renouvellement recraitait un
-  // NOUVEL abonnement pour le meme client → debit 2x, 3x… par mois.
   if (metadata?.firstPaymentId) return { created: false, reason: "renewal_payment" };
   const sequenceType = String(payment?.sequenceType || "");
   if (sequenceType && sequenceType !== "first") return { created: false, reason: "not_first_sequence" };
-  // Marqueur par CLIENT + OFFRE (et non par paiement) : deux premiers
-  // paiements du meme client ne doivent creer qu'UN abonnement. L'ancienne
-  // cle par paiement est conservee en lecture (migration sans risque).
   const k = `mol_sub_cust_${customerId}_${planKey}`;
   const legacyKey = `mol_sub_from_${payment.id}`;
   if (await kv(env).get(k) || await kv(env).get(legacyKey)) return { created: false, reason: "already" };
@@ -2446,28 +2495,151 @@ async function maybeCreateFollowupSubscription(env, apiKey, payment, metadata, h
   }
 }
 __name(maybeCreateFollowupSubscription, "maybeCreateFollowupSubscription");
+__name2(maybeCreateFollowupSubscription, "maybeCreateFollowupSubscription");
+function validateDiagnosticAmount(payment, productKey) {
+  const product = DIAGNOSTIC_PRODUCTS[productKey];
+  if (!product) return { ok: false, reason: "unknown_product" };
+  const currency = String(payment?.amount?.currency || "").toUpperCase();
+  const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
+  if (!Number.isFinite(cents) || cents <= 0) return { ok: false, reason: "amount_invalid" };
+  if (currency !== product.currency) return { ok: false, reason: "currency_invalid" };
+  const base = Math.round(product.amount * 100);
+  if (Math.abs(cents - base) > 2) return { ok: false, reason: "amount_mismatch" };
+  return { ok: true, currency, cents };
+}
+function diagnosticOrderPayload(payment, metadata) {
+  const meta = metadata || {};
+  const paidAt = payment?.paidAt ? new Date(payment.paidAt).toISOString() : (new Date()).toISOString();
+  const nowIso = (new Date()).toISOString();
+  const payload = {
+    payment_id: String(payment?.id || ""),
+    product: String(meta.product || "diagnostic_express"),
+    status: "paid",
+    client_email: String(meta.email || "").trim(),
+    establishment: String(meta.establishment || "").trim(),
+    sector: String(meta.sector || "").trim().toLowerCase(),
+    island: String(meta.island || "Martinique").trim(),
+    amount: String(payment?.amount?.value || ""),
+    currency: String(payment?.amount?.currency || "").toUpperCase(),
+    mollie_mode: String(payment?.mode || ""),
+    paid_at: paidAt,
+    updated_at: nowIso,
+    metadata: meta
+  };
+  if (meta.client_name) payload.client_name = String(meta.client_name).trim();
+  if (meta.contact_name) payload.contact_name = String(meta.contact_name).trim();
+  if (meta.phone) payload.phone = String(meta.phone).trim();
+  return payload;
+}
+async function fulfillDiagnosticOrder(env, payment, metadata) {
+  const paymentId = String(payment?.id || "");
+  if (!paymentId) throw new Error("diagnostic_order_missing_payment_id");
+  const existing = await supaGetChecked(env, "diagnostic_orders", `?payment_id=eq.${encodeURIComponent(paymentId)}&select=order_id,payment_id,product,status,client_email,client_name,contact_name,establishment,sector,island,amount,currency,paid_at,created_at&limit=1`);
+  if (!existing.ok) throw new Error(`diagnostic_order_read_failed:${existing.error}`);
+  const row = existing.rows[0] || null;
+  let order = row;
+  if (!row) {
+    const payload = diagnosticOrderPayload(payment, metadata);
+    const write = await supaExec(env, "diagnostic_orders", "POST", payload);
+    if (!write.ok) throw new Error(`diagnostic_order_write_failed:${write.error}`);
+    const read = await supaGetChecked(env, "diagnostic_orders", `?payment_id=eq.${encodeURIComponent(paymentId)}&select=order_id,payment_id,product,status,client_email,establishment,sector,amount,currency,paid_at&limit=1`);
+    if (!read.ok) throw new Error(`diagnostic_order_read_failed:${read.error}`);
+    order = read.rows[0] || null;
+    if (!order) throw new Error("diagnostic_order_missing_row");
+  } else if (String(row.status || "") === "pending_payment") {
+    const payload = diagnosticOrderPayload(payment, metadata);
+    const upd = await supaExec(env, "diagnostic_orders", "PATCH", {
+      status: "paid",
+      paid_at: payload.paid_at,
+      mollie_mode: payload.mollie_mode,
+      client_email: payload.client_email || row.client_email,
+      client_name: payload.client_name || row.client_name,
+      contact_name: payload.contact_name || row.contact_name,
+      establishment: payload.establishment || row.establishment,
+      sector: payload.sector || row.sector,
+      updated_at: payload.updated_at
+    }, "?payment_id=eq." + encodeURIComponent(paymentId));
+    if (!upd.ok) throw new Error(`diagnostic_order_update_failed:${upd.error}`);
+    order = { ...row, status: "paid" };
+  }
+  const orderAmount = Number(order?.amount);
+  const paidAmount = Number(payment?.amount?.value);
+  if (!Number.isFinite(orderAmount) || !Number.isFinite(paidAmount) || Math.abs(orderAmount - paidAmount) > 0.001 || String(order?.currency || "") !== String(payment?.amount?.currency || "").toUpperCase()) throw new Error("diagnostic_order_amount_mismatch");
+  return order;
+}
+async function markDiagnosticOrderRefunded(env, paymentId) {
+  const pid = String(paymentId || "").trim();
+  if (!pid) return { ok: false, reason: "missing_payment_id" };
+  const upd = await supaExec(env, "diagnostic_orders", "PATCH", { status: "refunded", updated_at: (new Date()).toISOString() }, "?payment_id=eq." + encodeURIComponent(pid));
+  if (!upd.ok) return { ok: false, reason: upd.error };
+  return { ok: true };
+}
+async function deliverDiagnosticConfirmationEmail(env, options) {
+  const opts = options || {};
+  const order = opts.order || {};
+  const email = String(order.client_email || "").trim();
+  if (!email) return { sent: false, reason: "missing_email" };
+  const paymentId = String(order.payment_id || "").trim();
+  if (!paymentId) return { sent: false, reason: "missing_payment_id" };
+  const markerKey = `diag_confirm_${paymentId}`;
+  const previous = await kv(env).get(markerKey);
+  if (previous) return { sent: false, reason: "already_delivered", marker: previous };
+  await kv(env).put(markerKey, "pending", { expirationTtl: 400 * 86400 });
+  const domain = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
+  const establishment = escapeHtml(order.establishment || "votre etablissement");
+  const sector = escapeHtml(order.sector || "votre secteur");
+  const title = "Votre Diagnostic Sargasses Express est confirme";
+  const subject = "Diagnostic Sargasses Express — paiement recu, diagnostic en preparation";
+  const lead = `Bonjour, le paiement de votre Diagnostic Sargasses Express (${escapeHtml(order.amount)} ${escapeHtml(order.currency)}) pour ${establishment} est bien recu.`;
+  const what = `Nous prepareons le diagnostic dedie a votre secteur (${sector}). Il s'appuie sur les dernieres observations satellite publiques (source ERDDAP) et precise la date et l'heure de chaque observation, le niveau de vigilance, les limites des donnees satellitaires et les recommandations de communication pour votre etablissement.`;
+  const when = "Vous recevrez le document PDF a l'adresse email utilisee pour le paiement. Aucun paiement n'est enregistre sans diagnostic. Si un point bloquant survient, nous vous ecrivons directement.";
+  const html = `<div style="font-family:system-ui;max-width:540px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a;line-height:1.5"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${lead}</p><p>${what}</p><p>${when}</p><p style="font-size:13px;color:#555">Sargasses Martinique — donnees satellite publiques ERDDAP. Une observation satellite est une mesure indirecte, pas une constatation physique sur place.</p></div>`;
+  let result = null;
+  let timer = null;
+  try {
+    result = await Promise.race([
+      sendEmail(email, subject, html, domain, env),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve({ success: false, ambiguous: true, error: "provider_timeout" }), 8e3);
+      })
+    ]);
+  } catch (e) {
+    await kv(env).delete(markerKey);
+    console.log("[sg] diagnostic confirmation email error:", String(e?.message || e).slice(0, 140));
+    return { sent: false, reason: "provider_exception" };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+  if (result && result.success) {
+    await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+    return { sent: true, provider: result.provider || null };
+  }
+  if (result && result.ambiguous) {
+    await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+    return { sent: false, reason: "provider_delivery_unconfirmed", ambiguous: true, provider: result.provider || null };
+  }
+  await kv(env).delete(markerKey);
+  console.log("[sg] diagnostic confirmation email NOT confirmed:", String(result?.error || result?.provider || "unknown").slice(0, 120));
+  return { sent: false, reason: "provider_delivery_unconfirmed", provider: result?.provider || null };
+}
 async function fulfillPaidPayment(env, payment, ctx, host) {
   const metadata = payment?.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
   const check = validatePaymentForFulfillment(payment, metadata);
   if (!check.ok) return { granted: false, reasons: check.problems, kind: check.kind };
+  if (check.kind === "diagnostic_express") {
+    const order = await fulfillDiagnosticOrder(env, payment, metadata);
+    const delivery = await deliverDiagnosticConfirmationEmail(env, { order, host });
+    return { granted: true, kind: "diagnostic_express", order_id: order.order_id || null, payment_id: order.payment_id || String(payment.id || ""), status: order.status || "paid", delivery };
+  }
   if (check.kind === "b2b_onboarding") {
     const onboarding = await grantOnboardingAuto(env, check.email, metadata);
     return { granted: true, kind: "b2b_onboarding", email: onboarding.email_sent ? "sent" : "failed" };
   }
   if (check.kind === "b2b_annual" || check.kind === "b2b_first") {
-    // RÉSOLUTION DU CONFLIT #1406 + #1411 (P0 « chemin argent ») :
-    //   - la DURÉE vient du CATALOGUE du plan (intervalle absent = annuel),
-    //     jamais d'un indicateur de métadonnées : un client ne peut plus
-    //     transformer 29 € de Brief mensuel en 365 jours d'accès (#1406) ;
-    //   - le jeton retourné par grantB2B est UTILISÉ pour LIVRER l'accès par
-    //     email (sinon le client paie et ne reçoit rien) (#1411).
-    // Les deux intentions sont conservées : aucune n'est sacrifiée.
     const planKey = String(metadata.plan || "");
     const plan = B2B_PLANS[planKey];
     const days = plan && !plan.interval ? 365 : 30;
     const grant = await grantB2B(env, check.email, planKey, payment.id, days, { metadata });
-    // LIVRAISON : l'email qui porte le lien d'acces. AVANT ce correctif, le
-    // droit etait cree SANS email → le client payait et ne recevait rien.
     const delivery = await deliverProAccessEmail(env, {
       email: check.email,
       token: grant.token,
@@ -2475,6 +2647,7 @@ async function fulfillPaidPayment(env, payment, ctx, host) {
       host,
       subId: payment.id,
       days,
+      exp: grant.expires_at
     });
     if (check.kind === "b2b_first") {
       ctx?.waitUntil?.(maybeCreateFollowupSubscription(env, env.MOLLIE_API_KEY, payment, metadata, host));
@@ -2489,10 +2662,12 @@ async function fulfillPaidPayment(env, payment, ctx, host) {
   return { granted: true, kind: "b2c_pass", pass: check.pass, email };
 }
 __name(fulfillPaidPayment, "fulfillPaidPayment");
+__name2(fulfillPaidPayment, "fulfillPaidPayment");
 function escapeHtml(s) {
-  return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 __name(escapeHtml, "escapeHtml");
+__name2(escapeHtml, "escapeHtml");
 async function handleMollieReturn(request, env, ctx) {
   const url = new URL(request.url);
   const ref = String(url.searchParams.get("ref") || "").trim();
@@ -2533,19 +2708,12 @@ async function handleMollieReturn(request, env, ctx) {
   const days = PASS_DURATIONS[pass] || (plan === "pro_annual" || plan === "pro_annual_usd" ? 365 : plan && B2B_PLANS[plan] ? 30 : 0);
   const home = `https://${host}/`;
   const espace = `https://${host}/pro/espace/`;
-  // LIVRAISON : le lien jeton est porte par la page de retour (2e canal de
-  // livraison, en plus de l'email). AVANT, le bouton « Espace Pro » menait a
-  // une page SANS jeton → le client payait et ne pouvait pas ouvrir son espace.
   const espaceUrl = accessToken ? `${espace}?k=${encodeURIComponent(accessToken)}` : espace;
-  const title = paid ? granted ? "Paiement confirmé" : "Paiement reçu" : status === "canceled" || status === "expired" || status === "failed" ? "Paiement non finalisé" : "Vérification du paiement";
-  const lead = paid && granted ? "Votre accès est activé. Merci !" : paid ? "Votre paiement a bien été reçu. L'activation peut prendre quelques instants." : status === "canceled" || status === "expired" || status === "failed" ? "Le paiement n'a pas abouti. Vous pouvez réessayer depuis le site." : "Si vous venez de payer, cette page se met à jour automatiquement.";
-  const deliveryNote = paid && granted
-    ? (accessToken
-      ? "Votre accès Pro est actif. Le bouton ci-dessous ouvre votre Espace Pro avec votre accès — vous l'avez aussi reçu par email."
-      : "Votre accès Pro est actif. Vous l'avez reçu par email.")
-    : "";
+  const title = paid ? granted ? "Paiement confirm\xE9" : "Paiement re\xE7u" : status === "canceled" || status === "expired" || status === "failed" ? "Paiement non finalis\xE9" : "V\xE9rification du paiement";
+  const lead = paid && granted ? "Votre acc\xE8s est activ\xE9. Merci !" : paid ? "Votre paiement a bien \xE9t\xE9 re\xE7u. L'activation peut prendre quelques instants." : status === "canceled" || status === "expired" || status === "failed" ? "Le paiement n'a pas abouti. Vous pouvez r\xE9essayer depuis le site." : "Si vous venez de payer, cette page se met \xE0 jour automatiquement.";
+  const deliveryNote = paid && granted ? accessToken ? "Votre acc\xE8s Pro est actif. Le bouton ci-dessous ouvre votre Espace Pro avec votre acc\xE8s \u2014 vous l'avez aussi re\xE7u par email." : "Votre acc\xE8s Pro est actif. Vous l'avez re\xE7u par email." : "";
   const showPro = !!(plan && String(plan).startsWith("pro"));
-  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — Sargasses</title>
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} \u2014 Sargasses</title>
 <style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px;text-align:center}.card{max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:32px 24px;box-shadow:0 10px 30px rgba(13,13,13,.08)}h1{margin:0 0 12px;font-size:28px}p{line-height:1.5;color:#5A5A5A}.cta{display:inline-block;margin:10px 6px 0;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 22px;border-radius:999px}.sec{background:#fff;border:2px solid #0D0D0D}</style></head>
 <body><div class="card"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(lead)}</p>
 ${deliveryNote ? `<p>${escapeHtml(deliveryNote)}</p>` : ""}
@@ -2556,10 +2724,11 @@ if(isPaid && d){ localStorage.setItem("sg_premium","1"); localStorage.setItem("s
 }catch(x){}
 var pid=${JSON.stringify(paymentId)};
 if(!${paid ? "true" : "false"} && pid){var n=0;var t=setInterval(function(){n++;fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:pid})}).then(function(r){return r.json()}).then(function(j){if(j&&(j.paid||j.terminal)) location.reload();}).catch(function(){});if(n>=8)clearInterval(t);},2500);}
-})();</script></body></html>`;
+})();<\/script></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
 }
 __name(handleMollieReturn, "handleMollieReturn");
+__name2(handleMollieReturn, "handleMollieReturn");
 async function handleMolliePayPage(request, env) {
   const url = new URL(request.url);
   if (String(url.searchParams.get("pass") || "") === "sos" || String(url.searchParams.get("source") || "") === "sos_plage") {
@@ -2568,19 +2737,20 @@ async function handleMolliePayPage(request, env) {
   const planKey = normalizePlanKey(url.searchParams.get("plan") || "pro_annual");
   const plan = B2B_PLANS[planKey] || B2C_SUB_PLANS[planKey];
   if (!plan) return new Response("Plan inconnu", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
-  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement — ${escapeHtml(plan.description)}</title>
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement \u2014 ${escapeHtml(plan.description)}</title>
 <style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px}.card{max-width:480px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:28px 22px}h1{font-size:24px;margin:0 0 8px}p{color:#5A5A5A;line-height:1.45}label{display:block;font-weight:700;margin:16px 0 8px}input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(13,13,13,.2);font:inherit}button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;font:inherit;cursor:pointer}.err{color:#E8522A;font-weight:700;margin-top:12px}</style></head>
-<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Mollie. Entrez votre email pour recevoir l'accès.</p>
+<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement s\xE9curis\xE9 via Stripe. Entrez votre email pour recevoir l'acc\xE8s.</p>
 <label for="em">Email</label><input id="em" type="email" autocomplete="email" required placeholder="vous@etablissement.com">
-<button id="go" type="button">Payer maintenant →</button><div class="err" id="err" hidden></div></div>
-<script>document.getElementById("go").onclick=async function(){var em=document.getElementById("em").value.trim();var err=document.getElementById("err");err.hidden=true;if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){err.hidden=false;err.textContent="Email requis.";return;}this.disabled=true;this.textContent="Ouverture du paiement…";
+<button id="go" type="button">Payer maintenant \u2192</button><div class="err" id="err" hidden></div></div>
+<script>document.getElementById("go").onclick=async function(){var em=document.getElementById("em").value.trim();var err=document.getElementById("err");err.hidden=true;if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){err.hidden=false;err.textContent="Email requis.";return;}this.disabled=true;this.textContent="Ouverture du paiement\u2026";
 try{var r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:${JSON.stringify(planKey)},email:em,hosted:true,source:"b2b_espace_annual",lang:"fr"})});
-var d=await r.json();if(d&&d.checkoutUrl){location.href=d.checkoutUrl;return;}err.hidden=false;err.textContent=d&&d.error?d.error:"Paiement indisponible.";this.disabled=false;this.textContent="Payer maintenant →";}
-catch(e){err.hidden=false;err.textContent="Réseau indisponible.";this.disabled=false;this.textContent="Payer maintenant →";}};
-</script></body></html>`;
+var d=await r.json();if(d&&d.checkoutUrl){location.href=d.checkoutUrl;return;}err.hidden=false;err.textContent=d&&d.error?d.error:"Paiement indisponible.";this.disabled=false;this.textContent="Payer maintenant \u2192";}
+catch(e){err.hidden=false;err.textContent="R\xE9seau indisponible.";this.disabled=false;this.textContent="Payer maintenant \u2192";}};
+<\/script></body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
 }
 __name(handleMolliePayPage, "handleMolliePayPage");
+__name2(handleMolliePayPage, "handleMolliePayPage");
 async function handleLegacyCheckout(request, env) {
   let body;
   try {
@@ -2600,134 +2770,84 @@ async function handleLegacyCheckout(request, env) {
   return handleMollie(forwarded, env);
 }
 __name(handleLegacyCheckout, "handleLegacyCheckout");
+__name2(handleLegacyCheckout, "handleLegacyCheckout");
 async function handleWebhook(request, env, ctx) {
   const raw2 = await request.text();
   const secret = env.MOLLIE_WEBHOOK_SECRET;
   if (!secret) return new Response(JSON.stringify({ error: "webhook_unavailable" }), { status: 503 });
   const sig = request.headers.get("X-Mollie-Signature") || request.headers.get("x-mollie-signature") || "";
   if (!await verifyHmac(raw2, sig, secret)) return new Response(JSON.stringify({ error: "invalid_signature" }), { status: 403 });
-
   const parsed = parseMollieWebhook(request, raw2);
   if (parsed.malformed) return new Response(JSON.stringify({ error: "invalid_payload" }), { status: 400 });
-
-  // Idempotence : namespaces separes pour eviter qu'un paiement deja honore
-  // (mollie_<pid>) bloque la revocation d'un remboursement/chargeback sur le
-  // meme paymentId (defaut P0.7).
-  // - Attribution (payment.paid)       : mollie_<pid>
-  // - Revocation (refund/chargeback)   : mollie_rev_<pid> (TTL 30j, pose par revokeB2CAccess)
   const isRevoking = isRevokingWebhookEvent(parsed.event);
   const revPid = String(parsed.paymentId || parsed.entityId || "").trim();
-  const markerKey = isRevoking
-    ? `mollie_rev_${sanitizeMarkerPart(revPid)}`
-    : `mollie_${sanitizeMarkerPart(String(parsed.eventId || parsed.entityId || "").trim())}`;
+  const markerKey = isRevoking ? `mollie_rev_${sanitizeMarkerPart(revPid)}` : `mollie_${sanitizeMarkerPart(String(parsed.eventId || parsed.entityId || "").trim())}`;
   const existing = await kvGetChecked(env, markerKey);
   if (existing.ok && existing.value !== null) return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
-
   try {
     const apiKey = env.MOLLIE_API_KEY;
-
-    // ---------- REFUND / CHARGEBACK BRANCH ----------
     if (parsed.resource === "refund" || parsed.resource === "chargeback") {
       const attrKey = "mollie_attr_" + (parsed.entityId || parsed.paymentId || "");
       const attrMarker = await kvGetChecked(env, attrKey);
       if (attrMarker.ok && attrMarker.value !== null) {
-        // Deja revoke; on repond succes pour idempotence.
         return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: true, granted: false, revoked: true }), { status: 200 });
       }
-
       let verifyResult;
       if (parsed.resource === "refund") {
         verifyResult = await verifyNegativeMollieEntity(env, apiKey, parsed);
       } else {
-        // chargeback
         if (parsed.event === "chargeback.reversed") {
-          // Etat terminal non-revocateur : on marque pour eviter le rejeu
-          // infini sans revoquer l'acces (defaut P0.7).
           await kvPutChecked(env, `mollie_rev_${sanitizeMarkerPart(parsed.paymentId || parsed.entityId || "")}`, "1", { expirationTtl: 30 * 86400 });
           return new Response(JSON.stringify({ received: true, type: "chargeback", event: "chargeback.reversed", processed: true, granted: false, revoked: false, paymentId: parsed.paymentId || parsed.entityId || "" }), { status: 200 });
         }
         verifyResult = await verifyNegativeMollieEntity(env, apiKey, parsed);
       }
       if (!verifyResult.ok) throw new Error("verify_negative_failed:" + (verifyResult.error || "unknown"));
-
       if (verifyResult.revokes) {
-        // Revocation effective par autorite Mollie.
         const rev = await revokeB2CAccess(env, verifyResult.paymentId || parsed.entityId || "", parsed.resource === "refund" ? "refund" : "chargeback");
         if (!rev.ok) throw new Error("b2c_revoke_failed:" + rev.error);
         return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: true, granted: false, revoked: true, paymentId: verifyResult.paymentId || parsed.entityId || parsed.paymentId || "" }), { status: 200 });
       } else {
-        // Evenement non-revocateur (refund.failed, refund.pending, etc.)
-        // : on ne supprime rien, on laisse Mollie rejouer.
         return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: false, granted: false, revoked: false }), { status: 200 });
       }
     }
-
-    // ---------- PAYMENT BRANCH ----------
     if (parsed.resource === "payment") {
-      // Verifier idempotence par marqueur (Classic utilise entityId, Next-gen
-      // utilise eventId distinct -> pas de collision).
-      // Note: les events non revokeurs comme payment.failed ne marquent pas
-      // comme "traite" sauf quand c'est definitif, mais le handler en dessous
-      // gère cela.
-
       const payment = await mollieReq("GET", "v2/payments/" + parsed.entityId, apiKey);
       const status = String(payment.status || "");
       const metadata = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
       const event = parsed.event || "";
       const pass = String(metadata.pass || "");
-
-      // Check if payment already has a negative state (refund/chargeback) in Mollie
       const hasRefundOrChargeback = isNegativePaymentState(payment);
-
-      // Known events that the classic format supports.
       const knownEvents = ["payment.paid", "payment.failed", "payment.canceled", "payment.expired", "payment.refunded", "chargeback.received"];
-
-      // Un evenement inconnu ne cree AUCUN grant et n'est PAS marque comme
-      // traite (un rejeu ulterieur ne doit pas etre perdu).
       if (event && !knownEvents.includes(event) && !parsed.resource.startsWith("subscription.")) {
-        // Pour les ressources payment non connues, on laisse Mollie rejouer
-        // et on ne pose AUCUN marqueur (kvPutChecked n'est pas appele).
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: ["unsupported_event"] }));
       }
-
-      // Remboursement/chargeback detecte via montant authoritaire
-      // (amountRefunded / amountChargedBack) OU event definitif.
       if (hasRefundOrChargeback || event === "payment.refunded") {
         if (parsed.generation === "classic") {
-          // Classic: use entityId (tr_xxx) for grant lookups.
-          // Payment may already be paid; revocation is authoritative.
           await revokeB2CAccess(env, parsed.entityId || "", "refund");
+          await markDiagnosticOrderRefunded(env, parsed.entityId || "");
           if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + parsed.entityId);
           return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true, paymentId: parsed.entityId || "" }), { status: 200 });
         } else {
-          // Next-gen: use paymentId for authoritative revocation.
           await revokeB2CAccess(env, parsed.paymentId || parsed.entityId || "", "refund");
+          await markDiagnosticOrderRefunded(env, parsed.paymentId || parsed.entityId || "");
           if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + (parsed.entityId || parsed.paymentId || ""));
           return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true, paymentId: parsed.paymentId || parsed.entityId || "" }), { status: 200 });
         }
       }
-
-      // Etat terminal negatif : failed / canceled / expired
-      // -> on libere le pass en attente et pose le marqueur definitive.
       if (status === "failed" || status === "canceled" || status === "expired") {
         if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + (parsed.entityId || parsed.paymentId || ""));
         await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false }), { status: 200 });
       }
-
       const check = validatePaymentForFulfillment(payment, metadata);
       if (!check.ok) {
-        // Aucun grant et AUCUN marqueur "traite" : l'evenement reste
-        // rejouable et on ne pretend pas avoir honore le paiement.
         console.log("[sg] mollie payment non honore " + parsed.entityId + ": " + check.problems.join(","));
-        // Evenement "paye" contredit par l'etat autoritaire : etat
-        // transitoire -> on repond en erreur pour que Mollie rejoue.
         if (event === "payment.paid" && !check.problems.includes("not_live_mode")) {
           return new Response(JSON.stringify({ error: "payment_not_settled_yet", reasons: check.problems }), { status: 409 });
         }
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: check.problems }));
       }
-
       const host = requestHost(request);
       const fulfilled = await fulfillPaidPayment(env, payment, ctx, host);
       if (!fulfilled.granted) {
@@ -2736,8 +2856,6 @@ async function handleWebhook(request, env, ctx) {
       await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
       return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: fulfilled.kind }));
     }
-
-    // ---------- SUBSCRIPTION BRANCH ----------
     if (parsed.resource === "subscription") {
       const sub = await mollieReq("GET", "v2/subscriptions/" + parsed.entityId, apiKey);
       const status = String(sub.status || "");
@@ -2745,19 +2863,17 @@ async function handleWebhook(request, env, ctx) {
       const planKey = String(metadata.plan || "");
       const cid = String(sub.customerId || "");
       const event = parsed.event || "";
-
       if (["subscription.canceled", "subscription.expired"].includes(event)) {
         await kv(env).delete("mollie_grant_" + sub.id);
-        const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(sub.id) + "&type=eq.b2b_pro");
+        const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: (/* @__PURE__ */ new Date()).toISOString() }, "?subscription_id=eq." + encodeURIComponent(sub.id) + "&type=eq.b2b_pro");
         if (!rev.ok) throw new Error("b2b_revoke_failed:" + rev.error);
         await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
         return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: false, revoked: true }));
       }
-
       const knownPlan = !!B2B_PLANS[planKey];
       const grantable = ["subscription.created", "subscription.updated", "subscription.paid"].includes(event) && knownPlan;
       if (grantable) {
-        const allowedStatuses = event === "subscription.paid" ? ["active", "pending", "paid"] : ["active", "pending"];
+        const allowedStatuses = ["active"];
         if (!allowedStatuses.includes(status)) {
           return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: ["subscription_not_active"] }));
         }
@@ -2765,8 +2881,32 @@ async function handleWebhook(request, env, ctx) {
         if (!amount.ok) {
           return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: [amount.reason] }));
         }
-        await grantB2B(env, cid, planKey, sub.id, 30, { metadata });
-        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
+        const plan = B2B_PLANS[planKey];
+        const days = plan && !plan.interval ? 365 : 30;
+        let mail = String(metadata.email || "").trim();
+        if (!mail && cid) {
+          try {
+            const customer = await mollieReq("GET", "v2/customers/" + cid, apiKey);
+            mail = String(customer?.email || "").trim();
+          } catch (e) {
+            console.log("[sg] customer email KO:", String(e?.message || e).slice(0, 120));
+          }
+        }
+        const grant = await grantB2B(env, cid, planKey, sub.id, days, { metadata, email: mail });
+        let delivery = null;
+        let emailPending = false;
+        if (mail) {
+          try {
+            delivery = await deliverProAccessEmail(env, { email: mail, token: grant.token, planKey, host: requestHost(request), subId: sub.id, days, exp: grant.expires_at });
+            if (!delivery?.sent && !delivery?.ambiguous && delivery?.reason !== "already_delivered") emailPending = true;
+          } catch (e) {
+            emailPending = true;
+            console.log("[sg] pro access email (subscription) erreur:", String(e?.message || e).slice(0, 120));
+          }
+        } else {
+          console.log("[sg] abonnement sans email client : acces Pro accorde sans email");
+        }
+        if (!emailPending) await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
         if (event === "subscription.created") {
           try {
             ctx?.waitUntil(supa(env, "analytics_events", "POST", { event: "subscription_created", params: { plan: planKey, subscription_id: sub.id } }).catch(() => {
@@ -2781,17 +2921,13 @@ async function handleWebhook(request, env, ctx) {
           } catch (_) {
           }
         }
-        return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: true, kind: "b2b_subscription" }));
+        if (emailPending) {
+          return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: true, reasons: ["pro_email_unconfirmed"] }), { status: 409 });
+        }
+        return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: true, kind: "b2b_subscription", renewed: !!grant.renewed, delivery: delivery?.sent ? "sent" : (delivery?.reason || "skipped") }));
       }
-      // Evenement inconnu / plan inconnu : AUCUN grant, aucun marqueur (le rejeu
-      // doit rester possible si Mollie rejoue un evenement ulterivement
-      // reconnu).
       return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: ["unsupported_event"] }));
     }
-
-    // Ressource inconnue : aucun grant, aucun marqueur "traite" (le rejeu
-    // doit rester possible si Mollie rejoue un evenement ulteriellement
-    // reconnu).
     return new Response(JSON.stringify({ received: true, type: parsed.resource || "unknown", processed: false, granted: false, reasons: ["unsupported_resource"] }));
   } catch (error) {
     console.log("[sg] mollie webhook error:", String(error?.message || error).slice(0, 160));
@@ -2799,63 +2935,48 @@ async function handleWebhook(request, env, ctx) {
   }
 }
 __name(handleWebhook, "handleWebhook");
+__name2(handleWebhook, "handleWebhook");
 async function grantB2B(env, customerId, planKey, subId, days = 30, options = {}) {
+  const opts = options || {};
+  const plan = B2B_PLANS[planKey] || null;
+  const durationDays = Number(opts.days) > 0 ? Number(opts.days) : plan ? plan.interval ? 30 : 365 : Number(days) > 0 ? Number(days) : 30;
+  const email = String(opts.email || "").trim();
   const k = `mollie_grant_${subId}`;
-  // Le jeton d'acces est rendu a l'appelant : c'est lui qui doit pouvoir
-  // LIVRER l'acces au client (email + lien sur la page de retour).
-  const existingToken = await kv(env).get(k);
-  if (existingToken) return { ok: true, already: true, token: existingToken };
-  const exp = Math.floor(Date.now() / 1e3) + days * 86400;
+  const now = Math.floor(Date.now() / 1e3);
+  const tolerance = 2 * 86400;
+  const current = await supaGetChecked(env, "payment_grants", `?subscription_id=eq.${encodeURIComponent(subId)}&type=eq.b2b_pro&select=subscription_id,type,plan,customer_id,email,expires_at,granted_at&limit=1`);
+  if (!current.ok) throw new Error(`b2b_grant_verify_read_failed:${current.error}`);
+  const row = current.rows[0] || null;
+  const existingExp = row ? Math.floor((new Date(row.expires_at).getTime() || 0) / 1e3) : 0;
+  const covered = existingExp > now + tolerance;
+  const exp = covered ? existingExp : now + durationDays * 86400;
   const expiresAt = new Date(exp * 1e3).toISOString();
-  const grantedAt = (/* @__PURE__ */ new Date()).toISOString();
-
-  // P0.118 §7 — colonnes REELLES de public.payment_grants (cf.
-  // supabase/schema.sql) : subscription_id, type, plan, customer_id,
-  // expires_at, granted_at (+ metadata jsonb). Aucune colonne inventee.
-  // L'ecriture est VERIFIEE : l'ancien helper `supa` renvoyait `null` sur
-  // erreur, donc un echec d'ecriture etait indiscernable d'un succes.
-  const write = await supaExec(env, "payment_grants", "POST", {
+  const grantedAt = covered && row && row.granted_at ? String(row.granted_at) : (new Date()).toISOString();
+  const payload = {
     subscription_id: subId,
     type: "b2b_pro",
     plan: planKey,
     customer_id: customerId,
     expires_at: expiresAt,
     granted_at: grantedAt,
-    metadata: options.metadata || {}
-  });
+    metadata: opts.metadata || {}
+  };
+  const mail = email || (row ? String(row.email || "") : "");
+  if (mail) payload.email = mail;
+  const write = await supaExec(env, "payment_grants", "POST", payload, "?on_conflict=subscription_id");
   if (!write.ok) throw new Error(`b2b_grant_write_failed:${write.error}`);
-
-  // Verification du grant durable AVANT le marqueur KV.
-  const read = await supaGetChecked(env, "payment_grants", `?subscription_id=eq.${encodeURIComponent(subId)}&type=eq.b2b_pro&select=subscription_id,type,plan,customer_id,expires_at&limit=1`);
+  const read = await supaGetChecked(env, "payment_grants", `?subscription_id=eq.${encodeURIComponent(subId)}&type=eq.b2b_pro&select=subscription_id,type,plan,customer_id,email,expires_at&limit=1`);
   if (!read.ok) throw new Error(`b2b_grant_verify_read_failed:${read.error}`);
-  const row = read.rows[0];
-  if (!row) throw new Error("b2b_grant_verify_missing_row");
-  if (String(row.plan || "") !== String(planKey)) throw new Error("b2b_grant_verify_plan_mismatch");
-
-  // SEULEMENT maintenant : jeton KV d'acces.
+  const verified = read.rows[0];
+  if (!verified) throw new Error("b2b_grant_verify_missing_row");
+  if (String(verified.plan || "") !== String(planKey)) throw new Error("b2b_grant_verify_plan_mismatch");
   const token = await widgetSign(env, { plan: planKey, customer_id: customerId, subscription_id: subId, exp, type: "b2b_pro" });
-  await kv(env).put(k, token, { expirationTtl: (days + 1) * 86400 });
-  return { ok: true, token };
+  const ttl = Math.max(60, exp - now) + 86400;
+  await kv(env).put(k, token, { expirationTtl: ttl });
+  return { ok: true, token, granted: !covered, renewed: !covered && !!row, expires_at: exp, email: mail, plan: planKey };
 }
 __name(grantB2B, "grantB2B");
-/**
- * LIVRAISON de l'acces Pro apres paiement (P0 « chemin argent »).
- *
- * DEFAUT CORRIGE : le webhook CREAIT le droit (grant durable + jeton KV) mais
- * N'ENVOYAIT AUCUN email → le client payait 79 €/mois et ne recevait jamais
- * son accès. La page de retour ne portait pas non plus de lien jeton.
- *
- * REGLES :
- *   - IDEMPOTENT : un paiement n'envoie qu'UN email de livraison (marqueur KV
- *     `mollie_pro_access_<id>`). Un rejeu du webhook ne duplique rien.
- *   - HONNETE : le libelle de l'offre vient de B2B_PLANS (source de verite),
- *     jamais d'un montant ou d'une date inventee.
- *   - BEST-EFFORT : un echec d'envoi ne bloque NI le grant NI le webhook, mais il
- *     est REMONTE (livraison non confirmee) et le marqueur est libere afin
- *     qu'un rejeu puisse reessayer. En cas de resultat ambigu (le fournisseur a
- *     PU accepter le message), le marqueur est conserve : on ne reessaie pas
- *     (risque de doublon) — le lien de la page de retour reste disponible.
- */
+__name2(grantB2B, "grantB2B");
 async function deliverProAccessEmail(env, options) {
   const opts = options || {};
   const email = String(opts.email || "").trim();
@@ -2865,14 +2986,15 @@ async function deliverProAccessEmail(env, options) {
   const days = Number(opts.days) > 0 ? Number(opts.days) : 30;
   if (!email || !token) return { sent: false, reason: "missing_email_or_token" };
   if (!subId) return { sent: false, reason: "missing_subscription_id" };
-
   const domain = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
-  const markerKey = `mollie_pro_access_${subId}`;
+  const period = String(opts.exp || "").trim() || "initial";
+  const legacyMarkerKey = `mollie_pro_access_${subId}`;
+  const markerKey = `mollie_pro_access_${subId}_${period}`;
+  const legacy = await kv(env).get(legacyMarkerKey);
+  if (legacy) return { sent: false, reason: "already_delivered", marker: legacy };
   const previous = await kv(env).get(markerKey);
   if (previous) return { sent: false, reason: "already_delivered", marker: previous };
   await kv(env).put(markerKey, "pending", { expirationTtl: 400 * 86400 });
-
-  // Langue : MEME regle que la page /pro/espace/ (derivee du domaine).
   const lang = domain.includes("miami") || domain.includes("puntacana") ? "en" : domain.includes("cancun") ? "es" : "fr";
   const plan = B2B_PLANS[planKey] || null;
   const planLabel = plan ? plan.description : planKey;
@@ -2880,35 +3002,22 @@ async function deliverProAccessEmail(env, options) {
   const espaceUrl = `https://${domain}/pro/espace/?k=${encodeURIComponent(token)}`;
   const mapUrl = `https://${domain}/?k=${encodeURIComponent(token)}`;
   const title = lang === "en" ? "Your Pro access is active" : lang === "es" ? "Tu acceso Pro esta activo" : "Votre acces Pro est actif";
-  const subject = lang === "en" ? "Sargassum Pro — your access is active" : lang === "es" ? "Sargassum Pro — tu acceso esta activo" : "Sargasses Pro — votre acces est actif";
-  const lead = lang === "en" ? `Hello, your <b>${planLabel}</b> subscription is active and paid.`
-    : lang === "es" ? `Hola, tu suscripcion <b>${planLabel}</b> esta activa y pagada.`
-    : `Bonjour, votre abonnement <b>${planLabel}</b> est actif et paye.`;
-  const what = lang === "en" ? "You now have access to your Pro workspace: professional widget, sargassum alerts and beach forecasts, updated from the latest satellite observation."
-    : lang === "es" ? "Ya tienes acceso a tu espacio Pro: widget profesional, avisos de sargazo y pronosticos por playa, actualizados con la ultima observacion satelital."
-    : "Vous avez acces a votre Espace Pro : widget professionnel, alertes sargasses et previsions par plage, mis a jour avec la derniere observation satellite.";
+  const subject = lang === "en" ? "Sargassum Pro \u2014 your access is active" : lang === "es" ? "Sargassum Pro \u2014 tu acceso esta activo" : "Sargasses Pro \u2014 votre acces est actif";
+  const lead = lang === "en" ? `Hello, your <b>${planLabel}</b> subscription is active and paid.` : lang === "es" ? `Hola, tu suscripcion <b>${planLabel}</b> esta activa y pagada.` : `Bonjour, votre abonnement <b>${planLabel}</b> est actif et paye.`;
+  const what = lang === "en" ? "You now have access to your Pro workspace: professional widget, sargassum alerts and beach forecasts, updated from the latest satellite observation." : lang === "es" ? "Ya tienes acceso a tu espacio Pro: widget profesional, avisos de sargazo y pronosticos por playa, actualizados con la ultima observacion satelital." : "Vous avez acces a votre Espace Pro : widget professionnel, alertes sargasses et previsions par plage, mis a jour avec la derniere observation satellite.";
   const cta = lang === "en" ? "Open my Pro workspace" : lang === "es" ? "Abrir mi espacio Pro" : "Ouvrir mon Espace Pro";
   const cta2 = lang === "en" ? "View the map with my access" : lang === "es" ? "Ver el mapa con mi acceso" : "Voir la carte avec mon acces";
-  const renewal = recurring
-    ? (lang === "en" ? `Access valid for ${days} days, renewed automatically at each payment.`
-      : lang === "es" ? `Acceso valido ${days} dias, renovado automaticamente en cada pago.`
-      : `Acces valable ${days} jours, renouvele automatiquement a chaque paiement.`)
-    : (lang === "en" ? `Access valid for ${days} days.`
-      : lang === "es" ? `Acceso valido ${days} dias.`
-      : `Acces valable ${days} jours.`);
-  const help = lang === "en" ? "For any question, or to cancel, just reply to this email."
-    : lang === "es" ? "Para cualquier pregunta, o para cancelar, responde a este correo."
-    : "Pour toute question, ou pour resilier, repondez simplement a cet email.";
+  const renewal = recurring ? lang === "en" ? `Access valid for ${days} days, renewed automatically at each payment.` : lang === "es" ? `Acceso valido ${days} dias, renovado automaticamente en cada pago.` : `Acces valable ${days} jours, renouvele automatiquement a chaque paiement.` : lang === "en" ? `Access valid for ${days} days.` : lang === "es" ? `Acceso valido ${days} dias.` : `Acces valable ${days} jours.`;
+  const help = lang === "en" ? "For any question, or to cancel, just reply to this email." : lang === "es" ? "Para cualquier pregunta, o para cancelar, responde a este correo." : "Pour toute question, ou pour resilier, repondez simplement a cet email.";
   const html = `<div style="font-family:system-ui;max-width:540px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a;line-height:1.5"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${lead}</p><p>${what}</p><p><a href="${espaceUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 30px;border-radius:999px;text-decoration:none;font-size:16px">${cta} &rarr;</a></p><p><a href="${mapUrl}" style="color:#0d7f63;font-weight:700">${cta2}</a></p><p style="font-size:13px;color:#555">${renewal}</p><p style="font-size:13px;color:#555">${help}</p></div>`;
-
   let result = null;
   let timer = null;
   try {
     result = await Promise.race([
       sendEmail(email, subject, html, domain, env),
       new Promise((resolve) => {
-        timer = setTimeout(() => resolve({ success: false, ambiguous: true, error: "provider_timeout" }), 8000);
-      }),
+        timer = setTimeout(() => resolve({ success: false, ambiguous: true, error: "provider_timeout" }), 8e3);
+      })
     ]);
   } catch (e) {
     await kv(env).delete(markerKey);
@@ -2922,7 +3031,6 @@ async function deliverProAccessEmail(env, options) {
     return { sent: true, provider: result.provider || null };
   }
   if (result && result.ambiguous) {
-    // Le fournisseur a PU accepter le message : on ne reessaie pas (doublon).
     await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
     return { sent: false, reason: "provider_delivery_unconfirmed", ambiguous: true, provider: result.provider || null };
   }
@@ -2931,6 +3039,7 @@ async function deliverProAccessEmail(env, options) {
   return { sent: false, reason: "provider_delivery_unconfirmed", provider: result?.provider || null };
 }
 __name(deliverProAccessEmail, "deliverProAccessEmail");
+__name2(deliverProAccessEmail, "deliverProAccessEmail");
 async function grantB2C(env, paymentId, pass, email, meta, currency) {
   const k = `mol_b2c_pass_${paymentId}`;
   if (await kv(env).get(k)) return { ok: true, already: true };
@@ -2939,14 +3048,6 @@ async function grantB2C(env, paymentId, pass, email, meta, currency) {
   const expiresAt = new Date(exp * 1e3).toISOString();
   const grantedAt = (/* @__PURE__ */ new Date()).toISOString();
   const cur = String(currency || meta?.currency || "").toUpperCase() || "EUR";
-
-  // P0.118 §7 — le grant durable passe par la fonction SQL
-  // public.sg_upsert_payment_grant(...) : idempotente et atomique
-  // (ON CONFLICT (payment_id) DO NOTHING). Les 7 arguments sont EXACTS
-  // (cf. scripts/migrations/001_idempotent_payment_grant.sql).
-  // Les colonnes `session_id` / `user_id` N'EXISTENT PAS dans
-  // public.payment_grants : le POST direct de la version live echouait
-  // silencieusement. Le user_id reste dans metadata (jsonb).
   const rpc = await callPaymentGrantRpc(env, {
     paymentId,
     pass,
@@ -2957,8 +3058,6 @@ async function grantB2C(env, paymentId, pass, email, meta, currency) {
     metadata: meta || {}
   });
   if (!rpc.ok) throw new Error(`b2c_grant_rpc_failed:${rpc.error}`);
-
-  // Verification du grant durable AVANT tout marqueur KV.
   const read = await supaGetChecked(env, "payment_grants", `?payment_id=eq.${encodeURIComponent(paymentId)}&select=payment_id,type,pass,email,currency,expires_at,granted_at&limit=1`);
   if (!read.ok) throw new Error(`b2c_grant_verify_read_failed:${read.error}`);
   const row = read.rows[0];
@@ -2967,16 +3066,12 @@ async function grantB2C(env, paymentId, pass, email, meta, currency) {
   if (String(row.pass || "") !== String(pass)) throw new Error("b2c_grant_verify_pass_mismatch");
   if (String(row.email || "") !== String(email || "")) throw new Error("b2c_grant_verify_email_mismatch");
   if (String(row.currency || "").toUpperCase() !== cur) throw new Error("b2c_grant_verify_currency_mismatch");
-
-  // SEULEMENT maintenant : marqueur KV (deduplication cote Worker).
   await kv(env).put(k, JSON.stringify({ pass, email, expires_at: exp }), { expirationTtl: (days + 1) * 86400 });
   return { ok: true };
 }
 __name(grantB2C, "grantB2C");
+__name2(grantB2C, "grantB2C");
 async function grantOnboardingAuto(env, email, meta = {}) {
-  // Fail closed: the live DB CHECK accepts free/alert/dashboard/enterprise,
-  // while the existing payment contract exposes pro_monthly/brief_monthly and USD variants.
-  // No mapping or price is selected without explicit commercial approval.
   const plan = String(meta.plan || "");
   if (!B2B_PLANS[plan] || !B2B_SUBSCRIPTION_SCHEMA_PLANS.has(plan)) {
     throw new Error("b2b_plan_mapping_unapproved");
@@ -2984,6 +3079,7 @@ async function grantOnboardingAuto(env, email, meta = {}) {
   throw new Error("b2b_onboarding_requires_verified_schema_and_offer_contract");
 }
 __name(grantOnboardingAuto, "grantOnboardingAuto");
+__name2(grantOnboardingAuto, "grantOnboardingAuto");
 async function handlePartnerCommerce(request, env, ctx, path) {
   const h = cors(request);
   const url = new URL(request.url);
@@ -3141,7 +3237,9 @@ async function handlePartnerCommerce(request, env, ctx, path) {
   return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: h });
 }
 __name(handlePartnerCommerce, "handlePartnerCommerce");
+__name2(handlePartnerCommerce, "handlePartnerCommerce");
 export {
   index_default as default,
   resolveB2BWidgetRegion
 };
+//# sourceMappingURL=index.js.map

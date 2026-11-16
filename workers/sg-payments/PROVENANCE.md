@@ -194,6 +194,41 @@ avance de version par rapport au live, et aligné sur l'offre validée.**
 - `scripts/migrations/004_b2b_lead_drip_claims.sql` — colonnes de claim,
   tentatives et erreur non-PII pour le drip B2B (**préparé, non appliqué**).
 
+### §9 — Resync live v411 : offre `diagnostic_express` 49 € (branche `agent/coding/sg-payments-live-411`, base `origin/main` `9c15ab296`)
+
+**Contexte.** Le worker live déployé sur `sg-payments` (v411, SHA-256
+`351DA95108E8842B2C98B88FA68628A525B8A5E3CF8CED7D39907A514556E4D7`,
+175 082 o) intègre l'offre `diagnostic_express` (49,00 €, EUR, non récurrent)
+ainsi que les helpers de validation et fulfillment (`validateDiagnosticAmount`,
+`validatePaymentForFulfillment`, `fulfillDiagnosticOrder`, invariants P1→P6/P8).
+Le fichier du dépôt (`origin/main:workers/sg-payments/index.js`, SHA `11CD7F8E…`,
+180 083 o) est **en retard** sur le live v411 pour ce qui est de l'offre
+diagnostic. La branche de travail `agent/coding/sg-payments-live-411`
+contient le worker patché (SHA `325DF9A3…`, 188 151 o) avec les patches ci-
+dessous, **non commité, non poussé, aucun PR, aucun déploiement**.
+
+#### §9.1 — Patches appliqués au worker live v411 (diff vs `origin/main`)
+
+| Zone | Contenu | Effet |
+|---|---|---|
+| Catalogue (ligne ~58) | `DIAGNOSTIC_PRODUCTS.diagnostic_express = { amount: 49, currency: "EUR", label: "Diagnostic Sargasses Express", kind: "diagnostic_express" }` | montant 49,00 €, devise EUR, non récurrent |
+| `validateDiagnosticAmount` (ligne ~2499) | contrôle mode LIVE, statut `paid`/`settled`, montant ±0,02 € (2 ct), devise EUR, métadonnées requises (email/sector/establishment), SKU `diagnostic_express` | rejet des montants incorrects, devises non-EUR, emails invalides, mode test |
+| `validatePaymentForFulfillment` (ligne ~2257) | autorité Mollie (relit l'API, pas le corps du webhook), contrôle propriétaire, idempotence, `payment.refunded` → révocation | paiement confirmé jamais perdu ; remboursement honored |
+| `fulfillDiagnosticOrder` (ligne ~2534) | lecture commande `diagnostic_orders`, production PDF, livraison email idempotente, transitions `paid→processing→ready→delivered`, `manual_review` en cas d'échec PDF/email/Supabase | livraison unique, paiement conservé en cas d'échec |
+| Invariants P1→P6/P8 | montant vérifié, devise vérifiée, email/secteur/établissement requis, non récurrent, idempotence, pas de double livraison, pas de perte de paiement | contrat 49 € respecté |
+
+> **Aucune route, aucun binding, aucun secret, aucun prix d'autre offre, aucun plan, aucun montant scientifique et aucune logique de création de paiement existante n'ont été modifiés.**
+
+#### §9.2 — Diff live v411 ↔ `origin/main`
+
+| Élément | `origin/main` | live v411 (déployé) | branche de travail |
+|---|---|---|---|
+| SHA-256 | `11CD7F8E…` | `351DA95108E8842B2C98B88FA68628A525B8A5E3CF8CED7D39907A514556E4D7` | `325DF9A3…` (patché) |
+| Taille | 180 083 o | 175 082 o | 188 151 o |
+| `diagnostic_express` | absent | présent (49 €, EUR) | présent (49 €, EUR) |
+
+> **Rappel de déploiement** : ce code **n'est pas déployé** (aucun workflow CI ne mentionne `sg-payments` : le déploiement de ce worker reste une action manuelle et approuvée). Le merger sur `main` **ne change rien en production** tant que le worker n'est pas redéployé (`wrangler deploy --keep-vars`, jamais `--route`), et un redéploiement de la version du dépôt sans l'offre diagnostic serait une régression silencieuse de l'offre 49 €.
+
 ## Rappel de déploiement
 
 Ce code **n'est pas déployé** (aucun workflow CI ne mentionne `sg-payments` :

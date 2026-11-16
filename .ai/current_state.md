@@ -1338,3 +1338,43 @@ La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique 
 - Branche : `agent/coding/b2b-capture-ack-20261111`
 - PR : **#1412** (https://github.com/aveca/sargagame/pull/1412) — ouverte, **NON mergée**, aucun déploiement
 - Commit head : `5e742758a`
+
+## 2026-11-16 00:00 UTC · Agent: OpenCode (coding) — Parcours « Diagnostic Sargasses Express » 49 € (livré, non déployé, non mergé)
+
+### Travail effectué
+- **Résumé 1 ligne** : le parcours « Diagnostic Sargasses Express » 49,00 € TTC (commande → paiement Mollie → webhook → production PDF → livraison email) est entièrement livré et testé (38 scénarios), mais bloqué en production par 3 actions fondateur (secret Mollie LIVE, migration 009, création du checkout 49 €).
+- **Détails** :
+  - `scripts/diagnostic/lib/order-state.mjs` : machine à états pure, `validateDiagnosticPayment`, `decideDiagnosticWebhook`, `validateOrderRow`, `validateDiagnosticAmount`, `canTransition`, `nextProductionStatus`, `classifyDiagnosticKind`.
+  - `scripts/diagnostic/lib/fulfillment.mjs` : orchestration production/livraison idempotente (`fulfillOrder`).
+  - `scripts/diagnostic/lib/data-source.mjs` : `extractSnapshot`, `statusFromAfai`, seuils vigilance, fraîcheur 15 h.
+  - `scripts/diagnostic/lib/mailer.mjs` : `createMailer` (Resend, `dryRun=true` par défaut), `buildDeliveryText`, `deliveryIdempotencyKey`.
+  - `scripts/diagnostic/build-report.mjs` : production PDF (Playwright Chromium, polices embarquées).
+  - `scripts/diagnostic/create-checkout.mjs` : création checkout Mollie 49 € + commande `pending_payment` (dry-run par défaut ; `--execute` exige `--confirm-live` en mode live ; annule le paiement si l'insertion Supabase échoue).
+  - `scripts/diagnostic/fulfill-order.mjs` : CLI production/livraison d'une commande.
+  - `scripts/migrations/009_diagnostic_orders.sql` : migration commande + livraison (PK `order_id`, RLS service_role uniquement, `unique(payment_id)`, check `amount = 49.00`) — **NON appliquée**.
+  - `workers/sg-payments/index.js` : live v411 avec catalogue `diagnostic_express` {49, EUR} + garde-fous P1→P6/P8 — **non commité**.
+  - `tests/unit/diagnostic-express.test.cjs` : 38 scénarios (12 exigés + livraison unique + contrat artifact) — **38/38 OK**, aucun réseau/email/secret.
+  - `tests/unit/fixtures/diagnostic-express-snapshot.json` : fixture réelle vauclin/Pointe Faula.
+  - `.ai/runbooks/diagnostic-express-49.md` : runbook + verdict A→J NOT READY.
+  - `workers/sg-payments/PROVENANCE.md` : §9 ajouté (resync live v411, diff, patches diagnostic_express).
+- **Fichiers modifiés** : `workers/sg-payments/PROVENANCE.md` (§9), `scripts/diagnostic/` (nouveau), `scripts/migrations/009_diagnostic_orders.sql` (nouveau), `tests/unit/diagnostic-express.test.cjs` (nouveau), `tests/unit/fixtures/diagnostic-express-snapshot.json` (nouveau), `.ai/runbooks/diagnostic-express-49.md` (nouveau).
+- **Tests réalisés** :
+  - [x] `node --check` sur tous les `scripts/diagnostic/*.mjs` → exit 0
+  - [x] `node tests/unit/diagnostic-express.test.cjs` → **38/38 OK** (aucun réseau/email/secret)
+  - [x] `npm run build` → exit 0 (sync-version v221, sargassum-json, b2b-partners, vite build, stamp-sw-hash)
+  - [x] `node scripts/check-bundle-budget.cjs` → **206,9 Ko ≤ 210 Ko** gzip
+  - [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED ✓, WHITE_OR_TRANSPARENT_BUTTONS=[] ✓, RM_INFINITE=[] ✓ ; ERRORS non vide = défauts prod pré-existants (STALE_MAP_DECISION_LEAK + H1, 2026-10-26, non liés)
+  - [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → OK
+- **Problèmes restants** :
+  - [ ] **P0** Secret Worker `MOLLIE_API_KEY` désynchronisé (`/api/mollie-mode` → `api_mode: unauthorized`, 401 Mollie) → action fondateur : re-provisionner le secret (jamais via l'agent).
+  - [ ] **P0** Aucun checkout 49 € vivant (checkout client expiré, sans webhook ni metadata) → recréation nécessaire (action fondateur/autorisation).
+  - [ ] **P0** Table `diagnostic_orders` absente en prod → migration 009 à appliquer (autorisation fondateur) avant déploiement Worker.
+  - [ ] MAJ `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` (tâche `[x] done`) — **cette entrée**.
+- **Prochaine action recommandée** :
+  1. Commit ciblé + push de `agent/coding/sg-payments-live-411` + PR inspectable (jamais merger) → Rôle : coding_agent
+  2. MAJ `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` (tâche `[x] done`) → Rôle : coding_agent
+  3. Rapport final A→J : verdict NOT READY tant que secret + migration + checkout ne sont pas traités (documenté dans le runbook) → Rôle : coding_agent
+- **Branche / PR** :
+  - Branche : `agent/coding/sg-payments-live-411`
+  - PR : à créer (jamais merger)
+  - Commit head : en attente (rien n'est commité)
