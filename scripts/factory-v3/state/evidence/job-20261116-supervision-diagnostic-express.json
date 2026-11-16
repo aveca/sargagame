@@ -1,0 +1,33 @@
+{
+  "job_id": "job-20261116-supervision-diagnostic-express",
+  "repo": "sargagame",
+  "branch": "agent/coding/sg-payments-live-411",
+  "commit": "9eabf20bb",
+  "pr": 1474,
+  "ci": null,
+  "merge": null,
+  "deploy": null,
+  "live": null,
+  "baseline": "origin/main 9c15ab296",
+  "after": null,
+  "errors": [],
+  "attempts": 0,
+  "timestamps": {
+    "lastCheck": "2026-11-16T15:46:08.442Z"
+  },
+  "verdict": "BLOCKED",
+  "conditions": {
+    "mollie_live": {
+      "satisfied": false,
+      "evidence": "Mollie LIVE détecté (mode=live) mais api_mode=unauthorized — autorisation LIVE non confirmée"
+    },
+    "migration_009": {
+      "satisfied": false,
+      "evidence": "Migration 009 : fichier présent localement, application en prod NON confirmée"
+    },
+    "checkout_49": {
+      "satisfied": false,
+      "evidence": "Checkout 49 € : aucun checkout vivant détecté, confirmation opérateur absente"
+    }
+  }
+}
