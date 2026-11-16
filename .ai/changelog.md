@@ -1,3 +1,27 @@
+## 2026-11-16 — Phase 0.7 : diagnostic prouvé de la PR #1473 (incident GitGuardian + cause racine de l'absence de CI)
+
+**Deux blocages de la PR #1473 sont maintenant diagnostiqués avec preuves (aucun changement produit).**
+
+**1. GitGuardian — le faux positif est corrigé à HEAD, l'incident reste ouvert (action fondateur).**
+- Le check a bien re-evalué après le push (`started_at=2026-11-16T00:47:48Z`) et reste `FAILURE`.
+- Cause : GitGuardian scanne les **23 commits de la PR** et conserve l'incident ouvert `40122732` (occurrence `312829875`) rattaché au commit historique `be433e8e`.
+- Preuve de la correction : `scryptSync(passphrase, KDF_CONTEXT, 32)` → `inline_scrypt=false` sur HEAD (`78167e1d`) contre `true` sur `be433e8e` et `b59a84d5`. Le littéral n'est plus en position d'argument crypto.
+- Remédiation retenue : **résoudre l'incident 40122732 en « faux positif » dans le dashboard GitGuardian (workspace 929969)** — 1 action, sans réécriture d'historique. Le rebase/force-push qui supprimerait l'occurrence est **interdit par le contrat** (jamais de force-push) et soumis à validation.
+- Note : `ggshield` 1.56.1 a été installé pour un scan local de contre-épreuve, mais **exige une clé API GitGuardian** (absente de l'environnement) → contre-épreuve non exécutée, non simulée.
+
+**2. CI de la PR — cause racine PROUVÉE : la PR est CONFLICTING, pas un bug de déclencheur.**
+- `gh api .../check-suites` sur le head `78167e1d` : **9 check-suites, ZERO `github-actions`** (uniquement des Apps : vercel, supabase, cursor, gitguardian…).
+- Témoin PR #1472 (même auteur, même base) : **2 suites `github-actions` → completed/success**.
+- PR #1473 : `mergeable=CONFLICTING`, `mergeStateStatus=DIRTY` → GitHub ne peut pas créer le ref de merge → **aucun workflow `pull_request` ne démarre**. Corrélation confirmée sur les 12 dernières PR (celles non conflictuelles ont toutes la CI).
+- Permissions Actions du repo saines (`actions/permissions` → `enabled: true`, `allowed_actions: all`) ; `ci-tests.yml` sur `main` déclenche bien `pull_request: branches: [main]`.
+- **Conséquence : la CI de #1473 se débloque mécaniquement par le réalignement sur `main`** — le même arbitrage que le risque money-path.
+
+**3. Réalignement — risque chiffré, non exécuté.**
+- `git merge-tree` → **7 fichiers en conflit** : `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`, `public/api/mollie-webhook.php` ⚠️ money-path, `scripts/automation/backfill-mollie-grants.cjs` ⚠️ add/add, `tests/unit/mollie-live-gate.test.cjs`, `workers/sargagame/index.js` ⚠️ money-path.
+- Divergence sur ces 7 fichiers : `main` +2923/-135 vs branche +2556/-41 (côté `main` : `mollie-webhook.php` +284, `workers/sargagame/index.js` +426).
+- **Aucun merge, aucun force-push, aucun déploiement.** L'arbitrage reste une décision fondateur.
+
+---
 ## 2026-11-16 — Phase 0.7 : clôture de la branche fix/phase-0.7-mollie-supabase (tests réalignés + GitGuardian corrigé)
 
 **Clôture de la PR #1473 (Phase 0.7 — encaissements hôteliers).**

@@ -35,15 +35,16 @@
 - [x] `node --check scripts/secret-manager.mjs` → OK.
 
 ### Problèmes restants
-- [ ] **PR #1473 GitGuardian** : le check se ré-évalue au push (le faux positif est corrigé localement ; le statut distant doit être revérifié).
-- [ ] **PR #1473 à 618 commits derrière `origin/main`** : le réalignement (merge `main`) est une décision à valider — risque money-path + déploiement automatique au merge sur `main`. **Non exécuté.**
+- [ ] **PR #1473 GitGuardian — action fondateur requise** : le faux positif est **corrigé à HEAD** (`scryptSync(passphrase, KDF_CONTEXT, 32)` — le littéral n'est plus en position d'argument crypto ; vérifié : `inline_scrypt=false` sur HEAD vs `true` sur `be433e8e` et `b59a84d5`). Le check a bien re-evalué après le push (`started_at=2026-11-16T00:47:48Z`) mais reste **FAILURE** : GitGuardian scanne les 23 commits de la PR et **conserve l'incident ouvert** `40122732` (occurrence `312829875`) attaché au commit historique `be433e8e`. **Remédiation = résoudre l'incident 40122732 en « faux positif » dans le dashboard GitGuardian (workspace 929969)** — 1 action, sans réécriture d'historique. Un `force-push` / rebase serait nécessaire pour supprimer l'occurrence : **interdit par le contrat et soumis à validation**.
+- [ ] **PR #1473 à 618 commits derrière `origin/main` — réalignement soumis à validation** : le réalignement est **non trivial et touche le money-path**. `git merge-tree` → **7 fichiers en conflit** : `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`, `public/api/mollie-webhook.php` ⚠️, `scripts/automation/backfill-mollie-grants.cjs` ⚠️ (add/add), `tests/unit/mollie-live-gate.test.cjs`, `workers/sargagame/index.js` ⚠️. Divergence sur ces 7 fichiers : `main` +2923/-135 vs branche +2556/-41 (notamment `mollie-webhook.php` +284 et `workers/sargagame/index.js` +426 côté `main`). **Aucun merge effectué.**
 - [ ] **Secrets manquants (action fondateur, non contournable)** : `SUPABASE_SERVICE_KEY` (absent → `mol_supabase_mirror` skip silencieux + `verify_subscription` → `lookup_failed`), `MOLLIE_API_KEY`, `MOLLIE_WEBHOOK_SECRET` (webhook fail-closed 503), `RESEND_API_KEY`, clé Stripe legacy. Voir la checklist P3 dans `.ai/bugs.md`.
-- [ ] **CI de la PR** : `ci-tests.yml` déclenche bien sur `pull_request: branches:[main]`, mais aucun run n'est visible pour la branche — cause non tranchée.
+- [x] **CI de la PR — cause racine PROUVÉE** : ce n'est **pas** un bug de déclencheur ni de permissions. La PR #1473 est `mergeable=CONFLICTING` / `mergeStateStatus=DIRTY` → GitHub ne peut pas créer le ref de merge → **aucun workflow `pull_request` ne démarre** (9 check-suites sur le head, **zéro** `github-actions` ; à comparer avec PR #1472 = 2 suites `github-actions` vertes). Permissions Actions du repo saines (`actions/permissions` → `enabled: true`, `allowed_actions: all`) ; `ci-tests.yml` sur `main` déclenche bien `pull_request: branches: [main]`. Les 12 autres PRs non conflictuelles ont toutes la CI. **Conséquence : la CI de #1473 se débloque mécaniquement par le réalignement sur `main`** — c'est le même arbitrage que ci-dessus.
 
 ### Prochaine action recommandée
-1. Poser les 5 secrets côté fondateur via `scripts/secret-manager.mjs` (jamais en clair dans Git), puis rejouer `node tests/unit/b2b-payment-flow.test.cjs` + `tests/unit/supabase-availability.test.cjs` — Rôle : security_agent + fondateur.
-2. Vérifier le statut GitGuardian de la PR #1473 après le push de ce commit — Rôle : devops_agent.
-3. Décider du réalignement de la PR #1473 sur `main` (618 commits) — **validation requise** — Rôle : fondateur.
+1. **Résoudre l'incident GitGuardian 40122732 en « faux positif »** dans le dashboard (workspace 929969) — c'est la seule voie sans réécriture d'historique — Rôle : fondateur.
+2. **Poser les 5 secrets** via `scripts/secret-manager.mjs` (jamais en clair dans Git), puis rejouer `node tests/unit/b2b-payment-flow.test.cjs` + `tests/unit/supabase-availability.test.cjs` — Rôle : security_agent + fondateur.
+3. **Décider du réalignement de la PR #1473 sur `main`** (618 commits, 7 fichiers en conflit dont le money-path) — **validation requise** ; ce réalignement débloque aussi la CI de la PR (les workflows `pull_request` ne démarrent pas sur une PR conflictuelle) — Rôle : fondateur.
+4. Vérifier qu'aucun run Actions n'apparaît sur #1473 après le réalignement (le merge ref redevient créable) — Rôle : devops_agent.
 
 ### Branche / PR
 - Branche : `fix/phase-0.7-mollie-supabase`
