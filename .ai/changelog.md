@@ -1,3 +1,22 @@
+## 2026-11-16 17:00 UTC - TASK-P0-009 : corrections Diagnostic Express 49 € (migration 009, webhook, lib) commit 21b27d651
+
+- `scripts/migrations/009_diagnostic_orders.sql` : réécriture complète — colonnes alignées sur le code (`order_id`, `payment_id`, `client_email`, `amount`, `currency`, `metadata`, `paid_at`, `client_name`, `contact_name`, `establishment`, `sector`, `island`, `mollie_mode`, `mollie_checkout_url`, `ready_at`, `document_path`, `document_sha256`, `observation_ts`, `observation_source`, `data_age_minutes`, `error`, `delivered_at`) ; table `diagnostic_deliveries` ajoutée ; contraintes CHECK `amount = 4900` / `currency = 'EUR'` ; `unique(payment_id)` ; RLS service_role uniquement — NON appliqué en prod.
+- `public/api/mollie-webhook.php` : bloc `offerKind === 'diagnostic_express'` ajouté — PATCH `diagnostic_orders` en `paid` + `paid_at`, réponse JSON, idempotent via transient.
+- `public/api/mollie-lib.php` : fonction `mol_supabase_patch()` ajoutée (PATCH REST Supabase, best-effort, ne lève jamais).
+- Gate de ship local : `php -l` OK (2 fichiers) · `node --check` OK (tous les scripts diagnostic) · `npm run build` exit 0 · budget bundle **206,9/210 Ko** gzip · tests diagnostic **38/38 OK**.
+- Commit `21b27d651` sur `agent/coding/sg-payments-live-411`, poussé sur origin.
+- Verdict : **NOT READY** — 3 blocages fondateur P0 en attente (secret Mollie LIVE, migration 009, checkout 49 €). Aucun déploiement / merge / paiement / email déclenché.
+
+## 2026-11-16 16:30 UTC - TASK-P0-009 : commit + push module de reprise conditionnelle Diagnostic Express 49 €
+
+- `scripts/factory-v3/conditional-resume.cjs` : correction bug HTTPS (sélection client http/https par scheme) ; 3 checks non destructifs (Mollie LIVE, migration 009, checkout 49 €) ; écriture signal de reprise + evidence ; aucun déploiement/merge/paiement/email.
+- `scripts/factory-v3/run.cjs` : import du module, `checkResumeSignal()`, `runConditionalResumeCycle()`, pré-check bloquant dans `processJob` (job PARKED si conditions non réunies).
+- `scripts/migrations/009_diagnostic_orders.sql` : schéma idempotent `diagnostic_orders` (PK, RLS service_role uniquement, `unique(payment_id)`, check `amount = 49.00`) — NON appliqué.
+- `scripts/factory-v3/test/conditional-resume.test.cjs` : 7 scénarios de simulation (pas de réseau/secret/paiement).
+- Gate de ship local : `node --check` OK · `require()` OK · `npm run build` exit 0 · bundle **209.2/210 Ko** gzip · tests **7/7** OK · `--check --verbose` → BLOCKED correct.
+- Commit `92aa0e12c` sur `agent/coding/sg-payments-live-411`, poussé sur origin.
+- Verdict : **NOT READY** — 3 blocages fondateur P0 en attente (secret Mollie LIVE, migration 009, checkout 49 €). Aucun déploiement / merge / paiement / email déclenché.
+
 ## 2026-11-16 00:00 UTC - Parcours « Diagnostic Sargasses Express » 49 € (livré, non déployé, non mergé)
 
 - **Livrable** : parcours commande → paiement Mollie → webhook → production PDF → livraison email pour Village de la Pointe / Pointe Faula (Martinique), offre `diagnostic_express` **49,00 € TTC**, EUR, non récurrent.

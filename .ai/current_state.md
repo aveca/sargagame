@@ -1,3 +1,32 @@
+## 2026-11-16 17:00 UTC · Agent: OpenCode (coding) — TASK-P0-009 Diagnostic Express 49 € corrections + commit 21b27d651
+
+### Travail effectué
+- **Résumé 1 ligne** : migration 009 réécrite (schéma aligné sur le code + table diagnostic_deliveries), `mol_supabase_patch()` ajouté à mollie-lib.php, bloc `diagnostic_express` ajouté à mollie-webhook.php ; commit `21b27d651` poussé sur `agent/coding/sg-payments-live-411` ; Gate de ship vert ; verdict NOT READY (3 blocages fondateur non levés).
+- **Détails** :
+  - `scripts/migrations/009_diagnostic_orders.sql` : colonnes alignées exactement sur le code existant (`order_id`, `payment_id`, `client_email`, `amount`, `currency`, `metadata`, `paid_at`, `client_name`, `contact_name`, `establishment`, `sector`, `island`, `mollie_mode`, `mollie_checkout_url`, `ready_at`, `document_path`, `document_sha256`, `observation_ts`, `observation_source`, `data_age_minutes`, `error`, `delivered_at`) — remplace l'ancien schéma incohérent (`id`, `mollie_payment_id`, `customer_email`, `amount_cents`) ; table `diagnostic_deliveries` ajoutée (référencée par fulfillment.mjs) ; contraintes CHECK `amount = 4900` / `currency = 'EUR'` ; `unique(payment_id)` ; RLS service_role uniquement.
+  - `public/api/mollie-webhook.php` : bloc `offerKind === 'diagnostic_express'` ajouté (PATCH `diagnostic_orders` en `paid` + `paid_at`, réponse JSON, idempotent via transient) — repli PHP pour les domaines ne passant pas par le Worker sg-payments.
+  - `public/api/mollie-lib.php` : fonction `mol_supabase_patch()` ajoutée (PATCH REST Supabase, best-effort, ne lève jamais, filtre sur URL).
+- **Fichiers modifiés** : `scripts/migrations/009_diagnostic_orders.sql`, `public/api/mollie-webhook.php`, `public/api/mollie-lib.php`.
+- **Tests réalisés** : `php -l` OK sur les 2 fichiers PHP ; `node --check` OK sur tous les scripts `scripts/diagnostic/` ; `node tests/unit/diagnostic-express.test.cjs` → 38/38 OK ; `npm run build` exit 0 ; budget bundle **206,9 Ko ≤ 210 Ko** gzip ; `git diff --check` exit 0.
+- **Problèmes restants** : 3 blocages fondateur P0 (TASK-P0-009) : (1) `MOLLIE_API_KEY` LIVE non provisionné → `api_mode: unauthorized` (401 sur `/api/mollie-mode`), (2) migration 009 non appliquée en prod (table `diagnostic_orders` absente), (3) aucun checkout 49 € vivant (checkout expiré/inexistant, pas de webhook, pas de metadata). Aucun déploiement / merge / paiement / email déclenché.
+- **Prochaine action recommandée** : fondateur lève les 3 blocages P0 → recréer checkout 49 € → appliquer migration 009 → déployer `sg-payments` live → exécuter le runbook étape A→H.
+- **Branche / PR** : Branche : `agent/coding/sg-payments-live-411` ; Commit : `21b27d651` ; Push : OK sur origin ; PR : à créer (jamais merger).
+
+## 2026-11-16 16:30 UTC · Agent: OpenCode (coding) — TASK-P0-009 Diagnostic Express 49 € commit + push
+
+### Travail effectué
+- **Résumé 1 ligne** : module de reprise conditionnelle (conditional-resume.cjs) + pré-check run.cjs + migration 009 committés et poussés sur `agent/coding/sg-payments-live-411` (SHA 92aa0e12c) ; Gate de ship vert ; verdict NOT READY (3 blocages fondateur).
+- **Détails** :
+  - `scripts/factory-v3/conditional-resume.cjs` : sélection client HTTP par scheme (http/https) — correction du bug `http.get` sur URL `https://` ; 3 checks non destructifs (Mollie LIVE, migration 009, checkout 49 €) ; écriture signal de reprise + evidence ; aucun déploiement/merge/paiement/email.
+  - `scripts/factory-v3/run.cjs` : import du module, `checkResumeSignal()`, `runConditionalResumeCycle()`, pré-check bloquant dans `processJob` avant le pipeline git/build/test/deploy (job PARKED si conditions non réunies).
+  - `scripts/migrations/009_diagnostic_orders.sql` : schéma idempotent table `diagnostic_orders` (à appliquer en prod uniquement après autorisation fondateur).
+  - `scripts/factory-v3/test/conditional-resume.test.cjs` : 7 scénarios de simulation (pas de réseau/secret/paiement).
+- **Fichiers modifiés** : `scripts/factory-v3/conditional-resume.cjs`, `scripts/factory-v3/run.cjs`, `scripts/migrations/009_diagnostic_orders.sql`, `scripts/factory-v3/test/conditional-resume.test.cjs`.
+- **Tests réalisés** : `node --check` OK (2 fichiers) · `require()` OK · `npm run build` exit 0 · budget bundle 209.2/210 Ko gzip · `node scripts/factory-v3/test/conditional-resume.test.cjs` → 7/7 OK · `conditional-resume.cjs --check --verbose` → BLOCKED correct (3 conditions non satisfaites).
+- **Problèmes restants** : 3 blocages fondateur P0 (TASK-P0-009) : (1) `MOLLIE_API_KEY` LIVE désynchronisé → `api_mode: unauthorized`, (2) migration 009 non appliquée en prod, (3) aucun checkout 49 € vivant. Aucun déploiement / merge / paiement / email déclenché.
+- **Prochaine action recommandée** : fondateur lève les 3 blocages P0 → recréer checkout 49 € → appliquer migration 009 → déployer `sg-payments` live → tester parcours réel 49 €.
+- **Branche / PR** : Branche : `agent/coding/sg-payments-live-411` ; Commit : `92aa0e12c` ; Push : OK sur origin ; PR : à créer (jamais merger).
+
 ## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
 
 ### Travail effectué
