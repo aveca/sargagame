@@ -24,18 +24,24 @@
       "zone": "Le Diamant",
       "beach": "Anse Diamant",
       "beach_id": "mq016",
-      "website": "https://www.diamant-les-bains.fr/",
+      "website": "https://diamant-les-bains.fr/",
       "email": "[NON VÉRIFIÉ] contact@diamant-les-bains.fr",
       "phone": "[NON VÉRIFIÉ]",
-      "verified": false,
-      "qualification_score": 0,
+      "verified": true,
+      "qualification_score": 4,
       "commercial_potential": "high",
-      "status": "identified",
-      "next_action": "Vérifier site officiel + coordonnées",
+      "status": "qualified",
+      "next_action": "Préparer message de prospection personnalisé",
       "next_action_date": "2026-11-17",
       "notes": "Preview partner dans b2b-partners.json. Hôtel 3* bord de mer. Rocher du Diamant = attraction touristique majeure.",
       "personalized_proposal": "Diagnostic Sargasses Express pour l'Anse Diamant : prévision 7 jours, données satellite réelles, recommandations pour la gestion des sargasses sur votre front de mer.",
-      "source": "sargagame b2b-partners.json (preview)"
+      "source": "sargagame b2b-partners.json (preview)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:03.861Z",
+        "website_status": "reachable",
+        "website_code": 200,
+        "website_reachable": true
+      }
     },
     {
       "id": "MQ-002",
@@ -49,15 +55,21 @@
       "website": "https://anoli-lodges.com",
       "email": "[NON VÉRIFIÉ] contact@anoli-lodges.com",
       "phone": "[NON VÉRIFIÉ]",
-      "verified": false,
-      "qualification_score": 0,
+      "verified": true,
+      "qualification_score": 3,
       "commercial_potential": "medium",
-      "status": "identified",
-      "next_action": "Vérifier site officiel + coordonnées",
-      "next_action_date": "2026-11-17",
+      "status": "qualified",
+      "next_action": "Préparer message de prospection personnalisé",
+      "next_action_date": "2026-11-18",
       "notes": "Preview partner. Lodges au calme, 5 min de la Plage des Salines (l'une des plus belles de Martinique).",
       "personalized_proposal": "Diagnostic pour la Plage des Salines : état actuel + prévision 7 jours + recommandations pour informer vos locataires.",
-      "source": "sargagame b2b-partners.json (preview)"
+      "source": "sargagame b2b-partners.json (preview)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "reachable",
+        "website_code": 200,
+        "website_reachable": true
+      }
     },
     {
       "id": "MQ-003",
@@ -79,7 +91,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* bien connu à Trois-Îlets. Bord de mer, zone touristique majeure.",
       "personalized_proposal": "Diagnostic pour l'Anse Mitan : prévision 7 jours pour anticiper les échouages et informer vos clients.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-004",
@@ -101,7 +119,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* à Trois-Îlets, zone touristique. Même plage que Bakoua (Anse Mitan).",
       "personalized_proposal": "Diagnostic pour l'Anse Mitan : prévision 7 jours, alertes si bascule, recommandations pour votre équipe.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-005",
@@ -123,7 +147,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 3* à Trois-Îlets. Bord de mer.",
       "personalized_proposal": "Diagnostic pour l'Anse Mitan : évaluation complète de la plage pour anticiper les échouages.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-006",
@@ -145,7 +175,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* à Tartane (presqu'île de la Caravelle). Zone moins touristique mais plage attractive.",
       "personalized_proposal": "Diagnostic pour l'Anse Tartane : prévision 7 jours pour une plage moins surveillée mais appréciée des touristes.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-007",
@@ -167,7 +203,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* au François. Pas directement bord de mer mais zone touristique.",
       "personalized_proposal": "Diagnostic pour la Baie du François : prévision 7 jours pour informer vos clients.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-008",
@@ -189,7 +231,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 5* au François, proche de la Pointe Faula (plage du Diagnostic Express). Cible idéale pour le diagnostic 49 €.",
       "personalized_proposal": "Diagnostic Sargasses Express pour la Pointe Faula : le rapport est conçu pour cette plage spécifique. Prévision 7 jours, données satellite, recommandations.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-009",
@@ -211,7 +259,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* à Sainte-Marie. Zone moins touristique (côte atlantique).",
       "personalized_proposal": "Diagnostic pour votre plage : prévision 7 jours et recommandations.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "MQ-010",
@@ -233,7 +287,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Grand resort international. Décision centralisée (siège). Contact difficile mais volume élevé.",
       "personalized_proposal": "Partenariat Sargasses Pro pour le Club Med Les Boucaniers : brief quotidien + alertes + diagnostic pour la Plage des Salines.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-001",
@@ -255,7 +315,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* au Gosier, zone touristique principale de Guadeloupe.",
       "personalized_proposal": "Diagnostic pour la Plage de la Datcha : prévision 7 jours et recommandations.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-002",
@@ -277,7 +343,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 3* au Gosier. Bord de mer.",
       "personalized_proposal": "Diagnostic pour la Plage de la Datcha : évaluation complète.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-003",
@@ -299,7 +371,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 4* à Trois-Rivières. Zone moins touristique mais charme.",
       "personalized_proposal": "Diagnostic pour votre plage : prévision 7 jours.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-004",
@@ -321,7 +399,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 5* à Sainte-Anne. Plage de Bois Jolan. Cible premium.",
       "personalized_proposal": "Diagnostic premium pour la Plage de Bois Jolan : prévision 7 jours + recommandations pour votre clientèle haut de gamme.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-005",
@@ -343,7 +427,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 3* à Sainte-Anne. Zone touristique.",
       "personalized_proposal": "Diagnostic pour votre plage : prévision 7 jours.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-006",
@@ -365,7 +455,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Resort au Gosier. Bord de mer. Clientèle internationale.",
       "personalized_proposal": "Diagnostic pour la Plage de la Datcha : prévision 7 jours pour anticiper les échouages.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-007",
@@ -387,7 +483,13 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 3* au Gosier. Bord de mer.",
       "personalized_proposal": "Diagnostic pour la Plage de la Datcha : évaluation complète.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     },
     {
       "id": "GP-008",
@@ -409,13 +511,19 @@
       "next_action_date": "2026-11-17",
       "notes": "Hôtel 3* à Saint-François. Zone touristique, marina.",
       "personalized_proposal": "Diagnostic pour la Plage de Saint-François : prévision 7 jours.",
-      "source": "Connaissance publique (non vérifié)"
+      "source": "Connaissance publique (non vérifié)",
+      "_verification": {
+        "checked_at": "2026-11-16T21:35:05.648Z",
+        "website_status": "no_url",
+        "website_code": null,
+        "website_reachable": false
+      }
     }
   ],
   "summary": {
     "total": 18,
-    "verified": 0,
-    "qualified": 0,
+    "verified": 2,
+    "qualified": 2,
     "to_contact": 0,
     "contacted": 0,
     "response_received": 0,
