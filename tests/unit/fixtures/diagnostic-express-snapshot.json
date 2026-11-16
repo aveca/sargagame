@@ -1,0 +1,39 @@
+{
+  "source": "erddap-live",
+  "pipelineVersion": "3.1",
+  "erddapTimestamp": "2026-11-09T12:00:00Z",
+  "updatedAt": "2026-11-10T01:24:41.907Z",
+  "dataAgeMinutes": 805,
+  "stale": false,
+  "levels": [
+    {
+      "id": "vauclin",
+      "afai": 0.06,
+      "status": "clean",
+      "confidence": 75,
+      "source": "erddap-satellite",
+      "sourceDetail": "combined-710near-4101off",
+      "h2s": { "score": 0, "level": "low", "signals": { "mass": 0.06, "consecDays": 0, "sheltered": false, "windSpeed": null, "vol": 0, "rot": 0, "trap": 0 } },
+      "score": 88,
+      "label": "EXCEPTIONNEL",
+      "color": "#00B086",
+      "reason": "Zéro sargasses, eau chaude, ciel dégagé.",
+      "breakdown": { "sargassum": 30, "wave": 17, "wind": 13, "sst": 10, "cloud": 10, "uv": 5, "tide": 3 }
+    }
+  ],
+  "weekly": {
+    "vauclin": {
+      "drift": "stable",
+      "driftLabel": "Stable",
+      "forecast": [
+        { "day": "Auj.", "date": "2026-11-10", "afai": 0.06, "status": "clean", "confidence": 75, "type": "observation", "regime": "calm", "sources": ["satellite"] },
+        { "day": "Dem.", "date": "2026-11-11", "afai": 0.05, "status": "clean", "confidence": 68, "type": "tendance", "regime": "calm", "sources": ["persistence", "wind", "satellite-trend"] }
+      ]
+    }
+  },
+  "scores": {
+    "vauclin": { "score": 88, "label": "EXCEPTIONNEL", "reason": "Zéro sargasses, eau chaude, ciel dégagé.", "breakdown": { "sargassum": 30, "wave": 17, "wind": 13, "sst": 10, "cloud": 10, "uv": 5, "tide": 3 } }
+  },
+  "weather": { "mq": { "wind_speed": 5.2, "sst": 29.6, "wave_height": 0.42 } },
+  "seasonOutlook": "saison sèche, risque faible"
+}
