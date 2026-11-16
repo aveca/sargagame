@@ -1,3 +1,18 @@
+## 2026-11-16 · Agent: OpenCode (coding) — Phase 2 : intégration conditional-resume dans Factory V3 (run.cjs)
+
+### Travail effectué
+- **Résumé 1 ligne** : `conditional-resume.cjs` est maintenant consommé par `run.cjs` dans la boucle continue Factory V3 : `checkResumeSignal()` détecte le passage BLOCKED→READY via `resume-signal.json`, `runConditionalResumeCycle()` appelle `runCheck()` chaque cycle, anti-double-déclenchement par `lastResumeSignalTimestamp`, le job passe en READY sans déployer/merger/payer/envoyer d'email.
+- **Détails** :
+  - `scripts/factory-v3/run.cjs` : import de `conditional-resume.cjs` (bibliothèque, pas de verrou côté run.cjs), constantes `RESUME_SIGNAL_FILE` et `lastResumeSignalTimestamp`, fonctions `checkResumeSignal()` et `runConditionalResumeCycle()`, câblage au début de `runContinuous()`.
+  - `checkResumeSignal()` lit `state/resume-signal.json`, retourne `{ signal, isNew }` où `isNew` compare le timestamp avec `lastResumeSignalTimestamp`.
+  - `runConditionalResumeCycle()` appelle `conditionalResume.runCheck()`, puis `checkResumeSignal()`. Si signal READY nouveau → met à jour `lastResumeSignalTimestamp`, log le signal et les 3 conditions, retourne `isNew: true`.
+  - Dans `runContinuous()` : en début de chaque cycle `while(true)`, `runConditionalResumeCycle()` est appelé. Si `isNew` → `setJobState({ status: 'READY', ... })` + log. Aucun déploiement/merge/paiement/email automatique.
+- **Fichiers modifiés** : `scripts/factory-v3/run.cjs` (+70 lignes).
+- **Tests réalisés** : `node --check scripts/factory-v3/run.cjs` → exit 0 ; `scripts/factory-v3/test/conditional-resume.test.cjs` → 7/7 OK ; bundle budget 206,9 Ko ≤ 210 Ko ; import du module sans erreur d'exécution.
+- **Problèmes restants** : 3 blocages fondateur non levés (secret Mollie LIVE `api_mode: unauthorized`, migration 009 non appliquée, checkout 49 € non vivant) → verdict NOT READY persiste. Aucun `resume-signal.json` ne sera généré tant que les conditions ne sont pas réunies.
+- **Prochaine action recommandée** : Phase 3 — test de contrôle de session (session ouverte → Factory identifie → transmet instruction → session exécute tâche locale non destructive → Factory vérifie → deuxième tâche sans intervention humaine).
+- **Branche / PR** : Branche : `agent/coding/factory-v3-conditional-resume-integration` ; Commit head : `7d7c92b7b` ; PR : non créée (branche de travail, pas de PR nécessaire pour cette phase).
+
 ## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
 
 ### Travail effectué

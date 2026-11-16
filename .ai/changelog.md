@@ -1,3 +1,12 @@
+## 2026-11-16 - Phase 2 : intégration conditional-resume dans Factory V3 (run.cjs)
+
+- `scripts/factory-v3/run.cjs` : import de `conditional-resume.cjs` comme bibliothèque (`runCheck()` sans verrou, safe depuis l'orchestrateur) ; ajout de `checkResumeSignal()` (lecture de `state/resume-signal.json`, détection du passage BLOCKED→READY par comparaison de timestamp) et `runConditionalResumeCycle()` (appel périodique de `runCheck()` dans la boucle continue) ; anti-double-déclenchement via `lastResumeSignalTimestamp` ; câblage dans `runContinuous()` — en début de cycle, si un signal READY nouveau est détecté, le job passe en état `READY` avec la tâche « Diagnostic Express 49 € — en attente autorisation fondateur ». Aucun déploiement, merge, paiement ou email n'est déclenché automatiquement ; l'opérateur fondateur doit autoriser explicitement chaque opération sensible.
+- Tests : `scripts/factory-v3/test/conditional-resume.test.cjs` → 7/7 OK ; `node --check scripts/factory-v3/run.cjs` exit 0 ; bundle budget 206,9 Ko ≤ 210 Ko.
+- Branche : `agent/coding/factory-v3-conditional-resume-integration` (commit `7d7c92b7b`, poussée sur origin).
+- **NON ACTIVÉ / BLOQUÉ** : aucun déploiement, aucun paiement, aucun email, aucun secret, aucune migration appliquée, aucun checkout 49 € créé.
+
+---
+
 ## 2026-11-16 00:00 UTC - Parcours « Diagnostic Sargasses Express » 49 € (livré, non déployé, non mergé)
 
 - **Livrable** : parcours commande → paiement Mollie → webhook → production PDF → livraison email pour Village de la Pointe / Pointe Faula (Martinique), offre `diagnostic_express` **49,00 € TTC**, EUR, non récurrent.
