@@ -459,8 +459,40 @@
     "rivieramaya.com": {
       "date": "2026-11-10T17:41:19.948Z",
       "status": "no-email"
+    },
+    "mahekal.com": {
+      "date": "2026-11-17T19:07:55.778Z",
+      "status": "no-email"
+    },
+    "lasalandra.com.mx": {
+      "date": "2026-11-17T19:07:56.266Z",
+      "status": "no-email"
+    },
+    "bemextourism.com": {
+      "date": "2026-11-17T19:07:56.521Z",
+      "status": "no-email"
+    },
+    "cancun.travel": {
+      "date": "2026-11-17T19:07:57.072Z",
+      "status": "no-email"
+    },
+    "solbeachhouse.com": {
+      "date": "2026-11-17T19:07:57.453Z",
+      "status": "no-email"
+    },
+    "puntacana.com": {
+      "date": "2026-11-17T19:08:03.759Z",
+      "status": "no-email"
+    },
+    "hardrockhotelpuntacana.com": {
+      "date": "2026-11-17T19:08:05.430Z",
+      "status": "no-email"
+    },
+    "bahiaprincipe.com": {
+      "date": "2026-11-17T19:08:10.002Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-11-10T17:41:19.948Z",
+  "lastRun": "2026-11-17T19:08:10.002Z",
   "totalSent": 11
 }
