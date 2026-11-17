@@ -1,10 +1,10 @@
 {
   "window_days": 90,
-  "since": "2026-08-19T07:26:47.114Z",
-  "total_rows": 11,
-  "included_rows": 9,
+  "since": "2026-08-19T15:17:18.748Z",
+  "total_rows": 4,
+  "included_rows": 2,
   "counts": {
-    "trials": 9,
+    "trials": 2,
     "activated": 0,
     "paid": 0,
     "rejected": 0
@@ -20,7 +20,7 @@
   "rejected_examples": [],
   "by_island": {
     "MQ": {
-      "trials": 9,
+      "trials": 2,
       "activated": 0,
       "paid": 0
     }
