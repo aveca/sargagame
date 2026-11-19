@@ -1,4 +1,19 @@
 ﻿
+## 2026-11-19 - coding_agent (OpenCode) · TASK-P2-002 · PR #1480 · branche agent/growth/TASK-P2-002 · commit 11f8ac50d
+
+**Exposer le CTA Brief 29 EUR/mois sur /pro/pricing (FR + EN/ES).**
+
+- `public/pro/pricing/index.html` (FR) : carte plan Brief (29 EUR/mois) + CTA ghost vers /pro/espace/, essai 30j via /api/b2b-trial.php
+- `public/pro/en/pricing/index.html` (EN) : idem ($29/month)
+- `public/pro/es/pricing/index.html` (ES) : idem ($29/mes)
+- Pas de JS eager ajouté → budget bundle inchangé (210.0 Ko ≤ 210 Ko gzip)
+- `npm run build` exit 0, `ux-smoke.mjs` 4 tokens OK
+- Prix/paiement/secrets inchangés, pas de modification checkout
+
+Déploiement production BLOQUÉ (ERDDAP stale) — PR non-déployé.
+
+---
+
 ## 2026-11-19 - coding_agent (OpenCode) · TASK-P1-012 · PR #1479 · branche agent/coding/TASK-P1-012
 
 **Form capture leads B2B sur landing hôtelière (FR + EN/ES).**

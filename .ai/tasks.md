@@ -93,7 +93,7 @@
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [~] TASK-P2-002 — in_progress by coding_agent
+- **Statut** : [x] TASK-P2-002 — done by coding_agent (@growth_agent, 2026-11-19, branche agent/growth/TASK-P2-002, PR #1480, commit 11f8ac50d). Deploiement prod bloque par ERDDAP stale — PR non-deploye.
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2

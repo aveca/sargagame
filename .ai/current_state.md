@@ -1,4 +1,41 @@
 
+## 2026-11-19 19:15 UTC · Agent: coding_agent (OpenCode) · TASK-P2-002 (exposer CTA Brief mensuel sur /pro/pricing)
+
+### Travail effectué
+
+**Résumé 1 ligne** : Plan Brief (29 EUR/mois, sans engagement) ajouté aux pages /pro/pricing FR/EN/ES avec CTA essai 30j vers /pro/espace/ (token via /api/b2b-trial.php).
+
+**Détails** :
+- `public/pro/pricing/index.html` (FR) : +carte `#plan-brief` avant `#plan-pro`, CTA ghost `/pro/espace/`
+- `public/pro/en/pricing/index.html` (EN) : +carte `#plan-brief` ($29/month) avant `#plan-pro`
+- `public/pro/es/pricing/index.html` (ES) : +carte `#plan-brief` ($29/mes) avant `#plan-pro`
+- Pas de JS eager ajouté → budget bundle inchangé (210.0 Ko ≤ 210 Ko gzip)
+- Prix/paiement/secrets inchangés — pas de modification checkout, paiement, prix
+- Lien vers `/pro/espace/` → émission token essai 30j par `/api/b2b-trial.php` (infrastructure existante, réutilisée)
+
+### Fichiers modifiés
+- `public/pro/pricing/index.html` — +14 lignes (carte plan Brief FR)
+- `public/pro/en/pricing/index.html` — +14 lignes (carte plan Brief EN)
+- `public/pro/es/pricing/index.html` — +14 lignes (carte plan Brief ES)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → 210.0 Ko ≤ 210 Ko gzip eager (marge nulle, inchangé)
+- [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+
+### Problèmes restants
+- [ ] Déploiement production BLOQUÉ (ERDDAP stale, dataAgeMinutes 10555 vs SLA 900) — PR non-déployé, travail sur branche/PR autorisé
+
+### Prochaine action recommandée
+1. PR #1480 ouverte sur GitHub (base main, branche agent/growth/TASK-P2-002) — CI à surveiller, pas de merge sans décision fondateur (déploiement bloqué ERDDAP)
+
+### Branche / PR
+- Branche : `agent/growth/TASK-P2-002`
+- PR : #1480
+- Commit head : `11f8ac50d`
+
+---
+
 ## 2026-11-19 18:30 UTC · Agent: coding_agent (OpenCode) · TASK-P1-012 (form capture leads B2B landing hôtelière)
 
 ### Travail effectué
