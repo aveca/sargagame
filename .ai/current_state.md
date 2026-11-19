@@ -1,6 +1,16 @@
 ## 2026-11-19 · OpenCode Factory — P0/P1 revenue recovery 7 sites (issue #135, mission revenue_recovery_7sites_20261119)
 
+## 2026-11-19 · Agent: coding_agent — fix empty "Mon accès" dialog (P0)
+
 ### Travail effectué
+- **Résumé 1 ligne** : `Suspense fallback={null}` remplacé par une feuille de chargement visible + `ErrBound` avec fallback overlay ; le dialog "Mon accès" ne rend plus rien vide. PR #1478 ouverte, build + budget OK, déploiement en attente fenêtre SLA satellite.
+- **Détails** :
+  - **Fichier modifié** : `src/Sargasses_PROD.jsx` (lignes 14569-14591) — `Suspense` fallback affiche une sheet de chargement (titre, "Chargement…", `role="dialog"`, `aria-modal`) ; `ErrBound` reçoit `fallback={...}` overlay vide au lieu de rendre rien sur erreur.
+  - **Cause racine** : `<ErrBound><Suspense fallback={null}>` laissait le dialog complètement vide quand le chunk lazy `AccountSheet` échouait à charger ou que le composant levait une erreur (confirmé sur le live Martinique et Guadeloupe).
+  - **Build** : `npm run build` exit 0 · `check-bundle-budget.cjs` **207,0 Ko ≤ 210 Ko** gzip eager.
+  - **PR** : https://github.com/aveca/sargagame/pull/1478 · branche `agent/coding/fix-empty-account-dialog-20261119` · commit `04856ab72`.
+  - **Rollback** : `git revert 04856ab72`.
+
 - **Résumé 1 ligne** : FACTORY_ACK publié sur GitHub issue #135 ; PR BOT-WOW inscription ouverte (#207) ; BUG-2026-015 Sargasses déjà corrigé (PR #1410, code présent, déploiement bloqué par SLA satellite).
 - **Détails** :
   - **Authentification GitHub** : compte `aveca` connecté via gh CLI (scopes repo+workflow). FACTORY_ACK publié : https://github.com/aveca/bot-wow/pull/135#issuecomment-7016600228

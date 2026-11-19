@@ -1,3 +1,7 @@
+## 2026-11-19 — Fix dialog "Mon accès" vide (P0 conversion bloquant)
+
+- **Mon accès vide** sur sargasses-martinique.com / sargasses-guadeloupe.com : le clic sur "Mon accès" ouvrait un dialog vide (`[generic]` sans contenu) → tunnel de conversion compte bloqué. Cause : `<ErrBound><Suspense fallback={null}>` rendait rien si le chunk AccountSheet échouait à charger ou si le composant levait une erreur. Correctif : `src/Sargasses_PROD.jsx` — `Suspense` affiche une feuille de chargement visible (titre "Mon accès", texte "Chargement…", `role="dialog"`, `aria-modal`) ; `ErrBound` reçoit un `fallback` overlay vide au lieu de rien. Build exit 0 · budget **207,0 Ko ≤ 210 Ko** gzip · chunk `AccountSheet-Dm9F7uW9.js` produit. PR #1478 (branche `agent/coding/fix-empty-account-dialog-20261119`, commit `04856ab72`). Déploiement en attente fenêtre SLA satellite 12:00Z→03:00Z + vérification live (desktop + mobile). Rollback : `git revert 04856ab72`.
+
 ## 2026-11-19 — OpenCode Factory P0/P1 revenue recovery 7 sites (issue #135)
 
 - **BOT-WOW inscription (P1 parcours achat)** : formulaire email côté client ajouté sur buy.html × 8 locales (EN, FR, ES, DE, PT-BR, RU, IT, PL). Capturé AVANT les liens Stripe, pré-rempli dans les Payment Links via ?prefilled_email. Aucun prix ni paramètre de paiement modifié. Persistance = localStorage uniquement (Worker séparé requis + autorisation explicite).
