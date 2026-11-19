@@ -1,4 +1,18 @@
 ﻿
+## 2026-11-19 - coding_agent (OpenCode) · TASK-P1-012 · PR #1479 · branche agent/coding/TASK-P1-012
+
+**Form capture leads B2B sur landing hôtelière (FR + EN/ES).**
+
+- `scripts/lib/region-seo-pages.cjs` (buildHotelLanding) : `<form id="sg-b2b-form">` email/nom → POST /api/b2b-trial.php, CSS inline `.formbox`/`.formnote`, flag rollback `?b2bform=0` masque `#sg-b2b-form-wrap`
+- `scripts/lib/hotel-landing-fr.cjs` (buildHotelLandingFr) : même formulaire FR, même flag rollback
+- Pas de JS eager ajouté → budget bundle inchangé (210.0 Ko ≤ 210 Ko gzip)
+- Prix/paiement/secrets inchangés, pas de modification checkout
+- `npm run build` exit 0, `php -l` OK, `ux-smoke.mjs` 4 tokens OK
+
+Déploiement production BLOQUÉ (ERDDAP stale) — PR non-déployé.
+
+---
+
 ## 2026-11-04 - coding_agent (OpenCode) · Mission P0.67 · branches §5/§7/§1/§4 · 4 Draft PR (#1243, #1247, #1252) + 1 fusion (#1244)
 
 **Sécurité paiement, honnêteté de fraîcheur, séparation de release, sécurité des automatisations sortantes.**

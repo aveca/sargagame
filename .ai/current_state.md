@@ -1,4 +1,40 @@
 
+## 2026-11-19 18:30 UTC · Agent: coding_agent (OpenCode) · TASK-P1-012 (form capture leads B2B landing hôtelière)
+
+### Travail effectué
+
+**Résumé 1 ligne** : `<form>` de capture leads B2B ajouté sur la landing hôtelière (buildHotelLanding EN/ES + buildHotelLandingFr FR) avec flag rollback `?b2bform=0`.
+
+**Détails** :
+- `scripts/lib/region-seo-pages.cjs` (buildHotelLanding, ligne 518) : formulaire email/nom → POST /api/b2b-trial.php, CSS inline `.formbox`/`.formnote`, bouton CTA, zéro JS eager ajouté. Flag rollback `?b2bform=0` masque `#sg-b2b-form-wrap`.
+- `scripts/lib/hotel-landing-fr.cjs` (buildHotelLandingFr, ligne 58) : même formulaire FR (Créer mon compte hôtel) + même flag rollback.
+- Form submit vers `/api/b2b-trial.php` (endpoint existant, b2b_trial, essai 30j instantané, pas de nouveau secret, pas de clasp push).
+- Prix/paiement/secrets inchangés — pas de modification checkout, paiement, prix.
+
+### Fichiers modifiés
+- `scripts/lib/region-seo-pages.cjs` — +style `.formbox`/`.formnote`/`.formbox input`/`.formbox .cta`/`.formnote`, +`<form id="sg-b2b-form">` après CTA pricing, +script rollback `?b2bform=0` avant `</body>`
+- `scripts/lib/hotel-landing-fr.cjs` — +style `.formbox`/`.formnote`/`.formbox input`/`.formbox .cta`/`.formnote`, +`<form id="sg-b2b-form">` après CTA pricing, +script rollback `?b2bform=0` avant `</body>`
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (pages SEO générées, landing FR /sargasses-pour-hotels/ régénérée)
+- [x] `node scripts/check-bundle-budget.cjs` → 210.0 Ko ≤ 210 Ko gzip eager (marge nulle, inchangé — pas de JS eager ajouté)
+- [x] `php -l public/api/b2b-trial.php` → No syntax errors
+- [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, WHITE_OR_TRANSPARENT_BUTTONS=[], ERRORS=[], RM_INFINITE=[]
+- [x] Vérification HTML généré : `.formbox`, `#sg-b2b-form`, `action="/api/b2b-trial.php"`, script `b2bform=0` présents dans dist/sargasses-pour-hotels/index.html
+
+### Problèmes restants
+- [ ] Déploiement production BLOQUÉ (ERDDAP stale, dataAgeMinutes 10555 vs SLA 900) — PR non-déployé, travail sur branche/PR autorisé
+
+### Prochaine action recommandée
+1. PR #1479 ouverte sur GitHub (base main, branche agent/coding/TASK-P1-012) — CI à surveiller
+
+### Branche / PR
+- Branche : `agent/coding/TASK-P1-012`
+- PR : #1479
+- Commit head : `e05ebe206`
+
+---
+
 ## 2026-11-04 01:00 UTC · Agent: coding_agent (OpenCode) · Mission P0.67 (sections 5, 7, 1, 4 livrées en Draft PR)
 
 ### Travail effectué
