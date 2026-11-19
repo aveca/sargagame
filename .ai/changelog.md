@@ -1,3 +1,11 @@
+## 2026-11-19 — OpenCode Factory P0/P1 revenue recovery 7 sites (issue #135)
+
+- **BOT-WOW inscription (P1 parcours achat)** : formulaire email côté client ajouté sur buy.html × 8 locales (EN, FR, ES, DE, PT-BR, RU, IT, PL). Capturé AVANT les liens Stripe, pré-rempli dans les Payment Links via ?prefilled_email. Aucun prix ni paramètre de paiement modifié. Persistance = localStorage uniquement (Worker séparé requis + autorisation explicite).
+  - Branche `factory/p0-revenue-recovery-20261119` · Commit `7e8b4ac` · PR https://github.com/aveca/bot-wow/pull/207
+  - Fichiers : buy.html, fr/buy.html, es/buy.html, de/buy.html, pt-br/buy.html, ru/buy.html, it/buy.html, pl/buy.html
+- **Sargasses BUG-2026-015 (P0 découplage offre/fraîcheur satellite)** : correctif déjà produit (PR #1410, commit `5dad516b1`, NON mergée, AUCUN déploiement). Code présent : `lcOfferCtaCopy()` + `lcLastObservationLabel()` (`src/lib/format-freshness.mjs`), porte d'offre sur écran stale (`src/ChasseHome.jsx`). Données suspendues hors observation courante (SLA non contourné). Tests : 44 assertions PASS, build exit 0. Déploiement bloqué par SLA satellite (observation NOAA 2026-11-09T12:00:00Z, âge > 900 min).
+- **FACTORY_ACK + FACTORY_PROGRESS publiés** sur GitHub issue #135 (https://github.com/aveca/bot-wow/pull/135#issuecomment-7016600228, #issuecomment-7016748346)
+
 ## 2026-11-14 — Réparation du runner Factory V3 (v2 réel, orchestrateur autonome sans simulation)
 
 - **Runner v2 réel, zéro simulation** : `scripts/factory-v3/run.cjs`, `orchestrator.cjs`, `runner.cjs` exécutent les tâches contre les dépôts réels (sargagame, botwow) ; `run.cjs` installe/désinstalle le scheduler Windows ; pas de mock, pas de statut inventé, les preuves (commit SHA, gates, dirty files) sont obligatoires pour un verdict `VERIFIED`.
