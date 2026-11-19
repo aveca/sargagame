@@ -575,17 +575,17 @@
       "levels": [
         {
           "id": "tu001",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "tu002",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "tu003",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -595,7 +595,7 @@
         },
         {
           "id": "tu005",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         }
       ]
