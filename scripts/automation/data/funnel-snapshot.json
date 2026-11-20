@@ -1,11 +1,11 @@
 {
   "window_days": 7,
-  "since": "2026-11-13T06:48:03.607Z",
-  "total_rows": 19566,
+  "since": "2026-11-13T14:47:14.837Z",
+  "total_rows": 19100,
   "counts": {
-    "session_start": 3482,
+    "session_start": 3473,
     "forecast_lock_click": 0,
-    "premium_modal_open": 55,
+    "premium_modal_open": 56,
     "premium_modal_cta": 1,
     "pass_cta": 2,
     "conversion": 0,
@@ -15,26 +15,26 @@
     "payment_failed": 0,
     "sos_checkout_start": 0,
     "sos_checkout_error": 0,
-    "b2b_offer_view": 26,
-    "b2b_step": 4,
+    "b2b_offer_view": 23,
+    "b2b_step": 3,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
   "observed_counts": {
-    "session_start": 3506,
+    "session_start": 3497,
     "forecast_lock_click": 0,
-    "premium_modal_open": 62,
+    "premium_modal_open": 63,
     "premium_modal_cta": 1,
     "pass_cta": 2,
     "conversion": 0,
     "email_submit": 2,
-    "checkout_started": 17,
+    "checkout_started": 1,
     "checkout_redirect": 1,
     "payment_failed": 0,
     "sos_checkout_start": 0,
     "sos_checkout_error": 0,
-    "b2b_offer_view": 26,
-    "b2b_step": 4,
+    "b2b_offer_view": 23,
+    "b2b_step": 3,
     "b2b_intent": 0,
     "b2b_trial_activated": 0
   },
@@ -46,7 +46,7 @@
     "pass_cta": 0,
     "conversion": 0,
     "email_submit": 0,
-    "checkout_started": 17,
+    "checkout_started": 1,
     "checkout_redirect": 0,
     "payment_failed": 0,
     "sos_checkout_start": 0,
@@ -60,124 +60,124 @@
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 5.5,
+    "modal_to_cta": 5.4,
     "cta_to_checkout_started": 0,
     "checkout_started_to_conversion": 0,
     "cta_to_redirect": 33.3,
     "cta_to_conversion": 0
   },
   "by_region": {
+    "mq": {
+      "session_start": 782,
+      "premium_modal_open": 22,
+      "b2b_offer_view": 2
+    },
+    "rivieramaya": {
+      "session_start": 356,
+      "b2b_offer_view": 3,
+      "premium_modal_open": 2
+    },
+    "puntacana": {
+      "session_start": 677,
+      "premium_modal_open": 8,
+      "b2b_offer_view": 12,
+      "b2b_step": 3,
+      "email_submit": 1
+    },
     "gp": {
-      "session_start": 1228,
-      "premium_modal_open": 24,
+      "session_start": 1202,
+      "premium_modal_open": 23,
       "b2b_offer_view": 2,
       "email_submit": 1,
       "pass_cta": 2
     },
-    "mq": {
-      "session_start": 787,
-      "premium_modal_open": 22,
-      "b2b_offer_view": 2
-    },
     "florida": {
-      "session_start": 326,
-      "b2b_offer_view": 4
-    },
-    "rivieramaya": {
       "session_start": 342,
       "b2b_offer_view": 4
     },
-    "puntacana": {
-      "session_start": 683,
-      "b2b_offer_view": 14,
-      "b2b_step": 4,
-      "premium_modal_open": 8,
-      "email_submit": 1
-    },
     "tulum": {
-      "session_start": 116,
+      "session_start": 114,
       "premium_modal_open": 1,
       "checkout_redirect": 1,
       "premium_modal_cta": 1
     }
   },
   "by_island": {
+    "MQ": {
+      "session_start": 782,
+      "premium_modal_open": 22,
+      "b2b_offer_view": 2
+    },
+    "RIVIERAMAYA": {
+      "session_start": 356,
+      "b2b_offer_view": 3,
+      "premium_modal_open": 2
+    },
+    "PUNTACANA": {
+      "session_start": 677,
+      "premium_modal_open": 8,
+      "b2b_offer_view": 12,
+      "b2b_step": 3,
+      "email_submit": 1
+    },
     "GP": {
-      "session_start": 1228,
-      "premium_modal_open": 24,
+      "session_start": 1202,
+      "premium_modal_open": 23,
       "b2b_offer_view": 2,
       "email_submit": 1,
       "pass_cta": 2
     },
-    "MQ": {
-      "session_start": 787,
-      "premium_modal_open": 22,
-      "b2b_offer_view": 2
-    },
     "FLORIDA": {
-      "session_start": 326,
-      "b2b_offer_view": 4
-    },
-    "RIVIERAMAYA": {
       "session_start": 342,
       "b2b_offer_view": 4
     },
-    "PUNTACANA": {
-      "session_start": 683,
-      "b2b_offer_view": 14,
-      "b2b_step": 4,
-      "premium_modal_open": 8,
-      "email_submit": 1
-    },
     "TULUM": {
-      "session_start": 116,
+      "session_start": 114,
       "premium_modal_open": 1,
       "checkout_redirect": 1,
       "premium_modal_cta": 1
     }
   },
   "by_host": {
+    "sargasses-martinique.com": {
+      "session_start": 780,
+      "premium_modal_open": 22,
+      "b2b_offer_view": 2
+    },
+    "sargassumcancun.com": {
+      "session_start": 355,
+      "b2b_offer_view": 3,
+      "premium_modal_open": 2
+    },
+    "sargassumpuntacana.com": {
+      "session_start": 647,
+      "premium_modal_open": 8,
+      "b2b_offer_view": 12,
+      "b2b_step": 3,
+      "email_submit": 1
+    },
     "sargasses-guadeloupe.com": {
-      "session_start": 1222,
-      "premium_modal_open": 24,
+      "session_start": 1197,
+      "premium_modal_open": 23,
       "b2b_offer_view": 2,
       "email_submit": 1,
       "pass_cta": 2
     },
-    "sargasses-martinique.com": {
-      "session_start": 783,
-      "premium_modal_open": 22,
-      "b2b_offer_view": 2
-    },
-    "sargagame-gp.pages.dev": {
-      "session_start": 6
-    },
     "sargassummiami.com": {
-      "session_start": 324,
-      "b2b_offer_view": 4
-    },
-    "sargagame.pages.dev": {
-      "session_start": 4
-    },
-    "sargassumcancun.com": {
       "session_start": 340,
       "b2b_offer_view": 4
     },
-    "sargassumpuntacana.com": {
-      "session_start": 653,
-      "b2b_offer_view": 14,
-      "b2b_step": 4,
-      "premium_modal_open": 8,
-      "email_submit": 1
-    },
-    "sargagame-rivieramaya.pages.dev": {
-      "session_start": 2
+    "sargagame-gp.pages.dev": {
+      "session_start": 5
     },
     "sargazotulum.com": {
-      "session_start": 92,
+      "session_start": 90,
       "premium_modal_open": 1,
       "checkout_redirect": 1,
       "premium_modal_cta": 1
+    },
+    "sargagame.pages.dev": {
+      "session_start": 2
     },
     "sargagame-florida.pages.dev": {
       "session_start": 2
@@ -187,56 +187,59 @@
     },
     "sargagame-tulum.pages.dev": {
       "session_start": 24
+    },
+    "sargagame-rivieramaya.pages.dev": {
+      "session_start": 1
     }
   },
   "unverified_by_region": {
-    "stripe": {
-      "checkout_started": 17
-    },
     "mq": {
       "session_start": 24,
       "premium_modal_open": 7
+    },
+    "stripe": {
+      "checkout_started": 1
     }
   },
   "unverified_by_island": {
-    "STRIPE": {
-      "checkout_started": 17
-    },
     "MQ": {
       "session_start": 24,
       "premium_modal_open": 7
+    },
+    "STRIPE": {
+      "checkout_started": 1
     }
   },
   "distinct_sessions_by_region": {
-    "mq": 126,
-    "gp": 223,
+    "mq": 120,
+    "gp": 215,
     "puntacana": 93,
-    "tulum": 11,
-    "florida": 28,
-    "rivieramaya": 11
+    "florida": 27,
+    "rivieramaya": 10,
+    "tulum": 8
   },
   "observed_distinct_sessions_by_region": {
-    "florida": 437,
-    "mq": 597,
-    "rivieramaya": 336,
-    "puntacana": 675,
-    "gp": 889,
-    "tulum": 25
+    "puntacana": 676,
+    "mq": 605,
+    "gp": 876,
+    "florida": 432,
+    "rivieramaya": 343,
+    "tulum": 22
   },
   "distinct_sessions_by_host": {
-    "sargasses-martinique.com": 126,
-    "sargasses-guadeloupe.com": 223,
+    "sargasses-martinique.com": 120,
+    "sargasses-guadeloupe.com": 215,
     "sargassumpuntacana.com": 93,
-    "sargazotulum.com": 11,
-    "sargassummiami.com": 28,
-    "sargassumcancun.com": 11
+    "sargassummiami.com": 27,
+    "sargassumcancun.com": 10,
+    "sargazotulum.com": 8
   },
   "data_quality": {
-    "total_rows": 19566,
-    "verified_production_rows": 13350,
+    "total_rows": 19100,
+    "verified_production_rows": 13088,
     "local_test_rows": 0,
     "preview_rows": 0,
-    "unknown_host_rows": 6216,
-    "unverified_rows": 6216
+    "unknown_host_rows": 6012,
+    "unverified_rows": 6012
   }
 }
