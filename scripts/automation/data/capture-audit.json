@@ -1,5 +1,5 @@
 {
- "date": "2026-11-13T18:53:37.764Z",
+ "date": "2026-11-20T19:25:12.316Z",
  "domains": {
   "https://sargasses-martinique.com": {
    "checks": {
@@ -17,7 +17,7 @@
     "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "324ms",
+    "lcp_under_2_5s": "352ms",
     "cta_count_above_fold": "17 visibles",
     "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
@@ -38,7 +38,7 @@
     "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "412ms",
+    "lcp_under_2_5s": "228ms",
     "cta_count_above_fold": "17 visibles",
     "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
@@ -59,7 +59,7 @@
     "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "496ms",
+    "lcp_under_2_5s": "236ms",
     "cta_count_above_fold": "15 visibles",
     "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
@@ -80,7 +80,7 @@
     "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "216ms",
+    "lcp_under_2_5s": "196ms",
     "cta_count_above_fold": "15 visibles",
     "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
@@ -101,7 +101,7 @@
     "no_blank_checkout": false
    },
    "note": {
-    "lcp_under_2_5s": "200ms",
+    "lcp_under_2_5s": "532ms",
     "cta_count_above_fold": "15 visibles",
     "paywall": "inaccessible: locator.click: Timeout 8000ms exceeded.\nCall log:\n  - waitin"
    }
