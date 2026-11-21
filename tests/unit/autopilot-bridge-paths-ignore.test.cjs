@@ -273,3 +273,44 @@ for (const wf of workflowFiles) {
 console.log(
   'PASS: the multi-repo autopilot bridge is production-neutral, the production-critical autopilot scripts stay deployable, and the autonomous-bridge modules are excluded file by file',
 )
+
+
+// ── 8. Seuls les artefacts générés des Veilleurs sont ignorés ──────────────
+// scripts/veilleurs/orchestrator.cjs, run-veilleur.cjs et synthesize.cjs
+// sont exécutés par .github/workflows/veilleurs.yml : ne jamais exclure le
+// dossier entier. Les briefs/digests générés ne sont pas des assets Worker.
+
+const VEILLEURS_GENERATED_OUTPUTS = [
+  'scripts/veilleurs/DIGEST.md',
+  'scripts/veilleurs/latest-digest.json',
+  'scripts/veilleurs/out/sable/2026-11-09.md',
+  'scripts/veilleurs/out/sable/latest.json',
+  'scripts/veilleurs/out/digue/2026-11-09.md',
+  'scripts/veilleurs/out/digue/latest.json',
+]
+
+for (const file of VEILLEURS_GENERATED_OUTPUTS) {
+  assert.ok(
+    ignored.some((pattern) => matches(pattern, file)),
+    "cloudflare-production.yml must ignore generated Veilleurs output '" + file + "' (it is not a Worker asset)",
+  )
+}
+
+const VEILLEURS_RUNTIME_FILES = [
+  'scripts/veilleurs/lib.cjs',
+  'scripts/veilleurs/orchestrator.cjs',
+  'scripts/veilleurs/run-veilleur.cjs',
+  'scripts/veilleurs/synthesize.cjs',
+]
+
+assert.ok(
+  !ignored.includes('scripts/veilleurs/**'),
+  "cloudflare-production.yml must NOT ignore 'scripts/veilleurs/**': veilleurs.yml executes the runtime scripts",
+)
+
+for (const file of VEILLEURS_RUNTIME_FILES) {
+  assert.ok(
+    !ignored.some((pattern) => matches(pattern, file)),
+    "cloudflare-production.yml must keep Veilleurs runtime '" + file + "' deployable",
+  )
+}
