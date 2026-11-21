@@ -1,3 +1,21 @@
+## 2026-11-19 — Fix dialog "Mon accès" vide (P0 conversion bloquant)
+
+- **Mon accès vide** sur sargasses-martinique.com / sargasses-guadeloupe.com : le clic sur "Mon accès" ouvrait un dialog vide (`[generic]` sans contenu) → tunnel de conversion compte bloqué. Cause : `<ErrBound><Suspense fallback={null}>` rendait rien si le chunk AccountSheet échouait à charger ou si le composant levait une erreur. Correctif : `src/Sargasses_PROD.jsx` — `Suspense` affiche une feuille de chargement visible (titre "Mon accès", texte "Chargement…", `role="dialog"`, `aria-modal`) ; `ErrBound` reçoit un `fallback` overlay vide au lieu de rien. Build exit 0 · budget **207,0 Ko ≤ 210 Ko** gzip · chunk `AccountSheet-Dm9F7uW9.js` produit. PR #1478 (branche `agent/coding/fix-empty-account-dialog-20261119`, commit `04856ab72`). Déploiement en attente fenêtre SLA satellite 12:00Z→03:00Z + vérification live (desktop + mobile). Rollback : `git revert 04856ab72`.
+
+## 2026-11-19 — OpenCode Factory P0/P1 revenue recovery 7 sites (issue #135)
+
+- **BOT-WOW inscription (P1 parcours achat)** : formulaire email côté client ajouté sur buy.html × 8 locales (EN, FR, ES, DE, PT-BR, RU, IT, PL). Capturé AVANT les liens Stripe, pré-rempli dans les Payment Links via ?prefilled_email. Aucun prix ni paramètre de paiement modifié. Persistance = localStorage uniquement (Worker séparé requis + autorisation explicite).
+  - Branche `factory/p0-revenue-recovery-20261119` · Commit `7e8b4ac` · PR https://github.com/aveca/bot-wow/pull/207
+  - Fichiers : buy.html, fr/buy.html, es/buy.html, de/buy.html, pt-br/buy.html, ru/buy.html, it/buy.html, pl/buy.html
+- **Sargasses BUG-2026-015 (P0 découplage offre/fraîcheur satellite)** : correctif déjà produit (PR #1410, commit `5dad516b1`, NON mergée, AUCUN déploiement). Code présent : `lcOfferCtaCopy()` + `lcLastObservationLabel()` (`src/lib/format-freshness.mjs`), porte d'offre sur écran stale (`src/ChasseHome.jsx`). Données suspendues hors observation courante (SLA non contourné). Tests : 44 assertions PASS, build exit 0. Déploiement bloqué par SLA satellite (observation NOAA 2026-11-09T12:00:00Z, âge > 900 min).
+- **FACTORY_ACK + FACTORY_PROGRESS publiés** sur GitHub issue #135 (https://github.com/aveca/bot-wow/pull/135#issuecomment-7016600228, #issuecomment-7016748346)
+
+## 2026-11-14 — Réparation du runner Factory V3 (v2 réel, orchestrateur autonome sans simulation)
+
+- **Runner v2 réel, zéro simulation** : `scripts/factory-v3/run.cjs`, `orchestrator.cjs`, `runner.cjs` exécutent les tâches contre les dépôts réels (sargagame, botwow) ; `run.cjs` installe/désinstalle le scheduler Windows ; pas de mock, pas de statut inventé, les preuves (commit SHA, gates, dirty files) sont obligatoires pour un verdict `VERIFIED`.
+- **Lock stale 2026-10-08 PID 19504 réclamé avec preuve** : `lockIsStale` détecte un lock dont le pid est mort (4_000_000_000) ou âgé de > 4h (réutilisation de PID) ; `acquireLock` copie le lock obsolète dans `factory.lock.stale-<iso>` (preuve conservée) avant d'acquérir le nouveau lock. Un lock valide (pid vivant + récent) bloque l'acquisition.
+- **Tests de non-régression 9/9** : `tests/unit/factory-v3-runner.test.cjs` (`node --test`) — `pidAlive`, `lockIsStale`, `acquireLock` (reclaim + preuve conservée, refus sur lock valide), `claimNextJob` anti-doublon (RUNNING jamais re-claimé, FIFO), `recoverOrphans` (mort → PENDING + backoff, vivant intact), `computeBackoff` exponentiel plafonné, `computeVerdict` strict (jamais VERIFIED sans agent ok + gates verts + commit), `loadConfig` fusion des repos, `execStep` code de sortie réel + timeout réel.
+
 ## 2026-11-13 — Parcours Pro hôtel en libre-service
 
 - `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.

@@ -193,3 +193,6 @@ scripts/local-factory/logs/
 scripts/automation/data/reconcile-sales.json
 scripts/automation/data/b2c-segmentation.json
 scripts/automation/data/fulfillment-diagnosis.json
+
+# Factory V3 runtime state (queue, lock, evidence, heartbeat, logs, prompts) - ephemeral, never commit
+scripts/factory-v3/state/

@@ -1,3 +1,50 @@
+## 2026-11-19 · OpenCode Factory — P0/P1 revenue recovery 7 sites (issue #135, mission revenue_recovery_7sites_20261119)
+
+## 2026-11-19 · Agent: coding_agent — fix empty "Mon accès" dialog (P0)
+
+### Travail effectué
+- **Résumé 1 ligne** : `Suspense fallback={null}` remplacé par une feuille de chargement visible + `ErrBound` avec fallback overlay ; le dialog "Mon accès" ne rend plus rien vide. PR #1478 ouverte, build + budget OK, déploiement en attente fenêtre SLA satellite.
+- **Détails** :
+  - **Fichier modifié** : `src/Sargasses_PROD.jsx` (lignes 14569-14591) — `Suspense` fallback affiche une sheet de chargement (titre, "Chargement…", `role="dialog"`, `aria-modal`) ; `ErrBound` reçoit `fallback={...}` overlay vide au lieu de rendre rien sur erreur.
+  - **Cause racine** : `<ErrBound><Suspense fallback={null}>` laissait le dialog complètement vide quand le chunk lazy `AccountSheet` échouait à charger ou que le composant levait une erreur (confirmé sur le live Martinique et Guadeloupe).
+  - **Build** : `npm run build` exit 0 · `check-bundle-budget.cjs` **207,0 Ko ≤ 210 Ko** gzip eager.
+  - **PR** : https://github.com/aveca/sargagame/pull/1478 · branche `agent/coding/fix-empty-account-dialog-20261119` · commit `04856ab72`.
+  - **Rollback** : `git revert 04856ab72`.
+
+- **Résumé 1 ligne** : FACTORY_ACK publié sur GitHub issue #135 ; PR BOT-WOW inscription ouverte (#207) ; BUG-2026-015 Sargasses déjà corrigé (PR #1410, code présent, déploiement bloqué par SLA satellite).
+- **Détails** :
+  - **Authentification GitHub** : compte `aveca` connecté via gh CLI (scopes repo+workflow). FACTORY_ACK publié : https://github.com/aveca/bot-wow/pull/135#issuecomment-7016600228
+  - **BOT-WOW inscription (P1 parcours achat)** : formulaire email côté client ajouté sur buy.html × 8 locales (EN, FR, ES, DE, PT-BR, RU, IT, PL). L'email est capturé AVANT les liens Stripe et pré-rempli dans les Payment Links via ?prefilled_email. Aucun prix ni paramètre de paiement modifié. Persistance serveur = localStorage uniquement (Worker séparé requis + autorisation explicite).
+    - Branche : `factory/p0-revenue-recovery-20261119` · Commit : `7e8b4ac` · PR : https://github.com/aveca/bot-wow/pull/207
+    - Fichiers : buy.html, fr/buy.html, es/buy.html, de/buy.html, pt-br/buy.html, ru/buy.html, it/buy.html, pl/buy.html
+  - **FACTORY_PROGRESS publié** : https://github.com/aveca/bot-wow/pull/135#issuecomment-7016748346
+  - **Sargasses BUG-2026-015 (P0 découplage offre/fraîcheur satellite)** : correctif déjà produit dans PR #1410 (branche `agent/coding/bug-015-offer-decoupling-20261111`, commit `5dad516b1`, NON mergée, AUCUN déploiement). Code présent localement : helpers `lcOfferCtaCopy()` + `lcLastObservationLabel()` (`src/lib/format-freshness.mjs`), porte d'offre sur écran stale (CTA toujours ouvert + date dernière observation, fail-closed) dans `src/ChasseHome.jsx`. Données toujours suspendues hors observation courante (SLA de fraîcheur non contourné). Preuve : `tests/unit/bug-2026-015-offer-decoupling.test.cjs` → 44 assertions PASS · build exit 0. Rollback : `git revert 5dad516b1`.
+- **Fichiers modifiés (sargagame-main)** : aucun code applicatif dans cette session (BUG-2026-015 déjà présent). Mémoire projet uniquement (.ai/current_state.md, .ai/changelog.md, .ai/tasks.md).
+
+### Tests réalisés
+- [ ] npm run build → non rejoué (pas de modification code sargagame dans cette session)
+- [ ] check-bundle-budget → non rejoué (id.)
+- [ ] php -l → non rejoué (id.)
+- [ ] ux-smoke → non rejoué (id.)
+
+### Problèmes restants / Blockers
+- [ ] **P0 — Déploiement Sargasses bloqué par SLA satellite** : observation ERDDAP NOAA = 2026-11-09T12:00:00Z, âge > 900 min (SLA). NOAA publie 1×/jour à 12:00Z → fenêtre 12:00Z→03:00Z. PR #1410 prête, aucun contournement tenté.
+- [ ] **P1 — Déploiement BOT-WOW inscription** : nécessite autorisation explicite fondateur (modification parcours d'achat). PR #207 ouverte, réversible (HTML statique + JS localStorage).
+- [ ] **P1 — Retrait de sg-noso** : suspendu au déploiement Sargasses (remplacement de route, pas suppression). TASK-P1-004.
+
+### Prochaine action recommandée
+1. Attendre fenêtre SLA satellite (12:00Z) → déployer Sargasses PR #1410 → remplacer 6 routes sg-noso → re-vérifier live (TASK-P1-004)
+2. Attendre autorisation fondateur → déployer BOT-WOW PR #207 (inscription)
+3. Poursuivre P1 : pages commerciales/CTA, B2B capture, SEO technique sur les 7 sites
+
+### Branche / PR
+- Branche sargagame-main : `agent/coding/p0-revenue-recovery-20261119` (base `origin/main`, aucun changement code poussé dans cette session)
+- Branche bot-wow-repo : `factory/p0-revenue-recovery-20261119` → PR #207 ouverte (https://github.com/aveca/bot-wow/pull/207)
+- PR Sargasses BUG-2026-015 : #1410 (https://github.com/aveca/sargagame/pull/1410) — ouverte, non mergée
+
+---
+
+
 ## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
 
 - Les pages `/pro/pricing/` FR, EN et ES ont deux boutons vers les Payment Links Pro. Le script `public/pro/pricing-pay.js` choisit EUR ou USD selon l'un des 6 domaines.
