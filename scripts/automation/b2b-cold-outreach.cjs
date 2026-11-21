@@ -130,46 +130,46 @@ function buildC0(c, key) {
     ? `Registro público de validación para ${pf.region.toUpperCase()}, del ${pf.from} al ${pf.to}: <strong>${pf.pct} %</strong> de los pronósticos de "mar limpio" verificados en temporada calmada (${Number(pf.n).toLocaleString('es-ES')} comparaciones). El resultado se limita a esa muestra; no garantiza cada playa.`
     : `Este mensaje no cita una tasa de fiabilidad: el registro disponible no es a la vez reciente, completo y estrictamente regional. Podemos compartir un informe fechado cuando esas pruebas estén disponibles.`
 
-  const subject = L === 'en' ? `${c.name} — your beaches, watched every morning`
-    : L === 'es' ? `${c.name} — sus playas, vigiladas cada mañana`
+  const subject = L === 'en' ? `${c.name} — dated beach observations`
+    : L === 'es' ? `${c.name} — observaciones de playa fechadas`
     : seg === 'collectivite'
-      ? (dh && dh.navoid > 0 ? `Sur vos ${dh.nbeaches} plages, ${dh.navoid} étaient à éviter la semaine dernière` : `Anticiper le ramassage, baie par baie — ${place}`)
-      : (dh && dh.avoidDays > 0 ? `${dh.beach} : ${dh.avoidDays} jour(s) à éviter la semaine dernière` : `${c.name} — l'état de vos plages chaque matin ?`)
-  const preheader = L === 'en' ? `Your beaches measured by satellite (Copernicus, NOAA) — alerted before the seaweed lands.`
-    : L === 'es' ? `Sus playas medidas por satélite (Copernicus, NOAA) — avisados antes de que llegue el sargazo.`
+      ? (dh && dh.navoid > 0 ? `Sur vos ${dh.nbeaches} plages, ${dh.navoid} étaient à éviter la semaine dernière` : `Observations datées pour vos plages — ${place}`)
+      : (dh && dh.avoidDays > 0 ? `${dh.beach} : ${dh.avoidDays} jour(s) à éviter la semaine dernière` : `${c.name} — dernières observations de vos plages`)
+  const preheader = L === 'en' ? `Latest published beach observations, with timestamp and confidence; forecasts only when inputs pass validation.`
+    : L === 'es' ? `Últimas observaciones publicadas, con fecha y confianza; pronósticos solo cuando las entradas pasan la validación.`
     : seg === 'collectivite'
-      ? `Voir baie par baie où les algues arrivent — quelques jours avant l'échouage, pour planifier le ramassage.`
-      : `Vos plages mesurées au satellite — l'alerte le matin où ça bascule, avant l'échouage.`
+      ? `Observations datées plage par plage ; prévisions seulement lorsque les données passent les contrôles.`
+      : `Dernières observations publiées, avec horodatage et confiance ; prévisions seulement si les entrées sont validées.`
   const T = {
     fr: {
       hdrTitle: 'Le Veilleur', hdrSub: 'Vos plages, mesurées au satellite', hdrFor: `Pour ${c.name}, ${place}`,
       hi: 'Bonjour,',
-      pain: `Je fais <strong>Le Veilleur</strong> — un projet indépendant, opéré depuis la Martinique, qui mesure les sargasses plage par plage au satellite (Copernicus Marine, NOAA), 4 fois par jour. Pour un établissement comme le vôtre, une plage envahie = clients déçus, avis, parfois remboursements — et vous l'apprenez souvent en même temps qu'eux.`,
-      flip: `Avec Le Veilleur, vous connaissez la fin de l'histoire avant vos clients : l'alerte arrive <strong>avant</strong> les sargasses, avec une prévision 7 jours. Vous prévenez, vous ne subissez pas.`,
-      proof: '', // écrasé plus bas par proofFr (preuve LIVE hedgée, jamais un « 100 % » figé)
-      ask: `Côté pro, c'est simple et sans engagement : un <strong>essai 30 jours gratuit, sans carte</strong> (widget à vos couleurs sur votre site + alertes par plage), puis 79 €/mois ou 690 €/an. Tout en ligne, à votre rythme — voici l'état réel de vos plages, et vous activez l'essai en un clic.`,
-      ctaText: 'Voir mes plages · essai 30 j',
-      orReply: 'Ou répondez simplement « ok » et je vous envoie le rendu daté de vos plages.'
+      pain: `Je fais <strong>Le Veilleur</strong> — un projet indépendant qui publie les dernières observations AFAI disponibles plage par plage. Elles sont distribuées via NOAA/AOML ERDDAP à partir de données source du laboratoire USF. Chaque lecture est accompagnée de son horodatage et de son niveau de confiance ; la source est intermittente et un verdict actuel est suspendu lorsque l'observation est trop ancienne.`,
+      flip: `Un aperçu prévisionnel n'est présenté que lorsque l'observation et les entrées de vent et de courant passent les contrôles. Les jours 4 à 7 décrivent une tendance, pas une certitude ; Aucune alerte anticipée n'est garantie.`,
+      proof: '',
+      ask: `<strong>Essai 30 jours, sans carte.</strong> Le widget et les alertes par plage sont disponibles lorsque les données correspondantes sont disponibles et validées. Ensuite, si cela vous sert : 79 €/mois ou 690 €/an. Voici les dernières observations publiées, avec leur date et leur confiance.`,
+      ctaText: 'Consulter les observations · essai 30 j',
+      orReply: 'Ou répondez simplement « ok » et je vous envoie un relevé daté de vos plages.'
     },
     en: {
       hdrTitle: 'Le Veilleur', hdrSub: 'Your beaches, measured by satellite', hdrFor: `For ${c.name}, ${place}`,
       hi: 'Hi,',
-      pain: `I run <strong>Le Veilleur</strong> — an independent project, operated from Martinique, that measures sargassum beach by beach via satellite (Copernicus Marine, NOAA), four times a day. For a property like yours, an invaded beach means disappointed guests, bad reviews, sometimes refunds — and you often learn it at the same time they do.`,
-      flip: `With Le Veilleur, you know how the story ends before your guests do: the alert lands <strong>before</strong> the seaweed, with a 7-day forecast. You warn them instead of taking the hit.`,
-      proof: '', // écrasé plus bas par proofEn (preuve LIVE hedgée, jamais un « 100 % » figé)
-      ask: `The pro side is simple and commitment-free: a <strong>free 30-day trial, no card</strong> (a widget in your colours on your site + per-beach alerts), then €79/mo or €690/yr. All online, at your pace — here's the real state of your beaches, and you start the trial in one click.`,
-      ctaText: 'See my beaches · 30-day trial',
-      orReply: 'Or just reply “ok” and I’ll send you the dated readout of your beaches.'
+      pain: `I run <strong>Le Veilleur</strong> — an independent project publishing the latest available AFAI beach observations. They are distributed through NOAA/AOML ERDDAP from USF source data. Each reading includes its observation timestamp and confidence; the source is intermittent, and we withhold a current verdict when an observation is too old.`,
+      flip: `A forecast is shown only when the observation and wind/current inputs pass validation. Days 4–7 are a trend, not a guarantee; No advance alert is guaranteed.`,
+      proof: '',
+      ask: `The Pro offer includes a <strong>free 30-day trial, no card</strong>; the widget and per-beach alerts are available when their data pass validation. Then €79/mo or €690/yr if it is useful. Here are the latest published observations, with their timestamps and confidence levels.`,
+      ctaText: 'Review dated observations · 30-day trial',
+      orReply: 'Or just reply “ok” and I’ll send you a dated readout of your beaches.'
     },
     es: {
       hdrTitle: 'Le Veilleur', hdrSub: 'Sus playas, medidas por satélite', hdrFor: `Para ${c.name}, ${place}`,
       hi: 'Hola,',
-      pain: `Soy <strong>Le Veilleur</strong> — un proyecto independiente, operado desde Martinica, que mide el sargazo playa por playa vía satélite (Copernicus Marine, NOAA), cuatro veces al día. Para un establecimiento como el suyo, una playa invadida significa huéspedes decepcionados, malas reseñas, a veces reembolsos — y a menudo se entera al mismo tiempo que ellos.`,
-      flip: `Con Le Veilleur, usted conoce el final de la historia antes que sus huéspedes: la alerta llega <strong>antes</strong> que el sargazo, con un pronóstico a 7 días. Usted avisa en lugar de sufrirlo.`,
-      proof: '', // écrasé plus bas por proofEs (preuve LIVE hedgée, jamais un « 100 % » figé)
-      ask: `La parte pro es simple y sin compromiso: una <strong>prueba gratuita de 30 días, sin tarjeta</strong> (un widget con sus colores en su sitio + alertas por playa), luego 79 €/mes o 690 €/año. Todo en línea, a su ritmo — aquí está el estado real de sus playas, y activa la prueba en un clic.`,
-      ctaText: 'Ver mis playas · prueba 30 d',
-      orReply: 'O responda simplemente “ok” y le envío la lectura fechada de sus playas.'
+      pain: `Soy <strong>Le Veilleur</strong>, un proyecto independiente que publica las últimas observaciones AFAI disponibles para cada playa. Se distribuyen a través de NOAA/AOML ERDDAP a partir de datos de origen del laboratorio USF. Cada lectura incluye su fecha y nivel de confianza; la fuente es intermitente y se suspende un veredicto actual cuando la observación es demasiado antigua.`,
+      flip: `El pronóstico solo se muestra cuando la observación y los datos de viento y corriente pasan la validación. Los días 4–7 son una tendencia, no una garantía; No se garantiza una alerta anticipada.`,
+      proof: '',
+      ask: `La oferta Pro incluye una <strong>prueba gratuita de 30 días, sin tarjeta</strong>; el widget y las alertas por playa están disponibles cuando sus datos pasan la validación. Después, 79 €/mes o 690 €/año si le resulta útil. Aquí están las últimas observaciones publicadas, con fecha y confianza.`,
+      ctaText: 'Consultar observaciones · prueba 30 d',
+      orReply: 'O responda simplemente “ok” y le envío una lectura fechada de sus playas.'
     }
   }[L]
   // Preuve LIVE hedgée pour les marchés USD (EN/ES) : remplace le « 100 % » figé +
@@ -182,16 +182,12 @@ function buildC0(c, key) {
     T.proof = proofFr
     if (seg === 'collectivite') {
       T.hdrSub = 'Vos plages, baie par baie'
-      T.pain = `Aujourd'hui, l'échouage se découvre le matin même — algues déjà sur le sable, équipe pas encore mobilisée. Le Veilleur inverse l'ordre : prévision <strong>par plage, J+1→J+7</strong>, baie par baie, jamais une moyenne d'île.`
-      T.flip = `Concret : un J+5 qui passe au rouge sur une seule anse vous laisse la veille pour mobiliser l'équipe de ramassage, poser les barrages et flécher le budget là où ça compte — pas partout à l'aveugle.`
-      T.proof += ` Donnée publique et auditable — de quoi communiquer juste auprès des administrés.`
-      T.ask = `L'essai donne tout de suite la prévision sur l'ensemble de votre littoral : <strong>30 jours gratuits, sans carte</strong>. 100 % en libre-service.`
-      T.ctaText = dh ? `Voir vos ${dh.nbeaches} plages en direct · essai 30 j` : 'Voir vos plages · essai 30 j'
+      T.flip = `Pour planifier le ramassage, un aperçu de tendance n'est présenté que lorsque les observations et les entrées de vent et de courant passent les contrôles. Les jours 4–7 restent une tendance, pas une certitude. Aucune arrivée d'algues ni alerte préalable n'est garantie.`
+      T.ask = `L'essai Pro de 30 jours, sans carte, donne accès au widget et aux alertes par plage lorsque les données sont disponibles et validées. Ensuite : 79 €/mois ou 690 €/an si le service vous est utile.`
+      T.ctaText = dh ? `Consulter vos ${dh.nbeaches} plages · essai 30 j` : 'Consulter vos observations · essai 30 j'
     } else {
-      T.pain = `D'habitude, une plage qui bascule dans la nuit, vous l'apprenez en même temps que le client — à l'accueil, déçu. Le Veilleur inverse l'ordre : un satellite veille la mer (Copernicus + NOAA), traduit en prévision <strong>par plage</strong>, J+1→J+7. L'alerte « le matin où ça bascule » arrive <strong>avant</strong> l'échouage.`
-      T.flip = `Concret : un matin, ${dh ? dh.beach : 'votre plage'} vire au rouge. Prévenu la veille, vous orientez les arrivées du jour vers une crique abritée à 10 min — personne pris en traître, pas d'avis « plage pleine d'algues ».`
-      T.ask = `<strong>Essai 30 jours, sans carte.</strong> Ensuite, si ça vous sert : 79 €/mois ou 690 €/an. 100 % en ligne, à votre rythme.`
-      T.ctaText = dh ? `Voir ${dh.beach} en direct · essai 30 j` : 'Voir mes plages · essai 30 j'
+      T.flip = `Un aperçu prévisionnel n'est présenté que lorsque l'observation et les entrées de vent et de courant passent les contrôles. Les jours 4 à 7 décrivent une tendance, pas une certitude ; Aucune alerte anticipée n'est garantie.`
+      T.ctaText = dh ? `Consulter ${dh.beach} · essai 30 j` : 'Consulter mes observations · essai 30 j'
     }
   }
   const inner = `${brandHeader(T.hdrTitle, T.hdrSub, T.hdrFor)}
@@ -217,27 +213,27 @@ function buildC4(c, key) {
   const F = {
     fr: {
       subject: `Re: ${c.name} — vos plages, mesurées au satellite`,
-      preheader: `Je vous envoie un rendu réel et daté de vos plages — dites-moi juste oui.`,
+      preheader: `Je vous envoie un relevé daté de vos plages, avec horodatage et confiance — dites-moi simplement oui.`,
       hdrSub: 'Juste au cas où', hi: 'Bonjour,',
-      l1: `Mon précédent message est peut-être passé sous la pile. La saison sargasses bat son plein — c'est maintenant que connaître la fin de l'histoire avant vos clients change tout.`,
-      l2: `Je peux vous envoyer un <strong>rendu réel et daté de vos plages</strong> (mesuré au satellite, par régime, réussites comme limites). Et si ça vous parle, l'essai Pro 30 jours est gratuit, sans carte, en libre-service — vous activez en un clic.`,
-      ctaText: 'Voir l’état de mes plages', orReply: 'Sinon, répondez « stop » et je ne vous écris plus.'
+      l1: `Mon précédent message est peut-être passé sous la pile. La dernière observation publiée peut donner à votre équipe un repère plage par plage, avec sa date et son niveau de confiance — et préciser ce qui reste inconnu.`,
+      l2: `Je peux vous envoyer un <strong>relevé réel et daté de vos plages</strong> (observation satellitaire, horodatage, confiance, réussites et limites). Si cela vous intéresse, l'essai Pro de 30 jours est gratuit, sans carte, en libre-service.`,
+      ctaText: 'Voir les dernières observations', orReply: 'Sinon, répondez « stop » et je ne vous écris plus.'
     },
     en: {
       subject: `Re: ${c.name} — your beaches, measured by satellite`,
-      preheader: `I'll send you a real, dated readout of your beaches — just say yes.`,
+      preheader: `A dated beach readout with observation timestamps and confidence — just say yes.`,
       hdrSub: 'Just in case', hi: 'Hi,',
-      l1: `My earlier note may have slipped under the pile. Sargassum season is in full swing — this is exactly when knowing the ending before your guests do changes everything.`,
-      l2: `I can send you a <strong>real, dated readout of your beaches</strong> (satellite-measured, by regime, hits and limits alike). And if it speaks to you, the 30-day Pro trial is free, no card, fully self-serve — you start it in one click.`,
-      ctaText: 'See my beaches now', orReply: 'Otherwise, reply “stop” and I won’t write again.'
+      l1: `My earlier note may have slipped under the pile. The latest published observation can give your team a dated, beach-level reference, with its timestamp and confidence — while making clear what is not known.`,
+      l2: `I can send you a <strong>real, dated readout of your beaches</strong> (satellite observation, timestamp, confidence, strengths and limitations). If useful, the Pro 30-day trial is free, requires no card and is self-serve.`,
+      ctaText: 'View latest observations', orReply: 'Otherwise, reply “stop” and I won’t write again.'
     },
     es: {
       subject: `Re: ${c.name} — sus playas, medidas por satélite`,
-      preheader: `Le envío una lectura real y fechada de sus playas — solo dígame que sí.`,
+      preheader: `Un informe fechado con hora de observación y confianza — solo dígame que sí.`,
       hdrSub: 'Por si acaso', hi: 'Hola,',
-      l1: `Quizás mi mensaje anterior quedó bajo la pila. La temporada de sargazo está en pleno apogeo — es justo cuando conocer el final antes que sus huéspedes lo cambia todo.`,
-      l2: `Puedo enviarle una <strong>lectura real y fechada de sus playas</strong> (medida por satélite, por régimen, aciertos y límites). Y si le interesa, la prueba Pro de 30 días es gratuita, sin tarjeta, en autoservicio — la activa en un clic.`,
-      ctaText: 'Ver mis playas ahora', orReply: 'Si no, responda “stop” y no le escribo más.'
+      l1: `Quizás mi mensaje anterior quedó bajo la pila. La última observación publicada puede dar a su equipo una referencia por playa, con fecha y nivel de confianza, y dejar claro qué información aún se desconoce.`,
+      l2: `Puedo enviarle una <strong>lectura real y fechada de sus playas</strong> (observación satelital, fecha, confianza, aciertos y límites). Si le interesa, la prueba Pro de 30 días es gratuita, sin tarjeta y en autoservicio.`,
+      ctaText: 'Ver últimas observaciones', orReply: 'Si no, responda “stop” y no le escribo más.'
     }
   }[L]
   const subject = F.subject
@@ -302,4 +298,4 @@ async function main() {
 // Exécution directe seulement → permet de require ce module (ex. tester isSendableEmail).
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1) })
 
-module.exports = { isSendableEmail, rampCap, buildC0 }
+module.exports = { isSendableEmail, rampCap, buildC0, buildC4 }
