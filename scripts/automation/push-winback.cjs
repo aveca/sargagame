@@ -70,6 +70,41 @@ function httpsPost(url, body, headers) {
   })
 }
 
+/**
+ * HTTP 200 alone is not proof that OneSignal accepted a notification.
+ * In particular, "All included players are not subscribed" returns 200 with
+ * an empty id and an errors array. Never advance the 14-day marker in that case.
+ */
+function classifyOneSignalResponse(res) {
+  if (!res || ![200, 201].includes(Number(res.status))) {
+    return { accepted: false, reason: 'http_status' }
+  }
+
+  let payload
+  try {
+    payload = JSON.parse(String(res.body || ''))
+  } catch (_) {
+    return { accepted: false, reason: 'invalid_json' }
+  }
+
+  const errors = Array.isArray(payload.errors) ? payload.errors.filter(Boolean) : []
+  if (errors.length) return { accepted: false, reason: 'api_errors', errors }
+
+  const id = typeof payload.id === 'string' ? payload.id.trim() : ''
+  if (!id) return { accepted: false, reason: 'missing_notification_id' }
+
+  const recipients = Number(payload.recipients)
+  if (Number.isFinite(recipients) && recipients <= 0) {
+    return { accepted: false, reason: 'zero_recipients' }
+  }
+
+  return {
+    accepted: true,
+    id,
+    recipients: Number.isFinite(recipients) ? recipients : null,
+  }
+}
+
 function readMarker() { try { return JSON.parse(fs.readFileSync(MARKER_PATH, 'utf8')) } catch (_) { return {} } }
 function writeMarker(m) { try { fs.mkdirSync(path.dirname(MARKER_PATH), { recursive: true }); fs.writeFileSync(MARKER_PATH, JSON.stringify(m, null, 2)) } catch (_) {} }
 
@@ -100,15 +135,20 @@ async function main() {
       continue
     }
     const res = await httpsPost('https://onesignal.com/api/v1/notifications', payload, { Authorization: `Key ${cfg.apiKey}` })
-    if (res.status === 200 || res.status === 201) {
-      console.log(`[winback] ${id.toUpperCase()} OK (${res.status}) ${res.body}`)
+    const outcome = classifyOneSignalResponse(res)
+    if (outcome.accepted) {
+      console.log(`[winback] ${id.toUpperCase()} ACCEPTED id=${outcome.id} recipients=${outcome.recipients ?? 'unknown'}`)
       marker[id] = new Date(nowMs).toISOString()
       writeMarker(marker)
     } else {
-      console.error(`[winback] ${id.toUpperCase()} ÉCHEC (${res.status}) ${res.body}`)
+      console.error(`[winback] ${id.toUpperCase()} NOT_SENT — marker unchanged (${outcome.reason}) ${res?.body || ''}`)
     }
   }
   console.log('[winback] terminé.')
 }
 
-main().catch((e) => { console.error('[winback] erreur non fatale :', e && e.message); process.exit(0) })
+if (require.main === module) {
+  main().catch((e) => { console.error('[winback] erreur non fatale :', e && e.message); process.exit(0) })
+}
+
+module.exports = { classifyOneSignalResponse }
