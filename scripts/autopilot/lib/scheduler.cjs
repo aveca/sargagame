@@ -165,6 +165,41 @@ function isPrBlocking(pr, selected, queue) {
   };
 }
 
+/**
+ * Statut de queue à utiliser pour REPRENDRE une mission.
+ *
+ * Règle unique, applicable à toute remise en file (watchdog, levée d'un
+ * blocage de sécurité) :
+ *
+ *   - `new`   = SÉLECTIONNABLE par `analyze.cjs`
+ *               (`pool = queue.filter(o => o.status === 'new')`) ;
+ *   - `picked` = DÉJÀ RÉCLAMÉE par le scheduler (`persistClaimed` la traite
+ *               comme claimée, `analyze` l'ignore, `restoreSelected` la
+ *               restaure).
+ *
+ * Une mission que le scheduler n'a JAMAIS claimée doit donc repartir en
+ * `new` : la mettre en `picked` la rend INEXÉCUTABLE (libérée mais
+ * invisible). Constaté en exécution réelle le 2026-11-11 sur la mission
+ * #1384 : libérée en `picked`, jamais sélectionnée.
+ *
+ * Inversement, une mission DÉJÀ claimée par le scheduler ne doit PAS
+ * repasser en `new` : elle serait exposée au pool pendant que le scheduler
+ * la considère comme sienne (risque de doublon).
+ *
+ * @param {string} oppId identifiant de l'opportunité
+ * @param {object|null} [schedulerState] état injecté (tests) ; par défaut le
+ *        vrai état du scheduler.
+ * @returns {'new'|'picked'}
+ */
+function resumableStatus(oppId, schedulerState = null) {
+  let st = schedulerState;
+  if (!st) {
+    try { st = loadScheduler(); } catch (_) { st = { claimedIds: [] }; }
+  }
+  const claimed = Array.isArray(st && st.claimedIds) && st.claimedIds.includes(oppId);
+  return claimed ? 'picked' : 'new';
+}
+
 /** Restaure l'opportunité persistée si elle est toujours actionable (anti-redécouverte aveugle). */
 function restoreSelected(queue) {
   const st = loadScheduler();
@@ -254,5 +289,6 @@ module.exports = {
   schedulerPath, loadScheduler, saveScheduler,
   surfaceOfOpp, filesOverlap, findLinkedOpp,
   isPrBlocking, restoreSelected, persistSelected, persistClaimed, persistDispatched,
+  resumableStatus,
   stateLine,
 };

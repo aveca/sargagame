@@ -21,7 +21,26 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
+
+// ── ISOLATION DE L'ÉTAT DURABLE ──────────────────────────────────────────────
+//
+// Défaut réel (2026-11-10, PC du fondateur) : ce test ne redirigeait PAS
+// `SARGA_MISSION_STATE_FILE`. Or `mission-lifecycle.cjs` lit cette variable
+// AU CHARGEMENT DU MODULE et écrit l'état durable par défaut dans
+// `.ai/autopilot/mission-state.json` — l'état RÉEL de la factory 24/7.
+//
+// Conséquence mesurée : un simple `npm test` sur la machine du fondateur
+// injectait 3 missions FICTIVES (`T-SARG`, `T-IDEM`, `T-FAIL`) dans l'état
+// durable de la boucle de production, qui pilote la reprise des missions.
+//
+// La redirection doit être posée AVANT le `require` du pont : le module
+// capture la variable au chargement.
+const TMP_STATE = path.join(os.tmpdir(), `sarga-bridge-state-${process.pid}.json`);
+process.env.SARGA_MISSION_STATE_FILE = TMP_STATE;
+try { fs.unlinkSync(TMP_STATE); } catch (_) {}
 
 const bridge = require('./multi-repo-bridge.cjs');
 
@@ -422,6 +441,7 @@ console.log('=== 8. parseArgs ===');
 }
 
 console.log('');
+try { fs.unlinkSync(TMP_STATE); } catch (_) {}
 if (failures === 0) {
   console.log('MULTI-REPO-BRIDGE TESTS : OK (' + failures + ' échec)');
   process.exit(0);
