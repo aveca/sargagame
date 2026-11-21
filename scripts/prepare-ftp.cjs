@@ -8,6 +8,15 @@
  *   <region.ftpDir>/ depuis dist/, sans aucun artefact MQ/GP (sitemaps,
  *   fichiers de vérification Google/Bing, images sociales, routes SEO des
  *   autres domaines, api/stripe-config.php).
+ *
+ * ARTEFACT PAGES (sans PHP) : pour chaque région LIVE, ce script produit en
+ * plus `<region.ftpDir>-pages/` — une copie EXACTEMENT identique au dossier
+ * FTP, SANS aucun fichier PHP/.htaccess/.htpasswd. C'est cet artefact qui
+ * doit être publié sur Cloudflare Pages (`wrangler pages deploy`) : Pages
+ * n'exécute pas le PHP, il le RENVOIE EN CLAIR (24/36 endpoints exposés sur
+ * les six `*.pages.dev`, mesuré le 2026-11-07). Le dossier FTP reste
+ * inchangé (les endpoints PHP y sont la money path historique).
+ * Opt-out local : SKIP_PAGES_ARTIFACT=1.
  */
 const fs = require('fs')
 const path = require('path')
@@ -16,6 +25,7 @@ const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
 const { refreshSatellitePayload } = require('./lib/satellite-freshness.cjs')
 const { assertWorkerAssetIgnore } = require('./lib/worker-assetsignore.cjs')
+const { buildPagesArtifact, pagesArtifactDirName } = require('./lib/pages-artifact.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -171,6 +181,23 @@ const OLD_ONESIGNAL_APP_ID = '4280dcab-fc43-415d-a9cd-a3da8cf601f1'
 // VITE_REGION absent ou mq/gp → build partagé historique (les deux îles).
 // Autre région → build mono-région (prepareNewRegion, bas de fichier).
 const buildRegion = getBuildRegion()
+
+// Mode `--pages-only` : ne reconstruit QUE les artefacts Pages (sans PHP) à
+// partir des dossiers FTP déjà préparés. Utile quand une étape intermédiaire
+// (ex. rafraîchissement des métadonnées du payload Copernicus) a modifié le
+// dossier FTP APRÈS prepare-ftp : l'artefact publié doit être EXACTEMENT
+// celui qui a été audité, moins les PHP.
+if (process.argv.includes('--pages-only')) {
+  const liveRegions = getAllRegions().filter(r => r.live !== false)
+  const built = buildPagesArtifacts(liveRegions)
+  if (!built.length) {
+    console.error("[prepare-ftp] --pages-only : aucun dossier FTP régional à convertir (lance d'abord prepare-ftp)")
+    process.exit(1)
+  }
+  console.log(`OK: ${built.length} artefact(s) Pages sans PHP (${built.map(b => b.dir).join(', ')})`)
+  process.exit(0)
+}
+
 if (!SHARED_LEGACY_IDS.includes(buildRegion.id)) {
   prepareNewRegion(buildRegion)
   return // return top-niveau CJS : on ne touche pas aux dossiers MQ/GP
@@ -524,10 +551,49 @@ console.log('   → Martinique : envoie le contenu de martinique-ftp/ sur le FTP
 console.log('   → Guadeloupe : envoie le contenu de guadeloupe-ftp/ sur le FTP (pas une vieille zip).')
 console.log('   → Si le site en ligne ne change pas : vérifie que tu envoies bien le dossier frais après "npm run martinique".')
 
+// Artefacts Pages SANS PHP (publication Cloudflare Pages). Le dossier FTP
+// reste INTACT (money path historique) : c'est la copie `-pages/` qui est
+// publiable. Voir scripts/lib/pages-artifact.cjs.
+buildPagesArtifacts(legacyRegions)
+
 
 // ─────────────────────────────────────────────────────────────────────────
 // Fonctions par région (hoistées — utilisées par le dispatch plus haut)
 // ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Construit, pour chaque région LIVE, l'artefact Pages SANS PHP :
+ * `<region.ftpDir>-pages/` — copie exacte du dossier régional, amputée des
+ * seuls fichiers `.php` / `.php.*` / `.htaccess` / `.htpasswd`.
+ *
+ * Rappel du pourquoi (scripts/lib/pages-artifact.cjs) :
+ *   - `wrangler pages deploy <dir>` publie TOUT le contenu de `<dir>` ;
+ *     le `.assetsignore` (règle « deux astérisques, slash, .php ») n'est honoré
+ *     que par les assets Worker ;
+ *   - sans cet artefact, les six `*.pages.dev` servaient le code source PHP
+ *     en clair (24/36 endpoints testés, mesuré le 2026-11-07) ;
+ *   - le dossier FTP doit conserver ses `.php` : ils y sont la money path
+ *     historique (Mollie, PayPal, Stripe, B2B). On ne le touche donc JAMAIS.
+ *
+ * @param {Array<{id: string, ftpDir: string, live?: boolean}>} regions
+ */
+function buildPagesArtifacts(regions) {
+  if (process.env.SKIP_PAGES_ARTIFACT === '1') {
+    console.log('   → artefact Pages NON construit (SKIP_PAGES_ARTIFACT=1)')
+    return []
+  }
+  const built = []
+  for (const region of regions || []) {
+    if (!region || region.live === false) continue
+    const source = path.join(root, region.ftpDir)
+    if (!fs.existsSync(source)) continue
+    const targetName = pagesArtifactDirName(region.ftpDir)
+    const result = buildPagesArtifact({ sourceDir: source, targetDir: path.join(root, targetName) })
+    built.push({ id: region.id, dir: targetName, copied: result.copied, removed: result.removed.length })
+    console.log(`   → artefact Pages ${targetName}/ créé (${result.copied} fichiers, ${result.removed.length} PHP/.htaccess exclus — jamais publiés sur Pages)`)
+  }
+  return built
+}
 
 /**
  * Réécrit l'index.html SEO d'une région dans son dossier FTP.
@@ -1285,4 +1351,8 @@ Généré par: VITE_REGION=${region.id} npm run build && VITE_REGION=${region.id
   console.log(`OK: ${dir}/ créé (contenu de dist/ + LISEZMOI-FTP.txt)`)
   console.log('')
   console.log(`   → ${title} : envoie le contenu de ${dir}/ sur le FTP (pas une vieille zip).`)
+
+  // Artefact Pages SANS PHP (publication Cloudflare Pages) : le dossier FTP
+  // reste intact (money path historique).
+  buildPagesArtifacts([region])
 }

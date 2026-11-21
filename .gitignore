@@ -50,6 +50,9 @@ SECRETS-GITHUB.txt
 # Build outputs FTP (martinique-ftp/, guadeloupe-ftp/, puntacana-ftp/...) — contiennent
 # des copies de stripe-config.php avec secrets. NE JAMAIS committer.
 *-ftp/
+# Artefacts Pages SANS PHP (martinique-ftp-pages/, …) : copies des dossiers FTP
+# préparées pour `wrangler pages deploy`. Générés, jamais committés.
+*-ftp-pages/
 
 # SEO Automation (log + overrides + reports are committed)
 
