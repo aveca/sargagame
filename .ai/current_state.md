@@ -1,3 +1,278 @@
+## 2026-11-15 23:55 UTC · Agent: DevOps (Factory V3 · continuite OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : continuité OpenCode opérationnelle pour Factory V3 — detection d'une session bloquee, reprise dans la MEME session apres bascule de modele, et verification factuelle de la reprise (aucun second orchestrateur).
+- **Détails** :
+  - `scripts/factory-v3/lib/continuity.cjs` — bibliotheque de continuite (detecter / lire / classifier / choisir / reprendre / verifier). Elle REUTILISE `error-classifier`, `retry-policy`, `model-registry`, `failover`, `session-registry`, `observer` et `exec` : aucune logique de retry, de selection de modele ou de lock n'est reimplementee.
+  - `scripts/factory-v3/continuity.cjs` — CLI d'UNE operation (`--inspect`, `--status`, `--resume [--dry-run]`). La boucle de jobs reste `run.cjs`.
+  - Anti-concurrence : verrou tokenise `state/continuity/continuity.lock` (une seule operation de continuite a la fois, tous runners confondus).
+  - Journal append-only `state/continuity/journal.jsonl` + checkpoints atomiques `state/continuity/checkpoints/<sessionId>.json` (dernier point valide).
+  - Reprise = reouverture de la session existante (`opencode run --session <id>`), comme un operateur humain ; le contexte est conserve.
+  - Verification : `failover.verifyModelUsed` exige modele + fournisseur + session sur LA MEME ligne ; sinon `verified: false` (jamais « reussi »).
+  - `docs/factory-v3-opencode-continuity.md` — les 8 capacites d'integration Factory V3 (OpenCode reste un outil utilise par Factory, pas un remplacement).
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/continuity.cjs` — nouveau (bibliotheque de continuite).
+- `scripts/factory-v3/continuity.cjs` — nouveau (CLI operationnelle).
+- `tests/fixtures/factory-v3-continuity-stub.cjs` — nouveau (faux binaire `opencode`, comportement `ok`/`429`/`mismatch`).
+- `tests/unit/factory-v3-continuity.test.cjs` — nouveau (10 tests).
+- `docs/factory-v3-opencode-continuity.md` — nouveau (8 capacites + runbook + limites).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — memoire mise a jour.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-continuity.test.cjs` -> **10/10 PASS** (detection, classification 429, selection de secours avec cooldown, prompt de reprise redige, checkpoint+journal, verrou, reprise reelle, refus d'une fausse preuve, bout-en-bout).
+- [x] `node scripts/factory-v3/continuity.cjs --inspect --limit 12` -> **preuve reelle** : 12 sessions OpenCode lues, 12 sessions perimees detectees (lecture seule, 0 quota).
+
+### Problèmes restants
+- [ ] Le modele actif d'une session n'est pas expose par `opencode session list --format json` : le secours doit etre donne (`--model`) ou deduit du checkpoint. A completer si l'API OpenCode expose le modele de session.
+- [ ] La reprise via CLI consomme un quota fournisseur : a n'utiliser que sur session reellement bloquee.
+
+### Prochaine action recommandée
+1. Brancher `continuity.cjs --resume` sur la detection automatique de session bloquee du tableau de bord — Role : devops_agent.
+2. Mesurer le taux de reprise verifiee sur 7 jours — Role : devops_agent.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- Commit head : (a definir)
+## 2026-11-15 10:45 UTC · Agent: DevOps (Factory V3 — tableau de bord central)
+
+### Travail effectué
+- **Résumé 1 ligne** : le tableau de bord Factory V3 devient central : sessions normalisées + observateur local + distinction explicite activité/progression/résultat/validation.
+- **Détails** : extension de `dashboard.cjs` (aucun nouveau port) avec les sections `SESSIONS (états normalisés)`, `OBSERVATEUR LOCAL` et `DISTINCTION DES PREUVES` ; absences et corruptions annoncées honnêtement ; blocages comptés ouverts uniquement.
+
+### Fichiers modifiés
+- `scripts/factory-v3/dashboard.cjs` — agrégation registre sessions + observateur + section preuves.
+- `tests/unit/factory-v3-runner.test.cjs` — 2 nouveaux tests dashboard.
+- `.ai/changelog.md`, `NEXT_SESSION.md`, `.ai/tasks.md` — documentation.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **19/19 PASS**.
+- [x] Preuve réelle : dashboard sur données du poste → 12 sessions affichées + observateur rendu.
+
+### Problèmes restants
+- [ ] Consultation ChatGPT (boucle bidirectionnelle réelle) à livrer via bridge 4187.
+- [ ] CI à re-vérifier sur le prochain push (test-frontend + perf + lighthouse).
+
+### Prochaine action recommandée
+1. Committer/pousser, vérifier CI — Rôle : devops.
+2. Agent de consultation ChatGPT réutilisant `result-relay.js`/`chatgpt-watcher.js` (Factory Control) via bridge local — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472
+- Commit head : à committer
+
+## 2026-11-15 10:20 UTC · Agent: DevOps (Factory V3 — porte de preuve evidence gate)
+
+### Travail effectué
+- **Résumé 1 ligne** : aucune mission ne peut plus être déclarée COMPLETED sans preuve réelle d'espace de travail propre et de tests réellement exécutés.
+- **Détails** : `computeVerdict` accepte une preuve réelle (3e argument optionnel) fournie par le pipeline depuis un vrai `git status` (`computeWorkspaceProof`) ; espace sale → `BLOCKED_UNCOMMITTED`, preuve illisible → `FAILED`, `DONE_NO_CHANGE` exige une propreté prouvée, et un commit sans gate de test réel ne peut plus donner `VERIFIED`. botwow reçoit la gate `unit-tests` (`npm test`). Preuves écrites dans `evidence.workspaceProof` et `evidence.testEvidence`.
+
+### Fichiers modifiés
+- `scripts/factory-v3/run.cjs` — computeVerdict (proof optionnel), computeWorkspaceProof, câblage pipeline, gate unit-tests botwow.
+- `tests/unit/factory-v3-runner.test.cjs` — 2 nouveaux tests (evidence gate + preuve git réelle).
+- `.ai/changelog.md`, `NEXT_SESSION.md`, `.ai/tasks.md` — documentation.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **17/17 PASS**.
+- [x] `node --test tests/unit/factory-v3-failover.test.cjs tests/unit/factory-v3-resilience.test.cjs` → **38/38 PASS**.
+
+### Problèmes restants
+- [ ] Dashboard central n'agrège pas encore registre + observateur.
+- [ ] Consultation ChatGPT (boucle bidirectionnelle) à livrer via bridge 4187.
+- [ ] CI à re-vérifier sur le prochain push.
+
+### Prochaine action recommandée
+1. Committer/pousser l'evidence gate, vérifier CI — Rôle : devops.
+2. Dashboard central (extension de `dashboard.cjs` avec SESSION_REGISTRY) — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472
+- Commit head : à committer
+
+## 2026-11-15 10:00 UTC · Agent: DevOps (Factory V3 — registre d'états de sessions)
+
+### Travail effectué
+- **Résumé 1 ligne** : la CI de la PR #1472 est revenue verte (`e5ed478a`) et la Factory V3 maintient désormais un registre persistant d'états de sessions normalisés.
+- **Détails** : cause CI identifiée par lecture du log (périphérique `NUL` absent sous Linux) et corrigée par périphérique nul dépendant de la plateforme ; registre fusionnant queue Factory + sessions OpenCode réelles, états `PLANNING/RUNNING/WAITING/BLOCKED/RECOVERING/VERIFYING/COMPLETED/FAILED`, contrats fail-closed (`DONE` sans verdict vérifié → `FAILED`, silence → `WAITING`+`stale` jamais `BLOCKED`), historique de transitions horodaté plafonné.
+
+### Fichiers modifiés
+- `scripts/factory-v3/publish-observer-state.cjs` — périphérique nul portable (fix CI).
+- `scripts/factory-v3/lib/session-registry.cjs` — noyau du registre normalisé (nouveau).
+- `scripts/factory-v3/session-registry.cjs` — CLI registre (queue + CLI OpenCode + logs failover) (nouveau).
+- `tests/unit/factory-v3-session-registry.test.cjs` — 7 tests (nouveau).
+- `scripts/factory-v3/README.md`, `.ai/changelog.md`, `NEXT_SESSION.md`, `.ai/tasks.md` — documentation.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-session-registry.test.cjs` → **7/7 PASS**.
+- [x] `node --test tests/unit/factory-v3-observer-publish.test.cjs tests/unit/factory-v3-observer.test.cjs` → **5/5 PASS**.
+- [x] CI PR #1472 sur `e5ed478a` : `test-frontend` PASS, perf PASS, lighthouse PASS, GitGuardian PASS.
+- [x] Preuve réelle : `session-registry.cjs` → 12 sessions OpenCode réelles, 12 transitions, `errors: []`.
+
+### Problèmes restants
+- [ ] Le registre n'est pas encore intégré au dashboard central ni au canal externe.
+- [ ] La porte de preuve avant complétion de mission (evidence gate) reste à implémenter dans `run.cjs`.
+- [ ] L'agent de consultation ChatGPT (boucle bidirectionnelle réelle) reste à livrer.
+
+### Prochaine action recommandée
+1. Committer/pousser le registre, puis implémenter l'evidence-gate de complétion dans `run.cjs` — Rôle : devops.
+2. Ajouter consultation ChatGPT via le bridge local existant (port 4187 vivant, santé OK) — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer (base CI verte `e5ed478a`)
+
+## 2026-11-15 09:41 UTC · Agent: DevOps (Factory V3 — observateur local indépendant)
+
+### Travail effectué
+- **Résumé 1 ligne** : un observateur local indépendant collecte l'état réel du dépôt, l'histoire des événements et publie un instantané expurgé vers `aveca/factory-control`.
+- **Détails** : `scripts/factory-v3/lib/observer.cjs` combine `fs.watch` et une réconciliation Git périodique ; `scripts/factory-v3/observer.cjs` lance le processus ; `scripts/factory-v3/publish-observer-state.cjs` publie le bundle structuré (`CURRENT_STATE`, `LOCAL_CHANGES`, `WORKLOG`, `TEST_RESULTS`, `BLOCKERS`, `NEXT_ACTIONS`) avec le diff exact des fichiers non suivis, tronqué et redacté. Preuve réelle : issue `aveca/factory-control#107` créée et relue via `gh`.
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/observer.cjs` — noyau d'observateur indépendant.
+- `scripts/factory-v3/observer.cjs` — CLI de démarrage de l'observateur.
+- `scripts/factory-v3/publish-observer-state.cjs` — publication expurgée vers GitHub.
+- `tests/unit/factory-v3-observer.test.cjs` — tests de détection réelle et de reprise.
+- `tests/unit/factory-v3-observer-publish.test.cjs` — tests de diff et de redaction.
+- `scripts/factory-v3/README.md` — documentation de l'observateur et du canal.
+
+### Tests réalisés
+- [x] `node --check scripts/factory-v3/lib/observer.cjs scripts/factory-v3/observer.cjs scripts/factory-v3/publish-observer-state.cjs` → exit 0.
+- [x] `node --test tests/unit/factory-v3-observer.test.cjs` → **3/3 PASS**.
+- [x] `node --test tests/unit/factory-v3-observer-publish.test.cjs` → **2/2 PASS**.
+- [x] Publication réelle sur `aveca/factory-control#107` + relecture via `gh issue view`.
+
+### Problèmes restants
+- [ ] L'observateur n'est pas encore connecté au pilote de session OpenCode.
+- [ ] Le dashboard central n'agrège pas encore l'état des sessions et les consultations ChatGPT.
+- [ ] Le cycle complet de réorientation automatique des sessions reste à livrer.
+
+### Prochaine action recommandée
+1. Committer et pousser l'observateur + le canal externe, puis re-vérifier la CI de la PR #1472 — Rôle : devops.
+2. Brancher l'observateur sur le pilotage de session et le dashboard central — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer
+
+## 2026-11-15 00:00 UTC · Agent: DevOps (Factory V3 — durcissement fail-closed + observabilité)
+
+### Travail effectué
+- **Résumé 1 ligne** : les jobs Factory V3 ne peuvent plus être mutés, publiés ou déclarés réussis par un worker non propriétaire, et les worktrees reçoivent désormais une base dédiée et vérifiée.
+- **Détails** : `updateJob()` exige le token de claim exact pour un job `RUNNING`, `claimStillOwned()` vérifie la propriété avant les étapes lourdes, la publication valide la branche/base et la sortie GitHub, et un job sans worktree explicite obtient un worktree dédié hors checkout principal. La preuve `job.verify` reste obligatoire pour tout verdict positif.
+
+### Fichiers modifiés
+- `scripts/factory-v3/run.cjs` — claims tokenisés, worktrees dédiés et publication durcie.
+- `scripts/factory-v3/lib/model-registry.cjs` — persistance, backups, verrous et slots fournisseur.
+- `scripts/factory-v3/lib/failover.cjs` — retry/failover, coûts et preuves modèle/fournisseur/session.
+- `scripts/factory-v3/dashboard.cjs` — erreurs registre/queue et disponibilité.
+- `tests/unit/factory-v3-runner.test.cjs`, `tests/unit/factory-v3-failover.test.cjs`, `tests/unit/factory-v3-resilience.test.cjs` — non-régression et scénarios de résilience.
+
+### Tests réalisés
+- [x] `node --check` sur les fichiers JS/CJS modifiés et non suivis → exit 0.
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs tests/unit/factory-v3-failover.test.cjs tests/unit/factory-v3-resilience.test.cjs` → **53/53 PASS**.
+
+### Problèmes restants
+- [ ] Les tests lock/registre/queue/claim/workspace/publication spécifiques restent à étendre.
+- [ ] L'observateur local indépendant et son état structuré ne sont pas encore implémentés.
+- [ ] Le canal GitHub vers `aveca/factory-control` n'expose pas encore les diffs locaux exacts expurgés.
+
+### Prochaine action recommandée
+1. Committer et pousser cette unité testée, puis vérifier la CI de la PR #1472 — Rôle : devops.
+2. Implémenter l'observateur local indépendant et son état structuré persistant — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer
+
+## 2026-11-14 21:25 UTC · Agent: DevOps (Factory V3 — résilience modèle/fournisseur)
+
+### Travail effectué
+- **Résumé 1 ligne** : Factory V3 ne gaspille plus de quota en boucle et garantit qu'une indisponibilité temporaire (429, quota, safety screening, timeout, fournisseur HS) transfère réellement la mission à un autre modèle/fournisseur, avec reprise de session et preuve.
+- **Détails** : politique de retry centralisée (`2/5/10/20/60 s` + jitter, 3 essais max), `Retry-After` respecté strictement (jamais raccourci), quota sans reset → cooldown progressif, auth/modèle inexistant → aucun retry, safety screening → une seule reprise différée. Circuit breaker par **fournisseur et modèle**, réouverture `half_open` progressive, cache de disponibilité, sondes en cooldown non rejouées, slots de concurrence atomiques/leased par fournisseur. Le contexte et la session persistés sont restaurés après restart. Logs et preuves contiennent modèle demandé/résolu, fournisseur, HTTP, `Retry-After`, tentatives, remplacement, résultat et durée totale.
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/retry-policy.cjs` — **nouveau** : backoff, jitter, Retry-After strict, décision de retry.
+- `scripts/factory-v3/lib/error-classifier.cjs` — HTTP/Retry-After/reset, safety screening, auth, quota progressif, categoriesProvider/Model.
+- `scripts/factory-v3/lib/model-registry.cjs` — cache de disponibilité, compteurs retry, breaker fournisseur `closed/open/half_open`, slots leased.
+- `scripts/factory-v3/lib/failover.cjs` — boucle retry par modèle, sélection failover par périmètre, reprise persistée, transparence `[MODEL]/[FAILOVER]`.
+- `scripts/factory-v3/run.cjs`, `scripts/factory-v3/dashboard.cjs` — configuration, preuve de résilience, état fournisseurs/cache/retries.
+- `scripts/factory-v3/lib/exec.cjs`, `tests/unit/factory-v3-runner.test.cjs` — exécution shell Windows/POSIX et kill de groupe, pour que la CI Linux valide réellement les gates Factory.
+- `scripts/factory-v3/test-real-failover.cjs`, `scripts/factory-v3/proofs/real-failover-1794691007644.json` — preuve réelle versionnée.
+- `tests/unit/factory-v3-resilience.test.cjs` — **nouveau** : 9 scénarios P0 + restart + Retry-After strict.
+- `tests/unit/factory-v3-failover.test.cjs`, `tests/fixtures/factory-v3-opencode-stub.cjs` — non-régression + réponses 429/safety/auth/quota.
+- `scripts/factory-v3/README.md` — contrat, observabilité et procédure.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-failover.test.cjs` → **20/20 PASS**.
+- [x] `node --test tests/unit/factory-v3-resilience.test.cjs` → **11/11 PASS**.
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **9/9 PASS**.
+- [x] `node scripts/factory-v3/test-real-failover.cjs --proof-dir scripts/factory-v3/proofs` → **exit 0** : 2/2 gratuit vérifié, 1 bascule réelle, 1 reprise, commit réel `8473e6d`, dépense 0.
+- [x] `npm test` → **205/205 fichiers PASS**.
+- [x] `npm run build` → exit 0 ; `node scripts/check-bundle-budget.cjs` → **206,7 Ko ≤ 210 Ko**.
+- [x] `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`.
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts --workers=1` (preview Sargagame isolé sur port 4187) → **4/4 PASS**.
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0.
+- [x] `git diff --check` → exit 0.
+
+### Problèmes restants
+- [ ] `FAILOVER-QUOTA-REAL` : impossible de provoquer honnêtement un quota réel épuisé ou un 429 fournisseur → classes couvertes par simulation déterministe ; la bascule réelle est prouvée sur une vraie erreur OpenCode.
+- [ ] `FACTORY-TASK-OLD` : `FactoryV3-Dispatcher` pointe encore sur l'ancien runner ; re-pointage après merge de `main`.
+- [ ] PR #1472 : mettre à jour avec ce commit et vérifier la CI sur le SHA exact.
+
+### Prochaine action recommandée
+1. Committer/pousser la résilience et mettre à jour la PR #1472 — Rôle : devops.
+2. Après merge, re-pointer la tâche planifiée sur le moteur failover — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : #1472 — https://github.com/aveca/sargagame/pull/1472
+- Commit head : à committer
+
+## 2026-11-14 19:55 UTC · Agent: DevOps (autonomie Factory V3)
+
+### Travail effectué
+- **Résumé 1 ligne** : Factory V3 bascule maintenant automatiquement de modèle quand un quota / rate limit / fournisseur tombe, sans jamais changer de modèle sur une erreur de code et sans dépense.
+- **Détails** : le routage n'est plus une liste statique. L'inventaire est redécouvert à chaud via les mécanismes natifs (`opencode auth list`, `opencode models <provider> --verbose`, `ollama list`), filtré (gratuit 0/0, statut actif, sortie texte, support outils), puis classé (Nvidia gratuit > autres gratuits OpenCode > fournisseurs configurés > locaux Ollama). Chaque échec est classé (quota journalier / 429 / crédit 402 / fournisseur / timeout / erreur de code), le modèle fautif est mis en cooldown (minuit UTC pour le quota journalier, exponentiel plafonné à 30 min pour le rate limit, 1 h au 3e échec consécutif) et un autre modèle est choisi. La session OpenCode est **reprise** (`--session`) et le contexte (mission, raison de l'échec, dernier commit, fichiers déjà modifiés) est transmis dans un bloc de reprise + persisté dans `state/context/<jobId>.json`. Le registre `state/model-registry.json` est écrit atomiquement sous verrou de fichier (agents concurrents) et réintègre automatiquement les modèles dont le cooldown expire.
+- **Preuve réelle** : `scripts/factory-v3/state/evidence/real-failover-1794685860227.json` — inventaire 135 modèles / 38 éligibles / 59 gratuits / 9 fournisseurs authentifiés ; phase A 2/2 modèles gratuits vérifiés par usage réel (`ollama/qwen2.5-coder:7b` 22 s, `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` 9 s) ; phase B : sonde `nvidia/nvidia/model-quota-probe-introuvable` → vraie erreur `PROVIDER_UNAVAILABLE` → **bascules = 1** → Nvidia Nemotron réussit, fichier `FACTORY_REAL_OK` créé, **commit réel `742ce09e122fa21a7c6d06d7e2681d49d803dffd`**, **dépense 0**.
+
+### Fichiers modifiés
+- `scripts/factory-v3/lib/error-classifier.cjs` — classification quota journalier / 429 / 402 / fournisseur / timeout / **erreur de code (jamais de bascule)**.
+- `scripts/factory-v3/lib/model-registry.cjs` — mémoire persistante des quotas, cooldowns, circuit breaker, expenditure, verrou de fichier.
+- `scripts/factory-v3/lib/inventory.cjs` — découverte dynamique + parsing ANSI de `auth list` + filtre gratuit + scoring de priorité.
+- `scripts/factory-v3/lib/exec.cjs` — exécution robuste (fichiers au lieu de pipes, kill d'arbre, timeout d'inactivité) + résolution du vrai binaire `opencode.exe`.
+- `scripts/factory-v3/lib/failover.cjs` — moteur de bascule : sélection, classification, reprise de session, vérification du résultat produit.
+- `scripts/factory-v3/dashboard.cjs` — tableau de bord (modèle courant, fournisseur, quota, bascules, reprises, agents bloqués, dépense).
+- `scripts/factory-v3/test-real-failover.cjs` — test réel en 2 phases (disponibilité + bascule).
+- `scripts/factory-v3/README.md` — architecture, classification, procédures de récupération, résultats réels.
+- `scripts/factory-v3/run.cjs` — intégration dans l'orchestrateur central (un seul orchestrateur), verdict `WAIT_QUOTA` + reprogrammation.
+- `tests/unit/factory-v3-failover.test.cjs` + `tests/fixtures/factory-v3-opencode-stub.cjs` — 20 tests déterministes.
+
+### Tests réalisés
+- [x] `node --test tests/unit/factory-v3-failover.test.cjs` → **20/20 PASS** (les 10 scénarios exigés + erreurs de code + hang + concurrence + faux succès + sondes).
+- [x] `node --test tests/unit/factory-v3-runner.test.cjs` → **9/9 PASS** (non-régression runner).
+- [x] `npm run build` → exit 0.
+- [x] `node scripts/check-bundle-budget.cjs` → 206,7 Ko ≤ 210 Ko, exit 0.
+- [x] `node scripts/factory-v3/test-real-failover.cjs` → **exit 0** : 2/2 modèles gratuits vérifiés, bascules = 1, commit réel, dépense 0.
+
+### Problèmes restants
+- [ ] `FAILOVER-QUOTA-REAL` : un quota journalier réel ne peut pas être épuisé artificiellement → les classes `DAILY_QUOTA_EXHAUSTED` et `HTTP 429` restent couvertes par les tests déterministes uniquement (la bascule elle-même est prouvée sur une vraie erreur de fournisseur).
+- [ ] `FACTORY-TASK-OLD` : la tâche planifiée `FactoryV3-Dispatcher` pointe encore vers l'ancien runner (fuites de processus, `ollama/qwen2.5-coder:14b` non installé). À re-pointer sur le code failover après merge de `main`.
+- [ ] `FACTORY-JOB-DEMO` : le job démo `job-1794676119497-1f224f` est `PENDING` avec le verdict historique `FAILED` (4 attempts time-out, travail réel jeté) ; il sera repris par le moteur.
+
+### Prochaine action recommandée
+1. Merger la PR failover dans `main` puis re-pointer la tâche planifiée sur le runner à bascule — Rôle : devops.
+2. Rejouer le job démo avec le moteur failover pour obtenir un verdict `VERIFIED` — Rôle : devops.
+
+### Branche / PR
+- Branche : `agent/devops/factory-v3-model-failover`
+- PR : (à ouvrir sur `main`)
+- Commit head : (à committer)
+
 ## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
 
 - Les pages `/pro/pricing/` FR, EN et ES ont deux boutons vers les Payment Links Pro. Le script `public/pro/pricing-pay.js` choisit EUR ou USD selon l'un des 6 domaines.

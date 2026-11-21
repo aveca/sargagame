@@ -1,0 +1,1014 @@
+{
+  "type": "REAL_FAILOVER_TEST",
+  "ts": "2026-11-14T21:16:47.643Z",
+  "durationMs": 31468,
+  "job": {
+    "jobId": "real-failover-1794690976103",
+    "repo": "sargagame",
+    "task": "Crée un fichier factory-real-proof.txt contenant exactement la ligne FACTORY_REAL_OK, puis fais un commit git avec le message 'test(factory-v3): preuve reelle de failover'. Ne fais rien d'autre.",
+    "severity": 2,
+    "branch": "agent/devops/factory-v3-model-failover",
+    "attempts": 0,
+    "verify": {
+      "requiredFiles": [
+        {
+          "path": "factory-real-proof.txt",
+          "contains": "FACTORY_REAL_OK"
+        }
+      ],
+      "requireCommit": true
+    }
+  },
+  "models": {
+    "probe": "nvidia/nvidia/model-quota-probe-introuvable",
+    "reel": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b"
+  },
+  "inventory": {
+    "updatedAt": "2026-11-14T21:15:44.393Z",
+    "counts": {
+      "discovered": 135,
+      "eligible": 38,
+      "free": 59
+    },
+    "authProviders": [
+      "opencode",
+      "ollama",
+      "nvidia",
+      "meta",
+      "zenmux",
+      "minimax",
+      "mistral",
+      "openrouter",
+      "openai"
+    ],
+    "authCredentials": [
+      {
+        "name": "OpenCode Go",
+        "provider": "opencode",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "Ollama Cloud",
+        "provider": "ollama",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "Nvidia",
+        "provider": "nvidia",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "Meta",
+        "provider": "meta",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "ZenMux",
+        "provider": "zenmux",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "MiniMax (minimax.io)",
+        "provider": "minimax",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "Mistral",
+        "provider": "mistral",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "OpenRouter",
+        "provider": "openrouter",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "OpenAI",
+        "provider": "openai",
+        "type": "oauth",
+        "source": "credential"
+      },
+      {
+        "name": "openrouter-free",
+        "provider": "openrouter",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "OpenCode",
+        "provider": "opencode",
+        "type": "api",
+        "source": "credential"
+      },
+      {
+        "name": "Nvidia",
+        "provider": "nvidia",
+        "type": "env",
+        "envVar": "NVIDIA_API_KEY",
+        "source": "environment"
+      },
+      {
+        "name": "OpenRouter",
+        "provider": "openrouter",
+        "type": "env",
+        "envVar": "OPENROUTER_API_KEY",
+        "source": "environment"
+      }
+    ],
+    "installedOllama": [
+      "qwen2.5-coder:7b",
+      "qwen3.5:9b",
+      "qwen3.5-uncensored-aggressive:9b"
+    ],
+    "errors": [
+      {
+        "provider": "meta",
+        "exitCode": 1,
+        "stderr": "\u001b[91m\u001b[1mError: \u001b[0mProvider not found: meta\r\n"
+      },
+      {
+        "provider": "zenmux",
+        "exitCode": 1,
+        "stderr": "\u001b[91m\u001b[1mError: \u001b[0mProvider not found: zenmux\r\n"
+      },
+      {
+        "provider": "minimax",
+        "exitCode": 1,
+        "stderr": "\u001b[91m\u001b[1mError: \u001b[0mProvider not found: minimax\r\n"
+      },
+      {
+        "provider": "mistral",
+        "exitCode": 1,
+        "stderr": "\u001b[91m\u001b[1mError: \u001b[0mProvider not found: mistral\r\n"
+      },
+      {
+        "provider": "openrouter",
+        "exitCode": 1,
+        "stderr": "\u001b[91m\u001b[1mError: \u001b[0mProvider not found: openrouter\r\n"
+      },
+      {
+        "provider": "openai",
+        "exitCode": 1,
+        "stderr": "\u001b[91m\u001b[1mError: \u001b[0mProvider not found: openai\r\n"
+      }
+    ]
+  },
+  "phaseA_availability": {
+    "tested": 2,
+    "verified": 2,
+    "models": [
+      {
+        "model": "ollama/qwen2.5-coder:7b",
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "idleTimedOut": false,
+        "durationMs": 23575,
+        "sessionId": "ses_e24156dfcffeB04XGLfx6dtYkS",
+        "modelVerified": true,
+        "observedModel": "qwen2.5-coder:7b",
+        "observedProvider": "ollama",
+        "tokens": 0,
+        "cost": 0,
+        "reply": "FACTORY_AVAIL_OK",
+        "errorText": "mp=2026-11-14T21:16:07.750Z level=INFO run=8c4f8fa5 message=loop session.id=ses_e24156dfcffeB04XGLfx6dtYkS step=1\ntimestamp=2026-11-14T21:16:07.751Z level=INFO run=8c4f8fa5 message=\"exiting loop\" session.id=ses_e24156dfcffeB04XGLfx6dtYkS\ntimestamp=2026-11-14T21:16:07.761Z level=INFO run=8c4f8fa5 message=\"disposing instance\" directory=\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\factory-v3-real-1JjW0j\"\n"
+      },
+      {
+        "model": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "idleTimedOut": false,
+        "durationMs": 8131,
+        "sessionId": "ses_e241511bbffeZfbQJncb3NNFlf",
+        "modelVerified": true,
+        "observedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "observedProvider": "nvidia",
+        "tokens": 0,
+        "cost": 0,
+        "reply": "FACTORY_AVAIL_OK",
+        "errorText": "mp=2026-11-14T21:16:15.874Z level=INFO run=c7e0a580 message=loop session.id=ses_e241511bbffeZfbQJncb3NNFlf step=1\ntimestamp=2026-11-14T21:16:15.875Z level=INFO run=c7e0a580 message=\"exiting loop\" session.id=ses_e241511bbffeZfbQJncb3NNFlf\ntimestamp=2026-11-14T21:16:15.884Z level=INFO run=c7e0a580 message=\"disposing instance\" directory=\"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\factory-v3-real-1JjW0j\"\n"
+      }
+    ]
+  },
+  "result": {
+    "ok": true,
+    "model": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "requestedModel": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "resolvedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "provider": "nvidia",
+    "replacementModel": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "finalResult": "success",
+    "totalDurationMs": 31466,
+    "failovers": 1,
+    "resumes": 1,
+    "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL",
+    "committedSha": "8473e6dd5886822f104c2134d4cbacbeb02a9a76",
+    "spend": 0,
+    "error": null
+  },
+  "attempts": [
+    {
+      "ref": "nvidia/nvidia/model-quota-probe-introuvable",
+      "requestedModel": "nvidia/nvidia/model-quota-probe-introuvable",
+      "resolvedModel": "nvidia/nvidia/model-quota-probe-introuvable",
+      "provider": "nvidia",
+      "isProbe": true,
+      "attemptNumber": 1,
+      "modelAttempt": 1,
+      "outcome": "failed",
+      "category": "PROVIDER_UNAVAILABLE",
+      "httpStatus": null,
+      "retryAfterMs": null,
+      "replacementModel": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "exitCode": 1,
+      "durationMs": 1931,
+      "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL",
+      "modelVerified": false,
+      "observedModel": null,
+      "tokens": 0,
+      "cost": 0,
+      "resultCheck": null,
+      "errorText": "{\"type\":\"error\",\"timestamp\":1794690978597,\"sessionID\":\"ses_e2414ef29ffeTe1yborQUbTeJL\",\"error\":{\"name\":\"UnknownError\",\"data\":{\"message\":\"Unexpected server error. Check server logs for details.\",\"ref\":\"err_17213fc7\"}}}",
+      "outputTail": ""
+    },
+    {
+      "ref": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "requestedModel": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "resolvedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "provider": "nvidia",
+      "isProbe": false,
+      "attemptNumber": 2,
+      "modelAttempt": 1,
+      "outcome": "success",
+      "category": null,
+      "exitCode": 0,
+      "durationMs": 26511,
+      "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL",
+      "modelVerified": true,
+      "observedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "tokens": 0,
+      "cost": 0,
+      "resultCheck": {
+        "ok": true,
+        "checks": [
+          {
+            "id": "file:factory-real-proof.txt",
+            "ok": true,
+            "detail": "présent"
+          },
+          {
+            "id": "commit",
+            "ok": true,
+            "detail": "commit(s) présent(s)"
+          }
+        ]
+      },
+      "errorText": "414ef29ffeTe1yborQUbTeJL messageID=msg_1dbeb7a2f0015U1f6MNn5jIks3\ntimestamp=2026-11-14T21:16:45.130Z level=INFO run=b398f83d message=stream providerID=nvidia modelID=nvidia/nemotron-3.5-super-vl-120b-a12b session.id=ses_e2414ef29ffeTe1yborQUbTeJL small=false agent=build mode=primary\ntimestamp=2026-11-14T21:16:45.138Z level=INFO run=b398f83d message=\"llm runtime selected\" llm.runtime=ai-sdk llm.provider=nvidia llm.model=nvidia/nemotron-3.5-super-vl-120b-a12b\ntimestamp=2026-11-14T21:16:46.424Z level=INFO run=b398f83d message=tracking hash=c0926a4d6bd011573264a761a17a0f6c9dce2a3c cwd=\"C:\\\\Users\\\\",
+      "outputTail": "FACTORY_DONE: Créé factory-real-proof.txt contenant exactement FACTORY_REAL_OK et commit 'test(factory-v3): preuve reelle de failover' (8473e6d) sur master."
+    }
+  ],
+  "proof": {
+    "fileExists": true,
+    "content": "FACTORY_REAL_OK",
+    "gitLog": "8473e6d test(factory-v3): preuve reelle de failover\n8c0443d init",
+    "dirtyFiles": 0
+  },
+  "registry": {
+    "stats": {
+      "failovers": 1,
+      "resumes": 1,
+      "quotaEvents": 0,
+      "attempts": 2,
+      "successes": 1,
+      "failures": 1,
+      "retries": 0,
+      "lastFailoverAt": "2026-11-14T21:16:19.527Z",
+      "spend": 0,
+      "lastFailover": {
+        "at": "2026-11-14T21:16:19.527Z",
+        "from": "nvidia/nvidia/model-quota-probe-introuvable",
+        "to": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "provider": "nvidia",
+        "category": "PROVIDER_UNAVAILABLE"
+      }
+    },
+    "models": {
+      "nvidia/nvidia/model-quota-probe-introuvable": {
+        "status": "cooldown",
+        "cooldownUntil": "2026-11-14T21:26:19.524Z",
+        "lastResult": "PROVIDER_UNAVAILABLE",
+        "lastFailureCategory": "PROVIDER_UNAVAILABLE",
+        "verifiedByUse": false,
+        "observedModel": null,
+        "totalRetries": 0
+      },
+      "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+        "status": "available",
+        "cooldownUntil": null,
+        "lastResult": "success",
+        "lastFailureCategory": null,
+        "verifiedByUse": true,
+        "observedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "totalRetries": 0
+      }
+    },
+    "providers": {
+      "nvidia": {
+        "provider": "nvidia",
+        "state": "closed",
+        "consecutiveFailures": 0,
+        "totalFailures": 0,
+        "totalSuccesses": 1,
+        "cooldownUntil": null,
+        "lastFailureAt": null,
+        "lastFailureCategory": null,
+        "lastAttemptAt": "2026-11-14T21:16:47.567Z",
+        "lastSuccessAt": "2026-11-14T21:16:47.567Z",
+        "inFlight": 0,
+        "peakInFlight": 1,
+        "rejected": 0,
+        "slots": {}
+      }
+    },
+    "availability": {
+      "nvidia/nvidia/model-quota-probe-introuvable": {
+        "key": "nvidia/nvidia/model-quota-probe-introuvable",
+        "available": false,
+        "reason": "PROVIDER_UNAVAILABLE détecté (none) — bascule de modèle requise. (sonde hors inventaire : aucun retry, failover direct)",
+        "category": "PROVIDER_UNAVAILABLE",
+        "checkedAt": "2026-11-14T21:16:19.524Z",
+        "expiresAt": "2026-11-14T21:26:19.524Z"
+      },
+      "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b": {
+        "key": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "available": true,
+        "reason": "exécution réelle réussie",
+        "category": null,
+        "checkedAt": "2026-11-14T21:16:47.567Z",
+        "expiresAt": "2026-11-14T21:46:47.567Z"
+      }
+    }
+  },
+  "events": [
+    {
+      "e": "FAILOVER_PROBES_ARMED",
+      "d": {
+        "probes": [
+          "nvidia/nvidia/model-quota-probe-introuvable"
+        ],
+        "skippedPaidProbes": []
+      }
+    },
+    {
+      "e": "FAILOVER_CANDIDATES",
+      "d": {
+        "candidates": [
+          {
+            "ref": "nvidia/nvidia/model-quota-probe-introuvable",
+            "provider": "nvidia",
+            "score": 1000000,
+            "reasons": [
+              "sonde hors inventaire (échec attendu du fournisseur, coût 0)"
+            ],
+            "isProbe": true
+          },
+          {
+            "ref": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+            "provider": "nvidia",
+            "score": 10042,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "priorité mission #2",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+            "provider": "nvidia",
+            "score": 150,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+            "provider": "nvidia",
+            "score": 150,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b",
+            "provider": "nvidia",
+            "score": 150,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/minimaxai/minimax-m3.1-flash",
+            "provider": "nvidia",
+            "score": 146,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille minimax"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/google/diffusiongemma-26b-a4b-it",
+            "provider": "nvidia",
+            "score": 142,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille gemma"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/google/gemma-4-31b-it",
+            "provider": "nvidia",
+            "score": 142,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille gemma"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/nvidia/nemotron-voicechat",
+            "provider": "nvidia",
+            "score": 142,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/nemotron-3.5-lightning-free",
+            "provider": "opencode",
+            "score": 140,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/nemotron-3.5-super-vl-free",
+            "provider": "opencode",
+            "score": 140,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille nemotron"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/deepseek-ai/deepseek-v4.1-flash",
+            "provider": "nvidia",
+            "score": 138,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/meta/muse-glimmer-30b",
+            "provider": "nvidia",
+            "score": 138,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/openai/gpt-oss-20b",
+            "provider": "nvidia",
+            "score": 138,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/poolside/laguna-xs-2.1",
+            "provider": "nvidia",
+            "score": 138,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/stepfun-ai/step-5-preview",
+            "provider": "nvidia",
+            "score": 138,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/z-ai/glm-5.3-flash",
+            "provider": "nvidia",
+            "score": 138,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/minimax-m3.1-flash-free",
+            "provider": "opencode",
+            "score": 136,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k",
+              "famille minimax"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/meta/llama-3.2-11b-vision-instruct",
+            "provider": "nvidia",
+            "score": 133,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k",
+              "famille llama"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "nvidia/meta/llama-3.2-90b-vision-instruct",
+            "provider": "nvidia",
+            "score": 133,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k",
+              "famille llama"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/beam-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/big-pickle",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/deepseek-v4.1-flash-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/flint-40b-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/glm-5.3-flash-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/iceman-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/inkling-2-small-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/longcat-2.5-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "opencode/mimo-v2.6-flash-free",
+            "provider": "opencode",
+            "score": 128,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "raisonnement",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "ollama/qwen2.5-coder:7b",
+            "provider": "ollama",
+            "score": 112,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k",
+              "installé localement (vérifié)"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "router/auto",
+            "provider": "router",
+            "score": 90,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "router/fast",
+            "provider": "router",
+            "score": 90,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "router/qwen2.5-coder:7b",
+            "provider": "router",
+            "score": 90,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "router/reasoning",
+            "provider": "router",
+            "score": 90,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "ollama/llama3.2:3b",
+            "provider": "ollama",
+            "score": 60,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k",
+              "non installé localement"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "ollama/qwen2.5-coder:14b",
+            "provider": "ollama",
+            "score": 60,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "contexte ≥32k",
+              "non installé localement"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "ollama/deepseek-coder:6.7b",
+            "provider": "ollama",
+            "score": 55,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "non installé localement"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "ollama/gemma2:9b",
+            "provider": "ollama",
+            "score": 55,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "non installé localement"
+            ],
+            "isProbe": false
+          },
+          {
+            "ref": "ollama/phi3:latest",
+            "provider": "ollama",
+            "score": 55,
+            "reasons": [
+              "gratuit (coût 0/0 vérifié)",
+              "outils",
+              "non installé localement"
+            ],
+            "isProbe": false
+          }
+        ],
+        "skipped": []
+      }
+    },
+    {
+      "e": "[MODEL]",
+      "d": {
+        "message": "requested=nvidia/nvidia/model-quota-probe-introuvable",
+        "jobId": "real-failover-1794690976103",
+        "requested": "nvidia/nvidia/model-quota-probe-introuvable",
+        "provider": "nvidia",
+        "modelAttempt": 1,
+        "maxSameModelAttempts": 3
+      }
+    },
+    {
+      "e": "MODEL_ATTEMPT_START",
+      "d": {
+        "jobId": "real-failover-1794690976103",
+        "ref": "nvidia/nvidia/model-quota-probe-introuvable",
+        "provider": "nvidia",
+        "score": 1000000,
+        "reasons": [
+          "sonde hors inventaire (échec attendu du fournisseur, coût 0)"
+        ],
+        "resumedSession": null,
+        "attempt": 1,
+        "modelAttempt": 1,
+        "maxSameModelAttempts": 3,
+        "maxAttempts": 3
+      }
+    },
+    {
+      "e": "[MODEL]",
+      "d": {
+        "message": "resolved=nvidia/nvidia/model-quota-probe-introuvable",
+        "jobId": "real-failover-1794690976103",
+        "requested": "nvidia/nvidia/model-quota-probe-introuvable",
+        "resolved": "nvidia/nvidia/model-quota-probe-introuvable",
+        "observedProvider": null,
+        "modelVerified": false,
+        "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL"
+      }
+    },
+    {
+      "e": "MODEL_ATTEMPT_FAILED",
+      "d": {
+        "jobId": "real-failover-1794690976103",
+        "ref": "nvidia/nvidia/model-quota-probe-introuvable",
+        "category": "PROVIDER_UNAVAILABLE",
+        "quotaType": "none",
+        "switchModel": true,
+        "cooldownUntil": "2026-11-14T21:16:17.546Z",
+        "httpStatus": null,
+        "retryAfterMs": null,
+        "modelAttempt": 1,
+        "maxSameModelAttempts": 3,
+        "reason": "PROVIDER_UNAVAILABLE détecté (none) — bascule de modèle requise. (sonde hors inventaire : aucun retry, failover direct)",
+        "committedSha": null
+      }
+    },
+    {
+      "e": "SESSION_CONTEXT_PRESERVED",
+      "d": {
+        "jobId": "real-failover-1794690976103",
+        "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL",
+        "ref": "nvidia/nvidia/model-quota-probe-introuvable"
+      }
+    },
+    {
+      "e": "[FAILOVER]",
+      "d": {
+        "message": "reason=PROVIDER_UNAVAILABLE",
+        "jobId": "real-failover-1794690976103",
+        "reason": "PROVIDER_UNAVAILABLE",
+        "from": "nvidia/nvidia/model-quota-probe-introuvable",
+        "httpStatus": null,
+        "retryAfterMs": null,
+        "modelAttempt": 1
+      }
+    },
+    {
+      "e": "[FAILOVER]",
+      "d": {
+        "message": "next_model=nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "jobId": "real-failover-1794690976103",
+        "nextModel": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "nextProvider": "nvidia"
+      }
+    },
+    {
+      "e": "MODEL_FAILOVER",
+      "d": {
+        "jobId": "real-failover-1794690976103",
+        "from": "nvidia/nvidia/model-quota-probe-introuvable",
+        "category": "PROVIDER_UNAVAILABLE",
+        "httpStatus": null,
+        "retryAfterMs": null,
+        "next": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "contextPreserved": true,
+        "sessionReused": true
+      }
+    },
+    {
+      "e": "[MODEL]",
+      "d": {
+        "message": "requested=nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "jobId": "real-failover-1794690976103",
+        "requested": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "provider": "nvidia",
+        "modelAttempt": 1,
+        "maxSameModelAttempts": 3
+      }
+    },
+    {
+      "e": "[MODEL]",
+      "d": {
+        "message": "execution_resumed=true",
+        "jobId": "real-failover-1794690976103",
+        "requested": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL",
+        "executionResumed": true
+      }
+    },
+    {
+      "e": "MODEL_ATTEMPT_START",
+      "d": {
+        "jobId": "real-failover-1794690976103",
+        "ref": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "provider": "nvidia",
+        "score": 10042,
+        "reasons": [
+          "gratuit (coût 0/0 vérifié)",
+          "priorité mission #2",
+          "outils",
+          "contexte ≥32k",
+          "famille nemotron"
+        ],
+        "resumedSession": "ses_e2414ef29ffeTe1yborQUbTeJL",
+        "attempt": 2,
+        "modelAttempt": 1,
+        "maxSameModelAttempts": 3,
+        "maxAttempts": 3
+      }
+    },
+    {
+      "e": "[MODEL]",
+      "d": {
+        "message": "resolved=nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "jobId": "real-failover-1794690976103",
+        "requested": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "resolved": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "observedProvider": "nvidia",
+        "modelVerified": true,
+        "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL"
+      }
+    },
+    {
+      "e": "MODEL_ATTEMPT_SUCCESS",
+      "d": {
+        "jobId": "real-failover-1794690976103",
+        "ref": "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "modelVerified": true,
+        "observedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+        "sessionId": "ses_e2414ef29ffeTe1yborQUbTeJL",
+        "committedSha": "8473e6dd5886822f104c2134d4cbacbeb02a9a76",
+        "durationMs": 26511,
+        "cost": 0
+      }
+    }
+  ]
+}
