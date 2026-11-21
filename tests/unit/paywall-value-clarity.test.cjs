@@ -70,6 +70,11 @@ assert.ok(/Vérifier la prévision de ma plage →/.test(pw),
 // Aucune garantie de plage sans sargasses
 assert.ok(!/garanti[^<]{0,30}sans sargasse/i.test(pw), 'aucune promesse de plage sans sargasses');
 
+// ── 5. CTA principal de la fiche plage → contexte réel ─────────────────────
+const beachCtxSources = pw.match(/const _bcSrcs=\[(.*?)\]/);
+assert.ok(beachCtxSources && /[\\"']beach_sheet[\\"']/.test(beachCtxSources[1]),
+  'the main beach-sheet CTA must preserve the selected beach in the paywall context');
+
 console.log('OK Test 1: avantages ordonnés par importance décisionnelle (date > décision > complémentaire)');
 console.log('OK Test 2: prix strictement conservés (4,99 €/mois et 49 €/an)');
 console.log('OK Test 3: économie annuelle calculée depuis les prix réels, affichée si positive');
