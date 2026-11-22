@@ -14,7 +14,10 @@
  *
  * Usage :
  *   node scripts/automation/ux-watch.cjs          # dry-run
- *   node scripts/automation/ux-watch.cjs --send   # envoie (si SMTP prêt)
+ *   node scripts/automation/ux-watch.cjs --send --approved-by=<fondateur>  # envoie (si SMTP prêt)
+ *
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'envoi non approuvé, motif relance-gap).
  */
 const fs = require('fs')
 const path = require('path')
@@ -26,6 +29,14 @@ const { sendEmail, mailReady } = require('./lib/email-send.cjs')
 })
 
 const DO_SEND = process.argv.includes('--send')
+const APPROVED_BY = (() => {
+  const a = process.argv.find((x) => x.startsWith('--approved-by='))
+  return a ? a.slice(14).trim() : null
+})()
+const CAN_SEND = DO_SEND && APPROVED_BY
+if (DO_SEND && !APPROVED_BY) {
+  console.log('[ux-watch] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'envoi non approuvé).')
+}
 const DATA = path.join(__dirname, 'data')
 const REPORT = path.join(DATA, 'ux-report.json')
 const SEEN = path.join(DATA, 'ux-watch-seen.json')
@@ -73,7 +84,7 @@ console.log(`  ${actionable.length} à corriger | ${hotspots.length} hotspot(s) 
 actionable.forEach(c => console.log(`  [FIX] ${c.site.toUpperCase()} · ${c.page} — ${c.type} (${c.metric})`))
 if (hotspots.length) console.log(`  [hotspots] ${hotList}${hotspots.length > 8 ? ` … +${hotspots.length - 8}` : ''}`)
 
-if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); process.exit(0) }
+if (!CAN_SEND) { console.log('\nDRY-RUN — rien envoyé. --send --approved-by=<fondateur> pour envoyer.'); process.exit(0) }
 if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); process.exit(0) }
 
 const actHtml = actionable.length

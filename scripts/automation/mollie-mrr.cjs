@@ -12,9 +12,11 @@
  * Sortie : scripts/automation/data/mollie-mrr.json
  *
  * Usage :
- *   node scripts/automation/mollie-mrr.cjs           # lit depuis l'API
- *   node scripts/automation/mollie-mrr.cjs --send    # écrit le rapport
+ *   node scripts/automation/mollie-mrr.cjs           # lit depuis l'API (dry-run)
+ *   node scripts/automation/mollie-mrr.cjs --send --approved-by=<fondateur>  # écrit le rapport
  *
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'écriture non approuvé, motif relance-gap).
  * Secrets : MOLLIE_API_KEY (GH Actions). Absent → skip propre.
  */
 const fs = require('fs')
@@ -22,6 +24,14 @@ const path = require('path')
 
 const OUT_PATH = path.join(__dirname, 'data', 'mollie-mrr.json')
 const SEND = process.argv.includes('--send')
+const APPROVED_BY = (() => {
+  const a = process.argv.find((x) => x.startsWith('--approved-by='))
+  return a ? a.slice(14).trim() : null
+})()
+const CAN_SEND = SEND && APPROVED_BY
+if (SEND && !APPROVED_BY) {
+  console.log('[mollie-mrr] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'écriture non approuvé).')
+}
 const MOLLIE_API_BASE = new URL('https://api.mollie.com/v2/')
 
 function resolveMollieApiUrl(input) {
@@ -349,7 +359,7 @@ async function main() {
   console.log(`\n🎯 Cible EUR €${target}/mois: ${pct}% atteint`)
   console.log(`   Il reste €${Math.round((target - report.mrr.total_eur) * 100) / 100} à générer en EUR`)
 
-  if (SEND) {
+  if (CAN_SEND) {
     fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
     fs.writeFileSync(OUT_PATH, JSON.stringify(report, null, 2))
     console.log(`\nRapport écrit → ${path.relative(process.cwd(), OUT_PATH)}`)

@@ -19,8 +19,11 @@
  *
  * Usage:
  *   node scripts/automation/pass-expiry-winback.cjs                  # dry-run
- *   node scripts/automation/pass-expiry-winback.cjs --send           # envoie
+ *   node scripts/automation/pass-expiry-winback.cjs --send --approved-by=<fondateur>  # envoie
  *   node scripts/automation/pass-expiry-winback.cjs --window-days=30 # fenêtre post-expiry (défaut 21)
+ *
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'envoi non approuvé, motif relance-gap).
  */
 const fs = require('fs')
 const path = require('path')
@@ -32,6 +35,14 @@ let AB_VARS = {}; try { AB_VARS = require('./data/email-ab-variants.json') } cat
 
 const args = process.argv.slice(2)
 const DO_SEND = args.includes('--send')
+const APPROVED_BY = (() => {
+  const a = args.find((x) => x.startsWith('--approved-by='))
+  return a ? a.slice(14).trim() : null
+})()
+const CAN_SEND = DO_SEND && APPROVED_BY
+if (DO_SEND && !APPROVED_BY) {
+  console.log('[pass-expiry] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'envoi non approuvé).')
+}
 const WINDOW_DAYS = Number((args.find(a => a.startsWith('--window-days=')) || '--window-days=21').split('=')[1]) || 21
 const MAX_EMAILS = Number((args.find(a => a.startsWith('--max=')) || '--max=50').split('=')[1]) || 50
 
@@ -141,7 +152,7 @@ function copy(island) {
 }
 
 async function main() {
-  console.log(`=== Pass-expiry win-back === mode=${DO_SEND ? 'SEND' : 'DRY-RUN'} | window=${WINDOW_DAYS}j | smtp=${mailReady() ? 'ok' : 'ABSENT'}`)
+  console.log(`=== Pass-expiry win-back === mode=${CAN_SEND ? 'SEND' : 'DRY-RUN'} | window=${WINDOW_DAYS}j | smtp=${mailReady() ? 'ok' : 'ABSENT'}`)
   if (!MOLLIE_KEY) {
     console.log('MOLLIE_API_KEY absent — no-op (ajoute le secret + --send pour activer le rachat pass).')
     return
@@ -177,7 +188,7 @@ async function main() {
   console.log(`Acheteurs pass uniques: ${byEmail.size} | expirés dans la fenêtre: ${candidates.length}`)
 
   const sent = loadJSON(SENT_PATH, {})
-  const resend = (mailReady() && DO_SEND) ? {} : null
+  const resend = (mailReady() && CAN_SEND) ? {} : null
   let count = 0, skipped = 0
   for (const c of candidates) {
     if (count >= MAX_EMAILS) { console.log(`MAX_EMAILS ${MAX_EMAILS} atteint — stop.`); break }
@@ -210,7 +221,7 @@ async function main() {
       } catch {}
     } catch (e) { console.log(`  x ${logId(c.email)}: ${e.message}`) }
   }
-  console.log(`Done. ${DO_SEND ? count + ' relance(s) envoyée(s)' : candidates.length + ' candidat(s) (dry-run)'}${skipped ? ` · ${skipped} déjà relancé(s)` : ''}.`)
+  console.log(`Done. ${CAN_SEND ? count + ' relance(s) envoyée(s)' : candidates.length + ' candidat(s) (dry-run)'}${skipped ? ` · ${skipped} déjà relancé(s)` : ''}.`)
 }
 
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1) })

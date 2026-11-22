@@ -16,9 +16,11 @@
  * data/push-winback-sent.json). Ne crashe jamais.
  *
  * Usage : `node scripts/automation/push-winback.cjs`         (dry-run)
- *         `node scripts/automation/push-winback.cjs --send`  (envoi réel, en CI)
+ *         `node scripts/automation/push-winback.cjs --send --approved-by=<fondateur>`  (envoi réel, en CI)
  *
  * Secrets : ONESIGNAL_API_KEY_MQ / _GP (GH Actions). Absents → skip propre.
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'envoi non approuvé, motif relance-gap).
  */
 
 const fs = require('fs')
@@ -26,6 +28,14 @@ const path = require('path')
 const https = require('https')
 
 const SEND = process.argv.includes('--send')
+const APPROVED_BY = (() => {
+  const a = process.argv.find((x) => x.startsWith('--approved-by='))
+  return a ? a.slice(14).trim() : null
+})()
+const CAN_SEND = SEND && APPROVED_BY
+if (SEND && !APPROVED_BY) {
+  console.log('[winback] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'envoi non approuvé).')
+}
 const DORMANT_DAYS = parseInt(process.env.WINBACK_DORMANT_DAYS || '12', 10) // ≥12 j sans ouvrir
 const CADENCE_DAYS = parseInt(process.env.WINBACK_CADENCE_DAYS || '14', 10) // ≤1 push / 2 sem.
 const MARKER_PATH = path.join(__dirname, 'data', 'push-winback-sent.json')
@@ -95,7 +105,7 @@ async function main() {
       headings: { en: cfg.heading, fr: cfg.heading },
       url: cfg.url,
     }
-    if (!SEND) {
+    if (!CAN_SEND) {
       console.log(`[winback] ${id.toUpperCase()} DRY-RUN — enverrait :`, JSON.stringify(payload.filters), `“${cfg.msg}”`)
       continue
     }

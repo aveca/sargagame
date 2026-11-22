@@ -18,7 +18,10 @@
  *
  * Usage :
  *   node scripts/automation/deliverability-watch.cjs          # dry-run
- *   node scripts/automation/deliverability-watch.cjs --send   # envoie (si SMTP prêt)
+ *   node scripts/automation/deliverability-watch.cjs --send --approved-by=<fondateur>  # envoie (si SMTP prêt)
+ *
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'envoi non approuvé, motif relance-gap).
  */
 const fs = require('fs')
 const path = require('path')
@@ -72,6 +75,14 @@ function fetchJSON(url) {
 
 async function main() {
   const DO_SEND = process.argv.includes('--send')
+  const APPROVED_BY = (() => {
+    const a = process.argv.find((x) => x.startsWith('--approved-by='))
+    return a ? a.slice(14).trim() : null
+  })()
+  const CAN_SEND = DO_SEND && APPROVED_BY
+  if (DO_SEND && !APPROVED_BY) {
+    console.log('[deliverability-watch] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'envoi non approuvé).')
+  }
   const count = bouncedCount(load(BOUNCED, []))
   const seen = load(SEEN, {})
   const date = new Date().toISOString().slice(0, 10)
@@ -82,7 +93,7 @@ async function main() {
 
   // Persiste TOUJOURS la baseline (en --send) pour la mesure jour-à-jour, même sans alerte.
   const persistBaseline = (extra = {}) => {
-    if (DO_SEND) { try { fs.writeFileSync(SEEN, JSON.stringify({ ...seen, ...extra, lastBouncedCount: count, at: new Date().toISOString() }, null, 2)) } catch (e) { console.error('seen write:', e.message) } }
+    if (CAN_SEND) { try { fs.writeFileSync(SEEN, JSON.stringify({ ...seen, ...extra, lastBouncedCount: count, at: new Date().toISOString() }, null, 2)) } catch (e) { console.error('seen write:', e.message) } }
   }
 
   if (!triggered) { console.log('  RAS — aucun pic.'); persistBaseline({ sig: '' }); return }
@@ -96,7 +107,7 @@ async function main() {
   } catch { /* ignore */ }
 
   console.log(`  ⚠️ PIC : +${growth} adresses en échec (total ${count})`)
-  if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); return }
+  if (!CAN_SEND) { console.log('\nDRY-RUN — rien envoyé. --send --approved-by=<fondateur> pour envoyer.'); return }
   if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); return }
 
   const html = `${brandHeader('Délivrabilité', 'Pic de rebonds détecté', `+${growth} adresses en échec aujourd'hui`)}

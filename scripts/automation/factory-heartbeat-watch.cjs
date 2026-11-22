@@ -17,7 +17,10 @@
  *
  * Usage :
  *   node scripts/automation/factory-heartbeat-watch.cjs          # dry-run
- *   node scripts/automation/factory-heartbeat-watch.cjs --send   # envoie (si SMTP prêt)
+ *   node scripts/automation/factory-heartbeat-watch.cjs --send --approved-by=<fondateur>  # envoie (si SMTP prêt)
+ *
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'envoi non approuvé, motif relance-gap).
  */
 const fs = require('fs')
 const path = require('path')
@@ -70,22 +73,30 @@ async function fetchLastHeartbeat() {
 
 async function main() {
   const DO_SEND = process.argv.includes('--send')
+  const APPROVED_BY = (() => {
+    const a = process.argv.find((x) => x.startsWith('--approved-by='))
+    return a ? a.slice(14).trim() : null
+  })()
+  const CAN_SEND = DO_SEND && APPROVED_BY
+  if (DO_SEND && !APPROVED_BY) {
+    console.log('[factory-heartbeat-watch] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'envoi non approuvé).')
+  }
   const now = new Date().toISOString()
   const seen = load(SEEN, {})
   const { ok, lastIso } = await fetchLastHeartbeat()
   if (!ok) { console.log('factory-heartbeat-watch: lecture Supabase indisponible (clé absente ou erreur réseau), run sauté.'); return }
 
   const { triggered, ageH, neverSeen, sig, firstCheckIso } = evaluate({ lastIso, nowIso: now, firstCheckIso: seen.firstCheckIso, threshold: THRESHOLD_H })
-  console.log('=== factory-heartbeat-watch ===', DO_SEND ? 'SEND' : 'DRY-RUN')
+  console.log('=== factory-heartbeat-watch ===', CAN_SEND ? 'SEND' : 'DRY-RUN')
   console.log(`  dernier signal : ${lastIso || 'jamais'} · âge : ${ageH != null ? ageH.toFixed(1) + 'h' : 'n/a'} (seuil ${THRESHOLD_H}h)`)
 
-  const persist = (extra = {}) => { if (DO_SEND) { try { fs.writeFileSync(SEEN, JSON.stringify({ ...seen, firstCheckIso, ...extra, at: now }, null, 2)) } catch (e) { console.error('seen write:', e.message) } } }
+  const persist = (extra = {}) => { if (CAN_SEND) { try { fs.writeFileSync(SEEN, JSON.stringify({ ...seen, firstCheckIso, ...extra, at: now }, null, 2)) } catch (e) { console.error('seen write:', e.message) } } }
 
   if (!triggered) { console.log('  RAS — usine vivante.'); persist({ sig: '' }); return }
   if (seen.sig === sig) { console.log('  déjà alerté pour ce silence.'); persist(); return }
 
   console.log(`  ⚠️ SILENCE : ${neverSeen ? 'aucun heartbeat jamais reçu' : `${ageH.toFixed(1)}h sans signal`}`)
-  if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); return }
+  if (!CAN_SEND) { console.log('\nDRY-RUN — rien envoyé. --send --approved-by=<fondateur> pour envoyer.'); return }
   if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); return }
 
   const html = `${brandHeader('Usine locale', "Silence de l'usine locale", neverSeen ? 'Aucun signal reçu depuis l\'installation' : `${Math.round(ageH)}h sans nouvelles`)}

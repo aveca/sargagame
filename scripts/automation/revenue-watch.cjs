@@ -18,7 +18,10 @@
  *
  * Usage :
  *   node scripts/automation/revenue-watch.cjs          # dry-run
- *   node scripts/automation/revenue-watch.cjs --send   # envoie (si SMTP prêt)
+ *   node scripts/automation/revenue-watch.cjs --send --approved-by=<fondateur>  # envoie (si SMTP prêt)
+ *
+ * Fail-closed : `--send` seul ne suffit pas — il faut aussi `--approved-by=<nom fondateur>`.
+ * Sans approbation → dry-run forcé (refus d'envoi non approuvé, motif relance-gap).
  */
 const fs = require('fs')
 const path = require('path')
@@ -30,6 +33,14 @@ const { sendEmail, mailReady } = require('./lib/email-send.cjs')
 })
 
 const DO_SEND = process.argv.includes('--send')
+const APPROVED_BY = (() => {
+  const a = process.argv.find((x) => x.startsWith('--approved-by='))
+  return a ? a.slice(14).trim() : null
+})()
+const CAN_SEND = DO_SEND && APPROVED_BY
+if (DO_SEND && !APPROVED_BY) {
+  console.log('[revenue-watch] --send sans --approved-by=<nom fondateur> → dry-run forcé (refus d\'envoi non approuvé).')
+}
 const DATA = path.join(__dirname, 'data')
 const METRICS = path.join(DATA, 'daily-metrics.json')
 const SEEN = path.join(DATA, 'revenue-watch-seen.json')
@@ -105,7 +116,7 @@ console.log('=== revenue-watch ===', DO_SEND ? 'SEND' : 'DRY-RUN')
 deltas.forEach(x => console.log('  ' + x))
 console.log('  ' + mrrLine)
 
-if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); process.exit(0) }
+if (!CAN_SEND) { console.log('\nDRY-RUN — rien envoyé. --send --approved-by=<fondateur> pour envoyer.'); process.exit(0) }
 if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); process.exit(0) }
 const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px">
   <h2 style="margin:0 0 12px;font-size:18px">Mouvement revenu (Stripe + Mollie)</h2>
