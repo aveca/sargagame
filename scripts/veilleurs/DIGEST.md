@@ -1,12 +1,12 @@
-# Digest des Veilleurs — 2026-11-22
+# Digest des Veilleurs — 2026-11-23
 
 10 veilleur(s) ont rapporté aujourd'hui (du rivage à l'abysse).
 
 | Veilleur | Marché | Statut | Mode | Date | Headline |
 |---|---|---|---|---|---|
-| Sable | B2C voyageurs | live | script | 2026-11-22 | Sable en veille sur B2C voyageurs |
+| Sable | B2C voyageurs | live | script | 2026-11-23 | Sable en veille sur B2C voyageurs |
 | Récif | Hôtels & resorts (B2B) | emerging | recon | 2026-11-20 | Récif en veille sur Hôtels & resorts (B2B) |
-| Digue | Collectivités & offices de tourisme | greenfield | recon | 2026-11-16 | Digue en veille sur Collectivités & offices de tourisme |
+| Digue | Collectivités & offices de tourisme | greenfield | recon | 2026-11-23 | Digue en veille sur Collectivités & offices de tourisme |
 | Amarre | Immobilier côtier | greenfield | recon | 2026-11-17 | Amarre en veille sur Immobilier côtier |
 | Baromètre | Assurance & réassurance climat | greenfield | recon | 2026-11-18 | Baromètre en veille sur Assurance & réassurance climat |
 | Sillage | Croisière, ports & maritime | greenfield | recon | 2026-11-19 | Sillage en veille sur Croisière, ports & maritime |
