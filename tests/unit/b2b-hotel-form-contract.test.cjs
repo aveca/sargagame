@@ -6,6 +6,7 @@ const root = path.resolve(__dirname, '..', '..')
 const read = p => fs.readFileSync(path.join(root, p), 'utf8')
 const regional = read('scripts/lib/region-seo-pages.cjs')
 const french = read('scripts/lib/hotel-landing-fr.cjs')
+const { buildHotelLandingFr } = require('../../scripts/lib/hotel-landing-fr.cjs')
 let failures = 0
 function check(ok, label) {
   if (ok) console.log('  ok  ' + label)
@@ -22,5 +23,24 @@ for (const [label, source] of [['regional EN/ES', regionalHotel], ['French MQ/GP
 }
 check(regionalHotel.includes("['mq','gp','florida','puntacana','rivieramaya'].includes(region.id)"), 'regional form is restricted to Worker-supported island identifiers; Tulum is excluded until its delivery domain is mapped')
 check(!regional.slice(0, regional.indexOf('function buildHotelLanding(')).includes("headers:{'Content-Type':'application/json'}"), 'form handler is not injected into unrelated regional pages')
+let renderedFrench = ''
+try {
+  renderedFrench = buildHotelLandingFr({
+    islandId: 'mq',
+    islandName: 'Martinique',
+    domain: 'sargasses-martinique.com',
+    coverage: [],
+    reliability: null,
+    updatedRel: '',
+    freshnessStatus: 'unknown',
+  })
+} catch (error) {
+  check(false, 'French hotel landing renders without a runtime exception: ' + error.message)
+}
+if (renderedFrench) {
+  check(renderedFrench.includes('sg-b2b-form-status'), 'French hotel landing actually renders its form status node')
+  check(renderedFrench.includes('Activation de votre essai'), 'French hotel landing renders localized loading copy')
+  check(!renderedFrench.includes('${_('), 'French hotel landing contains no unresolved translation helper')
+}
 console.log('B2B_HOTEL_FORM_CONTRACT', failures === 0 ? 'PASS' : 'FAIL')
 process.exit(failures ? 1 : 0)
