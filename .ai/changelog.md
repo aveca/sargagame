@@ -1,3 +1,10 @@
+## 2026-11-24 — SARG-STALE-OFFER-CTA-6DOMAINS-20261124 : porte d'offre visible quand le verdict satellite est suspendu
+
+- `src/WorldMapView.jsx` : bloc `data-testid="wm-stale-offer"` rendu **une seule fois** dans le composant partagé, uniquement si `wmDecisionAvailable=false` et `!isPremium`. Message FR/EN/ES explicite (« observation satellite en retard ou en cours de vérification — verdicts et prévisions suspendus »), aucun statut de plage ni prévision courante, aucune promesse de fraîcheur. CTA `onPremium("map_stale_offer")` = parcours d'offre existant, zéro prix/SKU/checkout/paiement/webhook touché. Quand la donnée est fraîche, le bloc n'existe pas et la barre des jours reste inchangée. Rollback `?wmstaleoffer=0`.
+- `src/app-runtime.css` : classe `.sg-mapstale-cta` (triple-classe + `!important`) — sans elle, le skin `.theme-comic .sg-onink-scope button` strippait le fond du CTA en texte nu (piège déjà documenté pour `.sg-mapcta`/`.sg-mapfind`).
+- `scripts/test-stale-offer-cta.mjs` : régression stale + unknown, mobile 390×844 et desktop 1440×900, sur les 6 builds régionaux (mq, gp, florida, puntacana, rivieramaya, tulum) : CTA visible et peint, message sans fuite de verdict, clic → onPremium/paywall, rendu frais inchangé. `STALE_OFFER_CTA_6DOMAINS=PASS (37/37)`.
+- Gate : `npm run build` exit 0 · budget 207,2 Ko ≤ 210 Ko gzip · `npm test` 202/202 · `node scripts/ux-smoke.mjs` (4 tokens OK, `STALE_MAP_DECISION_LEAK=[]`) · `git diff --check` OK. Branche `agent/coding/SARG-STALE-OFFER-CTA-6DOMAINS-20261124`, PR à ouvrir, **aucun merge ni déploiement**.
+
 ## 2026-11-13 — Parcours Pro hôtel en libre-service
 
 - `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.

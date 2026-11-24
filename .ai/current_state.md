@@ -1,3 +1,37 @@
+## 2026-11-24 · Mission SARG-STALE-OFFER-CTA-6DOMAINS-20261124 (issue #1486) · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : porte d'offre honnête visible sur la home WorldMapView quand l'observation satellite est stale/inconnue, pour un non-Premium, corrigée une seule fois dans le composant partagé et vérifiée sur les 6 domaines.
+- **Détails** : `!wmDecisionAvailable && !isPremium && !staleOfferOff` → carte `data-testid="wm-stale-offer"` (badge `wmSatLbl`, message FR/EN/ES « observation satellite en retard ou en cours de vérification — verdicts et prévisions suspendus », précision « aucun verdict actuel, score ou prévision publié »), CTA `wm-stale-offer-cta` → `onPremium("map_stale_offer")` (parcours d'offre existant). Aucun statut/verdict/prévision exposé, aucune promesse de fraîcheur. Aucun prix, SKU, checkout, paiement, secret, Supabase, RLS ou workflow touché. `wmDecisionAvailable=true` → bloc absent, barre des jours inchangée. Rollback `?wmstaleoffer=0`.
+
+### Fichiers modifiés
+- `src/WorldMapView.jsx` — flag `staleOfferOff` + bloc stale-offer partagé (une seule occurrence)
+- `src/app-runtime.css` — `.sg-mapstale-cta` triple-classe `!important` (le skin de thème strippait sinon le fond du bouton)
+- `scripts/test-stale-offer-cta.mjs` — régression stale + unknown × mobile/desktop × 6 builds régionaux
+- `.ai/changelog.md`, `.ai/tasks.md` — handoff
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (warning esbuild préexistant dans Sargasses_PROD.jsx, inchangé)
+- [x] `node scripts/check-bundle-budget.cjs` → 207,2 Ko ≤ 210 Ko gzip
+- [x] `node scripts/test-stale-offer-cta.mjs` → `STALE_OFFER_CTA_6DOMAINS=PASS (37/37)` — 6 builds (mq, gp, florida, puntacana, rivieramaya, tulum) × stale/unknown × mobile/desktop, clic → paywall, zéro fuite de verdict, rendu frais inchangé
+- [x] `npm test` → 202/202 fichiers OK
+- [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[], RAW_CSS_TEXT=[]
+- [x] `npx esbuild src/WorldMapView.jsx --bundle=false --log-level=error` → OK · `git diff --check` → OK
+
+### Problèmes restants
+- [ ] Déploiement production non demandé par cette mission (aucun merge, aucun deploy) — PR ouverte sur `main`, CI à surveiller.
+
+### Prochaine action recommandée
+1. Vérifier la CI sur le SHA exact de la branche, puis publier branche/commit/PR/tests sur l'issue #1486 — Rôle : coding_agent
+2. Ne pas merger ni déployer sans décision fondateur (mandat mission : livrer PR testée uniquement) — Rôle : release_agent
+
+### Branche / PR
+- Branche : `agent/coding/SARG-STALE-OFFER-CTA-6DOMAINS-20261124` (base `origin/main` `89aeb48d177b43e9817e87103271de7fa97dbb5f`)
+- PR : à ouvrir
+- Commit head : à renseigner après commit
+
+---
+
 ## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
 
 - Les pages `/pro/pricing/` FR, EN et ES ont deux boutons vers les Payment Links Pro. Le script `public/pro/pricing-pay.js` choisit EUR ou USD selon l'un des 6 domaines.
