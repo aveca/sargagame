@@ -1,11 +1,11 @@
 {
   "window_days": 7,
-  "since": "2026-11-16T23:04:43.533Z",
-  "total_rows": 15764,
+  "since": "2026-11-17T04:01:20.078Z",
+  "total_rows": 15737,
   "counts": {
-    "session_start": 2952,
+    "session_start": 2974,
     "forecast_lock_click": 0,
-    "premium_modal_open": 42,
+    "premium_modal_open": 39,
     "premium_modal_cta": 0,
     "pass_cta": 2,
     "conversion": 0,
@@ -21,9 +21,9 @@
     "b2b_trial_activated": 0
   },
   "observed_counts": {
-    "session_start": 2954,
+    "session_start": 2976,
     "forecast_lock_click": 0,
-    "premium_modal_open": 42,
+    "premium_modal_open": 39,
     "premium_modal_cta": 0,
     "pass_cta": 2,
     "conversion": 0,
@@ -60,7 +60,7 @@
   "rates": {
     "session_to_lock": 0,
     "lock_to_modal": 0,
-    "modal_to_cta": 4.8,
+    "modal_to_cta": 5.1,
     "cta_to_checkout_started": 0,
     "checkout_started_to_conversion": 0,
     "cta_to_redirect": 0,
@@ -68,104 +68,104 @@
   },
   "by_region": {
     "gp": {
-      "session_start": 897,
-      "premium_modal_open": 18,
+      "session_start": 896,
+      "premium_modal_open": 16,
       "b2b_offer_view": 1,
       "pass_cta": 2,
       "email_submit": 1
     },
-    "puntacana": {
-      "session_start": 646,
-      "premium_modal_open": 3,
-      "email_submit": 1,
-      "b2b_offer_view": 18,
-      "b2b_step": 7
-    },
     "mq": {
-      "session_start": 714,
+      "session_start": 725,
       "premium_modal_open": 19,
       "b2b_offer_view": 2
     },
-    "florida": {
-      "session_start": 342,
-      "b2b_offer_view": 5
-    },
-    "rivieramaya": {
-      "session_start": 268,
-      "b2b_offer_view": 4,
-      "premium_modal_open": 2
+    "puntacana": {
+      "session_start": 660,
+      "email_submit": 1,
+      "premium_modal_open": 2,
+      "b2b_offer_view": 18,
+      "b2b_step": 7
     },
     "tulum": {
       "session_start": 85
-    }
-  },
-  "by_island": {
-    "GP": {
-      "session_start": 897,
-      "premium_modal_open": 18,
-      "b2b_offer_view": 1,
-      "pass_cta": 2,
-      "email_submit": 1
     },
-    "PUNTACANA": {
-      "session_start": 646,
-      "premium_modal_open": 3,
-      "email_submit": 1,
-      "b2b_offer_view": 18,
-      "b2b_step": 7
-    },
-    "MQ": {
-      "session_start": 714,
-      "premium_modal_open": 19,
-      "b2b_offer_view": 2
-    },
-    "FLORIDA": {
-      "session_start": 342,
-      "b2b_offer_view": 5
-    },
-    "RIVIERAMAYA": {
-      "session_start": 268,
-      "b2b_offer_view": 4,
-      "premium_modal_open": 2
-    },
-    "TULUM": {
-      "session_start": 85
-    }
-  },
-  "by_host": {
-    "sargasses-guadeloupe.com": {
-      "session_start": 895,
-      "premium_modal_open": 18,
-      "b2b_offer_view": 1,
-      "pass_cta": 2,
-      "email_submit": 1
-    },
-    "sargassumpuntacana.com": {
-      "session_start": 616,
-      "premium_modal_open": 3,
-      "email_submit": 1,
-      "b2b_offer_view": 18,
-      "b2b_step": 7
-    },
-    "sargasses-martinique.com": {
-      "session_start": 713,
-      "premium_modal_open": 19,
-      "b2b_offer_view": 2
-    },
-    "sargassummiami.com": {
-      "session_start": 341,
-      "b2b_offer_view": 5
-    },
-    "sargassumcancun.com": {
+    "rivieramaya": {
       "session_start": 267,
       "b2b_offer_view": 4,
       "premium_modal_open": 2
     },
+    "florida": {
+      "session_start": 341,
+      "b2b_offer_view": 5
+    }
+  },
+  "by_island": {
+    "GP": {
+      "session_start": 896,
+      "premium_modal_open": 16,
+      "b2b_offer_view": 1,
+      "pass_cta": 2,
+      "email_submit": 1
+    },
+    "MQ": {
+      "session_start": 725,
+      "premium_modal_open": 19,
+      "b2b_offer_view": 2
+    },
+    "PUNTACANA": {
+      "session_start": 660,
+      "email_submit": 1,
+      "premium_modal_open": 2,
+      "b2b_offer_view": 18,
+      "b2b_step": 7
+    },
+    "TULUM": {
+      "session_start": 85
+    },
+    "RIVIERAMAYA": {
+      "session_start": 267,
+      "b2b_offer_view": 4,
+      "premium_modal_open": 2
+    },
+    "FLORIDA": {
+      "session_start": 341,
+      "b2b_offer_view": 5
+    }
+  },
+  "by_host": {
+    "sargasses-guadeloupe.com": {
+      "session_start": 894,
+      "premium_modal_open": 16,
+      "b2b_offer_view": 1,
+      "pass_cta": 2,
+      "email_submit": 1
+    },
+    "sargasses-martinique.com": {
+      "session_start": 724,
+      "premium_modal_open": 19,
+      "b2b_offer_view": 2
+    },
+    "sargassumpuntacana.com": {
+      "session_start": 630,
+      "email_submit": 1,
+      "premium_modal_open": 2,
+      "b2b_offer_view": 18,
+      "b2b_step": 7
+    },
     "sargazotulum.com": {
       "session_start": 61
     },
+    "sargassumcancun.com": {
+      "session_start": 266,
+      "b2b_offer_view": 4,
+      "premium_modal_open": 2
+    },
     "sargagame-gp.pages.dev": {
       "session_start": 2
+    },
+    "sargassummiami.com": {
+      "session_start": 340,
+      "b2b_offer_view": 5
     },
     "sargagame-puntacana.pages.dev": {
       "session_start": 30
@@ -200,35 +200,35 @@
     }
   },
   "distinct_sessions_by_region": {
-    "florida": 25,
-    "rivieramaya": 7,
-    "gp": 152,
-    "puntacana": 73,
-    "mq": 91,
+    "puntacana": 82,
+    "gp": 149,
+    "rivieramaya": 6,
+    "mq": 96,
+    "florida": 24,
     "tulum": 1
   },
   "observed_distinct_sessions_by_region": {
-    "rivieramaya": 336,
-    "mq": 586,
-    "florida": 417,
-    "gp": 674,
-    "puntacana": 696,
-    "tulum": 11
+    "rivieramaya": 332,
+    "gp": 675,
+    "florida": 411,
+    "puntacana": 714,
+    "mq": 597,
+    "tulum": 12
   },
   "distinct_sessions_by_host": {
-    "sargassummiami.com": 25,
-    "sargassumcancun.com": 7,
-    "sargasses-guadeloupe.com": 152,
-    "sargassumpuntacana.com": 73,
-    "sargasses-martinique.com": 91,
+    "sargassumpuntacana.com": 82,
+    "sargasses-guadeloupe.com": 149,
+    "sargassumcancun.com": 6,
+    "sargasses-martinique.com": 96,
+    "sargassummiami.com": 24,
     "sargazotulum.com": 1
   },
   "data_quality": {
-    "total_rows": 15764,
-    "verified_production_rows": 10720,
+    "total_rows": 15737,
+    "verified_production_rows": 10692,
     "local_test_rows": 0,
     "preview_rows": 0,
-    "unknown_host_rows": 5044,
-    "unverified_rows": 5044
+    "unknown_host_rows": 5045,
+    "unverified_rows": 5045
   }
 }
