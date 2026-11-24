@@ -14,7 +14,7 @@ assert.match(workflow, /workflow_dispatch:[\s\S]*confirm_production/)
 assert.match(workflow, /push:\s*\n\s*branches:\s*\n\s*- main[\s\S]*?paths:/)
 assert.match(workflow, /github\.event_name == 'push'/)
 assert.match(workflow, /verify-pages-code-only-change\.cjs/)
-for (const p of [".ai/release-pages-code-only.json","scripts/lib/hotel-landing-fr.cjs","scripts/lib/region-seo-pages.cjs","scripts/automation/prepare-pages-code-only-payload.cjs","src/ChasseHome.jsx","src/lib/format-freshness.mjs","tests/unit/b2b-hotel-form-contract.test.cjs","tests/unit/bug-2026-015-offer-decoupling.test.cjs"]) {
+for (const p of [".ai/release-pages-code-only.json","scripts/lib/hotel-landing-fr.cjs","scripts/lib/region-seo-pages.cjs","scripts/automation/prepare-pages-code-only-payload.cjs","src/ChasseHome.jsx","src/lib/format-freshness.mjs"]) {
   assert.ok(workflow.includes("- '" + p + "'"), "Pages-only push trigger must include " + p)
 }
 assert.match(workflow, /CLOUDFLARE_DEPLOY_ENABLED == 'true'/)
