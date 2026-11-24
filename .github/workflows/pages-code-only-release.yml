@@ -5,6 +5,18 @@ name: Pages Code-Only Release
 # prepared artifact and recomputes only dataAgeMinutes/stale. It never deploys
 # a Worker, changes a payment secret, or publishes a new satellite observation.
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.ai/release-pages-code-only.json'
+      - 'scripts/lib/hotel-landing-fr.cjs'
+      - 'scripts/lib/region-seo-pages.cjs'
+      - 'scripts/automation/prepare-pages-code-only-payload.cjs'
+      - 'src/ChasseHome.jsx'
+      - 'src/lib/format-freshness.mjs'
+      - 'tests/unit/b2b-hotel-form-contract.test.cjs'
+      - 'tests/unit/bug-2026-015-offer-decoupling.test.cjs'
   workflow_dispatch:
     inputs:
       confirm_production:
@@ -22,11 +34,19 @@ concurrency:
 
 jobs:
   gate:
-    if: github.ref == 'refs/heads/main' && inputs.confirm_production == true && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    if: github.ref == 'refs/heads/main' && ((github.event_name == 'workflow_dispatch' && inputs.confirm_production == true) || github.event_name == 'push') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Verify push contains only approved Pages-safe files
+        if: github.event_name == 'push'
+        env:
+          PAGES_CODE_ONLY_BEFORE: ${{ github.event.before }}
+          PAGES_CODE_ONLY_AFTER: ${{ github.sha }}
+        run: node scripts/automation/verify-pages-code-only-change.cjs
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
