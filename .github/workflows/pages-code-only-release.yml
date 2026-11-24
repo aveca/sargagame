@@ -15,8 +15,6 @@ on:
       - 'scripts/automation/prepare-pages-code-only-payload.cjs'
       - 'src/ChasseHome.jsx'
       - 'src/lib/format-freshness.mjs'
-      - 'tests/unit/b2b-hotel-form-contract.test.cjs'
-      - 'tests/unit/bug-2026-015-offer-decoupling.test.cjs'
   workflow_dispatch:
     inputs:
       confirm_production:
