@@ -8000,7 +8000,7 @@
         },
         {
           "id": "gp004",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -8195,12 +8195,12 @@
         },
         {
           "id": "gp050",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp051",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -8395,7 +8395,7 @@
         },
         {
           "id": "gp120",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         }
       ]
