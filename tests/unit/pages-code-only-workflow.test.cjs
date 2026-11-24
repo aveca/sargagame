@@ -85,6 +85,11 @@ assert.ok(
   'cloudflare-production.yml must ignore pushes touching this guard (a guard-only change must not redeploy the Worker)'
 )
 
+assert.match(production, /TRIGGER_EVENT: \\${\\{ github\\.event\\.workflow_run\\.event \\}\\}/,
+  'workflow_run must inspect the originating Daily Copernicus event')
+assert.match(production, /TRIGGER_EVENT" = "schedule" \\]\\] \\|\\| \\[ "\\$TRIGGER_EVENT" = "workflow_dispatch"/,
+  'only scheduled or manually dispatched Daily Copernicus runs may unlock production')
+
 for (const p of ["scripts/lib/hotel-landing-fr.cjs","scripts/lib/region-seo-pages.cjs","scripts/automation/prepare-pages-code-only-payload.cjs","src/ChasseHome.jsx","src/lib/format-freshness.mjs","tests/unit/b2b-hotel-form-contract.test.cjs","tests/unit/bug-2026-015-offer-decoupling.test.cjs"]) {
   assert.ok(productionPathsIgnore.includes(p), "full Worker production workflow must ignore Pages-only path " + p)
 }
