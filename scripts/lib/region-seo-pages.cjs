@@ -464,49 +464,7 @@ ${forecastBlock}
 </div>
 <div class="ft">${L.foot} · ${esc(observationLabel)} · ${esc(today)} · ${esc(domain)}</div>
 </div>
-<script>(function(){
-  try {
-    if (/[?&]b2bform=0/.test(location.search)) return;
-    var wrap=document.getElementById('sg-b2b-form-wrap');
-    var form=document.getElementById('sg-b2b-form');
-    if(!wrap || !form) return;
-    wrap.style.display='block';
-    var button=form.querySelector('button[type="submit"]');
-    var status=document.getElementById('sg-b2b-form-status');
-    form.addEventListener('submit',function(event){
-      event.preventDefault();
-      if(!form.reportValidity()) return;
-      if(button) button.disabled=true;
-      if(status) status.textContent='${_('Activating your trial…', 'Activando tu prueba…')}';
-      var fields=new FormData(form);
-      var name=String(fields.get('name')||'').trim();
-      fetch(form.action,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          email:String(fields.get('email')||'').trim(),
-          name:name,
-          island:String(fields.get('island')||'').trim(),
-          marketingConsent:false,
-          consentSource:'hotel_landing'
-        })
-      }).then(function(response){
-        return response.json().catch(function(){return {};}).then(function(data){
-          if(!response.ok || data.ok!==true || data.persisted!==true || typeof data.token!=='string' || !data.token) throw new Error('trial_not_confirmed');
-          return data;
-        });
-      }).then(function(data){
-        var target=new URL('/',location.origin);
-        target.searchParams.set('k',data.token);
-        if(name) target.searchParams.set('name',name);
-        location.assign(target.toString());
-      }).catch(function(){
-        if(status) status.textContent='${_('We could not confirm your trial. Please retry in a moment.', 'No pudimos confirmar tu prueba. Inténtalo de nuevo en un momento.')}';
-        if(button) button.disabled=false;
-      });
-    });
-  } catch(e) {}
-})();</script>
+
 </body></html>`
 }
 
@@ -667,7 +625,51 @@ ${['mq','gp','florida','puntacana','rivieramaya'].includes(region.id) ? `
 <div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
 </div>
 <div class="ft">${_('Independent satellite observations · check observation time and confidence', 'Observaciones satelitales independientes · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Validation scope', 'Alcance de validación')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
-</div></body></html>`
+</div>
+<script>(function(){
+  try {
+    if (/[?&]b2bform=0/.test(location.search)) return;
+    var wrap=document.getElementById('sg-b2b-form-wrap');
+    var form=document.getElementById('sg-b2b-form');
+    if(!wrap || !form) return;
+    wrap.style.display='block';
+    var button=form.querySelector('button[type="submit"]');
+    var status=document.getElementById('sg-b2b-form-status');
+    form.addEventListener('submit',function(event){
+      event.preventDefault();
+      if(!form.reportValidity()) return;
+      if(button) button.disabled=true;
+      if(status) status.textContent='${_('Activating your trial…', 'Activando tu prueba…')}';
+      var fields=new FormData(form);
+      var name=String(fields.get('name')||'').trim();
+      fetch(form.action,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          email:String(fields.get('email')||'').trim(),
+          name:name,
+          island:String(fields.get('island')||'').trim(),
+          marketingConsent:false,
+          consentSource:'hotel_landing'
+        })
+      }).then(function(response){
+        return response.json().catch(function(){return {};}).then(function(data){
+          if(!response.ok || data.ok!==true || data.persisted!==true || typeof data.token!=='string' || !data.token) throw new Error('trial_not_confirmed');
+          return data;
+        });
+      }).then(function(data){
+        var target=new URL('/',location.origin);
+        target.searchParams.set('k',data.token);
+        if(name) target.searchParams.set('name',name);
+        location.assign(target.toString());
+      }).catch(function(){
+        if(status) status.textContent='${_('We could not confirm your trial. Please retry in a moment.', 'No pudimos confirmar tu prueba. Inténtalo de nuevo en un momento.')}';
+        if(button) button.disabled=false;
+      });
+    });
+  } catch(e) {}
+})();</script>
+</body></html>`
 }
 
 
