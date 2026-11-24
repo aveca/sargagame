@@ -174,7 +174,7 @@ ${ld}
       event.preventDefault();
       if(!form.reportValidity()) return;
       if(button) button.disabled=true;
-      if(status) status.textContent='${_('Activating your trial…', 'Activando tu prueba…')}';
+      if(status) status.textContent='Activation de votre essai…';
       var fields=new FormData(form);
       var name=String(fields.get('name')||'').trim();
       fetch(form.action,{
@@ -198,7 +198,7 @@ ${ld}
         if(name) target.searchParams.set('name',name);
         location.assign(target.toString());
       }).catch(function(){
-        if(status) status.textContent='${_('We could not confirm your trial. Please retry in a moment.', 'No pudimos confirmar tu prueba. Inténtalo de nuevo en un momento.')}';
+        if(status) status.textContent='Impossible de confirmer votre essai. Réessayez dans un instant.';
         if(button) button.disabled=false;
       });
     });
