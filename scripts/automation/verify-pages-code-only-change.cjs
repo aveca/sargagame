@@ -24,7 +24,7 @@ function readChangedFiles(before, after) {
     throw new Error('PAGES_CODE_ONLY_BEFORE/AFTER missing or invalid; refusing release')
   }
   const output = execFileSync('git', ['diff', '--name-only', before, after], { encoding: 'utf8' })
-  return output.split(/\\r?\\n/).filter(Boolean)
+  return output.split(/\r?\n/).filter(Boolean)
 }
 
 if (require.main === module) {
