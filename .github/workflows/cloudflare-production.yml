@@ -48,6 +48,15 @@ on:
       # Garde-fou de non-regression : tests/unit/pages-code-only-workflow.test.cjs
       - '.github/workflows/pages-code-only-release.yml'
       - 'tests/unit/pages-code-only-workflow.test.cjs'
+      - 'scripts/lib/hotel-landing-fr.cjs'
+      - 'scripts/lib/region-seo-pages.cjs'
+      - 'scripts/automation/prepare-pages-code-only-payload.cjs'
+      - 'scripts/automation/verify-pages-code-only-change.cjs'
+      - 'src/ChasseHome.jsx'
+      - 'src/lib/format-freshness.mjs'
+      - 'tests/unit/b2b-hotel-form-contract.test.cjs'
+      - 'tests/unit/bug-2026-015-offer-decoupling.test.cjs'
+      - 'tests/unit/pages-code-only-change-guard.test.cjs'
       # Audit E2E/test-only : relancer les parcours sans redeployer sg-payments ni réécrire les secrets.
       - 'scripts/automation/user-journey-audit.cjs'
       - 'tests/unit/user-journey-report.test.cjs'
