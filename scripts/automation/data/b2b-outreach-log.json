@@ -491,8 +491,52 @@
     "bahiaprincipe.com": {
       "date": "2026-11-17T19:08:10.002Z",
       "status": "no-email"
+    },
+    "melia.com": {
+      "date": "2026-11-24T20:40:29.876Z",
+      "status": "no-email"
+    },
+    "barcelobavaro.com": {
+      "date": "2026-11-24T20:40:32.484Z",
+      "emailHash": "f2b777c4ad2d90afa09bb5ed9fc62122",
+      "emailDomain": "domain.com",
+      "island": "puntacana",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "dreamspuntacana.com": {
+      "date": "2026-11-24T20:40:34.872Z",
+      "status": "no-email"
+    },
+    "lopesan.com": {
+      "date": "2026-11-24T20:40:41.480Z",
+      "emailHash": "25202112fbc84b90dff800d18c039efe",
+      "emailDomain": "lopesan.com",
+      "island": "puntacana",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "rius.com": {
+      "date": "2026-11-24T20:40:42.245Z",
+      "status": "no-email"
+    },
+    "excellenceresorts.com": {
+      "date": "2026-11-24T20:40:48.280Z",
+      "emailHash": "598d715dbcad930ac40781fb3cecaf79",
+      "emailDomain": "excellenceresorts.com",
+      "island": "puntacana",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "eden-roc.com": {
+      "date": "2026-11-24T20:41:44.281Z",
+      "status": "no-email"
+    },
+    "tortugabayhotel.com": {
+      "date": "2026-11-24T20:41:46.260Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-11-17T19:08:10.002Z",
+  "lastRun": "2026-11-24T20:41:46.260Z",
   "totalSent": 11
 }
