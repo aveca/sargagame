@@ -463,7 +463,51 @@ ${forecastBlock}
 <a class="cta" href="${proLink}"><b>${L.cta}</b><span>${L.ctaSub}</span></a>
 </div>
 <div class="ft">${L.foot} · ${esc(observationLabel)} · ${esc(today)} · ${esc(domain)}</div>
-</div></body></html>`
+</div>
+<script>(function(){
+  try {
+    if (/[?&]b2bform=0/.test(location.search)) return;
+    var wrap=document.getElementById('sg-b2b-form-wrap');
+    var form=document.getElementById('sg-b2b-form');
+    if(!wrap || !form) return;
+    wrap.style.display='block';
+    var button=form.querySelector('button[type="submit"]');
+    var status=document.getElementById('sg-b2b-form-status');
+    form.addEventListener('submit',function(event){
+      event.preventDefault();
+      if(!form.reportValidity()) return;
+      if(button) button.disabled=true;
+      if(status) status.textContent='${_('Activating your trial…', 'Activando tu prueba…')}';
+      var fields=new FormData(form);
+      var name=String(fields.get('name')||'').trim();
+      fetch(form.action,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          email:String(fields.get('email')||'').trim(),
+          name:name,
+          island:String(fields.get('island')||'').trim(),
+          marketingConsent:false,
+          consentSource:'hotel_landing'
+        })
+      }).then(function(response){
+        return response.json().catch(function(){return {};}).then(function(data){
+          if(!response.ok || data.ok!==true || data.persisted!==true || typeof data.token!=='string' || !data.token) throw new Error('trial_not_confirmed');
+          return data;
+        });
+      }).then(function(data){
+        var target=new URL('/',location.origin);
+        target.searchParams.set('k',data.token);
+        if(name) target.searchParams.set('name',name);
+        location.assign(target.toString());
+      }).catch(function(){
+        if(status) status.textContent='${_('We could not confirm your trial. Please retry in a moment.', 'No pudimos confirmar tu prueba. Inténtalo de nuevo en un momento.')}';
+        if(button) button.disabled=false;
+      });
+    });
+  } catch(e) {}
+})();</script>
+</body></html>`
 }
 
 // Annuaire B2B : page /resorts/ listant TOUS les hôtels d'une région + statut de
@@ -596,7 +640,7 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
 <link rel="alternate" hreflang="${lang}" href="${canonical}" /><link rel="alternate" hreflang="x-default" href="${canonical}" />
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="https://${domain}/og-image.png"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
 ${ld}
-<style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.55;padding:16px 0}.wrap{max-width:680px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#2e1a5e,#6a2f9e 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:30px 24px}.hd .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}.hd h1{font-size:26px;margin:8px 0 10px;line-height:1.18}.hd p{font-size:14px;opacity:.94}.bd{padding:22px 24px}.bd h2{font-size:19px;margin:22px 0 6px;line-height:1.25}.bd p{font-size:15px;margin:0 0 8px}.lnk{color:#6a2f9e;font-weight:700;text-decoration:none}.cov{background:#FAF8F1;border:1px solid #eadfc6;border-radius:14px;padding:14px 16px;margin:18px 0}.cov h2{margin-top:2px}.cov ul{list-style:none;margin-top:8px}.cov li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee}.cov .d{width:14px;height:14px;border-radius:50%;flex:none}.cov .n{flex:1}.cov .n small{color:#7a756c;font-size:12.5px}.price{background:#F3EEFB;border:1px solid #dfd0f2;border-radius:14px;padding:16px 18px;margin:20px 0}.price b{font-size:19px}.cta{display:block;text-align:center;background:linear-gradient(135deg,#2e1a5e,#6a2f9e);color:#fff;text-decoration:none;border-radius:14px;padding:16px 18px;margin:14px 0;font-weight:700;font-size:15.5px}h3{font-size:15.5px;margin:16px 0 2px}.faq h3{color:#2e1a5e}.ft{font-size:11.5px;color:#8a857c;padding:8px 24px 22px}.ft a{color:#6a2f9e}</style></head>
+<style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.55;padding:16px 0}.wrap{max-width:680px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#2e1a5e,#6a2f9e 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:30px 24px}.hd .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}.hd h1{font-size:26px;margin:8px 0 10px;line-height:1.18}.hd p{font-size:14px;opacity:.94}.bd{padding:22px 24px}.bd h2{font-size:19px;margin:22px 0 6px;line-height:1.25}.bd p{font-size:15px;margin:0 0 8px}.lnk{color:#6a2f9e;font-weight:700;text-decoration:none}.cov{background:#FAF8F1;border:1px solid #eadfc6;border-radius:14px;padding:14px 16px;margin:18px 0}.cov h2{margin-top:2px}.cov ul{list-style:none;margin-top:8px}.cov li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee}.cov .d{width:14px;height:14px;border-radius:50%;flex:none}.cov .n{flex:1}.cov .n small{color:#7a756c;font-size:12.5px}.price{background:#F3EEFB;border:1px solid #dfd0f2;border-radius:14px;padding:16px 18px;margin:20px 0}.price b{font-size:19px}.cta{display:block;text-align:center;background:linear-gradient(135deg,#2e1a5e,#6a2f9e);color:#fff;text-decoration:none;border-radius:14px;padding:16px 18px;margin:14px 0;font-weight:700;font-size:15.5px}h3{font-size:15.5px;margin:16px 0 2px}.faq h3{color:#2e1a5e}.formbox{display:none;background:#FAF8F1;border:1px solid #eadfc6;border-radius:14px;padding:16px 18px;margin:20px 0}.formbox h2{font-size:17px;margin:0 0 8px}.formbox p{font-size:14px;margin:0 0 10px;opacity:.9}.formbox input{width:100%;box-sizing:border-box;padding:10px 12px;margin:0 0 8px;border:1px solid #ddd0b8;border-radius:8px;font-size:14px;background:#fff}.formbox .cta{margin:8px 0 0;width:auto;display:inline-block}.formnote{font-size:11.5px;color:#8a857c;margin:6px 0 0}.ft{font-size:11.5px;color:#8a857c;padding:8px 24px 22px}.ft a{color:#6a2f9e}</style></head>
 <body><div class="wrap">
 <div class="hd"><div class="k">${rn} · ${_('For hotels & resorts', 'Para hoteles')}</div><h1>${esc(h1)}</h1><p>${_('Satellite-measured, not guessed. Private by default.', 'Medido por satélite, no adivinado. Privado por defecto.')}</p></div>
 <div class="bd">
@@ -607,6 +651,19 @@ ${secs}
 <a class="cta" href="${pro('coverage')}">${_("Check your beach's latest reading — start free", 'Consulta la última lectura de tu playa — empieza gratis')} →</a>
 <div class="price"><h2>${esc(priceTitle)}</h2><p>${esc(priceBody)}</p><p><b>${_('$89/mo · $790/yr', '89 US$/mes · 790 US$/año')}</b> — ${_('30-day free trial, no card, no call.', 'prueba de 30 días, sin tarjeta, sin llamada.')}</p></div>
 <a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
+${['mq','gp','florida','puntacana','rivieramaya'].includes(region.id) ? `
+<div class="formbox" id="sg-b2b-form-wrap">
+  <h2>${_('Create my hotel account', 'Crear mi cuenta de hotel')}</h2>
+  <p>${_('30-day free trial — no card, no call.', 'Prueba de 30 días gratis — sin tarjeta, sin llamada.')}</p>
+  <form id="sg-b2b-form" action="/api/b2b-trial.php" method="POST">
+    <input type="hidden" name="island" value="${esc(region.id)}">
+    <input type="email" name="email" placeholder="${_('you@email.com', 'tu@email.com')}" required>
+    <input type="text" name="name" placeholder="${_('Your hotel name', 'Nombre de tu hotel')}">
+    <button type="submit" class="cta">${_('Start 30-day trial', 'Empezar prueba de 30 días')}</button>
+  </form>
+  <p class="formnote">${_('Your email is used only for your Pro access. No resale.', 'Tu email solo se usa para tu acceso Pro. Sin reventa.')}</p>
+  <p class="formnote" id="sg-b2b-form-status" role="status" aria-live="polite"></p>
+</div>` : ''}
 <div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
 </div>
 <div class="ft">${_('Independent satellite observations · check observation time and confidence', 'Observaciones satelitales independientes · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Validation scope', 'Alcance de validación')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
