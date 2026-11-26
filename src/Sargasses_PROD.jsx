@@ -14566,14 +14566,24 @@ export default function App(){
 
         {/* MON ACCÈS — feuille compte (email lié + alertes) ouverte par l'icône personnage.
             Restaurer/gérer réutilisent openAccessCheck (recurring → ?manage=1). */}
-        {showAccount&&<ErrBound><Suspense fallback={null}><LazyAccountSheet lang={lang} isPremium={isPremium}
-          onClose={()=>setShowAccount(false)}
-          alertsOn={alertsOn} onToggleAlerts={()=>toggleAlerts("account")}
-          onEnableNotif={()=>forceEnablePush("account")}
-          onRestore={()=>{setShowAccount(false);openAccessCheck("account")}}
-          onManage={()=>{setShowAccount(false);openAccessCheck("account")}}
-          onUpgrade={()=>{setShowAccount(false);openPremium("account")}}
-          supportEmail={SUPPORT_EMAIL} track={track}/></Suspense></ErrBound>}
+        {showAccount&&<ErrBound fallback={<div style={{position:"fixed",inset:0,background:"rgba(10,11,20,.55)",zIndex:1440}} />}>
+          <Suspense fallback={
+            <div role="dialog" aria-modal="true" aria-label={_t(lang,"Mon accès","My access","Mi acceso")} style={{position:"fixed",inset:0,zIndex:1440,background:"rgba(10,11,20,.55)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+              <div style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1445,background:"#fdf6e3",color:"#0d0b14",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",padding:"0 0 calc(20px + env(safe-area-inset-bottom))",borderTop:"3px solid #0d0b14",boxShadow:"0 -6px 0 rgba(13,11,20,.12)",borderTopLeftRadius:20,borderTopRightRadius:20,maxHeight:"92vh",overflowY:"auto"}}>
+                <div style={{padding:"14px clamp(14px,4.5vw,22px)",display:"flex",flexDirection:"column",gap:"clamp(11px,2.8vw,13px)",maxWidth:520,margin:"0 auto"}}>
+                  <div style={{font:"400 clamp(20px,5.4vw,26px)/1.06 'Anton','Bricolage Grotesque',sans-serif",textTransform:"uppercase"}}>{_t(lang,"Mon accès","My access","Mi acceso")}</div>
+                  <div style={{font:"500 clamp(13px,3.6vw,14px)/1.45 'Bricolage Grotesque',system-ui,sans-serif",color:"#4a4458"}}>{_t(lang,"Chargement…","Loading…","Cargando…")}</div>
+                </div>
+              </div>
+            </div>
+          }><LazyAccountSheet lang={lang} isPremium={isPremium}
+            onClose={()=>setShowAccount(false)}
+            alertsOn={alertsOn} onToggleAlerts={()=>toggleAlerts("account")}
+            onEnableNotif={()=>forceEnablePush("account")}
+            onRestore={()=>{setShowAccount(false);openAccessCheck("account")}}
+            onManage={()=>{setShowAccount(false);openAccessCheck("account")}}
+            onUpgrade={()=>{setShowAccount(false);openPremium("account")}}
+            supportEmail={SUPPORT_EMAIL} track={track}/></Suspense></ErrBound>}
 
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
             Garde-fous : jamais par-dessus le hero/onboarding/paywall/fiche ouverte. */}
