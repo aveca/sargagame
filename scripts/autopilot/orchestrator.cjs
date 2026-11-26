@@ -222,16 +222,55 @@ async function diagnoseAndSelfHeal() {
   }
 }
 
-async function healthCheck() {
-  const down = [];
-  for (const d of [cfg.health.requiredDomains, cfg.health.warnDomains].flat()) {
+/**
+ * Health check des domaines de production.
+ *
+ * ⚠️ DÉFAUT RÉEL DU 2026-11-10 : UN SEUL timeout transitoire sur UN des
+ * domaines déclenchait `FACTORY_STOP` et ARRETAIT toute la boucle 24/7
+ * (dernier cycle observé : « STOP — production outage: sargazotulum.com
+ * (timeout) » alors que le domaine répondait 200 en 86–457 ms sur les trois
+ * chemins vérifiés `/`, `/premium/`, `/api/mollie-health`).
+ *
+ * Un timeout réseau isolé n'est PAS une panne de production : la décision
+ * d'arrêt doit reposer sur une CONFIRMATION (plusieurs échecs consécutifs
+ * sur le même domaine), sinon une micro-coupure réseau tue 24 h de boucle.
+ *
+ * `cfg.health.confirmAttempts` (défaut 3) = nombre de tentatives
+ * consécutives exigées pour déclarer un domaine « down ». Les domaines
+ * `warnDomains` ne déclenchent jamais l'arrêt : une seule tentative suffit.
+ */
+async function probeDomain(d, attempts) {
+  let last = null;
+  for (let i = 0; i < attempts; i += 1) {
     try {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), cfg.health.timeoutMs);
       const r = await fetch('https://' + d + '/', { signal: ctrl.signal, headers: { 'User-Agent': 'sargagame-autopilot-health' } });
       clearTimeout(t);
-      if (r.status >= 500) down.push(`${d} (HTTP ${r.status})`);
-    } catch (e) { down.push(`${d} (${e.name === 'AbortError' ? 'timeout' : e.message})`); }
+      if (r.status >= 500) last = `${d} (HTTP ${r.status})`;
+      else return null; // 2xx/3xx/4xx = joignable
+    } catch (e) {
+      last = `${d} (${e.name === 'AbortError' ? 'timeout' : e.message})`;
+    }
+    // Petite pause entre deux tentatives : un timeout réseau transitoire
+    // (DNS, socket saturé) ne se reproduit pas immédiatement.
+    if (i < attempts - 1) await new Promise(r => setTimeout(r, 1500));
+  }
+  return last;
+}
+
+async function healthCheck() {
+  const down = [];
+  const required = Array.isArray(cfg.health.requiredDomains) ? cfg.health.requiredDomains : [];
+  const warn = Array.isArray(cfg.health.warnDomains) ? cfg.health.warnDomains : [];
+  const confirmAttempts = Number(cfg.health.confirmAttempts) > 0 ? Number(cfg.health.confirmAttempts) : 3;
+  for (const d of required) {
+    const r = await probeDomain(d, confirmAttempts);
+    if (r) down.push(r);
+  }
+  for (const d of warn) {
+    const r = await probeDomain(d, 1);
+    if (r) down.push(r);
   }
   return down;
 }
