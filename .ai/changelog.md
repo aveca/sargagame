@@ -1,3 +1,9 @@
+## 2026-11-26 00:00 UTC - Landing B2B Punta Cana ES rendue capturable
+
+- `scripts/lib/region-seo-pages.cjs` : la landing générée par `buildHotelLanding` inclut désormais un formulaire de capture B2B (email professionnel) réutilisant le helper partagé `/b2b-capture.js` (`sgB2BCapture`). Le succès n'est affiché qu'après confirmation serveur `{ok:true}` ; en cas d'échec le formulaire reste visible, un message d'erreur est affiché, le bouton est réactivé et l'événement `sg_b2b_capture_failed` est émis.
+- Aucun prix, paiement, secret ou données scientifiques touchés.
+- Tests : `region-seo-methodology-scope.test.cjs` OK, `b2b-capture-ack.test.cjs` OK (84 assertions). 8 échecs préexistants dans `region-sitemap-ownership.test.cjs` (non liés).
+
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
 - **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.

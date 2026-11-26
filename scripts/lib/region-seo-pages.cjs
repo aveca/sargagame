@@ -608,8 +608,36 @@ ${secs}
 <div class="price"><h2>${esc(priceTitle)}</h2><p>${esc(priceBody)}</p><p><b>${_('$89/mo · $790/yr', '89 US$/mes · 790 US$/año')}</b> — ${_('30-day free trial, no card, no call.', 'prueba de 30 días, sin tarjeta, sin llamada.')}</p></div>
 <a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
 <div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
+<div class="capture" style="background:#F3EEFB;border:1px solid #dfd0f2;border-radius:14px;padding:16px 18px;margin:20px 0">
+<h2>${_('Get your beach brief — free', 'Recibe el resumen de tu playa — gratis')}</h2>
+<p>${_('Leave your email and we will send the daily brief for your ${region.name} beach — automated, no calls.', 'Deja tu email y te enviamos el resumen diario para tu playa de ${region.name} — automatizado, sin llamadas.')}</p>
+<form id="b2b-form">
+<div><label for="email">${_('Work email *', 'Email profesional *')}</label><input type="email" id="email" name="email" placeholder="usted@hotel.com" required autocomplete="email" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;margin:6px 0"/></div>
+<button type="submit" class="cta" style="margin:10px 0">${_('Receive the free brief', 'Recibir el resumen gratuito')}</button>
+<p class="trust-row" style="font-size:12px;color:#666">${_('No card. Cancel in one click.', 'Sin tarjeta. Baja en un clic.')}</p>
+</form>
+<div id="form-ok" style="display:none;padding:12px;background:#e6f4ea;border-radius:8px;color:#1e7e34">${_('Listo — your brief is on its way.', 'Listo — tu resumen está en camino.')}</div>
+</div>
 </div>
 <div class="ft">${_('Independent satellite observations · check observation time and confidence', 'Observaciones satelitales independientes · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Validation scope', 'Alcance de validación')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
+<script src="/b2b-capture.js"></script>
+<script>
+(function(){
+  var form=document.getElementById('b2b-form');
+  if(!form) return;
+  var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var email=form.querySelector('#email').value;
+    var payload={email:email,source:'hotel-landing',region:'${region.id}',lang:'${lang}'};
+    window.sgB2BCapture(ENDPOINT,payload,{form:form,lang:'${lang}',source:'hotel-landing',onSuccess:function(){
+      form.style.display='none';
+      var ok=document.getElementById('form-ok');
+      if(ok) ok.style.display='block';
+    }});
+  });
+})();
+</script>
 </div></body></html>`
 }
 
