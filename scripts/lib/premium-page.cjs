@@ -219,6 +219,11 @@ const btn = document.getElementById('payBtn');
 const email = document.getElementById('email');
 const msg = document.getElementById('msg');
 let selected = null;
+// Email DÉJÀ CONNU (même origine, clé écrite par l'app à la capture) : le
+// visiteur qui a laissé son email dans l'app ou sur une autre page du site ne
+// le ressaisit pas ici — une étape de moins avant le paiement. Aucune donnée
+// nouvelle, aucun envoi, aucune analytics : on relit une saisie du visiteur.
+try{const _k=localStorage.getItem('sg_email')||'';if(_k)email.value=_k}catch(_){}
 document.querySelectorAll('.buy').forEach(function(b) { b.addEventListener('click', function() {
   document.querySelectorAll('.buy').forEach(function(b2){ b2.classList.remove('active'); });
   b.classList.add('active');
@@ -231,6 +236,8 @@ function showMsg(text, type) {
 btn.addEventListener('click', async function() {
   if (!selected) { showMsg(${JSON.stringify(Tl.bad)}, 'err'); return; }
   if (!email.value || !email.value.includes('@')) { showMsg(${JSON.stringify(Tl.bad)}, 'err'); return; }
+  // Mémorise l'email validé pour les prochaines visites (même clé que l'app).
+  try{localStorage.setItem('sg_email', email.value.trim().toLowerCase())}catch(_){}
   btn.disabled = true; btn.textContent = ${JSON.stringify(lang === 'fr' ? 'Paiement...' : lang === 'en' ? 'Paying...' : 'Pagando...')};
   try {
     const r = await fetch('/api/mollie.php', {

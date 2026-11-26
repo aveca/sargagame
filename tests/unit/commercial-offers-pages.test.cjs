@@ -21,6 +21,16 @@ const gpPremium = buildPage(Object.assign({}, regions.gp, { primaryLang: 'fr' })
 assert.match(gpPremium, /plage de Guadeloupe/)
 assert.doesNotMatch(gpPremium, /plage de Martinique/)
 assert.match(gpPremium, /<title>[^<]*Guadeloupe/)
+// ── PARCOURS RACCOURCI : l'email déjà capturé est relu, jamais redemandé ────
+// La page /premium/ pré-remplit son champ email depuis `sg_email` (même clé
+// que src/Sargasses_PROD.jsx submitLead et PremiumModal defaultValue) puis
+// réécrit la clé après validation → une ressaisie de moins avant le paiement.
+// Aucune nouvelle collecte, aucun appel réseau ajouté.
+assert.match(gpPremium, /localStorage\.getItem\('sg_email'\)/, 'premium page must prefill the known email')
+assert.match(gpPremium, /localStorage\.setItem\('sg_email'/, 'premium page must remember the validated email')
+// Régression : la page ne doit JAMAIS contenir un email en dur ni l'injecter
+// dans le checkout autrement que via le champ visiteur.
+assert.doesNotMatch(gpPremium, /example\.com|@sargasses[a-z.-]*\.com/)
 
 for (const id of ['florida', 'rivieramaya', 'puntacana', 'tulum']) {
   const lang = id === 'florida' ? 'en' : 'es'

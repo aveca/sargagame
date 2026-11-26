@@ -29,19 +29,27 @@ const makeSubmitLead = (options = {}) => {
   const analyticsMock = (event, params, island) => {
     calls.analytics.push({ event, params, island })
   }
+  // Miroir fidèle du stockage local navigateur (clé `sg_email` lue par
+  // PremiumModal et par la page /premium/ pour le pré-remplissage).
+  const storage = {}
+  const storageMock = {
+    getItem: (k) => (Object.prototype.hasOwnProperty.call(storage, k) ? storage[k] : null),
+    setItem: (k, v) => { storage[k] = String(v) },
+    removeItem: (k) => { delete storage[k] },
+  }
   const submit = new Function(
     'IS_NEW_REGION', 'REGION', 'window', 'navigator', 'APPS_SCRIPT_URL', 'fetch', 'logAnalyticsEvent',
     functionSource + '\nreturn submitLead;'
   )(
     Boolean(options.isNewRegion),
     { id: options.regionId || 'florida' },
-    { location: { hostname: host } },
+    options.noWindowStorage ? { location: { hostname: host } } : { location: { hostname: host }, localStorage: storageMock },
     navigatorMock,
     'https://example.test/apps-script',
     fetchMock,
     analyticsMock
   )
-  return { submit, calls }
+  return { submit, calls, storage }
 }
 
 function assertLeadSink(calls, expectedIsland) {
@@ -85,7 +93,36 @@ function assertLeadSink(calls, expectedIsland) {
   assertLeadSink(calls, 'FLORIDA')
 }
 
+// ── MÉMOIRE LOCALE `sg_email` (pré-remplissage du paiement) ─────────────────
+// L'email capturé est mémorisé normalisé (trim + minuscules) sous `sg_email` :
+// c'est la clé que lit PremiumModal (defaultValue) et la page /premium/. Ce
+// test verrouille le raccourcissement du parcours visiteur → paiement SANS
+// toucher au pipeline (aucun appel réseau, aucun événement en plus).
+{
+  const { submit, storage } = makeSubmitLead({ host: 'sargasses-martinique.com', beaconResult: true })
+  submit('  Hotel@Example.TEST ', 'map_world')
+  assert.equal(storage.sg_email, 'hotel@example.test', 'captured email must be stored normalized for payment prefill')
+}
+{
+  // Sandbox / navigation privée sans localStorage → la capture doit survivre
+  // (aucune exception) et le reste du tunnel doit tourner à l'identique.
+  const { submit, calls } = makeSubmitLead({ host: 'sargasses-martinique.com', beaconResult: true, noWindowStorage: true })
+  submit('hotel@example.test', 'map_world')
+  assert.equal(calls.analytics.length, 1, 'missing window.localStorage must not break the lead funnel')
+  assert.equal(calls.beacon.length, 1, 'missing window.localStorage must not break the Apps Script sink')
+}
+{
+  // Un email vide ne doit JAMAIS écraser une valeur déjà présente.
+  const { submit, storage } = makeSubmitLead({ host: 'sargasses-martinique.com', beaconResult: true })
+  submit('keeper@example.test', 'chasse')
+  submit('', 'chasse')
+  assert.equal(storage.sg_email, 'keeper@example.test', 'an empty capture must not erase a stored email')
+}
+
 console.log('PASS: lead funnel event is persisted when sendBeacon succeeds')
 console.log('PASS: keepalive fetch fallback preserves the lead and funnel event')
 console.log('PASS: region attribution works for GP, MQ and new USD regions')
 console.log('PASS: email remains excluded from analytics payload')
+console.log('PASS: captured email is stored normalized for payment prefill')
+console.log('PASS: a missing window.localStorage never breaks the lead funnel')
+console.log('PASS: an empty capture never erases an already stored email')

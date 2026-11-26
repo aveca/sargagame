@@ -1,3 +1,39 @@
+## 2026-11-26 · Mission SARG-EMAIL-PREFILL-20261126 · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : l'email déjà capturé par le visiteur pré-remplit désormais l'étape de paiement (app in-app `/premium/` incluse) — une ressaisie de moins sur le parcours visiteur → paiement, sans nouvelle collecte.
+- **Détails** : constat mesuré avant de coder — la capture email existait déjà (`ChasseHome`/`WorldMapView` `onCaptureEmail` → `submitLead`, Apps Script + Supabase `sg_email_submit`) et l'étape paiement lisait déjà `localStorage.sg_email` (`PremiumModal` `defaultValue` ×3, `stripeUrlWith` `prefilled_email`) mais **rien n'écrivait cette clé** du côté des surfaces de capture. Correctif minimal : (1) `src/Sargasses_PROD.jsx` `submitLead` mémorise l'email **déjà saisi** sous `sg_email`, normalisé (trim + minuscules), garde-fou si `window.localStorage` est absent, jamais d'écrasement par une valeur vide ; (2) `scripts/lib/premium-page.cjs` (page `/premium/`, régénérée à chaque build par `write-commercial-pages.cjs`) lit `sg_email` pour pré-remplir son champ puis réécrit la clé après validation. Aucun nouvel envoi réseau, aucun nouvel événement analytics, aucun email en dur.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — `submitLead` : mémorisation locale `sg_email` (normalisée, non destructrice)
+- `scripts/lib/premium-page.cjs` — `/premium/` : pré-remplissage depuis `sg_email` + réécriture après validation
+- `tests/unit/lead-submit-analytics-sink.test.cjs` — +3 scénarios (écriture normalisée, absence de `localStorage` sans casse, email vide non destructeur)
+- `tests/unit/commercial-offers-pages.test.cjs` — +3 assertions (lecture/écriture `sg_email` sur la page générée, zéro email en dur)
+- `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md` — handoff
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → 207,2 Ko ≤ 210 Ko gzip
+- [x] `npm test` → 202/202 fichiers OK
+- [x] `node tests/unit/lead-submit-analytics-sink.test.cjs` → 7/7 PASS (ciblé)
+- [x] `node tests/unit/commercial-offers-pages.test.cjs` → PASS (ciblé)
+- [ ] `node scripts/ux-smoke.mjs` → non exécuté dans cette session (non requis : aucun rendu UI modifié, aucun chemin critique touché)
+
+### Problèmes restants
+- [ ] Déploiement production NON demandé : branche poussée + PR à ouvrir, aucun merge, aucun deploy (mandat de la session).
+- [ ] Husky/pre-commit : aucun hook bloquant rencontré lors du commit.
+
+### Prochaine action recommandée
+1. Ouvrir la PR sur `main` depuis `agent/coding/SARG-EMAIL-PREFILL-20261126` et vérifier la CI sur le SHA exact — Rôle : coding_agent
+2. Ne pas merger ni déployer sans décision fondateur — Rôle : release_agent
+
+### Branche / PR
+- Branche : `agent/coding/SARG-EMAIL-PREFILL-20261126` (base `origin/main` `142175677`)
+- PR : à ouvrir
+- Commit head : à renseigner après commit
+
+---
+
 ## 2026-11-24 · Mission SARG-STALE-OFFER-CTA-6DOMAINS-20261124 (issue #1486) · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

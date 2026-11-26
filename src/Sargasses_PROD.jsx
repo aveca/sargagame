@@ -2064,6 +2064,14 @@ export function submitLead(email,source){
   try{
     island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
   }catch{}
+  // ── MÉMOIRE LOCALE DE L'EMAIL (mÊME ORIGINE, AUCUN ENVOI) ─────────────────
+  // L'email QUE LE VISITEUR A DÉJÀ SAISI est mémorisé sous `sg_email` (clé déjà
+  // lue par PremiumModal defaultValue et par la page /premium/) → il ne le
+  // ressaisit pas à l'étape paiement. Parcours visiteur → paiement raccourci
+  // d'une ressaisie, sans nouvelle donnée collectée, sans nouvel événement
+  // analytics, sans toucher à la création de paiement. `window.localStorage`
+  // peut être absent (sandbox de test, navigation privée) → garde-fou silencieux.
+  try{const _em=String(email||"").trim().toLowerCase();if(_em&&window.localStorage)window.localStorage.setItem("sg_email",_em)}catch(_){}
   // Apps Script delivery is best-effort and independent from first-party funnel logging.
   try{
     const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
