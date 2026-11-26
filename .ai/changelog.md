@@ -1,3 +1,9 @@
+## 2026-11-26 00:00 UTC - Landing B2B Punta Cana ES rendue capturable
+
+- `scripts/lib/region-seo-pages.cjs` : la landing générée par `buildHotelLanding` inclut désormais un formulaire de capture B2B (email professionnel) réutilisant le helper partagé `/b2b-capture.js` (`sgB2BCapture`). Le succès n'est affiché qu'après confirmation serveur `{ok:true}` ; en cas d'échec le formulaire reste visible, un message d'erreur est affiché, le bouton est réactivé et l'événement `sg_b2b_capture_failed` est émis.
+- Aucun prix, paiement, secret ou données scientifiques touchés.
+- Tests : `region-seo-methodology-scope.test.cjs` OK, `b2b-capture-ack.test.cjs` OK (84 assertions). 8 échecs préexistants dans `region-sitemap-ownership.test.cjs` (non liés).
+
 ## 2026-11-13 — Parcours Pro hôtel en libre-service
 
 - `/pro/pricing/` (FR, EN, ES) : boutons Mensuel et Annuel vers les Payment Links Pro, devise selon le domaine. Une ligne dit ce que l'hôtel reçoit et que c'est par e-mail. Plus d'essai 30 jours ni de widget offert sur ces pages. Support par e-mail. Le formulaire `POST /api/b2b-lead` reste une question facultative, après les boutons.
@@ -19,6 +25,12 @@
 - Premier écran HTML : valeur, heure satellite, CTA hôtel et CTA pass, visible sans JavaScript.
 - Leads : `POST /api/b2b-lead` vers `b2b_leads`, repli Apps Script déjà en production. Affiliation voyage inactive sans `AFFILIATE_ENABLED=1`.
 - Liste Stripe LIVE : `docs/stripe-live-catalog-2026-11-13.md`. Aucune clé, aucun déploiement.
+
+## 2026-11-26 00:00 UTC - Landing B2B Punta Cana ES rendue capturable
+
+- `scripts/lib/region-seo-pages.cjs` : la landing générée par `buildHotelLanding` inclut désormais un formulaire de capture B2B (email professionnel) réutilisant le helper partagé `/b2b-capture.js` (`sgB2BCapture`). Le succès n'est affiché qu'après confirmation serveur `{ok:true}` ; en cas d'échec le formulaire reste visible, un message d'erreur est affiché, le bouton est réactivé et l'événement `sg_b2b_capture_failed` est émis.
+- Aucun prix, paiement, secret ou données scientifiques touchés.
+- Tests : `region-seo-methodology-scope.test.cjs` OK, `b2b-capture-ack.test.cjs` OK (84 assertions). 8 échecs préexistants dans `region-sitemap-ownership.test.cjs` (non liés).
 
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
