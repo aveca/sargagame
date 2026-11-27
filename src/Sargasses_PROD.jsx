@@ -3370,6 +3370,24 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
   // Analytics : forecast chart viewed (one-shot)
   useEffect(()=>{if(forecast&&forecast.length){try{track("sg_forecast_view",{days:forecast.length,reliable_horizon:weeklyData?.reliableHorizon||3})}catch(_){}}},[])
+  // PAYWALL GATE (2026-11-27) : les non-premium ne voient PAS le forecast.
+  // Ils voient un CTA premium à la place. Rollback ?forecastgate=0.
+  const forecastGateOn=(()=>{try{return !/[?&]forecastgate=0/.test(window.location.search)}catch(_){return true}})()
+  if(!isPremium&&forecastGateOn){
+    return (
+      <div style={{padding:"16px",borderRadius:12,background:"rgba(255,199,44,.08)",border:"1px solid rgba(255,199,44,.25)",textAlign:"center",margin:"10px 0"}}>
+        <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink,#13241F)",marginBottom:8}}>
+          {_t(lang,"Prévision 7 jours — Premium","7-day forecast — Premium","Pronóstico 7 días — Premium")}
+        </div>
+        <div style={{fontSize:11.5,color:"var(--sg-mid,#5A5A5A)",marginBottom:12,lineHeight:1.4}}>
+          {_t(lang,"Débloque la prévision complète, plage par plage, pour savoir où sera la mer propre demain.","Unlock the full forecast, beach by beach, to know where the sea will be clean tomorrow.","Desbloquea el pronóstico completo, playa por playa, para saber dónde estará el mar limpio mañana.")}
+        </div>
+        <button onClick={()=>onPremiumClick&&onPremiumClick("forecast_gate")} style={{background:"#FFC72C",color:"#120821",border:"none",borderRadius:10,padding:"10px 20px",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:40}}>
+          {_t(lang,"Découvrir Premium →","Discover Premium →","Descubrir Premium →")}
+        </button>
+      </div>
+    )
+  }
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
   // v3: cap visible days at J+3 (horizon beyond that is unreliable per backtest)
