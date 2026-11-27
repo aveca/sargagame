@@ -33,9 +33,21 @@ async function main() {
   assert.equal(selectB2bPaylink(live, 'territoire', false), null)
   assert.equal(selectB2bPaylink(null, 'pro', false), null)
 
-  const flagged = Object.entries(catalog.links || {}).filter(([, link]) => link && link.reachable === true)
-  assert.equal(flagged.length, 0)
-  assert.equal(payUrlFor('pro'), null)
+  // Catalogue commité : chaque entrée porte un drapeau `reachable` BOOLÉEN
+  // (vérifié à chaque run du générateur), et AUCUN lien marqué vivant n'est
+  // exposé par urlFromCatalog/payUrlFor tant que le drapeau n'est pas true.
+  // L'état mort (2026-11-26) et l'état réparé (liens re-frappés en CI) sont
+  // TOUS DEUX valides — ce qui est interdit, c'est un lien 404 exposé.
+  for (const [id, link] of Object.entries(catalog.links || {})) {
+    assert.equal(typeof link.reachable, 'boolean', `${id}: drapeau reachable booléen`)
+    if (link.reachable === true) {
+      assert.ok(typeof link.url === 'string' && link.url.startsWith('https://'), `${id}: URL exposable valide`)
+    }
+  }
+  const proLink = catalog.links.pro_annual || {}
+  const briefLink = catalog.links.brief_annual || {}
+  assert.equal(payUrlFor('pro'), proLink.reachable === true ? proLink.url : null)
+  assert.equal(payUrlFor('brief'), briefLink.reachable === true ? briefLink.url : null)
   assert.equal(payUrlFor('territoire'), null)
   console.log('b2b-paylink-offer: OK')
 }
