@@ -10344,7 +10344,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       {/* Bandeau haut : décoratif (wordmark + LIVE) mais AU-DESSUS du voile cliquable
           → sans handler il avalait le tap (dead-clicks home). On lui donne le même
           tap = ouvrir la fiche, pour récupérer ces clics morts. */}
-      <div onClick={()=>{track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
+      <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
         <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
@@ -10357,34 +10357,36 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",
         maxWidth:560,margin:"0 auto"}}>
         {userPos&&(
-          <div onClick={()=>{track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
+          <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
             color:"#FFC72C",marginBottom:8,cursor:"pointer"}}>
             📍 {_t(lang,"LA PLUS PROCHE DE TOI","CLOSEST TO YOU","LA MÁS CERCA DE TI")}
           </div>
         )}
-        <div onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
+        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
           {dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
         </div>
-        <h1 onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
-          letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",cursor:"pointer",
+        <h1 style={{margin:"0 0 14px"}}>
+          <button type="button" onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{background:"none",border:"none",padding:0,margin:0,fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
+          letterSpacing:".01em",textTransform:"uppercase",color:"#fff",cursor:"pointer",textAlign:"left",
           textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
-          {beach.name}
+            {beach.name}
+          </button>
         </h1>
-        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
+        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
           {updFresh?verdictTxt:"Vérification en cours"}
           {beach.score!=null&&updFresh&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
         {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
         {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
-        <div onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
+        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px rgba(34,197,94,.75)":"none",flexShrink:0}}/>
           {updFresh?<>{_t(lang,"Observation satellite","Satellite observation","Observación satelital")}{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </div>
         )}
         {/* Compteur live des plages propres / à éviter (additif · rollback ?herolive=0) */}
         {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&updFresh&&(
-        <div onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+        <button type="button" onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase",background:"none",border:"none",padding:0,font: "inherit"}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
             <span style={{color:"#fff"}}>{liveCounts.clean} {_t(lang,"propres","clean","limpias")}</span>
@@ -10394,7 +10396,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             <span style={{width:8,height:8,borderRadius:"50%",background:"#E8522A",flexShrink:0}}/>
             <span style={{color:"rgba(255,255,255,.9)"}}>{liveCounts.avoid} {_t(lang,"àéviter","to avoid","a evitar")}</span>
           </span>
-        </div>
+        </button>
         )}
         {/* Navigation rapide plage suivante propre (additif · rollback ?heronext=0) */}
         {!/[?&]heronext=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(()=>{
@@ -10403,20 +10405,20 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           const next=list.slice(idx+1).find(b=>b&&b.status==="clean")||list.find(b=>b&&b.status==="clean"&&b.id!==beach.id)
           if(!next)return null
           return(
-          <div onClick={()=>{track("sg_hero_tap",{t:"next"});onOpenBeach&&onOpenBeach(next)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+          <button type="button" onClick={()=>{track("sg_hero_tap",{t:"next"});onOpenBeach&&onOpenBeach(next)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase",background:"none",border:"none",padding:0,font:"inherit",textAlign:"left"}}>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:"#FFC72C",flexShrink:0}}/>
               <span style={{color:"#fff"}}>{_t(lang,"Prochaine plage propre","Next clean beach","Playa limpia siguiente")}</span>
             </span>
             <span style={{fontSize:12,color:"#fff",fontWeight:800}}>{next.name}</span>
             <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>▸</span>
-          </div>
+          </button>
           )
         })()}
         )}
         {/* Tendance J+1 (additif · rollback ?herotomo=0) */}
         {!/[?&]herotomo=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&j1&&(
-        <div onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:j1==="clean"?"#22C55E":j1==="moderate"?"#F59E0B":"#E8522A",flexShrink:0}}/>
             <span style={{color:"#fff"}}>{_t(lang,"Demain","Tomorrow","Mañana")}</span>
@@ -10425,7 +10427,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>{j1==="clean"?"▲":j1==="moderate"?"▬":"▼"}</span>
         </div>
         )}
-        {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
+        {sub&&<div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
             home vs 72-98% "état maintenant", mais sur grand écran les
