@@ -34,6 +34,24 @@
 
 ---
 
+## 2026-11-26 · Agent: OpenCode (coding + QA) — CTA annuel B2B restauré (branche `agent/revenue/b2b-paylink-restore`, PR à ouvrir, NON mergée, AUCUN déploiement)
+
+### Défaut
+Le CTA annuel du paywall B2B ne s'affichait **jamais** : `selectB2bPaylink()` (`src/lib/b2b-paylink-offer.mjs:11`, garde `reachable !== true` introduite par `fa5f37f26`) exigeait un drapeau que **personne n'écrivait** dans le dépôt. La worker publiait `{ url, amount, currency }` seuls → garde → `null`. Même garde côté emails B2B (`scripts/automation/lib/b2b-paylinks.cjs:21`) sur un catalogue statique dont **les 10 URL répondaient 404** → paylinks de prospection morts, en silence.
+
+### Correctif
+- `workers/sg-payments/index.js` : `GET /api/b2b-paylinks.json` expose `value` (miroir de `amount`) + `reachable: true` sur `pro_annual` (690 EUR) et `pro_annual_usd` (790 USD), pages de paiement **prouvées 200 live**. `Cache-Control: no-store` conservé. **Aucun prix changé.**
+- `scripts/automation/mollie-paylinks.cjs` : vérification live **sans clé API** à chaque run (écrit `reachable` + `verifiedAt`) ; auto-réparation **restreinte aux 5 tiers annuels B2B** (même montant/label). B2C vérifié-seulement (grille périmée vs offre 2026-11-09 : 7,99/14,99/24,99) — recréer minterait un prix non validé.
+- Tests : `tests/unit/b2b-paylinks-worker-catalog.test.cjs` (nouveau) ; `tests/unit/b2b-paylink-offer.test.cjs` (contrat assoupli : plus de verrou sur l'état tout-mort).
+
+### Gate local
+`npm test` **205/205** · `npm run build` exit 0 (136 pages plage, `dist/` produit → `tests/sitemap-guard-beach-pages.test.cjs` OK) · `node --check` 3/3 · `git diff --check` exit 0.
+
+### Reste ouvert
+Merge de la PR (non mergée, non déployée) ; recréation effective des 5 liens B2B morts **en CI** (le pipeline a `MOLLIE_API_KEY` ; en local `Invalid Authorization header` = aucune création, comme voulu) ; décision prix sur la grille B2C ; réparation du tunnel de mesure (`daily-metrics.json` figé depuis 2026-08-03, Supabase `analytics_events` illisible en lecture anon).
+
+---
+
 ## 2026-11-24 · Mission SARG-STALE-OFFER-CTA-6DOMAINS-20261124 (issue #1486) · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

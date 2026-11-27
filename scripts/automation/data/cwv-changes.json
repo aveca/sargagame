@@ -1,34 +1,14 @@
 {
-  "generatedAt": "2026-11-16T21:15:08.295Z",
+  "generatedAt": "2026-11-23T22:50:37.516Z",
   "kind": "delta",
   "changes": [
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 376,
-      "to": 271,
-      "delta": -105,
-      "kind": "improvement",
-      "crossesThreshold": false
-    },
-    {
-      "site": "mq",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 519,
-      "to": 421,
-      "delta": -98,
-      "kind": "improvement",
-      "crossesThreshold": false
-    },
     {
       "site": "gp",
       "formFactor": "combined",
       "metric": "INP",
-      "from": 517,
-      "to": 429,
-      "delta": -88,
+      "from": 429,
+      "to": 368,
+      "delta": -61,
       "kind": "improvement",
       "crossesThreshold": false
     }

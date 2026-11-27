@@ -123,7 +123,8 @@ button{min-height:48px;margin-top:12px;width:100%;border:0;border-radius:12px;ba
 <p>${escapeHtml(copy.freeP)}</p>
 <h2>${escapeHtml(copy.paidH)}</h2>
 <p>${escapeHtml(copy.paidP)}</p>
-<div class="grid">${cards}</div>
+<!-- anchor cible des liens de récupération de panier : la grille des passes B2C -->
+<div class="grid" id="pass">${cards}</div>
 <section id="pro">
 <h2>${escapeHtml(copy.proH)}</h2>
 <p>${escapeHtml(copy.proP)}</p>

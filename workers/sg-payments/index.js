@@ -1208,10 +1208,20 @@ var index_default = {
     }
     if (request.method === "GET" && path === "/api/b2b-paylinks.json") {
       const host = requestHost(request);
+      // `value` + `reachable: true` = contrat exigé par selectB2bPaylink()
+      // (src/lib/b2b-paylink-offer.mjs, CTA annuel du paywall) ET urlFromCatalog()
+      // (scripts/automation/lib/b2b-paylinks.cjs, emails B2B). Sans EUX, le garde
+      // `reachable !== true` renvoie null → le CTA annuel ne s'affichait JAMAIS
+      // (retombée silencieuse /?pro=1) — mesuré 2026-11-26 : catalogue live
+      // publié avec amount/currency seuls. Preuve de vivacité du jour :
+      // GET /api/mollie-pay?plan=pro_annual → 200 · pro_annual_usd → 200.
+      // brief_annual / territory_annual restent ABSents : leur page de paiement
+      // répond 404 (plan hors B2B_PLANS) — le garde a raison de les cacher.
+      // Aucun prix touché : `value` est le MIROIR de `amount` (690 / 790).
       return new Response(JSON.stringify({
         links: {
-          pro_annual: { url: `https://${host}/api/mollie-pay?plan=pro_annual`, amount: 690, currency: "EUR" },
-          pro_annual_usd: { url: `https://${host}/api/mollie-pay?plan=pro_annual_usd`, amount: 790, currency: "USD" }
+          pro_annual: { url: `https://${host}/api/mollie-pay?plan=pro_annual`, amount: 690, currency: "EUR", value: "690.00", reachable: true },
+          pro_annual_usd: { url: `https://${host}/api/mollie-pay?plan=pro_annual_usd`, amount: 790, currency: "USD", value: "790.00", reachable: true }
         }
       }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...cors(request) } });
     }

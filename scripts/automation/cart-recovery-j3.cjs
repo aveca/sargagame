@@ -43,7 +43,7 @@ const SENT_LOG = path.join(ROOT, 'scripts', 'automation', 'data', `cart-recovery
 const ABANDONED_LOG = path.join(ROOT, 'scripts', 'automation', 'data', 'abandoned-checkouts.json');
 
 const FIABILITE_URL = 'https://sargasses-martinique.com/fiabilite/';
-const PASS_URL = 'https://sargasses-martinique.com/#pass';
+const PASS_URL = 'https://sargasses-martinique.com/offres/#pass';
 const UNSUB_URL = 'https://sargasses-martinique.com/unsubscribe/';
 
 function loadJSON(p, fallback = []) {

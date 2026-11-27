@@ -61,7 +61,7 @@ function firstPaintInner(region, iso) {
 <p style="margin:0 0 12px;font:600 15px/1.45 system-ui,sans-serif;color:#f4efe4">${obs} El veredicto del día es gratis cuando la observación es válida. El pronóstico de los días siguientes es un pase de pago único (${escapeHtml(stay.price)} / 30 días).</p>
 <p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
 <a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro ${escapeHtml(pro.month)}/mes o ${escapeHtml(pro.year)}/año</a>
-<a href="/?paywall=1&amp;pass=p30" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pase viajero ${escapeHtml(stay.price)}</a>
+<a href="/?paywall=1&amp;pass=p30&amp;utm_source=landing_pass" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pase viajero ${escapeHtml(stay.price)}</a>
 </p>`
   }
   if (lang === 'en') {
@@ -70,7 +70,7 @@ function firstPaintInner(region, iso) {
 <p style="margin:0 0 12px;font:600 15px/1.45 system-ui,sans-serif;color:#f4efe4">${obs} Today's verdict is free when the observation is valid. Later days are a one-time pass (${escapeHtml(stay.price)} / 30 days).</p>
 <p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
 <a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro ${escapeHtml(pro.month)}/mo or ${escapeHtml(pro.year)}/yr</a>
-<a href="/?paywall=1&amp;pass=p30" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Traveler pass ${escapeHtml(stay.price)}</a>
+<a href="/?paywall=1&amp;pass=p30&amp;utm_source=landing_pass" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Traveler pass ${escapeHtml(stay.price)}</a>
 </p>`
   }
   return `<p style="margin:0 0 8px;font:800 13px/1.3 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#FFC72C">Hôtels et clubs de plage</p>
@@ -78,7 +78,7 @@ function firstPaintInner(region, iso) {
 <p style="margin:0 0 12px;font:600 15px/1.45 system-ui,sans-serif;color:#f4efe4">${obs} Le verdict du jour est gratuit quand l'observation est valide. Les jours suivants sont un pass à paiement unique (${escapeHtml(stay.price)} / 30 jours).</p>
 <p style="margin:0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
 <a href="/offres/#pro" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;background:#FFC72C;color:#1a1408;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pro ${escapeHtml(pro.month)}/mois ou ${escapeHtml(pro.year)}/an</a>
-<a href="/?paywall=1&amp;pass=p30" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pass voyageur ${escapeHtml(stay.price)}</a>
+<a href="/?paywall=1&amp;pass=p30&amp;utm_source=landing_pass" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 16px;border-radius:12px;border:2px solid #FFC72C;color:#FFC72C;font:800 15px/1 system-ui,sans-serif;text-decoration:none">Pass voyageur ${escapeHtml(stay.price)}</a>
 </p>`
 }
 

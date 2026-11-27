@@ -1,83 +1,102 @@
 {
-  "generatedAt": "2026-11-16T21:15:08.028Z",
-  "comparedTo": "2026-11-09",
+  "generatedAt": "2026-11-23T22:50:37.289Z",
+  "comparedTo": "2026-11-16",
   "alerts": {
     "drops": [
       {
         "site": "rivieramaya",
         "page": "https://sargassumcancun.com/en/seaweed-map/",
-        "prevPos": 37.5,
-        "currPos": 45.9,
-        "delta": 8.4,
-        "impressions": 118
+        "prevPos": 45.9,
+        "currPos": 53.1,
+        "delta": 7.2,
+        "impressions": 97
       },
       {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/en/sargassum-forecast/",
-        "prevPos": 59.4,
-        "currPos": 64.2,
-        "delta": 4.8,
+        "site": "florida",
+        "page": "https://sargassummiami.com/seaweed-map/",
+        "prevPos": 13,
+        "currPos": 19,
+        "delta": 6,
         "impressions": 64
       },
       {
+        "site": "florida",
+        "page": "https://sargassummiami.com/es/playas/fort-lauderdale-beach/",
+        "prevPos": 10,
+        "currPos": 16.1,
+        "delta": 6.1,
+        "impressions": 51
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/is-there-sargassum-in-miami-today/",
+        "prevPos": 12.5,
+        "currPos": 18.4,
+        "delta": 5.9,
+        "impressions": 51
+      },
+      {
         "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/en/sargassum-season-cancun/",
-        "prevPos": 30.7,
-        "currPos": 35.7,
-        "delta": 5,
-        "impressions": 24
+        "page": "https://sargassumcancun.com/en/cancun-seaweed-map-2026/",
+        "prevPos": 22.9,
+        "currPos": 27.4,
+        "delta": 4.5,
+        "impressions": 54
+      },
+      {
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/es/playas/arena-gorda/",
+        "prevPos": 11.4,
+        "currPos": 17.5,
+        "delta": 6.1,
+        "impressions": 34
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/playas-sin-sargazo-hoy/",
+        "prevPos": 20,
+        "currPos": 25.4,
+        "delta": 5.4,
+        "impressions": 34
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/cancun-seaweed-today/",
+        "prevPos": 39,
+        "currPos": 42.1,
+        "delta": 3.1,
+        "impressions": 40
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/anse-a-la-gourde/",
+        "prevPos": 12.3,
+        "currPos": 16.1,
+        "delta": 3.8,
+        "impressions": 28
       }
     ],
     "gains": [
       {
-        "site": "florida",
-        "page": "https://sargassummiami.com/is-there-sargassum-in-miami-today/",
-        "prevPos": 20.5,
-        "currPos": 12.5,
-        "delta": -8,
-        "impressions": 62
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/sargassum-season-cancun/",
+        "prevPos": 35.7,
+        "currPos": 20.5,
+        "delta": -15.2,
+        "impressions": 63
       },
       {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
-        "prevPos": 28.1,
-        "currPos": 20.6,
-        "delta": -7.5,
-        "impressions": 57
-      },
-      {
-        "site": "florida",
-        "page": "https://sargassummiami.com/miami-beach-seaweed-map-today/",
-        "prevPos": 15.4,
-        "currPos": 10.3,
-        "delta": -5.1,
-        "impressions": 84
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/comprendre-sargasses/",
+        "prevPos": 52.5,
+        "currPos": 40,
+        "delta": -12.5,
+        "impressions": 45
       }
     ],
     "appeared": [],
     "vanished": [],
     "queryDrops": [],
-    "queryGains": [
-      {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/carte-sargasses/",
-        "query": "sargasses guadeloupe",
-        "prevPos": 8.8,
-        "currPos": 6,
-        "delta": -2.8,
-        "impressions": 775,
-        "clicks": 53
-      },
-      {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/carte-sargasses/",
-        "query": "guadeloupe sargasses",
-        "prevPos": 9.4,
-        "currPos": 7.2,
-        "delta": -2.2,
-        "impressions": 80,
-        "clicks": 6
-      }
-    ]
+    "queryGains": []
   }
 }
