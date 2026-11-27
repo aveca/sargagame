@@ -10304,9 +10304,13 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 @keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
 .sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}
 @keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+.sg-heroTap{transition:transform .14s ease, filter .14s ease, box-shadow .14s ease}
+.sg-heroTap:hover{filter:brightness(1.04)}
+.sg-heroTap:active{transform:translateY(1px) scale(.995)}
+.sg-heroTap:focus-visible{outline:3px solid #FFC72C;outline-offset:3px;border-radius:12px}
 @media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}
 .sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}.sg-flow{animation:none}
-.sgst-ring,.sgst-ring2,.sgst-bob{animation:none}}`}</style>
+.sg-heroTap{transition:none}.sgst-ring,.sgst-ring2,.sgst-bob{animation:none}}`}</style>
 
       {/* STICKY BAR — apparaît quand le hero sort de l'écran (modèle SpaceX) */}
       <div className={"sg-stick"+(stuck?" on":"")} aria-hidden={!stuck}>
@@ -10372,14 +10376,14 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             {beach.name}
           </button>
         </h1>
-        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
+        <div className="sg-heroTap" role="button" tabIndex={0} aria-label={_t(lang,"Voir le verdict détaillé","See detailed verdict","Ver veredicto detallado")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
           {updFresh?verdictTxt:"Vérification en cours"}
           {beach.score!=null&&updFresh&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
         {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
         {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
-        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
+        <div className="sg-heroTap" role="button" tabIndex={0} aria-label={_t(lang,"Voir la fraîcheur de l'observation","See observation freshness","Ver frescura de la observación")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px rgba(34,197,94,.75)":"none",flexShrink:0}}/>
           {updFresh?<>{_t(lang,"Observation satellite","Satellite observation","Observación satelital")}{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </div>
