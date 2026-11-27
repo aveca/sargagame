@@ -10309,7 +10309,6 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </div>
           )
         })()}
-        )}
         {/* Tendance J+1 (additif · rollback ?herotomo=0) */}
         {!/[?&]herotomo=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&j1&&(
         <div onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>

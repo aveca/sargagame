@@ -65,7 +65,9 @@ const sender = fs.readFileSync(
   'utf8',
 );
 const start = sender.indexOf('async function sendMorningBriefPush(sargassum)');
-const end = sender.indexOf('\n}\n', start) + 3;
+// The function uses indented braces and the repository is checked out with CRLF;
+// cut at the next top-level section marker instead of requiring a bare `\n}`.
+const end = sender.indexOf('// ── Weekly email digest', start);
 assert.ok(start >= 0 && end > start, 'sendMorningBriefPush source must remain discoverable');
 const sendFunction = sender.slice(start, end);
 const gate = sendFunction.indexOf('operationalSatelliteFreshness(data)');

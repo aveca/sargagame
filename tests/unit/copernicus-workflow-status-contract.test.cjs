@@ -24,10 +24,19 @@ for (const [name, text] of [['daily-copernicus.yml', daily], ['data-refresh.yml'
   assert.ok(text.includes('echo "changed=false" >> "$GITHUB_OUTPUT"') && text.includes('echo "changed=true" >> "$GITHUB_OUTPUT"'), name + ': publication step must expose whether a commit was created');
   assert.ok(text.includes('PUBLISH_CHANGED: ${{ steps.publish.outputs.changed }}'), name + ': publication-change output must reach status classifier');
   assert.ok(text.includes('classifyPublicationStatus') && text.includes("publishChanged"), name + ': publication status must use the tested classifier');
+  assert.ok(text.includes('Snapshot last published satellite timestamp') && text.includes('PREVIOUS_SOURCE_TIMESTAMP'), name + ': repeated observations must be compared to the published source timestamp');
+  assert.ok(text.includes('ERDDAP_FAILURE_KIND') && text.includes('steps.erddap.outputs.failure_kind'), name + ': ERDDAP fetch/validation failure kind must reach the status report');
 }
 
-assert.ok(daily.includes("needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'"), 'failure emails are limited to unrelated failures after an unclassified/successful data job or a push-only build');
-assert.ok(daily.includes("needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'") && daily.includes("github.run_attempt == '1'"), 'automatic retry is limited to unrelated failures after a successful/empty data refresh');
+assert.ok(daily.includes("needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'"), 'failure emails are limited to unrelated failures after an unclassified/successful data job or a push-only build');
+assert.ok(daily.includes("needs.fetch-data.outputs.publication_status == 'PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'") && daily.includes("github.run_attempt == '1'"), 'automatic retry is limited to unrelated failures after a successful/empty data refresh');
+assert.ok(daily.includes("['SOURCE_DELAYED', 'FETCH_FAILED', 'VALIDATION_FAILED', 'PUBLISH_FAILED'].includes(status)"), 'delayed/fetch/validation/publish failures must fail the data job');
+const classifier = fs.readFileSync(path.join(root, 'scripts/lib/copernicus-publication-status.cjs'), 'utf8');
+for (const status of ['SOURCE_DELAYED', 'FETCH_FAILED', 'VALIDATION_FAILED', 'PUBLISHED']) {
+  assert.ok(classifier.includes(status), 'required publication reporting status missing: ' + status);
+}
+assert.ok(fs.readFileSync(path.join(root, 'scripts/autopilot/post-deploy-verify.cjs'), 'utf8').includes("return allSixVerified ? 'DEPLOYED_VERIFIED'"), 'only six-domain post-deploy verification may report DEPLOYED_VERIFIED');
+assert.ok(fs.readFileSync(path.join(root, '.github/workflows/cloudflare-production.yml'), 'utf8').includes("STATUS: **'+r.status+'**"), 'post-deploy workflow summary must display the verified deployment status');
 
 const yamlCheck = spawnSync('ruby', [
   '-e',

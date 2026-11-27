@@ -35,6 +35,18 @@ const { compareHtmlFingerprint } = require('./html-integrity.cjs');
 const { SAT_STALE_HOURS, satelliteFreshness } = require('../lib/satellite-freshness.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
+const REQUIRED_PRODUCTION_REGIONS = Object.freeze(['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']);
+
+/** Only certify deployment after all six production domains pass every check. */
+function classifyDeploymentStatus(results) {
+  if (!Array.isArray(results)) return 'DEPLOYED_PENDING_VERIFICATION';
+  if (results.some((result) => result?.stage === 'FAILED')) return 'FAILED';
+  const byRegion = new Map(results.map((result) => [result?.region, result]));
+  const allSixVerified = results.length === REQUIRED_PRODUCTION_REGIONS.length &&
+    byRegion.size === REQUIRED_PRODUCTION_REGIONS.length &&
+    REQUIRED_PRODUCTION_REGIONS.every((region) => byRegion.get(region)?.stage === 'PRODUCTION_VERIFIED');
+  return allSixVerified ? 'DEPLOYED_VERIFIED' : 'DEPLOYED_PENDING_VERIFICATION';
+}
 
 function getRegions() {
   return require(path.join(ROOT, 'regions', 'index.cjs')).getAllRegions().filter(r => r.live !== false);
@@ -448,11 +460,13 @@ async function main() {
   }
 
   const anyFailed = results.some(r => r.stage === 'FAILED');
-  const anyNV = results.some(r => r.stage === 'NOT_VERIFIED');
-  const stage = anyFailed ? 'FAILED' : (anyNV ? 'DEPLOYED_PENDING_VERIFICATION' : 'PRODUCTION_VERIFIED');
+  const status = classifyDeploymentStatus(results);
+  const stage = status === 'FAILED'
+    ? 'FAILED'
+    : status === 'DEPLOYED_VERIFIED' ? 'PRODUCTION_VERIFIED' : 'DEPLOYED_PENDING_VERIFICATION';
 
   const report = {
-    stage, jobId: jobId || null, at: new Date().toISOString(),
+    stage, status, jobId: jobId || null, at: new Date().toISOString(),
     expect: { v: expectV || null, b: expectB || null },
     domains: results,
   };
@@ -461,6 +475,7 @@ async function main() {
     console.log(`\nRapport écrit : ${reportPath}`);
   }
   console.log(`\nSTAGE=${stage}`);
+  console.log(`STATUS=${status}`);
   trace(anyFailed ? 'fail' : 'complete', ['--step', 'post-deploy-verify']);
 
   if (anyFailed) process.exit(1);
@@ -470,4 +485,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, describeHttpProbe, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness, checkB2BPartnersPayload };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, describeHttpProbe, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness, checkB2BPartnersPayload, classifyDeploymentStatus };

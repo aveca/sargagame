@@ -10,6 +10,7 @@ const landing = fs.readFileSync(path.join(root, 'public/widget/index.html'), 'ut
 const embed = fs.readFileSync(path.join(root, 'public/widget/embed/index.html'), 'utf8');
 const hotels = fs.readFileSync(path.join(root, 'public/pro/hotels/index.html'), 'utf8');
 const collectivites = fs.readFileSync(path.join(root, 'public/pro/collectivites/index.html'), 'utf8');
+const widgetHotel = fs.readFileSync(path.join(root, 'public/pro/widget-sargasses-hotel/index.html'), 'utf8');
 
 
 // Marketing copy must describe the same freshness gate that the embed actually enforces.
@@ -52,4 +53,8 @@ assert.match(landing, /optgroup label="Martinique"/);
 assert.match(landing, /optgroup label="Guadeloupe"/);
 assert.match(landing, /function domain\(\).*sargasses-guadeloupe\.com/s);
 
-console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (29 assertions)');
+// Existing Pro subscription route and verified price are reused; Brief €29 is not mislabeled Pro.
+assert.match(widgetHotel, /href="https:\/\/sargasses-martinique\.com\/pro\/espace\/">Essai Pro 30 j — puis 79 €\/mois/);
+assert.doesNotMatch(widgetHotel, /Passer en PRO — 29 €\/mois/);
+
+console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (27 assertions)');

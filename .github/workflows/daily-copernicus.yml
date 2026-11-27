@@ -65,6 +65,20 @@ jobs:
       - name: Parité régions ↔ webhook (paiements)
         run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
 
+      - name: Snapshot last published satellite timestamp
+        id: previous
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          let timestamp = '';
+          try {
+            const payload = JSON.parse(fs.readFileSync('public/api/copernicus/sargassum.json', 'utf8'));
+            if (typeof payload.erddapTimestamp === 'string') timestamp = payload.erddapTimestamp;
+          } catch {}
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'timestamp=' + timestamp + '\n');
+          console.log('Previous published observation: ' + (timestamp || 'unavailable'));
+          NODE
+
       - name: Fetch beach weather (Open-Meteo)
         continue-on-error: true
         run: node scripts/fetch-beach-weather.cjs
@@ -245,6 +259,7 @@ jobs:
         env:
           SOURCE: ${{ steps.src.outputs.source }}
           ERDDAP_OUTCOME: ${{ steps.erddap.outcome }}
+          ERDDAP_FAILURE_KIND: ${{ steps.erddap.outputs.failure_kind }}
           GATE_OUTCOME: ${{ steps.verify.outcome }}
           GATE_STATUS: ${{ steps.verify.outputs.gate_status }}
           PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
@@ -252,6 +267,7 @@ jobs:
           PUBLISH_SHA: ${{ steps.publish.outputs.sha }}
           PUBLISH_BRANCH: ${{ steps.publish.outputs.branch }}
           DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+          PREVIOUS_SOURCE_TIMESTAMP: ${{ steps.previous.outputs.timestamp }}
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -261,8 +277,9 @@ jobs:
           const sourceTimestamp = typeof payload.erddapTimestamp === 'string' ? payload.erddapTimestamp : null;
           const sourceMs = sourceTimestamp ? Date.parse(sourceTimestamp) : NaN;
           const nowMs = Date.now();
-          const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs <= nowMs;
-          const sourceAgeMinutes = sourceTimestampValid ? Math.floor((nowMs - sourceMs) / 60000) : null;
+          const previousSourceTimestamp = process.env.PREVIOUS_SOURCE_TIMESTAMP || null;
+          const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs > 0 && sourceMs <= nowMs;
+          const sourceAgeMinutes = sourceTimestampValid ? (nowMs - sourceMs) / 60000 : null;
           const gateStatus = process.env.GATE_STATUS || 'UNCLASSIFIED';
           const publishChanged = process.env.PUBLISH_CHANGED === 'true'
             ? true
@@ -271,10 +288,15 @@ jobs:
           const status = classifyPublicationStatus({
             gateStatus,
             erddapOutcome: process.env.ERDDAP_OUTCOME,
+            erddapFailureKind: process.env.ERDDAP_FAILURE_KIND,
             source: process.env.SOURCE,
             gateOutcome: process.env.GATE_OUTCOME,
             publishOutcome: process.env.PUBLISH_OUTCOME,
-            publishChanged
+            publishChanged,
+            sourceTimestamp,
+            previousSourceTimestamp: process.env.PREVIOUS_SOURCE_TIMESTAMP || null,
+            nowMs,
+            operationalSlaMinutes: 900
           });
           let changedPayloadFiles = [];
           try {
@@ -289,9 +311,12 @@ jobs:
             status,
             source: process.env.SOURCE || null,
             erddapFetchOutcome: process.env.ERDDAP_OUTCOME || null,
+            erddapFetchFailureKind: process.env.ERDDAP_FAILURE_KIND || null,
             erddapTimestamp: sourceTimestamp,
             sourceTimestampValid,
             sourceAgeMinutes,
+            previousErddapTimestamp: previousSourceTimestamp,
+            observationTimestampAdvanced: sourceTimestamp && previousSourceTimestamp ? sourceTimestamp !== previousSourceTimestamp : null,
             operationalSlaMinutes: 900,
             publicStaleThresholdMinutes: 2160,
             publicStale: sourceTimestampValid ? sourceAgeMinutes >= 2160 : null,
@@ -322,6 +347,7 @@ jobs:
             '- Integrity gate: ' + report.integrityGateOutcome + ' (' + gateStatus + ')',
             '- Publish outcome: ' + report.publishOutcome,
             '- Commit changes detected: ' + (publishChanged === null ? 'UNVERIFIED' : publishChanged),
+            '- Observation timestamp advanced: ' + report.observationTimestampAdvanced,
             '- Commit SHA: ' + (report.commitSha || 'none'),
             '- Deploy dispatch: ' + report.deploymentDispatchOutcome,
             '- Changed payload files: ' + (changedPayloadFiles.length ? changedPayloadFiles.join(', ') : 'none detected'),
@@ -330,7 +356,7 @@ jobs:
           ].join('\n') + '\n';
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
           console.log(JSON.stringify(report, null, 2));
-          if (['BLOCKED_STALE_SOURCE', 'FAILED_VALIDATION', 'FAILED_PUBLISH'].includes(status)) {
+          if (['SOURCE_DELAYED', 'FETCH_FAILED', 'VALIDATION_FAILED', 'PUBLISH_FAILED'].includes(status)) {
             console.error('Copernicus publication status is ' + status);
             process.exit(1);
           }
@@ -699,7 +725,7 @@ jobs:
   # ── 5. NOTIFY ON FAILURE ──────────────────────────────────────────────────
   notify-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
+    if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -716,7 +742,7 @@ jobs:
   # ── 6. RETRY ON FAILURE (once, after 5 min, schedule only) ───────────────
   retry-on-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION') && github.run_attempt == '1' && github.event_name == 'schedule'
+    if: failure() && (needs.fetch-data.outputs.publication_status == 'PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION') && github.run_attempt == '1' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write

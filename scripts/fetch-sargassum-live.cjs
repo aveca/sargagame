@@ -29,7 +29,8 @@ const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { satelliteFreshness, SAT_STALE_HOURS } = require('./lib/satellite-freshness.cjs')
-const { extractFirstErddapTimestamp, getErddapGridAge, get1DGridFreshness } = require('./lib/erddap-grid-freshness.cjs')
+const { extractFirstErddapTimestamp, getErddapGridAge, inspectErddapGridResponse, get1DGridFreshness } = require('./lib/erddap-grid-freshness.cjs')
+const { fetchJsonWithTimeout } = require('./lib/fetch-json.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { gateWeekly, assertPrivateComplete } = require('./lib/forecast-gate.cjs')
 
@@ -50,6 +51,18 @@ function writePrivateGuarded(label, dir, privateForecasts, truncated, levels, up
   writePrivateForecastFile(dir, privateForecasts, updatedAt)
 }
 const { computeScore } = require('./lib/score.cjs')
+const ERDDAP_GRID_FAILURES = new Map()
+
+function writeErddapFailureKind(kind) {
+  const output = process.env.GITHUB_OUTPUT
+  if (output) fs.appendFileSync(output, `failure_kind=${kind}\n`)
+}
+
+function classifyErddapGridFailures() {
+  return [...ERDDAP_GRID_FAILURES.values()].includes('FETCH_FAILED')
+    ? 'FETCH_FAILED'
+    : 'VALIDATION_FAILED'
+}
 const { phaseForRegion, monthsForRegion } = require('./lib/season-climatology.cjs')
 const { getAllRegions } = require('../regions/index.cjs')
 
@@ -175,26 +188,11 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 
 /** Fetch with timeout. Returns null on error instead of throwing. */
 async function safeFetch(url, timeoutMs) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
-  try {
-    const res = await fetch(url, { signal: controller.signal })
-    clearTimeout(timer)
-    if (!res.ok) {
-      const body = await res.text().catch(() => '')
-      console.warn(`HTTP ${res.status} for ${url.slice(0, 120)}... — ${body.slice(0, 200)}`)
-      return null
-    }
-    return await res.json()
-  } catch (err) {
-    clearTimeout(timer)
-    if (err.name === 'AbortError') {
-      console.warn(`Timeout (${timeoutMs}ms) for ${url.slice(0, 120)}...`)
-    } else {
-      console.warn(`Fetch error: ${err.message}`)
-    }
-    return null
-  }
+  const result = await fetchJsonWithTimeout(url, timeoutMs)
+  if (result.ok) return result.data
+  const detail = result.status ? `HTTP ${result.status}` : result.reason
+  console.warn(`${result.reason === 'timeout' ? `Timeout (${timeoutMs}ms)` : 'Fetch failed'} for ${url.slice(0, 120)}... (${detail})`)
+  return null
 }
 
 /**
@@ -239,58 +237,23 @@ async function fetchErddapGrid(region) {
   console.log(`  ERDDAP request: lat [${latMin}, ${latMax}], lng [${lngMin}, ${lngMax}]`)
   console.log(`  URL: ${url}`)
 
-  const data = await safeFetch(url, FETCH_TIMEOUT_MS)
-  if (!data || !data.table) {
-    console.warn('  No valid ERDDAP response')
+  const response = await fetchJsonWithTimeout(url, FETCH_TIMEOUT_MS)
+  const regionKey = region.id || `${latMin},${latMax},${lngMin},${lngMax}`
+  if (!response.ok) {
+    ERDDAP_GRID_FAILURES.set(regionKey, response.kind)
+    console.warn(`  ERDDAP ${response.kind}: ${response.reason}; refusing grid`)
     return null
   }
-
-  const table = data.table
-  const colNames = table.columnNames
-  const rows = table.rows
-
-  if (!colNames || !rows || rows.length === 0) {
-    console.warn('  ERDDAP response has no rows')
+  const inspected = inspectErddapGridResponse(response.data)
+  if (!inspected.ok) {
+    ERDDAP_GRID_FAILURES.set(regionKey, 'VALIDATION_FAILED')
+    console.warn(`  ERDDAP response ${inspected.reason}; refusing grid`)
     return null
   }
-
-  const latIdx = colNames.indexOf('latitude')
-  const lngIdx = colNames.indexOf('longitude')
-  const afaiIdx = colNames.indexOf('AFAI')
-  const timeIdx = colNames.indexOf('time')
-
-  if (latIdx < 0 || lngIdx < 0 || afaiIdx < 0) {
-    console.warn('  ERDDAP columns missing. Got:', colNames)
-    return null
-  }
-
-  // A 7D grid without a valid source timestamp is not a usable observation.
-  // Never substitute a guessed 24h age: the release gate and confidence model
-  // must receive a candidate whose source time is actually verifiable.
-  const erddapTimestamp = extractFirstErddapTimestamp(rows, timeIdx)
-  const gridAge = getErddapGridAge(erddapTimestamp)
-  if (!gridAge.ok) {
-    console.warn(`  ERDDAP 7D timestamp ${gridAge.reason}; refusing grid`)
-    return null
-  }
-  const dataAgeHours = gridAge.dataAgeHours
+  ERDDAP_GRID_FAILURES.delete(regionKey)
+  const { points, latitudes, longitudes, erddapTimestamp, dataAgeHours } = inspected
   console.log(`  ERDDAP data timestamp: ${erddapTimestamp} (${Math.round(dataAgeHours)}h ago)`)
-
-  // Parse into structured array
-  const points = []
-  const latSet = new Set()
-  const lngSet = new Set()
-
-  for (const row of rows) {
-    const lat = row[latIdx]
-    const lng = row[lngIdx]
-    const afai = row[afaiIdx] // may be null
-    latSet.add(lat)
-    lngSet.add(lng)
-    points.push({ latitude: lat, longitude: lng, AFAI: afai })
-  }
-
-  console.log(`  Got ${points.length} grid points (${latSet.size} lats x ${lngSet.size} lngs)`)
+  console.log(`  Got ${points.length} grid points (${latitudes.length} lats x ${longitudes.length} lngs)`)
   const nonNull = points.filter(p => p.AFAI !== null && p.AFAI !== undefined)
   const positive = nonNull.filter(p => p.AFAI > 0)
   const negative = nonNull.filter(p => p.AFAI <= 0)
@@ -298,8 +261,8 @@ async function fetchErddapGrid(region) {
 
   return {
     points,
-    latitudes: [...latSet].sort((a, b) => a - b),
-    longitudes: [...lngSet].sort((a, b) => a - b),
+    latitudes,
+    longitudes,
     erddapTimestamp,
     dataAgeHours,
   }
@@ -1659,6 +1622,7 @@ async function main() {
   // ce n'est pas ce cas-ci : ici la grille est absente/non récupérée.)
   if (!mqFetched || !gpFetched) {
     const failed = [!mqFetched && 'MQ', !gpFetched && 'GP'].filter(Boolean).join(' + ')
+    writeErddapFailureKind(classifyErddapGridFailures())
     console.error(`ERROR: grille ERDDAP manquante pour ${failed} — exit 1 pour ne PAS publier de fausse carte "propre" (no-data masqué en clean). La donnée réelle précédente reste en ligne ; prochain run re-tente.`)
     process.exit(1)
   }
@@ -1932,6 +1896,7 @@ async function main() {
       console.warn(`  [${region.id}] pipeline regional en echec (non bloquant): ${err.message}`)
     }
   }
+  if (ERDDAP_GRID_FAILURES.size > 0) writeErddapFailureKind(classifyErddapGridFailures())
   console.log('Done.')
 }
 

@@ -46,6 +46,59 @@ function getErddapGridAge(erddapTimestamp, now = Date.now()) {
   }
 }
 
+/** Validate and normalize the constrained ERDDAP `time[(last)]` grid response. */
+function inspectErddapGridResponse(data, now = Date.now()) {
+  const table = data && data.table;
+  if (!table || !Array.isArray(table.columnNames) || !Array.isArray(table.rows)) {
+    return { ok: false, reason: 'invalid-response' };
+  }
+  if (table.rows.length === 0) return { ok: false, reason: 'empty-rows' };
+
+  const latIndex = table.columnNames.indexOf('latitude');
+  const lngIndex = table.columnNames.indexOf('longitude');
+  const afaiIndex = table.columnNames.indexOf('AFAI');
+  const timeIndex = table.columnNames.indexOf('time');
+  if ([latIndex, lngIndex, afaiIndex, timeIndex].some((index) => index < 0)) {
+    return { ok: false, reason: 'missing-columns' };
+  }
+
+  const erddapTimestamp = extractFirstErddapTimestamp(table.rows, timeIndex);
+  const age = getErddapGridAge(erddapTimestamp, now);
+  if (!age.ok) return { ok: false, reason: age.reason, erddapTimestamp };
+
+  const points = [];
+  const latitudes = new Set();
+  const longitudes = new Set();
+  for (const row of table.rows) {
+    if (!Array.isArray(row) || row.length <= Math.max(latIndex, lngIndex, afaiIndex, timeIndex)) {
+      return { ok: false, reason: 'invalid-row', erddapTimestamp };
+    }
+    if (row[timeIndex] !== erddapTimestamp) {
+      return { ok: false, reason: 'mixed-observation-timestamps', erddapTimestamp };
+    }
+    const latitude = row[latIndex];
+    const longitude = row[lngIndex];
+    const afai = row[afaiIndex];
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+        (afai !== null && !Number.isFinite(afai))) {
+      return { ok: false, reason: 'invalid-grid-value', erddapTimestamp };
+    }
+    latitudes.add(latitude);
+    longitudes.add(longitude);
+    points.push({ latitude, longitude, AFAI: afai });
+  }
+
+  return {
+    ok: true,
+    reason: 'valid',
+    points,
+    latitudes: [...latitudes].sort((a, b) => a - b),
+    longitudes: [...longitudes].sort((a, b) => a - b),
+    erddapTimestamp,
+    dataAgeHours: age.dataAgeHours,
+  };
+}
+
 /**
  * The 1D correction is usable only when the grid has points and its source
  * timestamp passes the shared public freshness validator (36h boundary).
@@ -69,4 +122,4 @@ function get1DGridFreshness(grid1D, now = Date.now()) {
   return { fresh: true, reason: 'fresh', dataAgeMinutes: freshness.dataAgeMinutes }
 }
 
-module.exports = { extractFirstErddapTimestamp, getErddapGridAge, get1DGridFreshness }
+module.exports = { extractFirstErddapTimestamp, getErddapGridAge, inspectErddapGridResponse, get1DGridFreshness }

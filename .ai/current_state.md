@@ -431,3 +431,12 @@ La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique 
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
 | 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |
+## 2026-11-04 04:33 UTC · Codex · Revenue Factory / freshness + release reporting
+
+- NOAA ERDDAP metadata is healthy and the `AFAI_7D` `time[(last)]` query returns `2026-11-03T12:00:00Z`; the timestamp is real, consistent across all regional bounds, and not an older-index selection. At 04:32 UTC its age was 993 min, outside the unchanged 900-min release SLA.
+- Isolated full pipeline run (`SARG_OUT_DIR=C:\temp\sg-erddap-audit-refactor-20261104`) completed successfully. MQ, GP, Florida, Punta Cana, Riviera Maya and Tulum outputs all carry the exact NOAA timestamp and current pipeline `updatedAt`; all remain non-publishable under the operational SLA.
+- All six production API endpoints return HTTP 200 but still carry `2026-10-27T12:00:00Z` (11,072 min old at 04:32 UTC) with frozen `stale:false`. Six-domain mobile journey audit found an active current verdict and forecast on every site despite stale data; UI freshness-contract check failed on all 6. Production build identity observed: `v221`, `df18df5d`.
+- Added strict ERDDAP response parsing and timeout classification, precise `SOURCE_DELAYED` / `FETCH_FAILED` / `VALIDATION_FAILED` / `PUBLISHED` workflow status, previous-timestamp comparison, and `DEPLOYED_VERIFIED` only when every one of the six production domains passes post-deploy verification. 900-min gate remains fail-closed.
+- Targeted tests passed: ERDDAP fetch classification; ERDDAP timestamp/grid freshness; Copernicus publication classifier (16 cases); workflow status contract; pre-deploy SLA (29 assertions); post-deploy SLA/status (20 assertions). Ruby YAML parser unavailable locally; CI must parse workflows.
+- Current branch/PR: `revenue/b2c-monthly-499-20261104`, PR #1254; full suite/build and GitHub CI still pending. No production deployment was attempted because NOAA's latest observation is outside SLA; no rollback/deploy claims.
+- SEO access: Windsor Search Console returned last-28-day page/query data for five properties (Martinique, Guadeloupe, Miami, Punta Cana, Cancun); Tulum GSC property is not connected. No GA4 credential/account was available. Ahrefs rejected queries due to plan entitlement.

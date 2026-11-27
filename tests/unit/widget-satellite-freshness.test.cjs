@@ -25,6 +25,12 @@ const helpers = vm.runInNewContext(
   extractFunction('isSatelliteFresh') + '\n' +
   '({ satelliteAgeMs, isSatelliteFresh })'
 );
+const staleCopy = vm.runInNewContext(
+  'var lang = "fr"; var T = { stale: function(when, age){ return JSON.stringify({when,age}); } };\n' +
+  extractFunction('satelliteAgeMs') + '\n' +
+  extractFunction('staleDescription') + '\n' +
+  'staleDescription'
+);
 
 const now = Date.parse('2026-10-29T21:30:00.000Z');
 const stalePayload = {
@@ -91,6 +97,9 @@ assert.equal(
   false,
   'an unknown beach status cannot produce a verdict'
 );
+const staleUi = JSON.parse(staleCopy(stalePayload.erddapTimestamp));
+assert.match(staleUi.when, /2026/ , 'stale widget copy includes the actual observation date');
+assert.match(staleUi.age, /\d+ j \d+ h/, 'stale widget copy includes a computed age');
 
 assert.match(html, /<title>Sargasses — observation des plages<\/title>/, 'document title makes no unconditional live claim');
 assert.match(html, /isSatelliteFresh\(d,\s*status\)/, 'render validates the complete payload and beach status');
@@ -104,6 +113,17 @@ assert.doesNotMatch(partnerLanding, /relTime\(d && d\.updatedAt\)/,
 assert.match(html, /\$\("pill"\)\.style\.display = "none"/, 'stale verdict pill is hidden');
 assert.match(html, /if \(fresh && showFc && wk\.length\)/, 'forecast is gated by satellite freshness');
 assert.match(html, /\$\("fc"\)\.style\.display = "none"/, 'stale forecast is hidden');
-assert.match(html, /label\+" : "\+T\.stale/, 'accessible label reports verification instead of stale verdict');
+assert.match(html, /label\+" : "\+staleDescription\(d\.erddapTimestamp\)/, 'accessible label includes the dated satellite delay');
+assert.match(html, /function staleDescription\(timestamp\)/, 'stale UI derives its date and age from erddapTimestamp');
+assert.match(html, /Satellite delayed · observed /, 'English stale copy names the satellite delay explicitly');
+assert.match(html, /Satellite en retard · observation du /, 'French stale copy names the satellite delay explicitly');
+assert.match(html, /Satélite retrasado · observado /, 'Spanish stale copy names the satellite delay explicitly');
+assert.match(html, /"anse-mitan":"mq011"/, 'Anse Mitan maps to the current regional data id');
+assert.match(html, /"anse-mabouya":"mq055"/, 'Anse Mabouya maps to the current regional data id');
+assert.match(html, /"anse-gros-raisins":"mq019"/, 'Anse Gros Raisins maps to the current regional data id');
+assert.match(html, /"\/api\/copernicus\/"\+region\+"\/sargassum\.json"/, 'widget reads the matching region payload');
+const builder = fs.readFileSync(path.resolve(__dirname, '../../public/widget/index.html'), 'utf8');
+assert.match(builder, /option value="anse-mabouya"/, 'builder offers Anse Mabouya');
+assert.match(builder, /option value="anse-gros-raisins"/, 'builder offers Anse Gros Raisins');
 
-console.log('WIDGET_SATELLITE_FRESHNESS_TESTS PASS (24 assertions)');
+console.log('WIDGET_SATELLITE_FRESHNESS_TESTS PASS (35 assertions)');

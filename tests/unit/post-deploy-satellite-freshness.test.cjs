@@ -43,6 +43,11 @@ check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: 'not-a-date' },
 check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: '2026-10-27T01:00:00.000Z' }, now).status === 'FAILED', 'future satellite timestamp fails closed');
 check(PDV.checkSatelliteFreshness({ source: 'reference', updatedAt: payload.updatedAt }, now).status === 'NOT_VERIFIED', 'non-live reference payload is not falsely certified as satellite-fresh');
 check(source.includes("set('satellite_freshness', satelliteCheck.status, satelliteCheck.detail)"), 'post-deploy verifier wires satellite freshness into the per-domain gate');
+const verifiedDomains = PDV.getRegions().map((region) => ({ region: region.id, stage: 'PRODUCTION_VERIFIED' }));
+check(verifiedDomains.length === 6 && PDV.classifyDeploymentStatus(verifiedDomains) === 'DEPLOYED_VERIFIED', 'only all six verified production regions earn DEPLOYED_VERIFIED');
+check(PDV.classifyDeploymentStatus(verifiedDomains.slice(0, 5)) === 'DEPLOYED_PENDING_VERIFICATION', 'a five-domain subset is not a verified fleet');
+check(PDV.classifyDeploymentStatus([...verifiedDomains.slice(0, 5), { region: 'tulum', stage: 'NOT_VERIFIED' }]) === 'DEPLOYED_PENDING_VERIFICATION', 'any not-verified domain leaves the deployment pending');
+check(PDV.classifyDeploymentStatus([...verifiedDomains.slice(0, 5), { region: 'tulum', stage: 'FAILED' }]) === 'FAILED', 'a failed domain fails the overall deployment status');
 check(PDV.describeHttpProbe({ ok: true, status: 200 }) === '', 'HTTP 200 with successful curl is accepted');
 check(PDV.describeHttpProbe({ ok: true, status: 404 }) === 'HTTP 404', 'a completed HTTP 404 is reported as an HTTP response');
 check(PDV.describeHttpProbe({ ok: false, status: 200, error: 'Operation timed out\nextra detail' }) === 'curl exited non-zero after HTTP 200: Operation timed out', 'curl transport failure is not mislabeled as an unavailable HTTP asset when a status was printed');

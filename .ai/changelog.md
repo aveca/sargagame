@@ -385,3 +385,9 @@ PR: #810 (auto-merged)
 - Agent name (code, QA, product, etc.)
 - List of changes with file names
 - Never delete previous entries — they satisfy AI pièe memory.
+## 2026-11 — Codex · Revenue Factory Sargasses freshness reporting
+
+- Hardened ERDDAP 7D parsing and added bounded JSON fetch classification for network/timeout vs malformed or invalid NOAA response, empty rows, invalid/future/mixed timestamps, and exact repeated observation timestamps.
+- Updated daily Copernicus and data-refresh status reporting to distinguish SOURCE_DELAYED, FETCH_FAILED, VALIDATION_FAILED, PUBLISHED, and no-change; reports include previous observation timestamp and keep the operational SLA at 900 minutes.
+- Post-deploy status reports DEPLOYED_VERIFIED only when all six production regions pass verification.
+- Targeted tests passed; full test/build/CI pending. Production data and deploy remained blocked because NOAA's latest 2026-11-03 12:00 UTC observation was 993 minutes old at 04:32 UTC.

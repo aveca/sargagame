@@ -78,10 +78,11 @@ assert.equal(future.reason, 'invalid-or-future-timestamp')
 
 console.log('=== Production wiring contract ===')
 const source = fs.readFileSync(path.join(__dirname, '../../scripts/fetch-sargassum-live.cjs'), 'utf8')
+const gridHelperSource = fs.readFileSync(path.join(__dirname, '../../scripts/lib/erddap-grid-freshness.cjs'), 'utf8')
 assert.ok(source.includes('extractFirstErddapTimestamp(rows, timeIdx)'))
 assert.ok(source.includes('get1DGridFreshness(grid1D)'))
-assert.ok(source.includes('getErddapGridAge(erddapTimestamp)'))
-assert.ok(source.includes('if (!gridAge.ok)'))
+assert.ok(source.includes('inspectErddapGridResponse(response.data)'))
+assert.ok(gridHelperSource.includes('getErddapGridAge(erddapTimestamp, now)'))
 assert.ok(source.includes('Number.isFinite(grid.dataAgeHours) && grid.dataAgeHours >= 0'))
 
 console.log('=== Shared freshness contract ===')
