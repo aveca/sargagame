@@ -162,12 +162,11 @@ assert.ok(/<PassStorefront\b/.test(modalCode), 'PassStorefront doit rester rendu
 // `walletAvail()` renvoie une PROMISE quand le cache est froid → les boutons
 // express n'étaient PAS garantis d'être offerts. Le contrat ci-dessous verrouille
 // les deux sens : la prop morte ne revient pas, et le kick reste dans un effet.
-const passOnlyRender = modalCode.slice(
-  modalCode.indexOf('{passOnly&&<PassStorefront'),
-  modalCode.indexOf('{!passOnly&&pwComic')
-)
-assert.ok(passOnlyRender.length > 200, 'rendu pass-only introuvable')
-for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'source={source||"unknown"', 'setPayStep={setPayStep}', 'highlightedKey={_passFromUrl']) {
+const passOnlyStart = modalCode.indexOf('{passOnly&&<PassStorefront')
+const passOnlyEnd = modalCode.indexOf('{!passOnly&&pwComic', passOnlyStart + 1)
+assert.ok(passOnlyStart >= 0 && passOnlyEnd > passOnlyStart, 'rendu pass-only introuvable')
+const passOnlyRender = modalCode.slice(passOnlyStart, passOnlyEnd)
+for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'source={source||"unknown"', 'setPayStep={setPayStep}', 'passCtxRef={passCtxRef}', 'highlightedKey={_passFromUrl']) {
   assert.ok(passOnlyRender.includes(live),
     `le rendu pass-only a perdu \`${live}\` — dont l'attribution (\`source\`) et le rappel de paiement (\`setPayStep\`) : une régression de mesure, pas un nettoyage`)
 }
