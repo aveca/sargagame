@@ -77,6 +77,7 @@
 
 ### Problèmes restants
 - [ ] SORTIE PRODUCTION DU CORRECTIF CONVERSION : NON DEMANDÉE. `wm-stale-offer` + `forecastgate` sont mergés sur main mais le bundle servi ne les contient toujours pas. La sortie nécessite soit (a) un `workflow_dispatch` de `pages-code-only-release.yml` avec `confirm_production=true`, soit (b) un push de démonstration touchant l'une des 5 surfaces de conversion — les deux sont des actions de production = autorisation explicite du fondateur requise (AGENTS.md / protocole dépôt).
+- [x] UI a11y fixes : BeachSheet dialog (role/dialog/aria-modal/tabIndex/-1, focus trap Escape/Tab, focus restore), HeroVerdict clavier-accessible (role/button/tabIndex/onKeyDown Enter/Space), HomeHeroV2 dead control retiré (label statique non interactif). 4 commits sur `agent/coding/ui-a11y-review-fixes-20261127` (depuis 3426a7cdc). Vérifications : esbuild OK, npm run build OK, check-bundle-budget 208.8 Ko ≤ 210 Ko, ux-smoke ERRORS=[], beachsheet-cadran-mount.test.cjs 11 assertions PASS. Aucun fichier paiement/API/secret touché. Builds régionaux non affectés. Non pushés/non mergés (attente fondateur ou auto-merge CI vert).
 - [ ] track-record.json 404 sur 4 régions sur 6 (cause identifiée : purge overlay dans prepare-ftp.cjs) — PR séparée à préparer
 - [ ] BOT-WOW #224 : 16 tentatives « Accès à vie » expirées, aucun encaissement ; à arbitrer côté offre
 - [ ] PR #1525 (watchdog maxAttempts) : CI verte, non mergée — décision de merge à consigner

@@ -1,3 +1,5 @@
+## 2026-11-27 — UI a11y fixes : BeachSheet dialog (role/dialog/aria-modal/tabIndex/-1, focus trap Escape/Tab, focus restore), HeroVerdict clavier-accessible (role/button/tabIndex/onKeyDown Enter/Space), HomeHeroV2 dead control retiré. 4 commits sur `agent/coding/ui-a11y-review-fixes-20261127` (depuis 3426a7cdc). Vérifications : esbuild OK, npm run build OK, check-bundle-budget 208.8 Ko ≤ 210 Ko, ux-smoke ERRORS=[], beachsheet-cadran-mount.test.cjs 11 assertions PASS. Aucun fichier paiement/API/secret touché. Non pushés/non mergés (CI auto-merge ou awaiting founder).
+
 ## 2026-11-27 — TRACK-RECORD-GLOBAL-ARTIFACT-20261127 : /api/copernicus/track-record.json en 404 sur 4 des 6 domaines (cause racine packaging, corrigée)
 
 - **Constat mesuré** : `curl -H "Cache-Control: no-cache"` le 27/11 à 17:01 UTC → `200` sur sargasses-martinique.com et sargasses-guadeloupe.com, `404` sur sargassummiami.com, sargassumpuntacana.com, sargassumcancun.com, sargazotulum.com. Le 404 est aussi un HIT Cloudflare (négatif caché) : ce n'est pas un simple retard de propagation.
