@@ -42,6 +42,8 @@ function runMissionWatchdog(opts = {}) {
     ? Number(cfg.mission.watchdogStaleSeconds) * 1000
     : 15 * 60 * 1000;
 
+  const maxAttempts = Number(cfg.mission && cfg.mission.maxAttempts) || 0;
+
   let stale;
   try {
     stale = lc.stale({ staleAfterMs });
@@ -83,6 +85,26 @@ function runMissionWatchdog(opts = {}) {
           reason: `mission terminale (${opp ? opp.status : 'opportunité absente'}) — non relancée`,
         });
       } catch (_) {}
+      continue;
+    }
+    // Garde-fou : si maxAttempts est défini et que le nombre d'essais atteint la limite,
+    // on bloque la mission au lieu de la réinfiniment.
+    if (maxAttempts && (m.attempts || 0) >= maxAttempts) {
+      log(`watchdog missions : ${m.taskId} bloqué — maxAttempts(${maxAttempts}) atteint (essais en cours: ${m.attempts || 0})`);
+      try {
+        const TERMINAL_STATE = {
+          'ready-to-merge': 'completed',
+          'done': 'completed',
+          'blocked': 'blocked',
+          'rejected': 'failed',
+        };
+        const nextState = TERMINAL_STATE[opp.status] || 'failed';
+        lc.patch(m.taskId, m.repo, m.issue, {
+          state: nextState,
+          reason: `maxAttempts(${maxAttempts}) atteint — relance bloquée, état ${nextState}`,
+        });
+      } catch (_) {}
+      skipped += 1;
       continue;
     }
     const hbAge = m.lastHeartbeatAt ? Math.round((Date.now() - Date.parse(m.lastHeartbeatAt)) / 1000) : null;
