@@ -155,10 +155,22 @@ const passOnlyRender = modalCode.slice(
   modalCode.indexOf('{!passOnly&&pwComic')
 )
 assert.ok(passOnlyRender.length > 200, 'rendu pass-only introuvable')
+// ⚠️ `wallet={walletAvail()}` est une prop INERTE (PassOffer ne la déclare pas,
+// cf. src/PassOffer.jsx:20 + commentaire ligne 52 « aucun bouton wallet ») —
+// troisième prop morte du même genre que celles retirées ici, volontairement
+// laissée : c'est aussi le SEUL endroit qui lance `walletAvail()`, donc la
+// détection Apple/Google Pay (cache sessionStorage `sg_wallet_avail`, TTL 5 min)
+// dont dépendent les boutons express de l'écran de paiement (PremiumModal
+// `const w=walletAvail()` → `if(!w.apple&&!w.google)return null`). Retirer la
+// prop SANS déplacer ce démarrage dans un effet = plus aucun wallet offert.
+// La retirer EST une mission de revenu à part (mesure + course async), pas un
+// nettoyage : cf. constat du 2026-11-27.
 for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'freshTs={', 'wallet={walletAvail()}', 'passKey={_passFromUrl}', 'ctaSource={source', 'onBuy=']) {
   assert.ok(passOnlyRender.includes(live),
     `le rendu pass-only a perdu \`${live}\` — dont l'attribution (\`ctaSource\`) et ` +
-    `la fraîcheur (\`freshTs\`) : une régression de mesure, pas un nettoyage`)
+    `la fraîcheur (\`freshTs\`) : une régression de mesure, pas un nettoyage. ` +
+    `Si c'est \`wallet={walletAvail()}\`, lire le commentaire ci-dessus : le ` +
+    `retirer exige d'abord de déplacer le kick de détection dans un effet`)
 }
 
 console.log('✓ dormant-paywall-defects : 4 props mortes retirées, 0 calcul mort, 0 prix fantôme, imports vivants intacts')
