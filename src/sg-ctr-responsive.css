@@ -1,0 +1,104 @@
+/* sg-ctr-responsive.css — Refonte responsive des 3 premiers écrans Sargasses
+   Objectif : améliorer le CTR sur toutes les tailles d'écran (mobile/tablette/desktop)
+   Additive uniquement — ne touche PAS au money path (prix, Stripe, Mollie, paiement).
+   À importer dans Sargasses_PROD.jsx après les autres CSS.
+   Breakpoints : mobile <640px | tablette 641–1024px | desktop >1024px */
+
+/* ---------- ÉCRAN 1 : HERO / ACCUEIL ---------- */
+.sg-screen-1-hero{
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+}
+.sg-screen-1-hero h1,
+.sg-screen-1-hero .anton{
+  font-size:clamp(28px,8vw,44px)!important;
+  line-height:1.1!important;
+  margin:0 0 16px!important;
+}
+.sg-screen-1-hero p,.sg-screen-1-hero .lead{
+  font-size:clamp(15px,4vw,19px)!important;
+  line-height:1.5!important;
+  margin:0 0 24px!important;
+}
+/* CTA primaire "Trouve ta plage" — plus grand, plus visible, priorité pouce */
+.sg-screen-1-hero .gbtn,
+button.gbtn{
+  width:100%!important;
+  max-width:360px!important;
+  margin:0 auto 12px!important;
+  padding:16px 28px!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  border-radius:14px!important;
+  box-shadow:0 10px 30px rgba(232,168,0,.35)!important;
+}
+button.gbtn:active{transform:scale(.96)!important}
+
+/* ---------- ÉCRAN 2 : CARTE / LISTE DES PLAGES ---------- */
+.sg-screen-2-map{
+  height:100dvh;
+  width:100vw;
+}
+.sg-bottom-nav{
+  bottom:env(safe-area-inset-bottom,0)!important;
+  padding-bottom:max(16px,env(safe-area-inset-bottom,0))!important;
+  gap:10px!important;
+}
+.sg-bottom-nav a,.sg-bottom-nav button{
+  min-width:56px!important;
+  min-height:56px!important;
+  padding:10px 6px!important;
+  font-size:11px!important;
+}
+/* FAB et boutons d'action sur la carte */
+.sg-screen-2-map .gbtn{
+  width:auto!important;
+  max-width:none!important;
+  padding:12px 20px!important;
+  font-size:14px!important;
+}
+
+/* ---------- ÉCRAN 3 : FICHE PLAGE / PREMIUM ---------- */
+.sg-screen-3-sheet .sheet{
+  border-radius:24px 24px 0 0!important;
+  max-height:90dvh!important;
+}
+.sg-screen-3-sheet .gbtn{
+  width:100%!important;
+  padding:16px 24px!important;
+  font-size:16px!important;
+  margin-top:12px!important;
+}
+/* Prix et pass — lisibilité prioritaire */
+.sg-screen-3-sheet [class*="price"],.sg-screen-3-sheet [class*="Prix"],.sg-screen-3-sheet [class*="montant"]{
+  font-size:clamp(18px,5vw,28px)!important;
+  font-weight:900!important;
+}
+
+/* ---------- RESPONSIVE : TABLETTE ---------- */
+@media(min-width:641px) and (max-width:1024px){
+  .sg-screen-1-hero h1{font-size:clamp(36px,6vw,52px)!important}
+  .sg-screen-1-hero p{font-size:clamp(16px,3vw,20px)!important}
+  button.gbtn{width:auto!important;padding:16px 32px!important;font-size:16px!important}
+  .sg-bottom-nav a,.sg-bottom-nav button{min-width:64px!important;min-height:64px!important;padding:12px 8px!important}
+}
+
+/* ---------- RESPONSIVE : DESKTOP ---------- */
+@media(min-width:1025px){
+  .sg-screen-1-hero h1{font-size:clamp(44px,3vw,56px)!important}
+  .sg-screen-1-hero p{font-size:clamp(18px,1.5vw,22px)!important}
+  button.gbtn{width:auto!important;padding:18px 36px!important;font-size:17px!important}
+  .sg-screen-2-map{height:90vh!important}
+  .sg-bottom-nav{display:none!important} /* nav desktop remplace le bottom nav */
+}
+
+/* ---------- ACCESSIBILITÉ ---------- */
+button.gbtn:focus-visible,.sg-bottom-nav a:focus-visible{
+  outline:4px solid #FFC72C!important;
+  outline-offset:3px!important;
+  border-radius:8px!important;
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
