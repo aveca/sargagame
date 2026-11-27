@@ -8,6 +8,14 @@
     "decidedAt": "2026-11-27T00:00:00Z",
     "decidedBy": "operateur-autorisation-complete",
     "scope": "autopilot-autonomous-dispatch",
+    "operatorAuthorization": {
+      "autoMerge": true,
+      "autoDeploy": true,
+      "targetRepo": "aveca/sargagame",
+      "authorizedBy": "operateur",
+      "authorizedAt": "2026-11-27T12:35:00.000Z",
+      "reason": "Autorisation explicite opérateur pour merge/deploy autonome sur aveca/sargagame"
+    },
     "reason": "Reprise NON activée. La Mission 3 autorise la reprise du fonctionnement continu mais interdit explicitement de fusionner ou déployer une modification non autorisée (§6). Or delivery-policy.json v2.1 autorise auto_merge+auto_deploy sur aveca/sargagame ; réactiver la création autonome de missions rouvrirait une voie de fusion/déploiement production hors du périmètre autorisé. Le STOP est donc conservé comme kill switch, mais devient une décision tracée et non un oubli.",
     "rollback": "Aucune action de production n'a été modifiée : le kill switch n'a pas été retiré. Lever le blocage =停止 -> voir authorized_scopes puis replacer le kill switch selon kill_switch.md",
     "lift_requires": [
