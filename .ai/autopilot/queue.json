@@ -364,6 +364,29 @@
       "_score": 0,
       "_economicBonus": 0,
       "prOpenedAt": "2026-11-27T00:22:39.022Z"
+    },
+    {
+      "id": "OPP-PAYMENT-CTA-PAGE",
+      "type": "payment-ux",
+      "title": "CTA avec paiement + page de paiement (PremiumModal)",
+      "region": "florida",
+      "route": "paywall",
+      "status": "new",
+      "blockReason": null,
+      "scope": {
+        "files": [
+          "src/PremiumModal.jsx",
+          "src/lib/pass-price.js"
+        ]
+      },
+      "severity": "medium",
+      "actionable": "agent",
+      "source": "operateur-request-2026-11-27",
+      "_score": 70,
+      "_economicBonus": 30,
+      "expectedImpact": "Activer le CTA avec paiement et la page de paiement PremiumModal",
+      "createdAt": "2026-11-27T13:09:36.105Z",
+      "updatedAt": "2026-11-27T13:09:36.105Z"
     }
   ]
 }
