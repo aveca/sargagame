@@ -1,3 +1,45 @@
+## 2026-11-27 · Mission PAGES-TRIGGER-CONVERSION-20261127 · Agent: devops_agent (devops_agent (OpenCode))
+
+### Travail effectué
+- **Résumé 1 ligne** : le bundle de production est verrouillé depuis le 24/11 — le correctif conversion `wm-stale-offer` (d0af3953c) et `forecastgate` sont mergés sur `main` mais ABSENTS du bundle servi ; cause : `pages-code-only-release.yml` ne se déclenche que sur 6 paths qui excluent les surfaces de conversion.
+- **Détails** :
+  - PREUVES : bundle live `/assets/WorldMapView-CPKevIfD.js` (sargasses-martinique.com) ne contient PAS `wm-stale-offer` ni `forecastgate` (vérifié via curl sur les 6 domaines, CF-Cache-Status HIT). Le build local de `origin/main` les contient (chunk WorldMapView = true, chunk index = forecastgate true).
+  - CHRONOLOGIE : 24/11/2026 run 45368682242 — 6 deploy-pages OK mais job `verify` = 36 bloquants live (misleading-state stale sans écran de suspension, date invisible, primary-cta-dead). 27/11 : correctif d0af3953c mergé ; run E2E 46022775555 sur d0af3953 = 12 parcours, 0 bloquant (8 UX mineurs : 404 `/api/copernicus/track-record.json` sur florida/puntacana/rivieramaya/tulum).
+  - PISTE SECONDAIRE (non traitée) : `scripts/prepare-ftp.cjs` classe `track-record.json` (artefact GLOBAL, regions: [mq,gp]) dans `REGION_SPECIFIC_OVERLAYS` → purge quand la région n'a pas sa copie → 404 sur 4 régions sur 6. Impact : paywall (PremiumModal) sans preuve de fiabilité sur ces régions.
+  - Gate de ship LOCAL sur origin/main : build OK, `check-bundle-budget.cjs` = 207,8 Ko gzip ≤ 210 Ko, `ux-smoke.mjs` = FUNNEL_REACHED / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[].
+  - NEUTRALITÉ PRODUCTION VÉRIFIÉE : les 4 fichiers de cette PR sont tous dans le `paths-ignore` de `cloudflare-production.yml` (workflow, son test de non-régression, le vérificateur de périmètre, `.ai/**`) → le merge ne redéploie ni Worker ni Pages. `daily-copernicus.yml` ne dispathe la production que depuis le job `fetch-data`, conditionné `github.event_name != 'push'`. Le trigger `workflow_run` est documenté inopérant (0 run sur 162 exécutions). Seul un `workflow_dispatch` explicite de `pages-code-only-release.yml` (ou un push touchant les paths de conversion) sort le bundle — cf. « Problèmes restants ».
+
+### Fichiers modifiés
+- `.github/workflows/pages-code-only-release.yml` — paths du trigger +5 surfaces de conversion (WorldMapView, PremiumModal, Sargasses_PROD, BeachSheet, WeekHub) + commentaire de justification
+- `scripts/automation/verify-pages-code-only-change.cjs` — mêmes 5 fichiers + 2 tests de contrat stale ajoutés à `ALLOWED_PAGES_ONLY_PATHS` (sinon la release serait refusée par le vérificateur de périmètre)
+- `tests/unit/pages-code-only-workflow.test.cjs` — non-régression : verrouille la présence des 5 surfaces dans le trigger ET dans l'allowlist du vérificateur
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — ce handoff
+
+### Tests réalisés
+- [x] node --test tests/unit/pages-code-only-workflow.test.cjs + pages-code-only-change-guard.test.cjs + user-journey-stale-selector-contract.test.cjs → 3/3 PASS
+- [x] npx vite build → OK (aucun front modifié : bundle inchangé)
+- [x] node scripts/check-bundle-budget.cjs → 207,8 Ko gzip ≤ 210 Ko
+- [x] node scripts/ux-smoke.mjs → 4 tokens littéraux OK
+- [x] Aucun fichier de paiement touché (mollie/stripe/workers/public/api) ; PHP lint hors périmètre (aucun .php modifié)
+- [x] git diff --check → exit 0
+- [ ] CI sur la PR : à vérifier après push
+
+### Problèmes restants
+- [ ] SORTIE PRODUCTION DU CORRECTIF CONVERSION : NON DEMANDÉE. `wm-stale-offer` + `forecastgate` sont mergés sur main mais le bundle servi ne les contient toujours pas. La sortie nécessite soit (a) un `workflow_dispatch` de `pages-code-only-release.yml` avec `confirm_production=true`, soit (b) un push de démonstration touchant l'une des 5 surfaces de conversion — les deux sont des actions de production = autorisation explicite du fondateur requise (AGENTS.md / protocole dépôt).
+- [ ] track-record.json 404 sur 4 régions sur 6 (cause identifiée : purge overlay dans prepare-ftp.cjs) — PR séparée à préparer
+- [ ] BOT-WOW #224 : 16 tentatives « Accès à vie » expirées, aucun encaissement ; à arbitrer côté offre
+- [ ] PR #1525 (watchdog maxAttempts) : CI verte, non mergée — décision de merge à consigner
+
+### Prochaine action recommandée
+1. Dispatcher la release Pages 6 domaines (`pages-code-only-release.yml`, `confirm_production=true`) APRÈS autorisation explicite du fondateur — le bundle servi est périmé depuis le 24/11. Rollback : `scripts/automation/pages-code-only-rollback.cjs rollback` / `git revert`. — Rôle : devops_agent
+2. Préparer la PR track-record (prepare-ftp.cjs : conserver l'artefact global pour les régions sans copie régionale) — Rôle : coding_agent
+3. Arbitrer PR #1525 (watchdog maxAttempts, périmètre non financier, CI verte, rollback git revert) — Rôle : devops_agent
+
+### Branche / PR
+- Branche : `agent/devops/pages-release-trigger-conversion-20261127` (depuis origin/main d0af3953c)
+- PR : à créer dans cette session
+- Commit head : à compléter après commit
+
 ## 2026-11-27 · Mission SARG-POSTDEPLOY-VERIFY-20261127 · Agent: coding_agent (OpenCode)
 
 ### Travail effectué

@@ -17,6 +17,30 @@ assert.match(workflow, /verify-pages-code-only-change\.cjs/)
 for (const p of [".ai/release-pages-code-only.json","scripts/lib/hotel-landing-fr.cjs","scripts/lib/region-seo-pages.cjs","scripts/automation/prepare-pages-code-only-payload.cjs","src/ChasseHome.jsx","src/lib/format-freshness.mjs"]) {
   assert.ok(workflow.includes("- '" + p + "'"), "Pages-only push trigger must include " + p)
 }
+// Non-regression (2026-11-27) : les surfaces de conversion servies sur les six
+// domaines doivent declencher la release Pages. Sans ces paths, un correctif
+// funnel merge sur main ne sort jamais : le 24/11/2026 le verify live a refuse
+// le bundle http (36 bloquants, wm-stale-offer absent), le correctif d0af3953c a
+// ete merge le 27/11 mais le bundle servi ne l'a toujours pas (verrou trigger).
+const conversionSurfaces = [
+  "src/WorldMapView.jsx",
+  "src/PremiumModal.jsx",
+  "src/Sargasses_PROD.jsx",
+  "src/BeachSheet.jsx",
+  "src/WeekHub.jsx",
+]
+for (const p of conversionSurfaces) {
+  assert.ok(workflow.includes("- '" + p + "'"), "Pages-only push trigger must include conversion surface " + p)
+}
+// La meme surface doit etre dans l'allowlist du verificateur de perimetre,
+// sinon une release declenchee par ces fichiers serait refusee par
+// verify-pages-code-only-change.cjs (refus de release, pas un bug silencieux).
+const {
+  ALLOWED_PAGES_ONLY_PATHS,
+} = require('../../scripts/automation/verify-pages-code-only-change.cjs')
+for (const p of conversionSurfaces) {
+  assert.ok(ALLOWED_PAGES_ONLY_PATHS.includes(p), "Pages-only verify allowlist must include " + p)
+}
 assert.match(workflow, /CLOUDFLARE_DEPLOY_ENABLED == 'true'/)
 assert.match(workflow, /prepare-pages-code-only-payload\.cjs/)
 assert.match(workflow, /pages deploy/)
