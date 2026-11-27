@@ -23,6 +23,13 @@
       "scope": "src/ UI components (mise en page, CSS, composants React) hors PremiumModal et paywall",
       "reason": "Autorisation explicite opérateur pour modifications de design/UI autonomes sur aveca/sargagame"
     },
+    "paymentsAuthorization": {
+      "enabled": true,
+      "authorizedBy": "operateur",
+      "authorizedAt": "2026-11-27T13:10:00.000Z",
+      "scope": "CTA avec paiement + page de paiement (src/PremiumModal.jsx, src/PremiumModal/**, src/lib/pass-price.js, Stripe/Mollie/PayPal)",
+      "reason": "Autorisation explicite opérateur pour modifications autonomes sur les flux de paiement (CTA paiement, page paiement, encaissement)"
+    },
     "reason": "Reprise NON activée. La Mission 3 autorise la reprise du fonctionnement continu mais interdit explicitement de fusionner ou déployer une modification non autorisée (§6). Or delivery-policy.json v2.1 autorise auto_merge+auto_deploy sur aveca/sargagame ; réactiver la création autonome de missions rouvrirait une voie de fusion/déploiement production hors du périmètre autorisé. Le STOP est donc conservé comme kill switch, mais devient une décision tracée et non un oubli.",
     "rollback": "Aucune action de production n'a été modifiée : le kill switch n'a pas été retiré. Lever le blocage = arrêt -> voir authorized_scopes puis replacer le kill switch selon kill_switch.md",
     "lift_requires": [
@@ -62,12 +69,13 @@
     "création de missions de DIAGNOSTIC non destructives dans aveca/factory-control",
     "tests et révisions sur branches dédiées",
     "PR ciblées vers aveca/factory-control",
-    "design / UI (composants src/ : mise en page, CSS, composants React hors PremiumModal et paywall)"
+    "design / UI (composants src/ : mise en page, CSS, composants React)",
+    "paiement / CTA avec paiement + page de paiement (PremiumModal, pass-price.js, Stripe/Mollie/PayPal)"
   ],
   "forbidden_even_when_enabled": [
     "auto_merge / auto_deploy sur aveca/sargagame sans autorisation opérateur distincte",
     "toute écriture sur une base métier (aucune migration, aucun schema change)",
-    "paiement, auth, secrets, DNS, permissions",
+    "auth, secrets, DNS, permissions",
     "manipulation de World of Warcraft (focus, entrées, addon)"
   ]
 }
