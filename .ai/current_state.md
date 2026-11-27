@@ -40,8 +40,11 @@
 
 ### Branche / PR
 - Branche : `agent/coding/track-record-global-overlay-20261127` (depuis origin/main 0b820f309)
-- PR : à créer dans cette session
-- Commit head : à compléter après commit
+- PR : **#1528** — https://github.com/aveca/sargagame/pull/1528
+- Commit head : `d722453e8279d549be23fb2afa81e5452a01e162` (« fix(packaging): preserve global copernicus artifacts in per-region purge », 5 fichiers, +144/−2)
+- Push : oui (17:40 UTC)
+- CI sur le SHA exact : `Regional Beach Index Validation` (run 46043655855) = **success** — build + packaging des 6 régions (mq, gp, florida, puntacana, rivieramaya, tulum) donc `prepare-ftp.cjs` exécuté pour chaque région sans déclencher le garde-fou ; `Perf Budget + Lighthouse` job `perf` = **pass** ; `GitGuardian Security Checks` = **pass** ; `CI Tests` (`test-frontend`) en cours au moment de l'écriture — à confirmer avant merge.
+- Gate local complet AVANT push : `npm test` = **216/216** fichiers `*.test.cjs` OK (dont `tests/track-record-packaging-global-artifact.test.cjs`) · `npx esbuild scripts/prepare-ftp.cjs --bundle=false` exit 0 · `check-bundle-budget.cjs` 207,6 Ko ≤ 210 Ko · `prepare-ftp.cjs` exit 0 · `CHECK_certification_status.cjs --mode pr` exit 0 · `check-production-trigger-scope.cjs` exit 0 · `check-github-actions-policy.cjs` exit 0 · `track-record-pricing-smoke.mjs` exit 0 · `ux-smoke.mjs` (build MQ) 4 tokens OK · `git diff --check` exit 0 · `php -l` hors périmètre : **aucun `.php` touché** (prouvé, pas supposé).
 
 ## 2026-11-27 · Mission PAGES-TRIGGER-CONVERSION-20261127 · Agent: devops_agent (devops_agent (OpenCode))
 
