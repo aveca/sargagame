@@ -150,27 +150,39 @@ assert.ok(/^import\s+React,\{[^}]*\buseMemo\b/m.test(modal),
 assert.ok(/<PassOffer\b/.test(modalCode), 'PassOffer doit rester rendu dans PremiumModal')
 
 // ── 6. le rendu pass-only garde ses props vivantes ──────────────────────────
+// ⚠️ 2026-11-27 — MISSION « wallets + mesure » : la 3ᵉ prop morte
+// `wallet={walletAvail()}` (PassOffer ne la déclare pas, cf. src/PassOffer.jsx:20
+// + commentaire ligne 52 « aucun bouton wallet ») a ÉTÉ RETIRÉE — mais pas
+// comme un simple nettoyage : c'était le SEUL endroit qui lançait `walletAvail()`
+// hors écran de paiement, donc le seul kick de la détection Apple/Google Pay
+// (cache sessionStorage `sg_wallet_avail`, TTL 5 min). Le kick a d'abord été
+// DÉPLACÉ dans un effet (`await Promise.resolve(walletAvail())` → `setWallet`),
+// ce qui a au passage CORRIGÉ un défaut live : l'ancien rendu faisait
+// `const w=walletAvail()` puis `if(!w.apple&&!w.google)return null`, or
+// `walletAvail()` renvoie une PROMISE quand le cache est froid → les boutons
+// express n'étaient PAS garantis d'être offerts. Le contrat ci-dessous verrouille
+// les deux sens : la prop morte ne revient pas, et le kick reste dans un effet.
 const passOnlyRender = modalCode.slice(
   modalCode.indexOf('{passOnly&&<PassOffer'),
   modalCode.indexOf('{!passOnly&&pwComic')
 )
 assert.ok(passOnlyRender.length > 200, 'rendu pass-only introuvable')
-// ⚠️ `wallet={walletAvail()}` est une prop INERTE (PassOffer ne la déclare pas,
-// cf. src/PassOffer.jsx:20 + commentaire ligne 52 « aucun bouton wallet ») —
-// troisième prop morte du même genre que celles retirées ici, volontairement
-// laissée : c'est aussi le SEUL endroit qui lance `walletAvail()`, donc la
-// détection Apple/Google Pay (cache sessionStorage `sg_wallet_avail`, TTL 5 min)
-// dont dépendent les boutons express de l'écran de paiement (PremiumModal
-// `const w=walletAvail()` → `if(!w.apple&&!w.google)return null`). Retirer la
-// prop SANS déplacer ce démarrage dans un effet = plus aucun wallet offert.
-// La retirer EST une mission de revenu à part (mesure + course async), pas un
-// nettoyage : cf. constat du 2026-11-27.
-for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'freshTs={', 'wallet={walletAvail()}', 'passKey={_passFromUrl}', 'ctaSource={source', 'onBuy=']) {
+for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'freshTs={', 'passKey={_passFromUrl}', 'ctaSource={source', 'onBuy=']) {
   assert.ok(passOnlyRender.includes(live),
     `le rendu pass-only a perdu \`${live}\` — dont l'attribution (\`ctaSource\`) et ` +
-    `la fraîcheur (\`freshTs\`) : une régression de mesure, pas un nettoyage. ` +
-    `Si c'est \`wallet={walletAvail()}\`, lire le commentaire ci-dessus : le ` +
-    `retirer exige d'abord de déplacer le kick de détection dans un effet`)
+    `la fraîcheur (\`freshTs\`) : une régression de mesure, pas un nettoyage`)
 }
+assert.ok(!/wallet=\{walletAvail\(\)\}/.test(modalCode),
+  'la prop morte `wallet={walletAvail()}` est revenue sur un <PassOffer> : ' +
+  'PassOffer ne la declare pas (src/PassOffer.jsx:20) — soit elle repartait ' +
+  'dans le vide, soit elle masquait que la detection wallet n etait plus ' +
+  'lancee. Le kick doit vivre dans l effet, pas dans une prop morte')
+assert.ok(/\[\s*wallet\s*,\s*setWallet\s*\]\s*=\s*useState\(null\)/.test(modal)
+  && /await\s+Promise\.resolve\(walletAvail\(\)\)/.test(modal)
+  && /setWallet\(/.test(modal),
+  'le kick de detection wallet (state `wallet` + effet `await ' +
+  'Promise.resolve(walletAvail())` → `setWallet`) a disparu : le prop mort ' +
+  'etait le SEUL appelant hors ecran de paiement — plus de kick = plus aucun ' +
+  'wallet express propose')
 
 console.log('✓ dormant-paywall-defects : 4 props mortes retirées, 0 calcul mort, 0 prix fantôme, imports vivants intacts')
