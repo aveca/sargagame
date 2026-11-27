@@ -1,0 +1,17 @@
+# Cloudflare / Wrangler
+.wrangler/
+dev.wranglerconfig.json
+*.dev.vars
+
+# Build / dist
+dist/
+build/
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log

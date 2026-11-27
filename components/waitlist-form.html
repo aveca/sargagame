@@ -1,0 +1,42 @@
+<!-- Formulaire liste d'attente BOT-WOW — à afficher quand le paiement est désactivé -->
+<!-- Insérer là où le CTA d'achat serait normalement -->
+<form id="waitlist-form" data-cro="waitlist_form" novalidate style="max-width:420px; margin:0 auto; text-align:left; font-family:var(--cta-font);">
+  <h3 style="font-size:18px; margin-bottom:12px;">Liste d'attente — Accès Beta</h3>
+  <p style="font-size:14px; color:#666; margin-bottom:16px;">
+    Le logiciel n'est pas encore livré. Laissez votre email pour être prévenu dès l'ouverture des précommandes.
+  </p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+    <input type="email" id="waitlist-email" placeholder="votre@email.com" required
+           style="flex:1; min-width:200px; padding:10px 14px; border:1px solid #CCC; border-radius:6px; font-size:14px;">
+    <button type="submit" class="cta-btn" style="padding:10px 20px; font-size:14px;">S'inscrire</button>
+  </div>
+  <p id="waitlist-msg" style="font-size:13px; color:#00E87A; margin-top:8px; display:none;"></p>
+</form>
+
+<script>
+(function(){
+  var form = document.getElementById('waitlist-form');
+  var msg = document.getElementById('waitlist-msg');
+  if (!form) return;
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = document.getElementById('waitlist-email').value.trim();
+
+    // Tracker l'inscription (RGPD respecté via events.js)
+    if (typeof window.croTrack === 'function') {
+      window.croTrack('form_submit', {
+        form_id: 'waitlist_form',
+        page: window.location.pathname,
+        site: document.documentElement.dataset.site || 'botwow',
+        email_hash: btoa(email).substring(0,12) // hash léger, ne pas stocker l'email brut
+      });
+    }
+
+    // Affichage confirmation locale (pas d'envoi réel sans backend)
+    msg.style.display = 'block';
+    msg.textContent = 'Merci ! Vous êtes sur la liste d\'attente (dry-run).';
+    form.reset();
+  });
+})();
+</script>

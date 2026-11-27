@@ -1,0 +1,141 @@
+{
+  "comment": "Remplacez par vos vrais liens Stripe Payment Links ou Checkout. Mode test par défaut.",
+  "botwow": {
+    "planner": {
+      "name": "Likilix Planner — Beta",
+      "price_cents": 900,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PLANNER_LINK",
+      "note": "Précommande — clé envoyée par email après validation manuelle"
+    },
+    "studio": {
+      "name": "Likilix Studio — Beta",
+      "price_cents": 2900,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_STUDIO_LINK",
+      "note": "Précommande — clé envoyée par email après validation manuelle"
+    }
+  },
+  "sargasses_martinique": {
+    "pass_7j": {
+      "name": "Pass Voyageur 7 jours — Martinique",
+      "price_cents": 799,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS7_MQ",
+      "interval": null
+    },
+    "pass_30j": {
+      "name": "Pass Voyageur 30 jours — Martinique",
+      "price_cents": 1499,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS30_MQ",
+      "interval": null
+    },
+    "pass_saison": {
+      "name": "Pass Saison — Martinique",
+      "price_cents": 2499,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PASSSAISON_MQ",
+      "interval": null
+    },
+    "pro_mensuel": {
+      "name": "Abonnement Pro Mensuel — Martinique",
+      "price_cents": 7900,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_M_MQ",
+      "interval": "month"
+    },
+    "pro_annuel": {
+      "name": "Abonnement Pro Annuel — Martinique",
+      "price_cents": 69000,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_A_MQ",
+      "interval": "year"
+    }
+  },
+  "sargasses_guadeloupe": {
+    "pass_7j": {
+      "name": "Pass Voyageur 7 jours — Guadeloupe",
+      "price_cents": 799,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS7_GP",
+      "interval": null
+    },
+    "pass_30j": {
+      "name": "Pass Voyageur 30 jours — Guadeloupe",
+      "price_cents": 1499,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS30_GP",
+      "interval": null
+    },
+    "pass_saison": {
+      "name": "Pass Saison — Guadeloupe",
+      "price_cents": 2499,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PASSSAISON_GP",
+      "interval": null
+    },
+    "pro_mensuel": {
+      "name": "Abonnement Pro Mensuel — Guadeloupe",
+      "price_cents": 7900,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_M_GP",
+      "interval": "month"
+    },
+    "pro_annuel": {
+      "name": "Abonnement Pro Annuel — Guadeloupe",
+      "price_cents": 69000,
+      "currency": "eur",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_A_GP",
+      "interval": "year"
+    }
+  },
+  "sargasses_puntacana": {
+    "pass_30j": {
+      "name": "Pass 30 jours — Punta Cana",
+      "price_cents": 1699,
+      "currency": "usd",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS30_PC",
+      "interval": null
+    },
+    "pro_mensuel": {
+      "name": "Abonnement Pro Mensuel — Punta Cana",
+      "price_cents": 8900,
+      "currency": "usd",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_M_PC",
+      "interval": "month"
+    }
+  },
+  "sargasses_cancun": {
+    "pass_30j": {
+      "name": "Pass 30 jours — Cancún",
+      "price_cents": 1699,
+      "currency": "usd",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS30_CUN",
+      "interval": null
+    },
+    "pro_mensuel": {
+      "name": "Abonnement Pro Mensuel — Cancún",
+      "price_cents": 8900,
+      "currency": "usd",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_M_CUN",
+      "interval": "month"
+    }
+  },
+  "sargasses_miami": {
+    "pass_30j": {
+      "name": "Pass 30 jours — Miami",
+      "price_cents": 1699,
+      "currency": "usd",
+      "stripe_link": "https://buy.stripe.com/TEST_PASS30_MIA",
+      "interval": null
+    },
+    "pro_mensuel": {
+      "name": "Abonnement Pro Mensuel — Miami",
+      "price_cents": 8900,
+      "currency": "usd",
+      "stripe_link": "https://buy.stripe.com/TEST_PRO_M_MIA",
+      "interval": "month"
+    }
+  }
+}

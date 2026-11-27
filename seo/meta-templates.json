@@ -1,0 +1,45 @@
+{
+  "comment": "Modeles de titres et meta descriptions par page et langue. A adapter sur chaque site.",
+  "botwow": {
+    "home_fr": {
+      "title": "BOT-WOW — Fishing Assistant WoW — Planner 9 EUR, Studio 29 EUR",
+      "description": "Planificateur de peche pour serveurs prives WoW. Licence Planner a 9 EUR, Studio a 29 EUR. Precommande Beta — cle envoyee par email."
+    },
+    "demo_fr": {
+      "title": "BOT-WOW — Demo du route planner",
+      "description": "Testez l'interface du planificateur de peche BOT-WOW avant de reserver votre licence Beta."
+    }
+  },
+  "sargasses_martinique": {
+    "carte_fr": {
+      "title": "Sargasses Martinique — Carte en temps reel des plages",
+      "description": "Etat des sargasses en temps reel sur les plages de Martinique. Derniere observation satellite. Activez les alertes gratuites."
+    },
+    "previsions_fr": {
+      "title": "Sargasses Martinique — Previsions 7 jours",
+      "description": "Previsions de presence de sargasses par plage pour les 7 prochains jours. Martinique."
+    },
+    "alertes_fr": {
+      "title": "Sargasses Martinique — Alertes temps reel",
+      "description": "Recevez un email des que l'etat de votre plage change. Activez Le Veilleur — 7 jours gratuits."
+    },
+    "offres_fr": {
+      "title": "Sargasses Martinique — Offres Pass et Pro",
+      "description": "Pass voyageur 7j 7,99 EUR, 30j 14,99 EUR, saison 24,99 EUR. Pro 79 EUR/mois ou 690 EUR/an. Paiement Stripe securise."
+    },
+    "fiabilite_fr": {
+      "title": "Sargasses Martinique — Fiabilite des donnees",
+      "description": "Score de fiabilite et methodologie des observations sargasses Martinique."
+    }
+  },
+  "sargasses_guadeloupe": {
+    "carte_fr": {
+      "title": "Sargasses Guadeloupe — Carte en temps reel des plages",
+      "description": "Etat des sargasses en temps reel sur les plages de Guadeloupe. Derniere observation satellite. Activez les alertes gratuites."
+    },
+    "offres_fr": {
+      "title": "Sargasses Guadeloupe — Offres Pass et Pro",
+      "description": "Pass voyageur 7j 7,99 EUR, 30j 14,99 EUR, saison 24,99 EUR. Pro 79 EUR/mois ou 690 EUR/an. Paiement Stripe securise."
+    }
+  }
+}

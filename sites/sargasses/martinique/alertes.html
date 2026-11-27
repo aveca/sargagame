@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sargasses Martinique — Alertes temps réel</title>
+  <meta name="description" content="Recevez un email dès que l'état de votre plage change en Martinique. Activez Le Veilleur — 7 jours gratuits.">
+  <link rel="stylesheet" href="../../../components/cta-styles.css">
+</head>
+<body data-site="sargasses_martinique">
+
+<nav>
+  <a href="#" style="font-weight:700; margin-right:24px; color:#00E87A; text-decoration:none;">Le Veilleur — Martinique</a>
+  <a href="carte.html">Carte</a>
+  <a href="previsions.html">Prévisions</a>
+  <a href="offres.html" class="cta-btn" style="margin-left:auto;" data-cta="cta_sarg_offres_alertes" data-page="alertes" data-site="sargasses_martinique">Voir nos Pass</a>
+</nav>
+
+<header style="padding:24px 20px;">
+  <h1 style="font-size:24px; margin-bottom:8px;">Alertes temps réel — Martinique</h1>
+  <p style="font-size:14px; color:#666;">Soyez informé dès que l'état de votre plage change.</p>
+</header>
+
+<main style="padding:0 20px 40px; max-width:700px; margin:0 auto;">
+  <section style="border:1px solid #333; border-radius:12px; padding:24px; margin-bottom:24px; background:#12131E;">
+    <h2 style="font-size:20px; margin-bottom:16px;">Activez Le Veilleur — 7 jours gratuits</h2>
+    <p style="font-size:15px; margin-bottom:16px;">Recevez une alerte par email dès que la présence de sargasses est signalée sur votre plage. Aucun engagement, pas de renouvellement automatique.</p>
+    <form id="alerte-form" data-cro="alerte_form" style="display:flex; flex-direction:column; gap:12px;">
+      <input type="email" placeholder="votre@email.com" required style="padding:10px 14px; border:1px solid #CCC; border-radius:6px; font-size:14px;">
+      <input type="text" placeholder="Votre plage (ex: Les Salines)" style="padding:10px 14px; border:1px solid #CCC; border-radius:6px; font-size:14px;">
+      <button type="submit" class="cta-btn">Activer mes alertes gratuites</button>
+    </form>
+    <p id="alerte-msg" style="font-size:13px; color:#00E87A; margin-top:8px; display:none;"></p>
+  </section>
+
+  <section style="margin-bottom:24px;">
+    <h2 style="font-size:20px; margin-bottom:16px;">Consulter la carte en direct</h2>
+    <p style="font-size:15px; margin-bottom:16px;">Vérifiez l'état actuel de toutes les plages de Martinique avant de vous déplacer.</p>
+    <a href="carte.html" class="cta-btn" data-cta="cta_sarg_carte_alertes" data-page="alertes" data-site="sargasses_martinique">Voir la carte</a>
+  </section>
+
+  <section>
+    <h2 style="font-size:20px; margin-bottom:16px;">Vous préparez un voyage ?</h2>
+    <p style="font-size:15px; margin-bottom:16px;">Comparez nos pass voyageur pour un accès illimité aux alertes et prévisions.</p>
+    <a href="offres.html" class="cta-link" data-cta="cta_sarg_offres_alertes_bis" data-page="alertes" data-site="sargasses_martinique">Voir nos offres Pass & Pro</a>
+  </section>
+</main>
+
+<footer style="padding:24px 20px; font-size:12px; color:#666; text-align:center; border-top:1px solid #333;">
+  <a href="carte.html" class="cta-inline" data-cta="cta_sarg_carte_footer" data-page="alertes" data-site="sargasses_martinique">Carte en direct</a> ·
+  <a href="fiabilite.html">Fiabilité des données</a> ·
+  <a href="cgv.html">CGV</a> ·
+  <a href="confidentialite.html">Confidentialité</a> ·
+  <a href="retractation.html">Rétractation</a>
+</footer>
+
+<script src="../../../tracking/consent-manager.js"></script>
+<script src="../../../tracking/events.js"></script>
+<script>
+(function(){
+  var form = document.getElementById('alerte-form');
+  var msg = document.getElementById('alerte-msg');
+  if (!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (typeof window.croTrack === 'function') {
+      window.croTrack('form_submit', {
+        form_id: 'alerte_form',
+        page: window.location.pathname,
+        site: document.documentElement.dataset.site || 'sargasses_martinique',
+      });
+    }
+    msg.style.display = 'block';
+    msg.textContent = 'Votre alerte est activée (dry-run). Vous recevrez un email de confirmation.';
+    form.reset();
+  });
+})();
+</script>
+
+</body>
+</html>

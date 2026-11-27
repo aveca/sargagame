@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRO Implementation Package — BOT-WOW &amp; Sargasses</title>
+  <meta name="description" content="Package d'implémentation CRO/SEO : composants CTA, tracking événements, bandeau RGPD, liens Stripe, pages exemples.">
+  <link rel="stylesheet" href="components/cta-styles.css">
+  <style>
+    body { font-family: var(--cta-font); line-height:1.6; color:#1a1a1a; padding:24px; max-width:900px; margin:0 auto; }
+    h1 { font-size:28px; margin-bottom:8px; }
+    h2 { font-size:20px; margin-top:32px; margin-bottom:12px; border-bottom:1px solid #ddd; padding-bottom:6px; }
+    .card { border:1px solid #e5e5e5; border-radius:8px; padding:16px 20px; margin:12px 0; background:#fff; }
+    .card h3 { margin:0 0 8px 0; font-size:16px; }
+    .card p { margin:0 0 10px 0; font-size:14px; color:#555; }
+    .tag { display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; background:#eee; color:#333; margin-right:6px; }
+    a { color:#00E87A; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin:16px 0; }
+    code { background:#f5f5f5; padding:2px 6px; border-radius:4px; font-size:13px; }
+    pre { background:#f5f5f5; padding:12px; border-radius:6px; overflow:auto; font-size:13px; }
+    ul { padding-left:20px; }
+    li { margin-bottom:6px; }
+    .warn { background:#fdf3f3; border-left:4px solid #e53e3e; padding:12px; margin:16px 0; }
+    .ok { background:#f0fff4; border-left:4px solid #38a169; padding:12px; margin:16px 0; }
+  </style>
+</head>
+<body>
+
+<h1>CRO Implementation Package</h1>
+<p>Package prêt à déployer pour BOT-WOW et le réseau Sargasses (Martinique, Guadeloupe, Punta Cana, Cancún, Miami).</p>
+
+<div class="ok">
+  <strong>Mode dry-run par défaut.</strong> Aucun vrai paiement n'est activé. Les liens Stripe pointent vers des URLs TEST (buy.stripe.com/TEST_…). Remplacez-les par vos vrais liens avant mise en production.
+</div>
+
+<h2>1. Composants réutilisables</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Bouton CTA principal</h3>
+    <p>Bouton normalisé avec attributs de tracking (data-cta, data-page, data-site).</p>
+    <a href="components/cta-button.html">Voir cta-button.html</a> · <span class="tag">HTML</span>
+  </div>
+  <div class="card">
+    <h3>Bandeau sticky mobile</h3>
+    <p>CTA bas d'écran pour les pages carte/prévisions (masqué sur desktop).</p>
+    <a href="components/cta-sticky-mobile.html">Voir cta-sticky-mobile.html</a> · <span class="tag">HTML</span>
+  </div>
+  <div class="card">
+    <h3>Lien CTA inline</h3>
+    <p>Lien contextuel dans le contenu éditorial.</p>
+    <a href="components/cta-inline.html">Voir cta-inline.html</a> · <span class="tag">HTML</span>
+  </div>
+  <div class="card">
+    <h3>Bandeau RGPD / CNIL</h3>
+    <p>Consentement avant tout suivi analytique.</p>
+    <a href="components/gdpr-banner.html">Voir gdpr-banner.html</a> · <span class="tag">HTML</span>
+  </div>
+  <div class="card">
+    <h3>Formulaire liste d'attente</h3>
+    <p>BOT-WOW : capture email quand le paiement est désactivé.</p>
+    <a href="components/waitlist-form.html">Voir waitlist-form.html</a> · <span class="tag">HTML</span>
+  </div>
+  <div class="card">
+    <h3>Styles partagés</h3>
+    <p>Variables CSS, états hover, focus visible, accessibilité.</p>
+    <a href="components/cta-styles.css">Voir cta-styles.css</a> · <span class="tag">CSS</span>
+  </div>
+</div>
+
+<h2>2. Tracking &amp; consentement</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Événements (GA4 / Matomo)</h3>
+    <p>cta_impression, cta_click, form_submit, checkout_initiated, checkout_success, checkout_failure.</p>
+    <a href="tracking/events.js">Voir events.js</a> · <span class="tag">JS</span>
+  </div>
+  <div class="card">
+    <h3>Gestionnaire consentement</h3>
+    <p>Affiche/masque le bandeau RGPD, stocke le choix, initialise le tracking après consentement.</p>
+    <a href="tracking/consent-manager.js">Voir consent-manager.js</a> · <span class="tag">JS</span>
+  </div>
+  <div class="card">
+    <h3>Tests A/B côté client</h3>
+    <p>Attribution variante, attribut data-ab-variant, tracking cta_click avec ab_test / ab_variant.</p>
+    <a href="tracking/ab-test.js">Voir ab-test.js</a> · <span class="tag">JS</span>
+  </div>
+</div>
+
+<h2>3. Paiements (Stripe)</h2>
+<div class="card">
+  <h3>Configuration des liens</h3>
+  <p>Tous les produits par site et devise (EUR pour FR, USD pour US). Liens TEST par défaut.</p>
+  <a href="payments/stripe-links.json">Voir stripe-links.json</a> · <span class="tag">JSON</span>
+  <p class="tag">Intégration optionnelle :</p>
+  <p>Les boutons CTA pointent directement vers les liens Stripe Payment Links (checkout hébergé par Stripe). Aucun code serveur requis.</p>
+</div>
+
+<h2>4. Exemples de pages par site</h2>
+<table style="width:100%; border-collapse:collapse; font-size:14px; margin:12px 0;">
+  <thead><tr style="border-bottom:2px solid #ddd;"><th style="text-align:left; padding:8px;">Site</th><th style="text-align:left; padding:8px;">Devise</th><th style="text-align:left; padding:8px;">Pages exemples</th></tr></thead>
+  <tbody>
+    <tr><td><strong>BOT-WOW</strong></td><td>EUR</td><td><a>sites/botwow/home-fr.html</a> · <a>sites/botwow/demo-fr.html</a></td></tr>
+    <tr><td><strong>Sargasses Martinique</strong></td><td>EUR</td><td><a>sites/sargasses/martinique/carte.html</a> · <a>sites/sargasses/martinique/offres.html</a> · <a>sites/sargasses/martinique/fiabilite.html</a></td></tr>
+    <tr><td><strong>Sargasses Guadeloupe</strong></td><td>EUR</td><td><a>sites/sargasses/guadeloupe/carte.html</a> · <a>sites/sargasses/guadeloupe/offres.html</a> · <a>sites/sargasses/guadeloupe/fiabilite.html</a></td></tr>
+    <tr><td><strong>Sargasses Punta Cana</strong></td><td>USD</td><td><a>sites/sargasses/puntacana/carte.html</a> · <a>sites/sargasses/puntacana/offres.html</a> · <a>sites/sargasses/puntacana/fiabilite.html</a></td></tr>
+    <tr><td><strong>Sargasses Cancún</strong></td><td>USD</td><td><a>sites/sargasses/cancun/carte.html</a> · <a>sites/sargasses/cancun/offres.html</a> · <a>sites/sargasses/cancun/fiabilite.html</a></td></tr>
+    <tr><td><strong>Sargasses Miami</strong></td><td>USD</td><td><a>sites/sargasses/miami/carte.html</a> · <a>sites/sargasses/miami/offres.html</a> · <a>sites/sargasses/miami/fiabilite.html</a></td></tr>
+  </tbody>
+</table>
+
+<h2>5. SEO</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Modèles de balises meta</h3>
+    <p>Titres et descriptions par page et langue.</p>
+    <a href="seo/meta-templates.json">Voir meta-templates.json</a> · <span class="tag">JSON</span>
+  </div>
+  <div class="card">
+    <h3>Maillage interne</h3>
+    <p>Matrice des liens recommandés entre pages haut trafic et pages conversion.</p>
+    <a href="seo/internal-links.md">Voir internal-links.md</a> · <span class="tag">MD</span>
+  </div>
+</div>
+
+<h2>6. Plan d'action</h2>
+<div class="grid">
+  <div class="card">
+    <h3>24h — Impact élevé</h3>
+    <p>CTA visibles, suivi analytique, liens internes, contraintes légales.</p>
+    <a href="plan/actions-24h.md">Voir actions-24h.md</a> · <span class="tag">MD</span>
+  </div>
+  <div class="card">
+    <h3>7j — Travaux moyens</h3>
+    <p>Sticky mobile, formulaires, performance, tests A/B, SEO.</p>
+    <a href="plan/actions-7j.md">Voir actions-7j.md</a> · <span class="tag">MD</span>
+  </div>
+  <div class="card">
+    <h3>30j — Changements lourds</h3>
+    <p>Funnel, rétention, A/B approfondi, SEO avancé, analyse J+30.</p>
+    <a href="plan/actions-30j.md">Voir actions-30j.md</a> · <span class="tag">MD</span>
+  </div>
+</div>
+
+<div class="warn">
+  <strong>Contraintes légales à respecter :</strong><br>
+  • BOT-WOW : aucun CTA « Acheter maintenant » irrévocable tant que le logiciel final n'est pas livré (précommande uniquement).<br>
+  • Sargasses : ne pas modifier les prix ni conditions existantes. Respecter CGV, droit de rétractation, RGPD.<br>
+  • Tester en staging avant déploiement production. Valider juridiquement (CGV, RGPD) avant mise en ligne.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+/* ============================================================
+   CRO Component Styles — BOT-WOW & Sargasses
+   Styles réutilisables pour les CTA, bandeaux et sticky mobile
+   ============================================================ */
+
+/* Variables (adaptez à votre charte) */
+:root {
+  --cta-primary-bg: #00E87A;
+  --cta-primary-text: #000000;
+  --cta-primary-hover: #00C86A;
+  --cta-secondary-bg: transparent;
+  --cta-secondary-text: #00E87A;
+  --cta-secondary-border: #00E87A;
+  --cta-text: #FFFFFF;
+  --cta-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --cta-radius: 8px;
+  --cta-padding-y: 12px;
+  --cta-padding-x: 24px;
+  --cta-font-size: 15px;
+  --cta-font-weight: 600;
+  --sticky-bg: rgba(10, 10, 15, 0.95);
+  --sticky-text: #FFFFFF;
+  --gdp-bg: #FFFFFF;
+  --gdp-text: #1A1A1A;
+}
+
+/* Reset basique pour les composants */
+.cta-btn,
+.cta-link,
+.cta-sticky,
+.cta-inline {
+  font-family: var(--cta-font);
+  box-sizing: border-box;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--cta-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: var(--cta-font-weight);
+  font-size: var(--cta-font-size);
+}
+
+/* Bouton CTA principal */
+.cta-btn {
+  background: var(--cta-primary-bg);
+  color: var(--cta-primary-text);
+  border: none;
+  padding: var(--cta-padding-y) var(--cta-padding-x);
+}
+.cta-btn:hover {
+  background: var(--cta-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 232, 122, 0.3);
+}
+.cta-btn:active {
+  transform: translateY(0);
+}
+.cta-btn:focus-visible {
+  outline: 3px solid var(--cta-primary-bg);
+  outline-offset: 2px;
+}
+
+/* Lien CTA secondaire */
+.cta-link {
+  color: var(--cta-secondary-text);
+  border: 1px solid var(--cta-secondary-border);
+  padding: var(--cta-padding-y) var(--cta-padding-x);
+  background: var(--cta-secondary-bg);
+}
+.cta-link:hover {
+  background: var(--cta-primary-bg);
+  color: var(--cta-primary-text);
+  border-color: var(--cta-primary-bg);
+}
+
+/* CTA inline (dans le texte) */
+.cta-inline {
+  color: var(--cta-secondary-text);
+  text-decoration: underline;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+}
+.cta-inline:hover {
+  color: var(--cta-primary-bg);
+  text-decoration: none;
+}
+
+/* Bandeau sticky mobile (bas d'écran) */
+.cta-sticky {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--sticky-bg);
+  color: var(--sticky-text);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 14px;
+}
+.cta-sticky .cta-btn {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+.cta-sticky-text {
+  max-width: 60%;
+  line-height: 1.4;
+}
+
+/* Bandeau RGPD / CNIL */
+.gdpr-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--gdp-bg);
+  color: var(--gdp-text);
+  border-top: 1px solid #DDD;
+  padding: 20px;
+  z-index: 10000;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  font-family: var(--cta-font);
+  font-size: 14px;
+  line-height: 1.5;
+  display: none; /* caché par défaut, affiché via JS */
+}
+.gdpr-banner .gdpr-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.gdpr-banner .gdpr-text {
+  flex: 1;
+}
+.gdpr-banner .gdpr-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.gdpr-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gdpr-btn-accept {
+  background: var(--cta-primary-bg);
+  color: var(--cta-primary-text);
+}
+.gdpr-btn-accept:hover {
+  background: var(--cta-primary-hover);
+}
+.gdpr-btn-decline {
+  background: transparent;
+  color: var(--cta-secondary-text);
+  border: 1px solid #CCC;
+}
+.gdpr-btn-decline:hover {
+  background: #F5F5F5;
+}
+.gdpr-btn-settings {
+  background: transparent;
+  color: #666;
+  border: 1px solid #CCC;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+/* Accessibilité */
+[aria-label] {
+  font-size: inherit;
+}
+.cta-btn[aria-label],
+.cta-link[aria-label] {
+  min-height: 44px; /* zone tactile mobile */
+}
+
+/* Responsive : cacher le sticky sur desktop si souhaité */
+@media (min-width: 768px) {
+  .cta-sticky {
+    display: none;
+  }
+}
+
+/* Utilities */
+.cta-hint {
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+  display: block;
+}
