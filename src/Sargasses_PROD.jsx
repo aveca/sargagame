@@ -13973,7 +13973,7 @@ export default function App(){
       {/* contentVisibility:hidden pendant l'attract → la carte (WorldMapView, statique au
           repos) n'est plus peinte/composée sous le reel opaque (perf bas de gamme). No-op si
           non supporté ; "visible" par défaut → zéro impact hors attract (smoke inchangé). */}
-      <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden",contentVisibility:showAttract?"hidden":"visible"}}>
+      <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden",contentVisibility:showAttract?"hidden":"visible"}} className="sg-screen-1-hero">
 
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
@@ -14079,7 +14079,7 @@ export default function App(){
         )}
 
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
-        <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
+        <div className="sg-screen-2-map" style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
           transform:view==="map"?"scale(1)":"scale(1.03)",transformOrigin:"50% 42%",
           pointerEvents:view==="map"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
           {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
@@ -14094,7 +14094,7 @@ export default function App(){
               (WorldMapView/ArchipelView) est montée plus bas via showArchipel. Plus de
               fallback ?nav=map, plus de chunk leaflet. */}
         </div>
-        <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
+        <div className="sg-screen-2-map" style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           transform:view==="list"?"translateY(0)":"translateY(14px)",
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
           {view==="list"&&<BeachListView beaches={filtered} onBeachClick={onBeachClick}
@@ -14593,15 +14593,17 @@ export default function App(){
               onRequestGeo={requestGeo}/>
           )
           return(
-            <ErrBound key={selectedBeach.id} fallback={_fallback}>
-              <BeachSheetComic beach={selectedBeach} onClose={closeSheet}
-                favorites={favorites} onToggleFav={toggleFav} lang={lang}
-                allBeaches={allBeaches} onBeachClick={onBeachClick}
-                onPremiumClick={openPremium} isPremium={isPremium}
-                sargData={sargData} userPos={userPos} forecast={_fc} track={track}
-                communityReports={communityReports} onRequestGeo={requestGeo}
-                onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}/>
-            </ErrBound>
+            <div className="sg-screen-3-sheet">
+              <ErrBound key={selectedBeach.id} fallback={_fallback}>
+                <BeachSheetComic beach={selectedBeach} onClose={closeSheet}
+                  favorites={favorites} onToggleFav={toggleFav} lang={lang}
+                  allBeaches={allBeaches} onBeachClick={onBeachClick}
+                  onPremiumClick={openPremium} isPremium={isPremium}
+                  sargData={sargData} userPos={userPos} forecast={_fc} track={track}
+                  communityReports={communityReports} onRequestGeo={requestGeo}
+                  onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}/>
+              </ErrBound>
+            </div>
           )
         })()}
 
@@ -14637,7 +14639,7 @@ export default function App(){
           }}/>}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>{
+        {showPremium&&<div className="sg-screen-3-sheet"><ErrBound><Suspense fallback={null}><PremiumModal onClose={()=>{
           setShowPremium(false)
           // EXIT-INTENT NUDGE — paywall fermé SANS payer → toast CTA de rattrapage.
           // Honnête (aucune pression fabriquée : le pic saisonnier est réel), 1×/session,
@@ -14662,7 +14664,7 @@ export default function App(){
           }catch(_){}
         }} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
-           beach={selectedBeach||null}/></Suspense></ErrBound>}
+           beach={selectedBeach||null}/></Suspense></ErrBound></div>}
 
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
         {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} sargData={sargData} island={island} beach={selectedBeach||null} source={proB2BSrc.current} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
