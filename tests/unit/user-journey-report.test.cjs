@@ -65,8 +65,9 @@ t(/!decisionUi\.hasForecastCta/.test(auditSource),
 
 t(/if \(!observation\.ok \|\| !observation\.current\)/.test(auditSource),
   'l’audit branche le parcours selon la fraîcheur réelle de l’observation')
-t(/data-testid="chasse-home-stale"/.test(auditSource) && /data-testid="chasse-home-offer-cta"/.test(auditSource),
-  'l’état satellite suspendu doit exposer une porte d’offre visible')
+t(/data-testid="wm-stale-offer"/.test(auditSource) && /data-testid="wm-stale-offer-cta"/.test(auditSource) &&
+  /data-testid="wm-stale-offer-last-observation"/.test(auditSource),
+  'l’état satellite suspendu expose la porte d’offre WorldMapView et la date de mesure')
 t(/waitForSelector\('\.pww-wrap, \.sg-modal-panel'/.test(auditSource) && /step: 'paywall-open'/.test(auditSource),
   'l’audit clique la porte stale et vérifie l’ouverture réelle du paywall')
 t(/step: 'beach-selection', ok: true, skipped: true/.test(auditSource),
