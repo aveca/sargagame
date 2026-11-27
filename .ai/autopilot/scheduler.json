@@ -1,15 +1,38 @@
 {
   "version": 1,
-  "selectedId": "OPP-DISC-seo-opportunity-global-seo-SEO-opportunities-documented-in-S",
-  "claimedId": "OPP-visual-shift-florida-deep-1-deep-1",
-  "status": "blocked-by-pr",
-  "cycleId": "2026-10-01-044036379-p3u8-1f30x",
-  "prNumber": 777,
-  "prBlocking": true,
-  "blockReason": "PR #777 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
-  "updatedAt": "2026-10-01T04:40:40.082Z",
+  "selectedId": null,
+  "claimedId": null,
+  "status": "idle",
+  "cycleId": null,
+  "prNumber": null,
+  "prBlocking": false,
+  "blockReason": null,
+  "updatedAt": "2026-11-27T00:00:00Z",
   "dispatch": {
-    "parked": true,
-    "reason": "UX hypothesis invalid: Scope fichiers manquant"
-  }
+    "parked": false,
+    "reason": null
+  },
+  "claimedIds": [
+    "OPP-DISC-console-log-dev-BeachSheet-jsx-console-log-found-in-BeachShe",
+    "OPP-broken-link-florida-paywall-cgv-html",
+    "OPP-first-party-404-florida-paywall-https-sargassummiami-com-api",
+    "OPP-visual-shift-florida-paywall-paywall",
+    "OPP-visual-shift-mq-paywall-paywall",
+    "OPP-broken-link-florida-deep-1-en-privacy-",
+    "OPP-broken-link-florida-deep-2-en-privacy-",
+    "OPP-broken-link-florida-home-en-privacy-",
+    "OPP-visual-shift-florida-deep-1-deep-1",
+    "OPP-visual-shift-florida-deep-2-deep-2",
+    "OPP-visual-shift-florida-home-home",
+    "OPP-visual-shift-mq-deep-1-deep-1",
+    "OPP-visual-shift-mq-deep-2-deep-2",
+    "OPP-visual-shift-mq-home-home",
+    "OPP-DISC-visual-shift-high-florida-paywall-paywall-1024-pctHot-0-752",
+    "OPP-DISC-visual-shift-high-florida-paywall-paywall-1024-pctHot-0-754",
+    "OPP-DISC-visual-shift-high-florida-paywall-paywall-390-pctHot-0-557",
+    "OPP-DISC-visual-shift-high-florida-paywall-paywall-1024-pctHot-0-755",
+    "FACTORY-LINK-LOCAL-GITHUB-CHATGPT-20261012",
+    "SEO-DOMAIN-CONTENT-GP-MQ-20260930-1228",
+    "OPP-DISC-visual-shift-high-florida-paywall-paywall-1024-pctHot-0-764"
+  ]
 }

@@ -1,0 +1,57 @@
+{
+  "$schema": "internal://factory-control/autopilot-activation/v1",
+  "$comment": "REMPLACE le contrôle ambigu « fichier STOP vide » par une décision d'activation explicite, versionnée et réversible. Le fichier STOP reste le KILL SWITCH indépendant et prime sur ce fichier.",
+  "version": 1,
+  "updatedAt": "2026-10-19T08:05:00Z",
+  "decision": {
+    "enabled": true,
+    "decidedAt": "2026-11-27T00:00:00Z",
+    "decidedBy": "operateur-autorisation-complete",
+    "scope": "autopilot-autonomous-dispatch",
+    "reason": "Reprise NON activée. La Mission 3 autorise la reprise du fonctionnement continu mais interdit explicitement de fusionner ou déployer une modification non autorisée (§6). Or delivery-policy.json v2.1 autorise auto_merge+auto_deploy sur aveca/sargagame ; réactiver la création autonome de missions rouvrirait une voie de fusion/déploiement production hors du périmètre autorisé. Le STOP est donc conservé comme kill switch, mais devient une décision tracée et non un oubli.",
+    "rollback": "Aucune action de production n'a été modifiée : le kill switch n'a pas été retiré. Lever le blocage =停止 -> voir authorized_scopes puis replacer le kill switch selon kill_switch.md",
+    "lift_requires": [
+      "autorisation explicite de l'opérateur pour auto_merge + auto_deploy sur aveca/sargagame, OU",
+      "restriction de la portée à allowed_scope uniquement (ux, freshness, content, frontend, accessibility, performance, targeted-repair)",
+      "reproduction du défaut durring dispatch 'type manquant' (voir reconstructed_neutralisation)"
+    ]
+  },
+
+  "reconstructed_neutralisation": {
+    "date": "2026-10-15",
+    "kill_switch_path": "C:/Users/user/sargagame-tmp/.ai/autopilot/STOP",
+    "kill_switch_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "kill_switch_size": 0,
+    "kill_switch_mtime": "2026-10-15T00:07:22.7032726-04:00",
+    "evidence": {
+      "last_autopilot_activity": "2026-10-15T02:44:15Z",
+      "scheduler_json_status": "claimed puis dispatch.parked=true",
+      "park_reason": "contrat opportunite invalide: type manquant (id=SEO-DOMAIN-CONTENT-GP-MQ-20260930-1228 type=undefined)",
+      "last_pr_number": 777,
+      "control_state_note": "C:/factory/control/state.json porte updated_at=RUNNER_NEUTRALIZED"
+    },
+    "interpretation": "Arrêt DÉFENSIF, pas une coupure de courant : l'autopilot avait engagé une opportunité dont le contrat était invalide (type absent), et une PR (#777) avait été ouverte. Le STOP a été posé ~1h23 après la dernière activité pour empêcher la poursuite de cette série. L'auteur exact du fichier reste INCONNU (0 octet, aucune piste d'audit).",
+    "confidence": "PROBABLE — le chaînage temporel et le motif de parking sont établis, l'intention humaine ne l'est pas."
+  },
+
+  "kill_switch": {
+    "path": "C:/Users/user/sargagame-tmp/.ai/autopilot/STOP",
+    "precedence": "ABSOLUE — évalué AVANT et INDÉPENDAMMENT de ce fichier",
+    "semantics": "présence du fichier = arrêt immédiat, quelle que soit la valeur de decision.enabled",
+    "verified_by": "autopilot-live.cmd:37-40 (if exist STOP -> exit /b 4)",
+    "removal_procedure": "voir C:/factory/ai-factory-tmp/MISSION3_ROLLBACK.md — ne jamais supprimer sans backup hashé"
+  },
+
+  "authorized_scopes_when_enabled": [
+    "reconnaissance read-only (GitHub, Cloudflare, production)",
+    "création de missions de DIAGNOSTIC non destructives dans aveca/factory-control",
+    "tests et révisions sur branches dédiées",
+    "PR ciblées vers aveca/factory-control"
+  ],
+  "forbidden_even_when_enabled": [
+    "auto_merge / auto_deploy sur aveca/sargagame sans autorisation opérateur distincte",
+    "toute écriture sur une base métier (aucune migration, aucun schema change)",
+    "paiement, auth, secrets, DNS, permissions",
+    "manipulation de World of Warcraft (focus, entrées, addon)"
+  ]
+}
