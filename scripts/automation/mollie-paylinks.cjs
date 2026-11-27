@@ -73,6 +73,42 @@ function loadKey() {
 function loadOut() { try { return JSON.parse(fs.readFileSync(OUT_PATH, 'utf8')) } catch { return { _note: 'Liens de paiement Mollie B2B (générés par mollie-paylinks.cjs). Lus par l\'app + emails.', links: {} } } }
 function saveOut(d) { fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true }); fs.writeFileSync(OUT_PATH, JSON.stringify(d, null, 2)) }
 
+// ═══ VÉRIFICATION LIVE (lecture seule, SANS clé API) ═══════════════════════════
+// `reachable: true` est le contrat exigé par selectB2bPaylink() (app, CTA
+// annuel du paywall) ET urlFromCatalog() (emails B2B) : sans ce drapeau VRAI,
+// le lien n'est exposé NULLE PART. Constat 2026-11-26 : les 10 URL commités
+// répondaient 404 (payment-links morts) → CTA annuel muet + liens de
+// prospection morts, sans aucune alerte. On vérifie donc chaque URL à CHAQUE
+// run (GET public, aucune création, aucun secret).
+async function verifyLink(url) {
+  try {
+    const r = await fetch(url, { redirect: 'manual' })
+    return r.status === 200 || (r.status >= 300 && r.status < 400)
+  } catch (_) { return false }
+}
+// Liens annuels B2B auto-réparables : une URL morte sur un tier VENDU = un CTA
+// et des emails morts → on refrappe un lien neuf (même montant, même label).
+// Les entrées B2C (trip/sejour/saison) sont VÉRIFIÉES SEULEMENT : leur grille
+// est périmée face à l'offre validée 2026-11-09 (7,99/14,99/24,99) — les
+// recréer ici mintrait un prix non validé. Décision prix = mission séparée.
+const REPAIRABLE = new Set(['brief_annual', 'pro_annual', 'brief_annual_usd', 'pro_annual_usd', 'territory_annual'])
+
+/** Passe de vérification sur les liens DÉJÀ commités. Retourne true si au
+ *  moins un drapeau a changé. Sans clé API, c'est la SEULE écriture faite. */
+async function verifyCatalog(out) {
+  let changed = false
+  const now = new Date().toISOString()
+  for (const [id, link] of Object.entries(out.links || {})) {
+    if (!link || typeof link.url !== 'string' || !link.url.startsWith('https://')) continue
+    const ok = await verifyLink(link.url)
+    if (link.reachable !== ok) { link.reachable = ok; changed = true }
+    if (ok) { if (link.verifiedAt !== now) { link.verifiedAt = now; changed = true } }
+    else if (link.verifiedAt) { delete link.verifiedAt; changed = true }
+    console.log(`  ${ok ? '✓' : '✗'} ${id} ${ok ? 'vivant' : 'MORT (404)'}${REPAIRABLE.has(id) && !ok ? ' → auto-réparation' : ''}`)
+  }
+  return changed
+}
+
 async function createLink(key, tier) {
   const res = await fetch('https://api.mollie.com/v2/payment-links', {
     method: 'POST',
@@ -95,13 +131,25 @@ async function main() {
   console.log('=== Mollie B2B payment links ===')
   const out = loadOut()
   out.links = out.links || {}
+  // 1. Vérification live du catalogue commité (mise à jour des drapeaux
+  //    `reachable`) — tourne SANS clé, ne crée aucun lien.
+  await verifyCatalog(out)
   const key = loadKey()
-  if (!key) { console.log('MOLLIE_API_KEY absent — no-op (rien créé).'); saveOut(out); return }
+  if (!key) { console.log('MOLLIE_API_KEY absent — aucune création (vérification seule).'); if (!DRY) saveOut(out); return }
   if (key.startsWith('test_')) console.log('⚠️  clé TEST (test_) — liens en mode test (pas de vrai argent).')
   for (const tier of TIERS) {
     const existing = out.links[tier.id]
-    // Idempotent : un lien déjà présent au BON montant ET câblé webhook n'est pas recréé.
-    if (existing && existing.url && existing.value === tier.value && existing.webhooked) { console.log(`  = ${tier.id} déjà présent (${tier.value} ${tier.currency || 'EUR'}, webhook OK)`); continue }
+    // Idempotent : un lien déjà présent au BON montant, câblé webhook ET VÉRIFIÉ
+    // vivant n'est pas recréé.
+    if (existing && existing.url && existing.value === tier.value && existing.webhooked && existing.reachable === true) { console.log(`  = ${tier.id} déjà présent (${tier.value} ${tier.currency || 'EUR'}, webhook OK, URL vivante)`); continue }
+    // URL MORTE sur un tier vendu : CTA + emails muets → on refrappe (même
+    // montant, même label — AUCUN prix touché). Les entrées non réparables
+    // (grille B2C périmée vs offre validée 2026-11-09) restent drapeau false :
+    // le garde les tient hors de portée SANS minter un prix non validé.
+    if (existing && existing.url && existing.value === tier.value && existing.webhooked && existing.reachable !== true) {
+      if (!REPAIRABLE.has(tier.id)) { console.log(`  ! ${tier.id} mort — non réparable ici (grille non validée) : drapeau reachable=false seulement`); continue }
+      console.log(`  ~ ${tier.id} URL morte — recrée le lien (CTA/email morts)`)
+    }
     // Auto-réparation : si le montant du tier a changé (ex. pricing panel 790→690 €),
     // le lien stocké est périmé → on en frappe un neuf qui écrase l'ancien (sinon le
     // garde idempotent figerait l'ancien prix indéfiniment).
@@ -113,13 +161,13 @@ async function main() {
     if (DRY) { console.log(`  ~ ${tier.id} (${tier.value} €) serait ${existing ? 'recréé' : 'créé'}`); continue }
     try {
       const link = await createLink(key, tier)
-      out.links[tier.id] = { ...link, createdAt: new Date().toISOString() }
+      out.links[tier.id] = { ...link, createdAt: new Date().toISOString(), reachable: await verifyLink(link.url) }
       console.log(`  + ${tier.id} → ${link.url}`)
       saveOut(out)
     } catch (e) { console.log(`  x ${tier.id}: ${e.message}`) }
   }
   out.updatedAt = new Date().toISOString()
-  saveOut(out)
+  if (!DRY) saveOut(out); else console.log('--dry : aucune écriture')
   console.log('Liens:', Object.keys(out.links).join(', ') || '(aucun)')
 }
 main().catch(e => { console.error(e); process.exit(1) })
