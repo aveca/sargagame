@@ -1,3 +1,39 @@
+## 2026-11-26 · Mission SARG-EMAIL-PREFILL-20261126 · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : l'email déjà capturé par le visiteur pré-remplit désormais l'étape de paiement (app in-app `/premium/` incluse) — une ressaisie de moins sur le parcours visiteur → paiement, sans nouvelle collecte.
+- **Détails** : constat mesuré avant de coder — la capture email existait déjà (`ChasseHome`/`WorldMapView` `onCaptureEmail` → `submitLead`, Apps Script + Supabase `sg_email_submit`) et l'étape paiement lisait déjà `localStorage.sg_email` (`PremiumModal` `defaultValue` ×3, `stripeUrlWith` `prefilled_email`) mais **rien n'écrivait cette clé** du côté des surfaces de capture. Correctif minimal : (1) `src/Sargasses_PROD.jsx` `submitLead` mémorise l'email **déjà saisi** sous `sg_email`, normalisé (trim + minuscules), garde-fou si `window.localStorage` est absent, jamais d'écrasement par une valeur vide ; (2) `scripts/lib/premium-page.cjs` (page `/premium/`, régénérée à chaque build par `write-commercial-pages.cjs`) lit `sg_email` pour pré-remplir son champ puis réécrit la clé après validation. Aucun nouvel envoi réseau, aucun nouvel événement analytics, aucun email en dur.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — `submitLead` : mémorisation locale `sg_email` (normalisée, non destructrice)
+- `scripts/lib/premium-page.cjs` — `/premium/` : pré-remplissage depuis `sg_email` + réécriture après validation
+- `tests/unit/lead-submit-analytics-sink.test.cjs` — +3 scénarios (écriture normalisée, absence de `localStorage` sans casse, email vide non destructeur)
+- `tests/unit/commercial-offers-pages.test.cjs` — +3 assertions (lecture/écriture `sg_email` sur la page générée, zéro email en dur)
+- `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md` — handoff
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → 207,2 Ko ≤ 210 Ko gzip
+- [x] `npm test` → 202/202 fichiers OK
+- [x] `node tests/unit/lead-submit-analytics-sink.test.cjs` → 7/7 PASS (ciblé)
+- [x] `node tests/unit/commercial-offers-pages.test.cjs` → PASS (ciblé)
+- [ ] `node scripts/ux-smoke.mjs` → non exécuté dans cette session (non requis : aucun rendu UI modifié, aucun chemin critique touché)
+
+### Problèmes restants
+- [ ] Déploiement production NON demandé : branche poussée + PR à ouvrir, aucun merge, aucun deploy (mandat de la session).
+- [ ] Husky/pre-commit : aucun hook bloquant rencontré lors du commit.
+
+### Prochaine action recommandée
+1. Ouvrir la PR sur `main` depuis `agent/coding/SARG-EMAIL-PREFILL-20261126` et vérifier la CI sur le SHA exact — Rôle : coding_agent
+2. Ne pas merger ni déployer sans décision fondateur — Rôle : release_agent
+
+### Branche / PR
+- Branche : `agent/coding/SARG-EMAIL-PREFILL-20261126` (base `origin/main` `142175677`)
+- PR : à ouvrir
+- Commit head : à renseigner après commit
+
+---
+
 ## 2026-11-26 · Agent: OpenCode (coding + QA) — CTA annuel B2B restauré (branche `agent/revenue/b2b-paylink-restore`, PR à ouvrir, NON mergée, AUCUN déploiement)
 
 ### Défaut
@@ -13,6 +49,42 @@ Le CTA annuel du paywall B2B ne s'affichait **jamais** : `selectB2bPaylink()` (`
 
 ### Reste ouvert
 Merge de la PR (non mergée, non déployée) ; recréation effective des 5 liens B2B morts **en CI** (le pipeline a `MOLLIE_API_KEY` ; en local `Invalid Authorization header` = aucune création, comme voulu) ; décision prix sur la grille B2C ; réparation du tunnel de mesure (`daily-metrics.json` figé depuis 2026-08-03, Supabase `analytics_events` illisible en lecture anon).
+
+---
+
+## 2026-11-24 · Mission SARG-STALE-OFFER-CTA-6DOMAINS-20261124 (issue #1486) · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : porte d'offre honnête visible sur la home WorldMapView quand l'observation satellite est stale/inconnue, pour un non-Premium, corrigée une seule fois dans le composant partagé et vérifiée sur les 6 domaines.
+- **Détails** : `!wmDecisionAvailable && !isPremium && !staleOfferOff` → carte `data-testid="wm-stale-offer"` (badge `wmSatLbl`, message FR/EN/ES « observation satellite en retard ou en cours de vérification — verdicts et prévisions suspendus », précision « aucun verdict actuel, score ou prévision publié »), CTA `wm-stale-offer-cta` → `onPremium("map_stale_offer")` (parcours d'offre existant). Aucun statut/verdict/prévision exposé, aucune promesse de fraîcheur. Aucun prix, SKU, checkout, paiement, secret, Supabase, RLS ou workflow touché. `wmDecisionAvailable=true` → bloc absent, barre des jours inchangée. Rollback `?wmstaleoffer=0`.
+
+### Fichiers modifiés
+- `src/WorldMapView.jsx` — flag `staleOfferOff` + bloc stale-offer partagé (une seule occurrence)
+- `src/app-runtime.css` — `.sg-mapstale-cta` triple-classe `!important` (le skin de thème strippait sinon le fond du bouton)
+- `scripts/test-stale-offer-cta.mjs` — régression stale + unknown × mobile/desktop × 6 builds régionaux
+- `.ai/changelog.md`, `.ai/tasks.md` — handoff
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (warning esbuild préexistant dans Sargasses_PROD.jsx, inchangé)
+- [x] `node scripts/check-bundle-budget.cjs` → 207,2 Ko ≤ 210 Ko gzip
+- [x] `node scripts/test-stale-offer-cta.mjs` → `STALE_OFFER_CTA_6DOMAINS=PASS (37/37)` — 6 builds (mq, gp, florida, puntacana, rivieramaya, tulum) × stale/unknown × mobile/desktop, clic → paywall, zéro fuite de verdict, rendu frais inchangé
+- [x] `npm test` → 202/202 fichiers OK
+- [x] `node scripts/ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[], RAW_CSS_TEXT=[]
+- [x] `npx esbuild src/WorldMapView.jsx --bundle=false --log-level=error` → OK · `git diff --check` → OK
+
+### Problèmes restants
+- [ ] Déploiement production non demandé par cette mission (aucun merge, aucun deploy) — PR ouverte sur `main`, CI à surveiller.
+
+### Prochaine action recommandée
+1. Vérifier la CI sur le SHA exact de la branche, puis publier branche/commit/PR/tests sur l'issue #1486 — Rôle : coding_agent
+2. Ne pas merger ni déployer sans décision fondateur (mandat mission : livrer PR testée uniquement) — Rôle : release_agent
+
+### Branche / PR
+- Branche : `agent/coding/SARG-STALE-OFFER-CTA-6DOMAINS-20261124` (base `origin/main` `89aeb48d177b43e9817e87103271de7fa97dbb5f`)
+- PR : à ouvrir
+- Commit head : à renseigner après commit
+
+---
 
 ## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
 

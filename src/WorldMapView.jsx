@@ -261,6 +261,12 @@ export default function WorldMapView({
   // sont tapés-sans-réponse → pill → page fiabilité (région-correcte) ; sticker → nearMe().
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
+  // Porte d'offre honnête quand le verdict satellite est suspendu (mission
+  // SARG-STALE-OFFER-CTA-6DOMAINS-20261124). Correctif UNIQUE ici : les six domaines
+  // rendent ce même composant partagé. Quand wmDecisionAvailable=false (observation
+  // stale ou inconnue), aucun verdict/prévision n'est publié et un non-Premium voit
+  // une entrée vers l'offre EXISTANTE via onPremium. Rollback : ?wmstaleoffer=0.
+  const staleOfferOff = (()=>{try{return /[?&]wmstaleoffer=0/.test(window.location.search)}catch(_){return false}})()
   // Lisibilité labels carte (grief fondateur 2026-07-02) : le nom blanc + le statut sont posés
   // sur le fond carte (vert/violet/orange) avec un simple glow d'ombre → lavés sur les zones
   // claires. Scrim sombre translucide DERRIÈRE le texte = contraste garanti quelle que soit la
@@ -1858,6 +1864,63 @@ export default function WorldMapView({
               <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#177A42"}}>
                 {_t(lang,"C'est fait. Le verdict du matin t'attend demain — mesuré, pas deviné.","Done. The morning verdict lands tomorrow — measured, not guessed.","Listo. El veredicto de la mañana llega mañana — medido, no adivinado.")}
               </span>
+            </div>
+          )}
+
+          {/* PORTE D'OFFRE HONNÊTE QUAND LE VERDICT EST SUSPENDU (mission
+              SARG-STALE-OFFER-CTA-6DOMAINS-20261124). Rendue UNIQUEMENT quand
+              wmDecisionAvailable=false (observation stale/inconnue) et pour un
+              utilisateur non Premium. Le message dit explicitement que l'observation
+              satellite est en retard/à vérifier et que verdicts + prévisions sont
+              suspendus ; aucun statut de plage ni prévision courante n'est exposé ici
+              (les pins restent neutres via wmDecisionAvailable) et aucune promesse de
+              fraîcheur n'est faite. Le clic réutilise onPremium + le parcours d'offre
+              existant : aucun prix, SKU, checkout, paiement ou webhook ajouté.
+              Quand wmDecisionAvailable=true, ce bloc n'existe pas → rendu inchangé. */}
+          {!wmDecisionAvailable && !isPremium && !staleOfferOff && (
+            <div data-testid="wm-stale-offer" role="status" style={{
+              marginTop:9,display:"flex",flexDirection:"column",alignItems:"flex-start",gap:6,
+              pointerEvents:"auto",maxWidth:360,textAlign:"left",
+              background:"#fff7ed",color:INK,
+              border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,
+              padding:"10px 12px",
+            }}>
+              <span data-testid="wm-stale-offer-status" style={{
+                display:"inline-flex",alignItems:"center",gap:6,
+                font:"800 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                letterSpacing:".06em",textTransform:"uppercase",color:"#a62b20",
+              }}>⏳ {wmSatLbl}</span>
+              <div data-testid="wm-stale-offer-message" style={{
+                font:"800 12.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif",color:INK,
+              }}>
+                {_t(lang,
+                  "Observation satellite en retard ou en cours de vérification — verdicts et prévisions suspendus.",
+                  "Satellite observation delayed or being verified — verdicts and forecasts are paused.",
+                  "Observación satelital atrasada o en verificación — veredictos y pronósticos suspendidos.")}
+              </div>
+              <div style={{
+                font:"700 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif",color:"#5b5566",maxWidth:330,
+              }}>
+                {_t(lang,
+                  "Aucun verdict actuel, score ou prévision n'est publié tant qu'une mesure satellite récente n'est pas disponible.",
+                  "No current verdict, score or forecast is published until a recent satellite reading is available.",
+                  "Ningún veredicto, puntuación ni pronóstico actual se publica hasta disponer de una medición satelital reciente.")}
+              </div>
+              <button type="button" className="sg-mapstale-cta" data-testid="wm-stale-offer-cta"
+                onClick={()=>{
+                  try{track&&track("sg_map_stale_offer_cta",{island})}catch(_){}
+                  onPremium&&onPremium("map_stale_offer")
+                }}
+                style={{
+                  display:"inline-flex",alignItems:"center",gap:7,
+                  pointerEvents:"auto",cursor:"pointer",touchAction:"manipulation",
+                  background:"#ffd23f",color:INK,
+                  border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:10,
+                  padding:"9px 14px",minHeight:44,boxSizing:"border-box",
+                  font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                }}>
+                {_t(lang,"Voir l'offre","See the offer","Ver la oferta")} <span aria-hidden="true">→</span>
+              </button>
             </div>
           )}
         </div>
