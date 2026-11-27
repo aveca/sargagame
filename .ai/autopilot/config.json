@@ -88,12 +88,6 @@
       "package-lock.json",
       "vite.config.js",
       "public/sw.js",
-      "src/PremiumModal/**",
-      "**/*mollie*",
-      "**/*paypal*",
-      "**/*stripe*",
-      "src/PremiumModal.jsx",
-      "src/lib/pass-price.js",
       "scripts/autopilot/**",
       ".ai/autopilot/config.json"
     ],
