@@ -147,13 +147,15 @@ async function runJourney(browser, region, viewport) {
           return style.display !== 'none' && style.visibility !== 'hidden' &&
             Number(style.opacity || 1) > 0 && el.getClientRects().length > 0
         }
-        const root = document.querySelector('[data-testid="chasse-home-stale"]')
-        const offer = document.querySelector('[data-testid="chasse-home-offer-cta"]')
-        const lastObservation = document.querySelector('[data-testid="chasse-home-last-observation"]')
+        const root = document.querySelector('[data-testid="wm-stale-offer"]')
+        const offer = document.querySelector('[data-testid="wm-stale-offer-cta"]')
+        const lastObservation = document.querySelector('[data-testid="wm-stale-offer-last-observation"]')
+        const message = document.querySelector('[data-testid="wm-stale-offer-message"]')
         return {
           staleScreenVisible: visible(root),
           offerVisible: visible(offer),
           lastObservationVisible: visible(lastObservation),
+          messageVisible: visible(message),
           offerText: offer?.textContent?.trim() || ''
         }
       })
@@ -163,13 +165,16 @@ async function runJourney(browser, region, viewport) {
       if (!staleUi.lastObservationVisible) {
         defects.push({ domain, step: 'stale-state', type: 'misleading-state', detail: 'date de dernière observation non visible' })
       }
+      if (!staleUi.messageVisible) {
+        defects.push({ domain, step: 'stale-state', type: 'misleading-state', detail: 'explication de suspension des verdicts/prévisions absente' })
+      }
       let clicked = false
       let paywallVisible = false
       if (!staleUi.offerVisible) {
         defects.push({ domain, step: 'stale-offer-entry', type: 'primary-cta-dead', detail: 'aucun CTA d’offre visible lorsque le verdict satellite est suspendu' })
       } else {
         try {
-          await page.locator('[data-testid="chasse-home-offer-cta"]').click({ timeout: 5000 })
+          await page.locator('[data-testid="wm-stale-offer-cta"]').click({ timeout: 5000 })
           clicked = true
         } catch (error) {
           defects.push({ domain, step: 'stale-offer-entry', type: 'primary-cta-dead', detail: 'CTA stale non cliquable : ' + String(error?.message || error).slice(0, 140) })
@@ -181,7 +186,7 @@ async function runJourney(browser, region, viewport) {
           } catch (_) {}
         }
       }
-      steps.push({ step: 'stale-offer-entry', ok: clicked, via: 'chasse-home-offer-cta', label: staleUi.offerText })
+      steps.push({ step: 'stale-offer-entry', ok: clicked, via: 'wm-stale-offer-cta', label: staleUi.offerText })
       steps.push({ step: 'paywall-open', ok: paywallVisible })
       if (clicked && !paywallVisible) {
         defects.push({ domain, step: 'paywall-open', type: 'primary-cta-dead', detail: 'le CTA stale est cliquable mais le paywall ne s’ouvre pas' })

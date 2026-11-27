@@ -12,6 +12,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallba
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { worldMapFreshness } from "./lib/world-map-freshness.mjs"
+import { formatObservationTimestamp } from "./lib/format-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -1905,6 +1906,14 @@ export default function WorldMapView({
                   "Aucun verdict actuel, score ou prévision n'est publié tant qu'une mesure satellite récente n'est pas disponible.",
                   "No current verdict, score or forecast is published until a recent satellite reading is available.",
                   "Ningún veredicto, puntuación ni pronóstico actual se publica hasta disponer de una medición satelital reciente.")}
+              </div>
+              <div data-testid="wm-stale-offer-last-observation" style={{
+                font:"700 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif",color:"#5b5566",
+              }}>
+                {_t(lang,
+                  `Dernière observation satellite : ${formatObservationTimestamp(erddapTimestamp, "fr")}`,
+                  `Last satellite observation: ${formatObservationTimestamp(erddapTimestamp, "en")}`,
+                  `Última observación satelital: ${formatObservationTimestamp(erddapTimestamp, "es")}`)}
               </div>
               <button type="button" className="sg-mapstale-cta" data-testid="wm-stale-offer-cta"
                 onClick={()=>{
