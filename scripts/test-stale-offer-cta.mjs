@@ -47,7 +47,9 @@ try {
   assert.equal((src.match(/data-testid="wm-stale-offer"/g) || []).length, 1, 'porte unique dans le composant partagé')
   assert.equal((src.match(/onPremium\("map_stale_offer"\)/g) || []).length, 1, 'un seul appel onPremium')
   assert.match(src, /!wmDecisionAvailable && !isPremium/, 'gated sur stale + non-Premium')
-  pass('shared-component-single-fix')
+  assert.equal((src.match(/data-testid="wm-stale-offer-last-observation"/g) || []).length, 1, 'horodatage de la dernière observation visible')
+  assert.match(src, /formatObservationTimestamp\\(erddapTimestamp/, 'date dérivée de l’horodatage source satellite')
+  pass('shared-component-single-fix+dated-observation')
 } catch (e) { fail(`shared-component-single-fix: ${e.message}`) }
 
 // Serveur de preview (dist), démarré une fois : les rebuilds régionaux écrasent dist/.
@@ -164,11 +166,13 @@ try {
           const box = document.querySelector('[data-testid="wm-stale-offer"]')
           const btn = document.querySelector('[data-testid="wm-stale-offer-cta"]')
           const msg = document.querySelector('[data-testid="wm-stale-offer-message"]')
+          const lastObservation = document.querySelector('[data-testid="wm-stale-offer-last-observation"]')
           const cs = btn ? getComputedStyle(btn) : null
           const r = btn ? btn.getBoundingClientRect() : null
           return {
             boxText: box ? box.innerText : '',
             msg: msg ? msg.innerText : '',
+            lastObservation: lastObservation ? lastObservation.innerText : '',
             btnText: btn ? btn.innerText : '',
             bg: cs ? cs.backgroundColor : '',
             w: r ? Math.round(r.width) : 0,
@@ -180,6 +184,9 @@ try {
         })
         assert.match(probe.msg, /retard|delayed|atrasad|verified|verificad/i, 'message: observation en retard / vérification')
         assert.match(probe.msg, /suspend|paused|pausad/i, 'message: verdicts et prévisions suspendus')
+        assert.match(probe.lastObservation, /dernière observation satellite|last satellite observation|última observación satelital/i, 'horodatage source explicitement identifié')
+        if (mode === 'stale') assert.match(probe.lastObservation, /UTC/i, 'horodatage source stale affiché en UTC')
+        if (mode === 'unknown') assert.match(probe.lastObservation, /inconnu|unknown|desconocido/i, 'horodatage absent signalé comme inconnu')
         assert.match(probe.btnText, /offre|offer|oferta/i, 'CTA: entrée vers l\'offre')
         assert.ok(probe.w >= 60 && probe.h >= 40, 'CTA visible (hit-zone tactile)')
         assert.ok(probe.bg && probe.bg !== 'rgba(0, 0, 0, 0)' && probe.bg !== 'transparent', 'CTA peint (bouton visible)')
