@@ -1,4 +1,4 @@
-﻿{
+{
     "$comment":  "Configuration de l\u0027usine autonome Sargagame. Éditable par le fondateur. Chaque changement est relu au prochain cycle. Ne JAMAIS mettre de secret ici.",
     "version":  1,
     "loop":  {
