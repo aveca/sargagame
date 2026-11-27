@@ -291,8 +291,10 @@ export default function BeachSheet({
         @keyframes bsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
         .bs-card{background:${COMIC.cream};border:3px solid ${COMIC.ink};border-radius:16px;box-shadow:3px 3px 0 ${COMIC.ink}}
         .bs-chip{font:800 12px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px}
-        .bs-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bs-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease, box-shadow .08s ease}
+        .bs-gobtn:hover{filter:brightness(1.02)}
         .bs-gobtn:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bs-gobtn:focus-visible,.bs-sheet button:focus-visible{outline:3px solid #1b6bff;outline-offset:3px}
         .bs-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){
           .bs-story-section{opacity:1!important;transform:none!important;transition:none!important}

@@ -4717,8 +4717,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         /* Classe SANS « cta » dans le nom : esquive le skin forcé .theme-comic
            [class*="cta"] qui imposait Anton+letter-spacing sur ce bouton. BIBLE : un
            SEUL Anton/écran = le nom de plage ; le CTA reste Bricolage 800. */
-        .bsc-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bsc-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease, box-shadow .08s ease}
+        .bsc-gobtn:hover{filter:brightness(1.02)}
         .bsc-gobtn:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bsc-gobtn:focus-visible,.bsc-sheet button:focus-visible{outline:3px solid #1b6bff;outline-offset:3px}
         /* iOS WebKit peint un fond BLANC natif sur tout <button> sans reset → fini le « blanc chelou » */
         .bsc-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){.bsc-chip,.bsc-bar,.bsc-row{animation:none!important}}
