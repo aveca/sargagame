@@ -9,11 +9,21 @@ on:
     branches:
       - main
     paths:
+      # Outillage de release Pages (payload, pages SEO, fraîcheur)
       - '.ai/release-pages-code-only.json'
       - 'scripts/lib/hotel-landing-fr.cjs'
       - 'scripts/lib/region-seo-pages.cjs'
       - 'scripts/automation/prepare-pages-code-only-payload.cjs'
+      # Surfaces de conversion livrées sur les six domaines (Pages only) :
+      # un changement sur ces fichiers DOIT sortir en production, sinon la
+      # correction reste sur main et le funnel vit sur un build périmé
+      # (ex. wm-stale-offer mergé le 2026-11-27, absent du bundle servi).
       - 'src/ChasseHome.jsx'
+      - 'src/WorldMapView.jsx'
+      - 'src/PremiumModal.jsx'
+      - 'src/Sargasses_PROD.jsx'
+      - 'src/BeachSheet.jsx'
+      - 'src/WeekHub.jsx'
       - 'src/lib/format-freshness.mjs'
   workflow_dispatch:
     inputs:
