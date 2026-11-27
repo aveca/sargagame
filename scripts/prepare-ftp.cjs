@@ -1203,7 +1203,26 @@ ${entries.join('\n')}
     // MQ/GP copiés depuis dist/ : sans remplacement régional, ils afficheraient
     // les bancs/grille de Martinique sur la carte PC. caribbean-afai.json est
     // conservé : couche AFAI à l'échelle du bassin, pertinente partout.
-    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json', 'forecast-archive.json', 'forecast-accuracy.json', 'track-record.json']
+    //
+    // INVARIANT de packaging : n'entre dans cette liste qu'un fichier qui possède
+    // AU MOINS une variante régionale (public/api/copernicus/<region>/<fichier>),
+    // parce que la boucle ci-dessous ne re-pose QUE les fichiers présents dans
+    // public/api/copernicus/<region.id>/ — tout le reste vient de dist/ et n'est
+    // jamais réinjecté. Purger un artefact GLOBAL le supprime donc du domaine.
+    // C'est exactement le bug qui a mis /api/copernicus/track-record.json en 404
+    // sur 4 des 6 domaines (paywall sans preuve de fiabilité) : 2bc0ddc23 avait
+    // classé track-record.json, forecast-archive.json et forecast-accuracy.json
+    // comme overlays régionaux alors qu'ils sont globaux (une seule copie à la
+    // racine de public/api/copernicus/, régions couvertes : mq/gp).
+    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json']
+    const copernicusRoot = path.join(root, 'public', 'api', 'copernicus')
+    for (const entry of REGION_SPECIFIC_OVERLAYS) {
+      const hasRegionalVariant = fs.readdirSync(copernicusRoot, { withFileTypes: true })
+        .some((d) => d.isDirectory() && fs.existsSync(path.join(copernicusRoot, d.name, entry)))
+      if (!hasRegionalVariant) {
+        throw new Error(`prepare-ftp: '${entry}' est classé overlay régional mais n'a aucune variante dans public/api/copernicus/<region>/ — c'est un artefact global, le retirer de REGION_SPECIFIC_OVERLAYS (sinon il est purgé de dist/ puis jamais re-posé → 404 sur le domaine)`)
+      }
+    }
     for (const entry of fs.readdirSync(outCopernicus)) {
       const full = path.join(outCopernicus, entry)
       if (fs.statSync(full).isDirectory()) { fs.rmSync(full, { recursive: true }); continue }
@@ -1245,7 +1264,7 @@ ${entries.join('\n')}
       if (fs.existsSync(htSrc)) fs.copyFileSync(htSrc, path.join(outPriv, '.htaccess'))
       else fs.writeFileSync(path.join(outPriv, '.htaccess'), 'Require all denied\n')
     }
-    console.log(`   → data sargasses région servie à la racine (${region.id}/ → api/copernicus/, overlays MQ purgés, banks/grid régionaux si présents, _private/ gaté si présent)`)
+    console.log(`   → data sargasses région servie à la racine (${region.id}/ → api/copernicus/, overlays carte MQ/GP purgés, artefacts globaux (track-record/forecast-*) conservés, banks/grid régionaux si présents, _private/ gaté si présent)`)
   } else {
     console.warn(`   ⚠ pas de public/api/copernicus/${region.id}/sargassum.json — lance d'abord node scripts/fetch-sargassum-live.cjs`)
   }
