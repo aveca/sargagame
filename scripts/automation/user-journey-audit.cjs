@@ -186,7 +186,7 @@ async function runJourney(browser, region, viewport) {
           } catch (_) {}
         }
       }
-      steps.push({ step: 'stale-offer-entry', ok: clicked, via: 'chasse-home-offer-cta', label: staleUi.offerText })
+      steps.push({ step: 'stale-offer-entry', ok: clicked, via: 'wm-stale-offer-cta', label: staleUi.offerText })
       steps.push({ step: 'paywall-open', ok: paywallVisible })
       if (clicked && !paywallVisible) {
         defects.push({ domain, step: 'paywall-open', type: 'primary-cta-dead', detail: 'le CTA stale est cliquable mais le paywall ne s’ouvre pas' })
