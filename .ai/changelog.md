@@ -1,3 +1,14 @@
+## 2026-11-27 — Vérification post-déploiement PR #1493 + préparation retrait sg-noso
+
+- **PR #1493 mergée** sur `main` (merge commit `cbce672180606c963e7702fc1bccc3370b39f99b`, 2026-11-27 10:43 UTC). CI verte (test-frontend, perf, lighthouse-report, GitGuardian).
+- **Déploiement frontend OK** : bundle `v221` (`b=daa84acf`) servi sur les 6 domaines ; vérifié live que le JS contient bien `localStorage.setItem("sg_email")` + `getItem("sg_email")` (email prefill confirmé live).
+- **Données Copernicus** : `updatedAt` 2026-11-27 08:48 UTC, `erddapTimestamp` 2026-11-26 12:00 UTC, `stale=false`, âge ≈ 23 h (sous le seuil 26 h). Run `Daily Copernicus + Deploy` réussi.
+- **`deploy-sg-payments` FAILED** (préexistant) : erreur Cloudflare API sur `/accounts/.../workers/scripts/sg-payments/routes` (permission routes). Le worker n'a pas été redéployé ; la version live est inchangée. Mon changement ne touche pas `sg-payments`.
+- **`post-deploy-verify` FAILED** (préexistant) : `sos_public_surface` — `sg-soscta` encore servi sur les 6 domaines par le shim `sg-noso`. Nécessite le remplacement des routes (pas suppression).
+- **Script créé** : `scripts/sg-cf-remove-noso-routes.cjs` (modes `plan`/`apply`, create → verify coexistence → delete old → re-verify, mapping exact des 6 domaines, garde-fous). Syntaxe `node --check` OK. Mode `plan` échoue proprement sans token (`CLOUDFLARE_API_TOKEN` manquant).
+- **BUG-2026-015** : marqué comme déjà implémenté dans le dépôt (option (a) découplage retenue). La tâche P0 dans `.ai/tasks.md` est mise à jour.
+- **Rapport détaillé** : `C:\factory\startup-reduction-20261126-report.md` (réduction démarrage) + ce changelog.
+
 ## 2026-11-26 — SARG-EMAIL-PREFILL-20261126 : l'email capturé pré-remplit le paiement (parcours visiteur → paiement raccourci)
 
 - **Constat mesuré** : la capture email existait déjà (ChasseHome / WorldMapView `onCaptureEmail` → `submitLead`, Apps Script + Supabase `sg_email_submit`) et l'étape paiement lisait déjà `localStorage.sg_email` (`PremiumModal` `defaultValue` ×3, `stripeUrlWith` `prefilled_email`) — mais **rien n'écrivait cette clé** du côté des surfaces de capture. Un visiteur qui laissait son email pour les alertes gratuites devait donc **le ressaisir à l'étape paiement**. La page `/premium/` partait du même constat (champ vide à chaque visite).
