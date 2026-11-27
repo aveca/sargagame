@@ -1,7 +1,7 @@
 {{#if tone_doux}}
-Ton pass 30j à 12,99€ t'attend encore 🌊
+Ton pass 30j à {{prix}} t'attend encore 🌊
 
-Tu as regardé les plages, tu as vu le verdict. Le pass 30 jours à 12,99€ est toujours là.
+Tu as regardé les plages, tu as vu le verdict. Le pass 30 jours à {{prix}} est toujours là.
 
 On publie notre fiabilité sur {{fiabilite_url}} : 76-79% selon la saison, mesuré au satellite, pas deviné.
 

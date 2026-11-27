@@ -6,7 +6,7 @@
  * Fenêtres (depuis le timestamp du `sg_pass_cta`) :
  *   J+1 : 24–48 h   (doux)
  *   J+3 : 72–96 h   (ferme)
- *   J+5 : 120–144 h (promo −2 €)
+ *   J+5 : 120–144 h (dernier rappel)
  *
  * Dédup : marqueur `sent_markers/cart-recovery-j{day}-sent.json` (clé = hash8 email + day).
  * Outbox : écrit JSON dans `scripts/automation/data/outbox/` AVANT envoi.
@@ -22,11 +22,18 @@
  *   SUPABASE_SERVICE_KEY  — clé `sb_secret_…` (lecture analytics_events)
  *   SMTP_PASS             — boîte alerte@ (email-send)
  *   SUPABASE_URL          — (optionnel) défaut = projet ci-dessous
+ *
+ * 2026-11-27 — PRIX : les templates J+1/J+3/J+5 annonçaient « 12,99 € ·
+ * 9,99 $ » et une remise « −2 € » qui n'existent nulle part (aucun serveur ne
+ * facture ces montants, aucun handler ne lit `?promo=`). Les montants viennent
+ * maintenant de lib/pass-price.cjs (grille réelle, verrouillée par
+ * tests/unit/price-parity.test.cjs) — aucun prix n'est écrit en dur ici.
  */
 
 const fs = require('fs')
 const path = require('path')
 const { createHash } = require('crypto')
+const { passPrice, paywallUrl, regionDomain: domainFor } = require('./lib/pass-price.cjs')
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || ''
@@ -70,13 +77,14 @@ function svcHeaders(extra) {
 }
 
 // ── Templates par jour (depuis RETENTION_ANALYSIS.md) ──────────────────
-function buildEmail(day, email, ctaUrl, domain) {
+function buildEmail(day, email, ctaUrl, domain, island) {
   const unsubUrl = `https://${domain}/?unsub=1`
   const trackingId = `cart_recovery_j${day}:${new Date().toISOString().slice(0,10).replace(/-/g,'')}:${logId(email)}`
+  const p = passPrice(island)
 
   if (day === '1') {
     // J+1 — doux
-    const subject = `Ton pass 30j t'attend — 12,99 €`
+    const subject = `Ton pass 30j t'attend — ${p.price}`
     const preheader = `Le verdict du jour est prêt. Il suffit de terminer.`
     const html = `
 ${brandHeader('Le Veilleur', 'Ton pass t\'attend', 'Le verdict du matin est arrivé — il est encore temps de verrouiller la bonne plage.')}
@@ -89,7 +97,7 @@ ${brandHeader('Le Veilleur', 'Ton pass t\'attend', 'Le verdict du matin est arri
     Ce que tu as commencé à verrouiller reste prêt. Un paiement unique, sans abonnement, et tu reçois chaque matin la meilleure plage en un coup d'œil.
   </p>
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 18px">
-    <strong>Prix : 12,99 €</strong> (MQ/GP) · 9,99 $ (USD) — même tarif qu'aujourd'hui.
+    <strong>Prix : ${p.price}</strong> — même tarif qu'aujourd'hui, annoncé = payé.
   </p>
   <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 18px">
     C'est quoi, exactement ? Le verdict plage par plage, l'alerte quand ça bascule, et 7 jours de prévision.
@@ -110,7 +118,7 @@ ${brandHeader('Le Veilleur', 'Ton pass t\'attend', 'Le verdict du matin est arri
 
   if (day === '3') {
     // J+3 — ferme
-    const subject = `Dernier rappel : ton pass 30j à 12,99 € expire`
+    const subject = `Dernier rappel : ton pass 30j à ${p.price} expire`
     const preheader = `La bonne plage au bon moment, c'est une question de jours.`
     const html = `
 ${brandHeader('Le Veilleur', 'Dernier rappel', 'Ta session de paiement arrive à expiration.')}
@@ -126,7 +134,7 @@ ${brandHeader('Le Veilleur', 'Dernier rappel', 'Ta session de paiement arrive à
   <div style="text-align:center;margin:24px 0">
     <a href="${ctaUrl}" style="display:inline-block;padding:14px 28px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:800">Activer mon pass (paiement unique)</a>
   </div>
-  <p style="font-size:13px;color:#888;text-align:center;margin:0">12,99 € · 9,99 $ · sans abonnement · immédiat</p>
+  <p style="font-size:13px;color:#888;text-align:center;margin:0">${p.price} · sans abonnement · immédiat</p>
 </div>
 
 <div style="background:#0D1117;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#889">
@@ -136,18 +144,20 @@ ${brandHeader('Le Veilleur', 'Dernier rappel', 'Ta session de paiement arrive à
     return { subject, preheader, html, unsubUrl, trackingId }
   }
 
-  // J+5 — promo -2€
-  const subject = `On garde ton pass 48h — 12,99 € au lieu de 14,99 €`
+  // J+5 — dernier rappel (2026-11-27 : la fausse remise « −2 € / au lieu de
+  // 14,99 € » a été retirée — aucun serveur ne facture 12,99 € et le paramètre
+  // de promo n'est lu par aucune route).
+  const subject = `Dernier rappel : ton pass 30 jours t'attend — ${p.price}`
   const preheader = `Dernier rappel : le pass t'attend, sans coût ni engagement.`
   const html = `
-${brandHeader('Le Veilleur', 'On garde ta place', 'Ta session approche de son expiration — le montant reste le même.')}
+${brandHeader('Le Veilleur', 'Dernier rappel', 'Ton pass t\'attend toujours — prix inchangé.')}
 
 <div style="background:#fff;padding:24px 20px">
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 12px">
     Ta plage est propre ce matin. Le Veilleur le sait depuis cette nuit.
   </p>
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 18px">
-    Ta session de paiement approche de son expiration. Le montant reste le même — <strong>12,99 € au lieu de 14,99 €</strong> —
+    Tu avais commencé à verrouiller l'accès. Le montant reste le même — <strong>${p.price}</strong> —
     et le pass est à toi immédiatement après le paiement, sans abonnement ni engagement supplémentaire.
   </p>
   <div style="text-align:center;margin:24px 0">
@@ -165,15 +175,10 @@ ${brandHeader('Le Veilleur', 'On garde ta place', 'Ta session approche de son ex
   return { subject, preheader, html, unsubUrl, trackingId }
 }
 
-// ── Domaine par région (fallback MQ) ──────────────────────────────────
-function domainFor(island) {
-  const i = String(island || '').toLowerCase()
-  if (i === 'gp') return 'sargasses-guadeloupe.com'
-  if (i === 'fl' || i === 'florida') return 'sargassummiami.com'
-  if (i === 'pc' || i === 'puntacana') return 'sargassumpuntacana.com'
-  if (i === 'rm' || i === 'rivieramaya') return 'sargassumcancun.com'
-  return 'sargasses-martinique.com'
-}
+// ── Domaine par région ────────────────────────────────────────────────
+// 2026-11-27 : la carte locale ne connaissait ni `tulum` ni `barbados`
+// (une région USD atterrissait donc sur le domaine EUR). La carte unique
+// vit dans lib/pass-price.cjs (miroir regions/*.json) — importée en tête.
 
 // ── Main ──────────────────────────────────────────────────────────────
 async function main() {
@@ -268,8 +273,8 @@ async function main() {
     if (sentCount >= CAP) break
 
     const domain = domainFor(c.island)
-    const ctaUrl = `https://${domain}/?paywall=1&utm_source=email&utm_medium=cart_recovery&utm_campaign=j${DAY}`
-    const email = buildEmail(DAY, c.email, ctaUrl, domain)
+    const ctaUrl = paywallUrl(c.island, `j${DAY}`)
+    const email = buildEmail(DAY, c.email, ctaUrl, domain, c.island)
 
     // Outbox entry
     const outboxEntry = {
