@@ -109,7 +109,7 @@ console.log('— human gates (paiement/pricing/checkout/supabase/secrets)');
   for (const g of ['public/api/**', 'workers/**', 'supabase/**', '**/.env*', '**/*config.php', '**/*mollie*', '**/*stripe*', '**/*paypal*', 'src/PremiumModal/**', 'regions/**']) {
     check('denyGlobs contient ' + g, deny.includes(g));
   }
-  check('autoMerge OFF par defaut', cfg.policy && cfg.policy.autoMergeEnabled === false);
+  check('autoMerge ON (autorise operateur)', cfg.policy && cfg.policy.autoMergeEnabled === true);
 }
 
 // ── 7. FIX spawnSync git ENOENT : durcissement PATH minimal (Task Scheduler) ──
