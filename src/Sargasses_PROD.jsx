@@ -23,6 +23,7 @@ import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
 import "./sg-a11y-boost.css"
+import "./sg-ctr-responsive.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
