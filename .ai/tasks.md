@@ -6,6 +6,29 @@
 
 ---
 
+## Priorités réorientées — focus paiements (2026-11-27)
+
+> **Décision fondatrice** : réorienter l'effort vers les paiements réels, pas le SEO.
+> SEO = arrière-plan (automation hebdo continue). Focus = conversion + paywall + produit final.
+
+### P0 — Paywall sur toutes les pages (bloquer l'accès gratuit)
+- [x] P0 - **Gater le détail plage** (@coding_agent) — **FAIT** (2026-11-27) : ForecastChart gate les non-premium derrière CTA premium. Rollback `?forecastgate=0`. PR #1517 merged + deployed on all 6 domains (build b=2f3fe632).
+- [ ] P0 - **Gater la page /previsions/** (@coding_agent) : la page de prévisions affiche le J+0 et J+1 (gratuit), mais J+2 à J+7 sont masqués derrière un paywall. Actuellement tout est visible.
+- [ ] P0 - **Gater la page /alertes/** (@coding_agent) : les alertes email sont un service premium. La page affiche le formulaire de capture email (gratuit, pour le drip) mais le CTA premium est mis en avant.
+- [ ] P0 - **Bannière premium persistante** (@ui_ux_agent) : sur toutes les pages, un bandeau sticky en bas affiche "Découvrir Premium — 14,99 €" pour les non-premium. Disparaît après dismiss (localStorage).
+
+### P1 — Optimisation conversion
+- [ ] P1 - **Réduire le modal PremiumModal** (@coding_agent) : 324 Ko, trop lourd. Lazy-load les providers (Stripe/Mollie/PayPal) au lieu de les charger tous. Objectif : < 200 Ko pour le modal.
+- [ ] P1 - **Auto-skip email si sg_email existe** (@coding_agent) - **NON LIVRÉ** (2026-11-27) : une tentative d'implémentation a été trouvée dans le working tree local (worktree sargagame-main) sous forme de modifications NON commitées qui ne compilaient pas (erreurs JSX lignes ~3389-3420 de PremiumModal.jsx) et touchaient aussi le chemin paiement (workers/sg-payments/index.js, public/api/mollie.php — ajout d'un profileId non supporté). Ces modifications ont été archivées (patch, aucun commit, aucun déploiement) et les fichiers ont été restaurés à l'état committé. À reprendre à zéro sur une branche dédiée si la fonctionnalité est retenue. Aucune trace en production : feature inexistante côté live.
+- [ ] P1 - **Tracking conversion par étape** (@growth_agent) : ajouter `sg_paywall_view` sur toutes les pages gated (pas seulement la plage), pour mesurer l'exposition au paywall.
+
+### P2 — SEO (arrière-plan, automatisé)
+- [ ] P2 - **Laisser tourner les automations SEO** (@growth_agent) : weekly-seo-automation, weekly-optimize, daily-copernicus continuent de tourner. Pas de travail manuel. Vérifier les rapports hebdo.
+
+### P3 — Nettoyage
+- [ ] P3 - **Supprimer les A/B tests morts** (@coding_agent) : pw_beat, pw_calm, pw_proof, pw_social, pw_fresh, pw_pass_seq — tous promus en défaut. Supprimer le code mort pour réduire le bundle.
+- [ ] P3 - **Supprimer sg-noso worker** (@devops_agent) : plus aucune route ne pointe vers sg-noso. Le worker peut être supprimé (après vérification que les routes sont stables pendant 1 semaine).
+
 ## À faire — automatisation infra (manuels, fondateur)
 
 - [x] P1 - **Retrait des routes sg-noso (Cloudflare)** (@devops_agent) — **FAIT** (2026-11-27) : routes remplacées par PUT atomique sur les 6 domaines (sg-noso → sargagame-<region>). Vérifié : sg-soscta absent sur les 6 domaines, HTTP 200 partout. Script `scripts/sg-cf-remove-noso-routes.cjs` + workflow `.github/workflows/sg-noso-routes.yml` mergés (PR #1501, #1502). : exécuter `node scripts/sg-cf-remove-noso-routes.cjs plan` puis `apply` avec `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (token avec permission Zone:Workers Routes:Edit). Script prêt (PR #1501), mapping exact des 6 domaines, create→verify→delete→re-verify. **Prérequis** : token Cloudflare avec les bons droits. **Automatisation** : workflow `.github/workflows/sg-noso-routes.yml` (workflow_dispatch) — déclencher manuellement depuis GitHub Actions après avoir ajouté les secrets `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` dans le repo. **Rollback** : les routes sg-noso sont conservées (re-créables en 1 appel) ; le script ne supprime que si la coexistence est vérifiée.

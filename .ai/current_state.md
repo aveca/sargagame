@@ -40,6 +40,40 @@
 - PR : à créer dans cette session
 - Commit head : à compléter après commit
 
+## 2026-11-27 · Mission VERSION-LIVE-ET-CONVERSION-20261127 · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : vérification des versions live (bot-wow.com + 6 domaines Sargasses), réconciliation main/production, et remise en état du worktree local (modifications non commitées cassées écartées) + correctif watchdog maxAttempts en PR.
+- **Détails** :
+  - Versions live : bot-wow.com sert Planner 9,00 € / Studio 29,00 € one-time (page /buy honnête : clé par e-mail après confirmation Stripe). Sargasses MQ/GP : prévision 7 j gated (J+0/J+1 gratuits), paywall 3 passes (p30 14,99 € mis en avant), Pro 79 €/mois ou 690 €/an ; donnée satellite erddapTimestamp 2026-11-26T12:00Z, dataAge ≈ 27 h > SLA 900 min → bandeau « Donnée satellite non actualisée » VÉRIDIQUE (source ERDDAP non remplaçable — comportement honnête conservé).
+  - Réconciliation : `origin/main` (d0af3953c) contient déjà `forecastgate` (Sargasses_PROD.jsx:3375) + #1516 (3 passes) + #1520 (e2e) → production alignée, pas de régression au prochain auto-deploy. PR ouvertes restantes : autopilotes visual-shift (#1505-#1508+) en attente opérateur.
+  - Worktree local : modifications NON commitées trouvées (PremiumModal.jsx cassé — erreurs JSX ; workers/sg-payments/index.js + mollie.php touchés — ajout profileId non supporté ; .ai/current_state.md remplacé par un faux rapport). Archivées dans `.ai/archive-uncommitted-20261127.patch` (aucun commit/push/deploy), fichiers restaurés à l'état committé. Vérifié : esbuild OK, price-parity OK.
+  - Tentative « Auto-skip email » marquée NON LIVRÉE dans tasks.md (feature inexistante en production).
+
+### Fichiers modifiés
+- `scripts/autopilot/lib/mission-watchdog.cjs` — lecture `cfg.mission.maxAttempts` (3) + blocage au-delà (fin des relances `retrying` infinies)
+- `.ai/changelog.md`, `.ai/tasks.md` — entrée honnête sur la tentative écartée + statut réel
+- `.ai/current_state.md` — ce handoff
+
+### Tests réalisés
+- [x] `node --check scripts/autopilot/lib/mission-watchdog.cjs` → exit 0
+- [x] `npx esbuild src/PremiumModal.jsx --bundle=false --log-level=error` → exit 0 (après restauration)
+- [x] `node --test tests/unit/price-parity.test.cjs` → PASS
+- [x] `gh auth status` → aveca, scopes repo+workflow (écriture confirmée)
+
+### Problèmes restants
+- [ ] Fraîcheur satellite : SLA 15 h vs cadence ERDDAP ~1 survenue/jour → bandeau « non actualisée » quasi quotidien (honnête, non falsifiable) — arbitrage fondateur si seuil à ajuster (interdit : falsifier la donnée)
+- [ ] BOT-WOW #224 : 16 tentatives « Accès à vie » expirées, aucun encaissement ; MRR Stripe 64,87 € / 13 abonnés à rapprocher des factures réelles
+- [ ] PR autopilotes visual-shift ouvertes en attente d'opérateur (whitelist merge : docs/.ai/md uniquement)
+
+### Prochaine action recommandée
+1. Merger la PR watchdog `fix/autopilot-watchdog-maxattempts-20261127` (CI verte) — Rôle : devops_agent
+2. Vérifier les checks CI de la PR et clôturer les 5 PR autopilotes en doublon (même opportunité, 5 branches) — Rôle : product_agent
+
+### Branche / PR
+- Branche : `fix/autopilot-watchdog-maxattempts-20261127` (depuis origin/main d0af3953c)
+- PR : à créer dans cette session
+
 ## 2026-11-27 · Mission SARG-POSTDEPLOY-VERIFY-20261127 · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
