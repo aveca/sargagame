@@ -1,0 +1,39 @@
+﻿{
+  "$comment": "Registre des experiences Factory V4 - hypothese, changement, mesure, decision. Publier != ameliorer.",
+  "updated_at": "2026-10-22",
+  "experiments": [
+    {
+      "id": "EXP-2026-10-22-001", "site": "sargagame",
+      "hypothesis": "Le checkout=0 du funnel est un trou de mesure (checkout on-site sans event), pas une perte de ventes.",
+      "evidence_before": "daily-metrics 7j: CTA 65, checkout 0, PAID 20. Code: sg_checkout_redirect emis uniquement pour PayPal (PremiumModal L2087) ; checkout on-site n emet aucun event de debut.",
+      "change": "sg_checkout_started emis au debut du paiement on-site (tous providers) + SG_FUNNEL_EVENTS + compteur Apps Script + taux cta_to_checkout",
+      "files": ["src/PremiumModal.jsx", "src/Sargasses_PROD.jsx", "scripts/appscript/Code.js"],
+      "deployed": {"pr": 1006, "merged": "2026-10-22", "target": "main"},
+      "success_criteria": "checkout_started > 0 dans Supabase analytics_events sous 7 jours post-deploy ; funnel Apps Script affiche checkout_started apres redeploy fondateur",
+      "observation": "en_attente_donnees (7 jours)", "decision": null,
+      "risk_rollback": "git revert — aucun changement produit, risque nul"
+    },
+    {
+      "id": "EXP-2026-10-22-002", "site": "sargagame (GP)",
+      "hypothesis": "Le canonical cross-domain MQ empechait /en/sargassum-map/ de ranker sur GP (-21 clics, +20 potentiels 'sargassum map today').",
+      "evidence_before": "canonical live -> martinique.com ; page exclue index GP ; 235 impr pos 9.6",
+      "change": "en/sargassum-map sorti de GENERIC_INTL -> self-canonical GP (prepare-ftp.cjs)",
+      "files": ["scripts/prepare-ftp.cjs"],
+      "deployed": {"pr": 1003, "merged": "2026-10-22", "target": "main", "verified_live": true},
+      "success_criteria": "page indexee GP + 'sargassum map today' pos < 7 + clics GP remontes sur 28j",
+      "observation": "en_attente_donnees (28 jours, re-mesure mi-novembre)", "decision": null,
+      "risk_rollback": "re-ajouter la cle dans GENERIC_INTL"
+    },
+    {
+      "id": "EXP-2026-10-22-003", "site": "sargagame (MQ)",
+      "hypothesis": "Title home aligne sur la requete exacte n 1 ('sargasses martinique', pos 4.6) ameliore CTR -> +36 clics potentiels.",
+      "evidence_before": "title 'Plages Martinique aujourd hui · Score 0-100...' sans la requete exacte ; 1261 impressions",
+      "change": "title + og:title -> 'Sargasses Martinique aujourd hui · Carte temps reel & plages propres (2026)'",
+      "files": ["index.html"],
+      "deployed": {"pr": 1003, "pr_og": 1004, "merged": "2026-10-22", "target": "main", "verified_live": true},
+      "success_criteria": "CTR home MQ > 9% (vs 7.1%) sur 28j post-deploiement",
+      "observation": "en_attente_donnees (28 jours)", "decision": null,
+      "risk_rollback": "git revert index.html"
+    }
+  ]
+}

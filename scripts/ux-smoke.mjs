@@ -17,11 +17,15 @@
  *   RM_INFINITE=[]                   (animations infinies encore actives sous
  *                                     prefers-reduced-motion:reduce, doit = [],
  *                                     tronqué à 12 ; gate : grep -q 'RM_INFINITE=\[\]')
+ *   RAW_CSS_TEXT=[]                  (code source rendu comme TEXTE : balise JSX
+ *                                     perdue → props `style` en JSXText, doit = [])
  * Usage : `npx vite build && (npx vite preview --port 4173 &)` puis `node scripts/ux-smoke.mjs`.
  * Cf. AUTONOMOUS_BUILD.md (étape 3 : vérifier avant merge).
  */
 import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
 const BASE = process.env.SMOKE_BASE || 'http://localhost:4173';
+await mkdir('/tmp/worldmap-freshness', { recursive: true });
 const b = await chromium.launch();
 const ctx = await b.newContext({
   viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
@@ -106,30 +110,77 @@ const scanGhost = () => {
 };
 const whiteButtons = [];
 
+// Structure de titres : la home DOIT rendre exactement un <h1> (ni zéro, ni
+// plusieurs). Défaut prod réel mesuré (2026-10-26) : `h1=false` sur la home ET
+// la fiche plage des 6 domaines — le mot-clé SEO de heading était rendu dans un
+// <p> sr-only, sur l'hypothèse fausse qu'un <h1> visible existait déjà.
+// ZERO <h1> = perte du signal SEO le plus fort + aucune structure de titres.
+const scanHeadings = () => ({
+  h1: document.querySelectorAll('h1').length,
+  h2: document.querySelectorAll('h2').length,
+});
+
+// Scan des FUITES DE CODE SOURCE RENDUES COMME TEXTE (régression prod réelle,
+// 2026-10-26) : une balise JSX perdue (ex. `pointerEvents:"none",…}}/>` sans
+// `<div style={{`) fait passer les props de style en JSXText → le code brut est
+// peint à l'écran. Silencieux : build vert, 0 exception JS. Détection : un nœud
+// texte portant ≥2 affectations de props de style React, ou le fragment `}}/>`
+// qui trahit l'objet de style sérialisé.
+// NB : exécuté dans le navigateur via page.evaluate → tout est inline (aucune
+// closure côté Node ne survit à la sérialisation).
+const scanRawCssText = () => {
+  const out = [];
+  const PROPS = /(pointerEvents|mixBlendMode|zIndex|backdropFilter|userSelect|contentVisibility|overscrollBehavior|transformOrigin|backgroundBlendMode)\s*:/;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    const t = (n.nodeValue || '');
+    if (!PROPS.test(t)) continue;
+    const hits = t.match(new RegExp(PROPS.source, 'g')) || [];
+    const hasObjTail = /\}\}\/>/.test(t);
+    if (hits.length < 2 && !hasObjTail) continue;
+    const el = n.parentElement;
+    const cs = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    out.push({
+      t: t.trim().slice(0, 60),
+      hits: hits.length,
+      cls: (el.className || '').toString().slice(0, 40),
+      fs: cs.fontSize, op: cs.opacity, vis: cs.visibility,
+      w: Math.round(r.width), h: Math.round(r.height),
+    });
+  }
+  return out;
+};
+const rawCss = [];
+
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
-//       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
-//       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
+//       chaque visiteur). Le SVG live et ses groupes cliquables prouvent que la carte est montée
+//       et que les localisations sont chargées, même si les verdicts sont suspendus.
 await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
-await p.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
+await p.waitForSelector('svg[data-sg-live="1"] g[style*="cursor"]', { timeout: 30000 }).catch(() => {});
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
-const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
+const mapOk = await p.evaluate(() => {
+  const root = document.querySelector('svg[data-sg-live="1"]');
+  return !!root && root.querySelectorAll('g[style*="cursor"]').length >= 3;
+});
 whiteButtons.push(...await p.evaluate(scanGhost));
+const homeHeadings = await p.evaluate(scanHeadings);
+rawCss.push(...await p.evaluate(scanRawCssText));
 
-// ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
-//       car le pan de la carte peut voler le clic physique en émulation). Route
-//       par défaut = ComicDetail (.lc-detail, flag mapdetail) ; fallback fiche
-//       data (.sheet) si le flag change — les deux comptent comme « fiche ».
+// ── 2. Détail plage : tap sur un pin (les pins neutres restent navigables quand
+//       le verdict est suspendu ; aucun label de statut périmé n'est nécessaire).
 await p.evaluate(() => {
-  const l = [...document.querySelectorAll('.sg-maplabel')]
-    .find(el => getComputedStyle(el).visibility !== 'hidden');
-  if (l) l.click();
+  const pin = document.querySelector('svg[data-sg-live="1"] g[style*="cursor"]');
+  if (pin) pin.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
 });
 await p.waitForSelector('.lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
 await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
+rawCss.push(...await p.evaluate(scanRawCssText));
 
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
  // puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
@@ -152,12 +203,84 @@ whiteButtons.push(...await p.evaluate(scanGhost));
  const urlCleaned = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
  const modalVisible = await p.locator(PAYWALL_SEL).first().isVisible({ timeout: 2000 }).catch(() => false);
  const paywallOk = urlCleaned || modalVisible;
+ rawCss.push(...await p.evaluate(scanRawCssText).catch(() => []));
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
 const whiteOut = whiteButtons.filter(w => {
   const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
 }).slice(0, 25);
+const rawCssOut = rawCss.filter(w => {
+  const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
+}).slice(0, 12);
+
+// ── Vérification freshness fail-closed : le fixture simule une republication récente
+//    (updatedAt + dataAgeMinutes récents, stale=false) avec une observation satellite
+//    réellement vieille de 48h. Les décisions, couleurs, frises et couches live doivent
+//    être suspendues. Captures after à 390×844 et 1440×900 pour revue visuelle.
+const staleApiPattern = '**/api/copernicus/sargassum.json';
+const staleApiHandler = async route => {
+  try {
+    const response = await route.fetch();
+    const payload = await response.json();
+    const now = Date.now();
+    payload.erddapTimestamp = new Date(now - 48 * 3_600_000).toISOString();
+    payload.updatedAt = new Date(now - 60 * 60_000).toISOString();
+    payload.dataAgeMinutes = 60; // volontairement trompeur : âge de build, pas âge satellite
+    payload.stale = false;       // volontairement trompeur : le client doit recalculer depuis ERDDAP
+    await route.fulfill({ response, body: JSON.stringify(payload) });
+  } catch (error) {
+    errs.push('STALE_API_FIXTURE_ERROR ' + String(error?.message || error).slice(0, 160));
+    await route.continue().catch(() => {});
+  }
+};
+const runStaleMapCheck = async (viewport, name, mobile) => {
+  const staleCtx = await b.newContext({
+    viewport,
+    deviceScaleFactor: mobile ? 2 : 1,
+    isMobile: mobile,
+    hasTouch: mobile,
+    serviceWorkers: 'block',
+  });
+  const stalePage = await staleCtx.newPage();
+  stalePage.setDefaultNavigationTimeout(60000);
+  stalePage.setDefaultTimeout(30000);
+  stalePage.on('pageerror', e => errs.push('STALE_PAGEERROR ' + e.message));
+  await stalePage.route(staleApiPattern, staleApiHandler);
+  await stalePage.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
+  await stalePage.waitForFunction(
+    () => document.querySelectorAll('svg[data-sg-live="1"] g[style*="cursor"]').length >= 3,
+    {},
+    { timeout: 30000 }
+  ).catch(() => {});
+  await stalePage.waitForTimeout(900);
+  const result = await stalePage.evaluate(() => {
+    const pinColors = [...document.querySelectorAll('svg[data-sg-live="1"] g[style*="cursor"]')].map(pin => {
+      const path = pin.querySelector('path');
+      if (path) return path.getAttribute('fill');
+      const dot = [...pin.querySelectorAll('circle')].find(circle => circle.getAttribute('r') === '3.2');
+      return dot?.getAttribute('fill') || null;
+    });
+    const body = document.body.innerText;
+    return {
+      pinCount: pinColors.length,
+      pinColors,
+      labels: document.querySelectorAll('.sg-maplabel').length,
+      stalePill: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
+    };
+  });
+  const ok = result.pinCount >= 3 &&
+    result.pinColors.every(fill => fill === '#9aa0a8') &&
+    result.labels === 0 && result.stalePill;
+  if (!ok) errs.push('STALE_MAP_DECISION_LEAK (' + name + ') ' + JSON.stringify(result));
+  await stalePage.screenshot({ path: '/tmp/worldmap-freshness/' + name + '.png' })
+    .catch(error => errs.push('STALE_SCREENSHOT_ERROR ' + String(error?.message || error).slice(0, 120)));
+  await staleCtx.close();
+  return result;
+};
+const staleMobile = await runStaleMapCheck({ width: 390, height: 844 }, 'mobile-390x844', true);
+const staleDesktop = await runStaleMapCheck({ width: 1440, height: 900 }, 'desktop-1440x900', false);
+console.log('WORLD_MAP_STALE_CHECK=' + JSON.stringify({ mobile: staleMobile, desktop: staleDesktop }));
 
 // Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés)
     // et l'erreur PHP referral (côté serveur) et l'erreur rt TDZ — ne garder que les vraies erreurs JS
@@ -223,4 +346,10 @@ try {
   rmInfinite = ['RM_PASS_ERROR: ' + String(e && e.message ? e.message : e).slice(0, 160)];
 }
 console.log('RM_INFINITE=' + JSON.stringify(rmInfinite.slice(0, 12)));
+// Fuite de code source rendue comme texte : une balise JSX perdue fait passer
+// les props `style` en JSXText → peint à l'écran (régression prod 2026-10-26,
+// visible sur les 6 domaines). Doit = [].
+console.log('RAW_CSS_TEXT=' + JSON.stringify(rawCssOut, null, 1));
+// Structure de titres de la home : H1=1 attendu (défaut prod mesuré = 0).
+console.log('H1=' + JSON.stringify({ home: homeHeadings, expectedHome: 1 }));
 await b.close();

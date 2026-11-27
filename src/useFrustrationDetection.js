@@ -4,6 +4,8 @@
 // Track : events Supabase pour apprentissage funnel
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { logAnalyticsEvent } from './supabasePhotos.js'
+import { sanitizeFrustrationAnalytics } from './lib/frustration-analytics.mjs'
 
 // Configurable thresholds
 const CONFIG = {
@@ -33,6 +35,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
   
   // Hesitation detection
   const lastInteraction = useRef(Date.now())
+  const hasInteracted = useRef(false)  // l'utilisateur a tenté le produit au moins une fois
   
   // Track frustration signals
   const trackSignal = useCallback((type, context) => {
@@ -200,13 +203,12 @@ export function useFrustrationDetection(onFrustration, options = {}) {
   useEffect(() => {
     if (!enabled) return
     
-    const updateInteraction = () => {
-      lastInteraction.current = Date.now()
-    }
-    
-    // Track all interactions
+    const updateInteraction = () => { lastInteraction.current = Date.now() }
+    const markIntent = () => { hasInteracted.current = true }
     const events = ['click', 'scroll', 'mousemove', 'keydown', 'touchstart']
-    events.forEach(e => document.addEventListener(e, updateInteraction, { passive: true }))
+    const intentEvents = ['click', 'keydown', 'touchstart']
+    for (const e of events) document.addEventListener(e, updateInteraction, { passive: true })
+    for (const e of intentEvents) document.addEventListener(e, markIntent, { passive: true })
     
     // Check hesitation periodically
     const interval = setInterval(() => {
@@ -214,6 +216,9 @@ export function useFrustrationDetection(onFrustration, options = {}) {
       const idle = now - lastInteraction.current
       
       if (idle >= config.hesitation.threshold) {
+        // L'hésitation avant le 1er contact = lecture du premier écran, pas de l'errance :
+        // on n'ouvre jamais le chat par-dessus le choix de plage avant interaction.
+        if (!hasInteracted.current) { lastInteraction.current = now; return }
         if (shouldTrigger()) {
           const context = {
             type: 'hesitation',
@@ -231,7 +236,8 @@ export function useFrustrationDetection(onFrustration, options = {}) {
     
     return () => {
       clearInterval(interval)
-      events.forEach(e => document.removeEventListener(e, updateInteraction))
+      for (const e of events) document.removeEventListener(e, updateInteraction)
+      for (const e of intentEvents) document.removeEventListener(e, markIntent)
     }
   }, [enabled, config.hesitation, onFrustration, shouldTrigger, trackSignal])
   
@@ -254,31 +260,13 @@ function describeElement(el) {
   return `${tag}${id}${classes}${text ? ` "${text}"` : ''}`
 }
 
-// Expose tracking function globally for use in components
+// Expose a privacy-safe, first-party tracking function globally for components.
 if (typeof window !== 'undefined') {
-  window.trackFrustration = async (type, context) => {
-    // Track to Supabase analytics_events table
-    try {
-      const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.__SG_ENV__ || {}
-      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return
-      
-      await fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify({
-          event_type: 'sg_frustration_detected',
-          email: localStorage.getItem('sg_email') || '',
-          island: localStorage.getItem('sg_region') || '',
-          props: { type, ...context },
-        }),
-      })
-    } catch (e) {
-      // Silent fail
-    }
-  }
+  window.trackFrustration = (type, context = {}) => {
+    const params = sanitizeFrustrationAnalytics(type, context, window.location.pathname);
+    let island = '';
+    try { island = localStorage.getItem('sg_region') || ''; } catch (_) {}
+    // Shared writer enforces the local-host policy and analytics_events schema.
+    logAnalyticsEvent('sg_frustration_detected', params, island);
+  };
 }

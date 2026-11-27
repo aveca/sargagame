@@ -14,6 +14,8 @@ const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
+const { refreshSatellitePayload } = require('./lib/satellite-freshness.cjs')
+const { assertWorkerAssetIgnore } = require('./lib/worker-assetsignore.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -98,7 +100,8 @@ const SHARED_LEGACY_IDS = ['mq', 'gp']
 // GP-flavored mirror of pages whose vite generator runs in a GP→MQ loop
 // (where MQ wins in dist/) — it gets overlaid onto guadeloupe-ftp/ later
 // so the GP build ends up with GP-correct beach lists, not MQ ones.
-const COPY_SKIP_TOP = new Set(['_gp'])
+// .htpasswd is a password file that must never be served as an asset.
+const COPY_SKIP_TOP = new Set(['_gp', '_private', '.htpasswd'])
 
 // skipRel = Set de chemins relatifs POSIX (fichiers ou dossiers) à ne pas
 // copier. Un nom simple ('_gp') ne matche qu'à la racine, comme avant.
@@ -131,6 +134,7 @@ function copyRecursive(src, dest, skipRel = null, rel = '') {
     fs.mkdirSync(dest, { recursive: true })
     for (const name of fs.readdirSync(src)) {
       const childRel = rel ? `${rel}/${name}` : name
+      if (name === '_private') continue
       if (skipRel && skipRel.has(childRel)) continue
       copyRecursive(path.join(src, name), path.join(dest, name), skipRel, childRel)
     }
@@ -182,6 +186,7 @@ for (const region of legacyRegions) {
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
   copyRecursive(dist, out, COPY_SKIP_TOP)
+  assertWorkerAssetIgnore(out, 'MQ/GP Worker assets package')
 
   // Séparation régionale des DONNÉES sargasses (P0 MQ/GP) : le dist/ partagé
   // contient les 21 clés MQ+GP ; sans filtre, chaque domaine sert les plages
@@ -276,9 +281,15 @@ for (const region of legacyRegions) {
   // GA4 GP intact). Exclut les EN/ES île-spécifiques (best-beaches-*, what-to-do-*)
   // déjà routées par MQ_ONLY/GP_ONLY. Clés = chemins sans /index.html.
   const GENERIC_INTL = new Set([
-    'en/sargassum-map', 'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
+    'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
     'es/mapa-sargazo', 'es/mejores-playas-sin-sargazo', 'es/temporada-sargazo', 'es/alertas-sargazo',
   ])
+  // P0.7 (2026-10-22) : 'en/sargassum-map' SORT de GENERIC_INTL -> self-canonical GP.
+  // Preuve GSC (28j vs 28j précédents) : la consolidation MQ faisait perdre -21 clics
+  // (-67,7 %) sur la page GP, exclue de l'index GP ; "sargassum map today" = 235 impr,
+  // pos 9.6, +20 clics potentiels non captés. Titres déjà différenciés GP-first via le
+  // swap ##GP_AMP_MQ## -> risque de cannibalisation cross-domain limité. Réversible :
+  // ré-ajouter la clé dans le Set suffit.
 
   const drops = region.id === 'gp' ? MQ_ONLY : (region.id === 'mq' ? GP_ONLY : new Set())
   let droppedCross = 0
@@ -574,8 +585,8 @@ function writeRegionIndex(region, out) {
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Plages Guadeloupe aujourd'hui · Score 0-100 (sargasses, mer, soleil) 2026</title>
-    <meta name="description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 par plage combinant sargasses, houle, vent, soleil et température de l'eau. 83 plages notées en direct, toute l'année." />
+    <title>Plages de Guadeloupe — scores et observations satellite (2026)</title>
+    <meta name="description" content="Comparez les scores de 83 plages de Guadeloupe : sargasses, houle, vent et météo marine. Consultez la date de la dernière observation satellite et les tendances disponibles." />
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="en" href="https://sargasses-guadeloupe.com/en/" />
@@ -584,8 +595,8 @@ function writeRegionIndex(region, out) {
     <meta name="geo.region" content="GP" />
     <meta name="geo.placename" content="Guadeloupe" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Plages Guadeloupe aujourd'hui · Score 0-100 par plage (2026)" />
-    <meta property="og:description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 combinant sargasses, houle, vent, soleil et température eau. 83 plages notées en direct, toute l'année." />
+    <meta property="og:title" content="Plages de Guadeloupe — scores et observations satellite (2026)" />
+    <meta property="og:description" content="Comparez les scores de 83 plages de Guadeloupe : sargasses, houle, vent et météo marine. Consultez la date de la dernière observation satellite et les tendances disponibles." />
     <meta property="og:url" content="https://sargasses-guadeloupe.com/" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:locale:alternate" content="en_US" />
@@ -595,17 +606,17 @@ function writeRegionIndex(region, out) {
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Score 0-100 par plage en Guadeloupe - sargasses, houle, vent, soleil, eau" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Plages Guadeloupe aujourd'hui · Score 0-100 par plage (2026)" />
-    <meta name="twitter:description" content="Score 0-100 par plage : sargasses, mer, vent, soleil, température eau. 83 plages en direct, toute l'année." />
+    <meta name="twitter:title" content="Plages de Guadeloupe — scores et observations satellite (2026)" />
+    <meta name="twitter:description" content="Scores par plage : sargasses, mer, vent, soleil et température de l'eau. Date de l'observation satellite et tendances disponibles." />
     <meta name="twitter:image" content="https://sargasses-guadeloupe.com/og-image.png" />
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebApplication","name":"Plages Guadeloupe · Score 0-100","description":"Score 0-100 par plage en Guadeloupe : sargasses, houle, vent, soleil, température de l'eau. 83 plages notées en direct, toute l'année.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"TravelApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe","logo":"https://sargasses-guadeloupe.com/icon-512.png"},"potentialAction":{"@type":"SearchAction","target":"https://sargasses-guadeloupe.com/plages/{search_term_string}/","query-input":"required name=search_term_string"}}
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Plages Guadeloupe · Score 0-100","description":"Scores de 83 plages en Guadeloupe : sargasses, houle, vent, soleil et température de l'eau. La date de l'observation satellite et les tendances disponibles sont indiquées.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"TravelApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe","logo":"https://sargasses-guadeloupe.com/icon-512.png"},"potentialAction":{"@type":"SearchAction","target":"https://sargasses-guadeloupe.com/plages/{search_term_string}/","query-input":"required name=search_term_string"}}
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Guadeloupe aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour en Grande-Terre et Basse-Terre."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe en 2026 ?","acceptedAnswer":{"@type":"Answer","text":"Les pics sargasses en Guadeloupe sont observés entre avril et septembre, avec un maximum en juin-août. Les côtes sud et est de Grande-Terre (Sainte-Anne, Le Gosier, Saint-François) sont les plus touchées. Les plages sous le vent de Basse-Terre (Malendure, Deshaies) sont généralement épargnées. L'application fonctionne toute l'année et intègre les sargasses dans le score 0-100."}},{"@type":"Question","name":"Quelles plages de Guadeloupe sont sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Les plages de la côte sous le vent de Basse-Terre (Malendure, Grande Anse Deshaies, Bouillante) sont rarement touchées. Sur Grande-Terre, vérifiez la carte en temps réel car la situation change quotidiennement."}},{"@type":"Question","name":"Comment fonctionnent les prévisions sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Nos prévisions combinent les données satellite Copernicus (indice AFAI), les courants marins et les vents. Fiabilité : 80% à J+1, décroissante ensuite. Prévisions disponibles pour 83 plages en Guadeloupe."}},{"@type":"Question","name":"Les sargasses sont-elles dangereuses pour la santé ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses en décomposition libèrent du H2S (sulfure d'hydrogène), un gaz toxique. À forte concentration, il irrite les yeux et les voies respiratoires. Évitez les plages marquées en rouge sur notre carte, surtout avec des enfants."}},{"@type":"Question","name":"Où se baigner à Sainte-Anne en Guadeloupe sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"À Sainte-Anne (Grande-Terre), la plage de Bois Jolan et la plage du Bourg sont les plus surveillées. L'état change selon les vents et courants — consultez notre carte en temps réel avant de partir. Les plages protégées par la barrière de corail sont généralement plus propres."}},{"@type":"Question","name":"Le Gosier est-il touché par les sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La plage du Gosier (Guadeloupe) est exposée aux sargasses en haute saison (juin-août). Elle est située sur la côte sud de Grande-Terre, face à l'îlet du Gosier. Consultez l'état en temps réel pour la journée."}},{"@type":"Question","name":"Quelles plages de Basse-Terre sont épargnées des sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La côte sous-le-vent de Basse-Terre (Malendure, Plage de la Perle à Deshaies, Grande Anse Deshaies, Bouillante) est structurellement protégée des sargasses par le relief de l'île et les courants. Ces plages sont recommandées pendant les pics de saison."}},{"@type":"Question","name":"Comment recevoir une alerte sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Activez les notifications push gratuites sur sargasses-guadeloupe.com : vous recevez une alerte quand l'état d'une plage favorite change (arrivée de sargasses, retour à propre). Disponible pour les 83 plages de Guadeloupe."}}]}
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Guadeloupe aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour en Grande-Terre et Basse-Terre."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe en 2026 ?","acceptedAnswer":{"@type":"Answer","text":"Les pics sargasses en Guadeloupe sont observés entre avril et septembre, avec un maximum en juin-août. Les côtes sud et est de Grande-Terre (Sainte-Anne, Le Gosier, Saint-François) sont les plus touchées. Les plages sous le vent de Basse-Terre (Malendure, Deshaies) sont généralement épargnées. L'application fonctionne toute l'année et intègre les sargasses dans le score 0-100."}},{"@type":"Question","name":"Quelles plages de Guadeloupe sont sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Les plages de la côte sous le vent de Basse-Terre (Malendure, Grande Anse Deshaies, Bouillante) sont rarement touchées. Sur Grande-Terre, consultez la carte et vérifiez l'heure de la dernière observation satellite disponible."}},{"@type":"Question","name":"Comment fonctionnent les prévisions sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Nos prévisions combinent les données satellite Copernicus (indice AFAI), les courants marins et les vents. Fiabilité : 80% à J+1, décroissante ensuite. Prévisions disponibles pour 83 plages en Guadeloupe."}},{"@type":"Question","name":"Les sargasses sont-elles dangereuses pour la santé ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses en décomposition libèrent du H2S (sulfure d'hydrogène), un gaz toxique. À forte concentration, il irrite les yeux et les voies respiratoires. Évitez les plages marquées en rouge sur notre carte, surtout avec des enfants."}},{"@type":"Question","name":"Où se baigner à Sainte-Anne en Guadeloupe sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"À Sainte-Anne (Grande-Terre), la plage de Bois Jolan et la plage du Bourg sont les plus surveillées. L'état change selon les vents et courants — consultez la carte et vérifiez la date de la dernière observation satellite disponible avant de partir. Les plages protégées par la barrière de corail sont généralement plus propres."}},{"@type":"Question","name":"Le Gosier est-il touché par les sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La plage du Gosier (Guadeloupe) est exposée aux sargasses en haute saison (juin-août). Elle est située sur la côte sud de Grande-Terre, face à l'îlet du Gosier. Consultez l'observation satellite datée et les conditions locales avant de choisir."}},{"@type":"Question","name":"Quelles plages de Basse-Terre sont épargnées des sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La côte sous-le-vent de Basse-Terre (Malendure, Plage de la Perle à Deshaies, Grande Anse Deshaies, Bouillante) est structurellement protégée des sargasses par le relief de l'île et les courants. Ces plages sont recommandées pendant les pics de saison."}},{"@type":"Question","name":"Comment recevoir une alerte sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Activez les notifications push gratuites sur sargasses-guadeloupe.com : vous recevez une alerte quand l'état d'une plage favorite change (arrivée de sargasses, retour à propre). Disponible pour les 83 plages de Guadeloupe."}}]}
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com","logo":"https://sargasses-guadeloupe.com/icon-512.png","description":"Compagnon plage Guadeloupe — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau. 83 plages suivies en direct toute l'année.","areaServed":{"@type":"AdministrativeArea","name":"Guadeloupe"},"knowsAbout":["plages Guadeloupe","sargasses","baignade","Grande-Terre","Basse-Terre","Sainte-Anne","Le Gosier","Deshaies","météo marine","AFAI"],"sameAs":["https://sargasses-martinique.com","https://www.data.gouv.fr/reuses/sargasses-guadeloupe-carte-temps-reel-palmares-auditable-des-previsions"]}
+    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com","logo":"https://sargasses-guadeloupe.com/icon-512.png","description":"Compagnon plage Guadeloupe — scores par plage combinant sargasses, mer, vent, soleil et température de l'eau. 83 plages couvertes lorsque des observations satellite sont disponibles.","areaServed":{"@type":"AdministrativeArea","name":"Guadeloupe"},"knowsAbout":["plages Guadeloupe","sargasses","baignade","Grande-Terre","Basse-Terre","Sainte-Anne","Le Gosier","Deshaies","météo marine","AFAI"],"sameAs":["https://sargasses-martinique.com","https://www.data.gouv.fr/reuses/sargasses-guadeloupe-carte-temps-reel-palmares-auditable-des-previsions"]}
     </script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"SiteNavigationElement","name":["Carte","Plages","Prévisions","Alertes"],"url":["https://sargasses-guadeloupe.com/carte-sargasses/","https://sargasses-guadeloupe.com/plages/","https://sargasses-guadeloupe.com/previsions/","https://sargasses-guadeloupe.com/alertes/"]}
@@ -776,10 +787,10 @@ function writeRegionIndex(region, out) {
       <!-- Révélé par JS uniquement → les crawlers/no-JS voient le <noscript> SEO intact, jamais le boot. React (createRoot) remplace #root au montage → le boot disparaît seul. -->
       <script>(function(){var b=document.getElementById('sg-boot');if(b)b.style.display='flex'})()</script>
       <noscript>
-        <h1>Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui (2026)</h1>
-        <p>Carte des sargasses en Guadeloupe en temps réel. Où se baigner aujourd'hui en Guadeloupe ? État de 83 plages mis à jour quotidiennement grâce aux données satellite Copernicus Marine. Prévisions sargasses 7 jours et alertes push gratuites.</p>
-        <h2>Carte sargasses Guadeloupe — état des plages en direct</h2>
-        <p>Notre carte interactive affiche en temps réel la concentration de sargasses au large de chaque plage de Guadeloupe. Les données proviennent du satellite Copernicus Marine (indice AFAI) et sont rafraîchies 4 fois par jour. Chaque plage est classée : propre, modéré ou alerte.</p>
+        <h1>Sargasses en Guadeloupe — carte et observations satellite par plage (2026)</h1>
+        <p>Comparez les scores de 83 plages de Guadeloupe et consultez l'heure de la dernière observation satellite disponible. Les tendances sont présentées lorsque les données sont suffisamment récentes ; vérifiez l'horodatage avant de vous déplacer.</p>
+        <h2>Carte des sargasses en Guadeloupe — observations par plage</h2>
+        <p>Notre carte interactive présente les observations Copernicus Marine (indice AFAI) et les conditions marines par plage. Les passages satellites sont intermittents ; l'heure de l'observation est distincte de l'heure de publication.</p>
         <h2>Grande-Terre — plages les plus surveillées</h2>
         <p>Les côtes sud et est de Grande-Terre sont les plus exposées aux échouages de sargasses. Plages surveillées : <a href="/plages/plage-bois-jolan/">Bois Jolan</a> (Sainte-Anne), <a href="/plages/plage-de-sainte-anne/">Plage de Sainte-Anne</a>, <a href="/plages/plage-du-souffleur/">Plage du Souffleur</a> (Port-Louis), <a href="/plages/plage-de-la-caravelle/">Plage de la Caravelle</a>, <a href="/plages/plage-du-gosier/">Le Gosier</a>, <a href="/plages/plage-de-saint-francois/">Saint-François</a>, <a href="/plages/pointe-des-chateaux/">Pointe des Châteaux</a>.</p>
         <h2>Basse-Terre — plages généralement propres</h2>
@@ -787,11 +798,11 @@ function writeRegionIndex(region, out) {
         <h2>Prévisions sargasses Guadeloupe 7 jours</h2>
         <p>Consultez les prévisions sargasses pour chaque plage de Guadeloupe, de demain à 7 jours. Basées sur les courants marins, le vent et les données satellite. Recevez une alerte push quand l'état de votre plage change.</p>
         <h2>Saison des sargasses en Guadeloupe 2026</h2>
-        <p>La saison des sargasses en Guadeloupe s'étend d'avril à septembre, avec des pics entre juin et août. Les courants atlantiques transportent ces algues brunes depuis la mer des Sargasses vers les côtes antillaises. Consultez la <a href="/carte-sargasses/">carte en temps réel</a> et les <a href="/previsions/">prévisions 7 jours</a>.</p>
-        <h2>Sargasse Guadeloupe — communes surveillées en direct</h2>
-        <p>Notre carte sargasse Guadeloupe couvre toutes les communes littorales : Sainte-Anne, Le Gosier, Saint-François, Port-Louis, Petit-Canal, Anse-Bertrand, Morne-à-l'Eau, Le Moule, Capesterre-de-Marie-Galante, Bouillante, Deshaies, Trois-Rivières, Capesterre-Belle-Eau, Goyave, Petit-Bourg, Baillif, Vieux-Habitants, Pointe-Noire, Sainte-Rose, Lamentin. L'état sargasses est mis à jour 4 fois par jour via les données satellite Copernicus Marine (indice AFAI).</p>
+        <p>La saison des sargasses en Guadeloupe s'étend d'avril à septembre, avec des pics entre juin et août. Les courants atlantiques transportent ces algues brunes depuis la mer des Sargasses vers les côtes antillaises. Consultez la <a href="/carte-sargasses/">carte des observations</a> et vérifiez l'horodatage de la dernière mesure ; les <a href="/previsions/">tendances sur 7 jours</a> sont disponibles lorsque les données le permettent.</p>
+        <h2>Sargasse Guadeloupe — communes couvertes par le suivi satellite</h2>
+        <p>Notre carte sargasse Guadeloupe couvre toutes les communes littorales : Sainte-Anne, Le Gosier, Saint-François, Port-Louis, Petit-Canal, Anse-Bertrand, Morne-à-l'Eau, Le Moule, Capesterre-de-Marie-Galante, Bouillante, Deshaies, Trois-Rivières, Capesterre-Belle-Eau, Goyave, Petit-Bourg, Baillif, Vieux-Habitants, Pointe-Noire, Sainte-Rose, Lamentin. La page indique la date de la dernière observation satellite disponible (indice AFAI) ; les passages ne sont pas continus.</p>
         <h2>Alerte sargasse Guadeloupe aujourd'hui — comment ça marche</h2>
-        <p>Activez les notifications push gratuites pour recevoir une alerte sargasse Guadeloupe dès qu'une plage favorite change d'état. Les échouages peuvent varier d'heure en heure selon les vents et les courants : notre système surveille en temps réel et envoie une alerte push sans inscription. Vous pouvez aussi <a href="/alertes/">consulter la liste des alertes sargasses actives</a>.</p>
+        <p>Activez les notifications push gratuites pour être informé lorsqu'une plage favorite change d'état selon les données reçues. Les notifications dépendent de la disponibilité des nouvelles observations et des permissions accordées sur votre appareil. Vous pouvez aussi <a href="/alertes/">consulter la liste des alertes sargasses actives</a>.</p>
         <h2>Iles satellites — Marie-Galante, Les Saintes, La Désirade</h2>
         <p>Marie-Galante, Les Saintes (Terre-de-Haut, Terre-de-Bas) et La Désirade sont également suivies : ces îles proches de la Guadeloupe ont souvent des conditions sargasses différentes du continent. Consultez les prévisions par plage pour préparer votre excursion en bateau.</p>
         <h2>Données satellite — pourquoi notre carte sargasses est fiable</h2>
@@ -831,6 +842,18 @@ function writeRegionIndex(region, out) {
 </html>
 `
   fs.writeFileSync(path.join(out, 'index.html'), gpIndex, 'utf-8')
+  try {
+    const gpRegion = JSON.parse(fs.readFileSync(path.join(root, 'regions', 'gp.json'), 'utf8'))
+    const { injectFirstPaint, readObservationIso } = require('./lib/home-first.cjs')
+    const { writeCommercialPages } = require('./lib/write-commercial-pages.cjs')
+    const iso = readObservationIso(root)
+    const gpHtml = fs.readFileSync(path.join(out, 'index.html'), 'utf8')
+    fs.writeFileSync(path.join(out, 'index.html'), injectFirstPaint(gpHtml, gpRegion, iso), 'utf8')
+    writeCommercialPages(out, gpRegion, root)
+    console.log('   → Guadeloupe : accueil, /offres/ et /premium/ localisés')
+  } catch (e) {
+    console.warn('   ⚠ pages commerciales Guadeloupe:', e.message)
+  }
   console.log(`   → index.html Guadeloupe (SEO + PWA + perf parity) écrit avec script ${scriptSrc}`)
   return true
 }
@@ -853,6 +876,7 @@ function prepareNewRegion(region) {
   // Exclusions : fichiers régénérés plus bas + artefacts des autres régions.
   const skip = new Set([
     ...COPY_SKIP_TOP,
+    '_private', // données premium J+2-7, protégées par .htaccess côté FTP, ne doivent jamais être des assets
     'robots.txt', // régénéré pour region.domain
     'sitemap.xml', // régénéré minimal (racine seule)
     '404.html', // régénéré région-aware (celui du build partagé est MQ/GP)
@@ -876,7 +900,7 @@ function prepareNewRegion(region) {
     'legal.css', // charte partagée des pages légales FR (MQ/GP) — orpheline sur USD
     'en', // landing /en/ « Sargassum Monitoring Martinique »
     'a-propos', // page confiance 100% FR
-    'offres', // page offres/tarifs 100% FR (MQ/GP) — jamais sur les domaines USD
+    // /offres/ est régénérée par région (write-commercial-pages) avant cette copie.
     'veille', // landing de capture (Funnel A) 100% FR — jamais sur les domaines USD
   ])
   for (const other of getAllRegions()) {
@@ -893,6 +917,27 @@ function prepareNewRegion(region) {
   // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
+  const { writeCommercialPages } = require('./lib/write-commercial-pages.cjs')
+  writeCommercialPages(out, region, root)
+  const merciSrc = path.join(root, 'public', 'merci')
+  const merciDest = path.join(out, 'merci')
+  if (fs.existsSync(path.join(merciSrc, 'index.html'))) fs.cpSync(merciSrc, merciDest, { recursive: true })
+  const { localizeProPricing } = require('./lib/localize-pro-pricing.cjs')
+  const pricing = localizeProPricing(out, region, root)
+  if (pricing.copied) console.log(`   → /pro/pricing/ en ${pricing.lang} pour ${region.domain}`)
+  assertWorkerAssetIgnore(out, `${region.id} Worker assets package`)
+
+  // Pages partagees (public/about, /research, /investigacion, /for-hotels) :
+  // elles codent en dur l hote MQ dans leur canonical/og/hreflang. Livrees
+  // telles quelles sur un domaine USD, la page declarait un canonical
+  // martinique -> Google la consolidait cote MQ (domaine jamais indexe).
+  // On reecrit l hote vers le domaine de la region + on purge les hreflang
+  // orphelins. MQ/GP : ce bloc n est jamais atteint (chemin heritage).
+  {
+    const { rewriteSharedSeoHost } = require('./lib/rewrite-shared-seo.cjs')
+    const r = rewriteSharedSeoHost(out, region)
+    if (r.files) console.log(`   → canonical hote region (${title}) : ${r.files} fichier(s), ${r.droppedAlts} hreflang orphelin(s) retire(s)`)
+  }
 
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
   // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
@@ -914,6 +959,9 @@ function prepareNewRegion(region) {
       // Les sous-dossiers sont les PAGES /beaches/<slug>/ du générateur SEO
       // région — ne purger que les fichiers images hors-région.
       if (fs.statSync(full).isDirectory()) continue
+      // L'index parent /beaches/ est une page HTML SEO, pas une photo hors-région.
+      // Le préserver avant le filtre qui ne doit retirer que les fichiers média.
+      if (f === 'index.html') continue
       const m = f.match(/^gplace-([a-z]{2}\d+)\.jpg$/)
       if (m && ownIds.has(m[1])) continue
       fs.rmSync(full)
@@ -1020,7 +1068,32 @@ Sitemap: https://${domain}/sitemap.xml
     // le dossier déployé. Le fallback « racine seule » laissait /sitemap.xml
     // en 404 (0 URL) ou en 1 URL alors que robots.txt le publiait — c'était
     // précisément l'état de tulum le 07/10/2026.
-    const SKIP_DIRS = new Set([
+    // APPARTENANCE A LA REGION (fallback sitemap) : une page n entre dans le
+// sitemap que si (a) son canonical ne pointe pas vers un AUTRE domaine — les
+// pages FR heritees de public/ (about, research, for-hotels...) sont
+// canoniquees vers sargasses-martinique.com, Google les consolide cote MQ :
+// les annoncer ici = crawl gaspille + contenu etranger publie sur un domaine
+// EN/ES ; et (b) sa langue est emise par la region.
+// Constat live 2026-10-22 : le sitemap de secours de Tulum listait 21 URLs
+// dont 8 pages FR/MQ/GP et 2 articles d autres iles, et aucune fiche regionale.
+// Langues acceptees : celles emises par la region + en/es, car les
+// generateurs produisent volontairement /reliability/ (EN) et /fiabilidad/ (ES)
+// sur une region a primaire ES (ex. tulum). Seul le FR (et le reste) est
+// etranger : les pages FR heritees de public/ sont ainsi ecartees.
+const _regionLangs = new Set([...require('./lib/region-langs.cjs').emittedLangs(region), 'en', 'es'])
+const _pageBelongsToRegion = (html) => {
+  const canon = (html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) || [])[1]
+    || (html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i) || [])[1]
+  // Page de redirection pure (meta refresh) : aucun contenu a indexer.
+  if (/<meta[^>]+http-equiv=["']?refresh/i.test(html)) return false
+  if (canon) {
+    try { if (new URL(canon).host !== domain) return false } catch (_) { return false }
+  }
+  const lang = (html.match(/<html[^>]+lang=["']([^"']+)["']/i) || [])[1]
+  if (lang) return _regionLangs.has(String(lang).toLowerCase().slice(0, 2))
+  return true
+}
+const SKIP_DIRS = new Set([
       'api', 'assets', 'config', 'data', 'fonts', 'images', 'img', 'audio',
       'confirme', 'pro', 'jeu', 'widget', 'videos', 'themes-lab',
       'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
@@ -1035,8 +1108,10 @@ Sitemap: https://${domain}/sitemap.xml
         if (SKIP_DIRS.has(entry.name)) continue
         const next = [...segs, entry.name]
         const child = path.join(dir, entry.name)
-        if (fs.existsSync(path.join(child, 'index.html'))) {
-          urls.push({ path: `/${next.join('/')}/`, depth: next.length })
+        const idx = path.join(child, 'index.html')
+        if (fs.existsSync(idx)) {
+          const html = fs.readFileSync(idx, 'utf8')
+          if (_pageBelongsToRegion(html)) urls.push({ path: `/${next.join('/')}/`, depth: next.length })
         }
         walk(child, next)
       }
@@ -1090,10 +1165,10 @@ ${entries.join('\n')}
       name: es ? `Sargazo ${title}` : `Sargassum ${title}`,
       short_name: es ? `Sargazo ${title}` : `Sargassum ${title}`,
       description: region.primaryLang === 'fr'
-        ? `Carte des sargasses en temps réel. Où se baigner aujourd'hui à ${title}.`
+        ? `Dernières observations satellitaires publiées pour les plages de ${title}. Vérifiez l'horodatage et le niveau de confiance avant de vous déplacer.`
         : es
-          ? `Mapa de sargazo en vivo y estado diario de las playas de ${title}.`
-          : `Live sargassum map and daily beach status for ${title}.`,
+          ? `Últimas observaciones satelitales publicadas para las playas de ${title}. Comprueba la hora de observación y el nivel de confianza antes de desplazarte.`
+          : `Latest published satellite observations for ${title} beaches. Check the observation time and confidence before travelling.`,
       lang: region.primaryLang || 'en',
       // Chrome de l'app = TOUJOURS sombre #0d1117 (= html + #sg-chin + background_color + meta
       // theme-color posé en JS). On NE prend PAS brand.primary : sinon la barre système mobile
@@ -1139,7 +1214,24 @@ ${entries.join('\n')}
     // gère toujours leur absence (catch → pas d'overlay) sans casser la carte.
     for (const f of ['sargassum.json', 'history.json', 'sargassum-banks.json', 'sargassum-grid.json']) {
       const src = path.join(regionDataDir, f)
-      if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outCopernicus, f))
+      if (!fs.existsSync(src)) continue
+      const dest = path.join(outCopernicus, f)
+
+      // Regional static payloads are copied to the deployed root path. Refresh only
+      // freshness metadata at packaging time; never change levels, scores or forecasts.
+      if (f === 'sargassum.json') {
+        try {
+          const payload = JSON.parse(fs.readFileSync(src, 'utf-8'))
+          if (payload && payload.source === 'erddap-live') {
+            refreshSatellitePayload(payload)
+            fs.writeFileSync(dest, JSON.stringify(payload), 'utf-8')
+            continue
+          }
+        } catch (error) {
+          console.warn(`   ⚠ fraîcheur régionale non recalculée (${region.id}): ${error.message}`)
+        }
+      }
+      fs.copyFileSync(src, dest)
     }
     // Gating J+2→J+7 : le purge ci-dessus a supprimé le _private/ MQ venu de dist/.
     // On (re)pose le _private/ RÉGIONAL (prévision complète + .htaccess Deny) sinon

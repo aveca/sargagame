@@ -183,7 +183,7 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    → on doit re-spécifier ici pour la barre/nav/pill (cf. .sg-sortseg/.sg-fchip pattern). */
 @keyframes sg-live-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 /* TOP RAIL — segment commun : contour ink 2.5px + pop-1 dure (0 blur) */
-.sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;position:relative;z-index:100}
 .sg-seg{height:44px;border:2.5px solid var(--sg-ink,#0d0b14)!important;background:var(--sg-card,#fff)!important;
   box-shadow:2px 2px 0 var(--sg-ink,#0d0b14)!important;border-radius:13px!important;
   display:flex;align-items:center;flex-shrink:0;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
@@ -240,17 +240,25 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    doublé-classe (0,2,0) et strippait les pastilles en texte nu (régression vue au smoke
    funnel 2026-07-01 — même leçon que le cluster perso plus bas, resté triple-classe). */
 .sg-mapchip.sg-mapchip.sg-mapchip{background:#190c2c !important;color:#fdfcf7 !important;
+  /* Plancher lisibilite 11px (audit UI 2026-10-26) : l inline JSX des chips
+     porte fontSize:10.5px, ecrit trop petit sur mobile comme sur desktop.
+     Meme plancher que le fix labels carte (PR #1019, 9px -> clamp(11px,2.9vw,12px)).
+     Triple classe (0,3,0) + !important battent l inline et le skin de theme. */
+  font-size:clamp(11px,2.9vw,12px) !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
 .sg-mapchip.sg-mapchip svg{stroke:#fdfcf7 !important}
-/* CTA primaire « Trouve ta plage » (mission P0 refonte UX 2026-10-14) : gradient teal =
-   action libre, distinct du mapchip encre (utilitaires) et du SOS or (payant). Texte ink
-   foncé sur teal = contraste garanti. Triple-classe (0,3,0) obligatoire : cf. note
-   sg-mapchip — le skin .theme-comic/.sg-onink-scope strippe sinon fond/bordure/ombre. */
-.sg-mapfind.sg-mapfind.sg-mapfind{background:linear-gradient(135deg,#2BD9C8 0%,#009E8E 100%) !important;color:#0B2230 !important;
+/* CTA primaire « Trouve ta plage » (mission P0 refonte UX 2026-10-14) : gradient or =
+   action libre. Texte ink foncé sur or = contraste garanti. Triple-classe (0,3,0)
+   obligatoire : cf. note sg-mapchip — le skin .theme-comic/.sg-onink-scope strippe
+   sinon fond/bordure/ombre. */
+.sg-mapfind.sg-mapfind.sg-mapfind{background:linear-gradient(135deg,#FFE47A 0%,#FFC72C 50%,#E8A317 100%) !important;color:#190c2c !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:none !important;-webkit-text-fill-color:#0B2230 !important;border-radius:999px !important}
 .sg-mapfind.sg-mapfind svg{stroke:#0B2230 !important;fill:none !important}
+/* CTA PRINCIPAL — REFONTE 2026-10-23 (critique design « La case de couverture »).
+   L OR est le token d action primaire de la maison (PRODUCT.md §4 --yel).
+   Rollback : rétablir le teal dans cette règle. */
 /* CTA « Voir la plage » (carte) — même cause : le skin de thème strippait le gradient
    or → texte noir illisible. Pastille encre + bordure OR + texte BLANC (CTA primaire
    distinct des chips utilitaires). Triple-classe (0,3,0) : bat .theme-comic button (0,1,1)
@@ -258,6 +266,14 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 .sg-mapcta.sg-mapcta.sg-mapcta{background:#190c2c !important;color:#fdfcf7 !important;
   border:2.5px solid #FFC72C !important;box-shadow:4px 4px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
+/* Porte d'offre quand le verdict satellite est suspendu (mission
+   SARG-STALE-OFFER-CTA-6DOMAINS-20261124) : CTA OR primaire sur fond clair,
+   texte ink (contraste garanti). Triple-classe (0,3,0) + !important : bat
+   .theme-comic button (0,1,1) ET le reset .sg-onink-scope button (0,2,1) qui
+   strippaient sinon le fond en texte nu (même piège que .sg-mapcta/.sg-mapfind). */
+.sg-mapstale-cta.sg-mapstale-cta.sg-mapstale-cta{background:#ffd23f !important;color:#0d0b14 !important;
+  border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
+  text-shadow:none !important;-webkit-text-fill-color:#0d0b14 !important;border-radius:10px !important}
 /* Contrôles perso VISIBLES sur l'accueil-carte (cluster top-right) : notifications +
    compte (gérer/résilier). Sticker CRÈME/ink (cohérent avec la pill EN DIRECT), cibles
    44px. Doublé-classe (0,2,0) + !important + valeurs codées en dur (JAMAIS var(--sg-*),
@@ -272,17 +288,6 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 .sg-mapnav.sg-mapnav.sg-mapnav svg{stroke:#190c2c !important}
 .sg-mapnav.sg-mapnav.sg-mapnav:active{box-shadow:0 0 0 #190c2c !important;transform:translate(3px,3px)}
 /* FAB stack — pictos SVG ink, recette comic */
-/* SOS PLAGE 24H (payant) — régression confirmée en prod (2026-10-14) : le bloc
-   button.sg-fab ci-dessous verrouille TOUS les sg-fab sur fond encre #190c2c
-   !important, ce qui écrasait le gradient or inline du bouton « SOS PLAGE 24H
-   — 1 € » (className sg-fab) → le portail payant rendait une pastille sombre
-   quasi invisible sur la carte nuit. Classe dédiée, triple-classe (0,3,0) +
-   !important : restaure le gradient or prévu, texte ink lisible, distinct du
-   CTA teal « Trouve ta plage ». */
-.sg-soscta.sg-soscta.sg-soscta{background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317) !important;color:#190c2c !important;
-  border:none !important;box-shadow:0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28) !important;
-  text-shadow:none !important;-webkit-text-fill-color:#190c2c !important;border-radius:14px !important}
-.sg-soscta.sg-soscta svg{stroke:#190c2c !important}
 .sg-fab svg{width:24px;height:24px;display:block}
 /* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
    sens que sur le fond SOMBRE #190c2c. Le skin de thème (.theme-X button{bg !important})

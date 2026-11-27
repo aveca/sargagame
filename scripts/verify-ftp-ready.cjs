@@ -5,6 +5,20 @@
  */
 const fs = require('fs')
 const path = require('path')
+const { execFileSync } = require('child_process')
+const { evaluateObservation, evaluatePublicationEligibility, evaluateFleetPublicationEligibility, MAX_AGE_MINUTES } = require('./autopilot/check-predeploy-satellite-freshness.cjs')
+
+function readGitHeadJson(relPath) {
+  try {
+    const raw = execFileSync('git', ['show', `HEAD:${relPath}`], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
 
 const root = path.join(__dirname, '..')
 // Allowlist des sources LIVE (partagée racine + régions) — cf. garde MOAT #1.
@@ -59,10 +73,31 @@ function main() {
     }
   }
 
+  // Operational SLA is separate from the public 36-hour stale marker.
+  // updatedAt proves publication time only; erddapTimestamp proves observation time.
+  const rootFreshness = evaluateObservation(data.erddapTimestamp)
+  const rootPrevious = readGitHeadJson('public/api/copernicus/sargassum.json')
+  // The working tree file is the candidate (already overwritten by fetch). Compare
+  // against the last committed observation to reject regressions; the 900-minute
+  // operational SLA remains mandatory even when the candidate is newer.
+  const rootElig = evaluatePublicationEligibility(data.erddapTimestamp, {
+    previousTimestamp: rootPrevious && rootPrevious.erddapTimestamp,
+    allowLabeledStale: true
+  })
+  if (!rootElig.publishable) {
+    const marker = !rootFreshness.ok ? 'observation hors SLA — ' : ''
+    console.error(`❌ Observation satellite racine refusée : ${marker}${rootElig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
+    ok = false
+  } else if (rootElig.labeledStale) {
+    console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min, au-delà du SLA ${MAX_AGE_MINUTES} min, publication avec la date et la mention non actualisée`)
+  } else {
+    console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min (SLA ${MAX_AGE_MINUTES} min) ✓`)
+  }
+
   // ── Garde MOAT #2 : pic "tout vert" suspect. Un bond brutal du taux de plages
-  // propres (>40 points vs le dernier jour DISTINCT de l'historique) est
-  // physiquement improbable (demi-vie échouage ~3,5j) et trahit une grille
-  // corrompue ou du no-data masqué en 'clean'. On bloque la publication.
+  // propres (>40 points vs le dernier jour DISTINCT de l'historique) est traité
+  // comme une anomalie d'intégrité (source, couverture ou no-data masqué en
+  // "clean"), pas comme une limite physique ou une demi-vie calibrée.
   // Source-agnostique : attrape la fausse carte verte même si le flag source ment.
   // Lecture historique fail-open (si illisible → garde inactive, pas de blocage).
   if (Array.isArray(data.levels) && data.levels.length) {
@@ -78,7 +113,7 @@ function main() {
     } catch (_) {}
     const curCleanRatio = data.levels.filter(l => l.status === 'clean').length / data.levels.length
     if (prevCleanRatio !== null && (curCleanRatio - prevCleanRatio) > 0.4) {
-      console.error(`❌ Pic "tout vert" suspect : ${Math.round(prevCleanRatio * 100)}% → ${Math.round(curCleanRatio * 100)}% de plages propres en <24h (improbable, demi-vie ~3,5j). Publication bloquée — relancer fetch-sargassum-live.cjs pour confirmer.`)
+      console.error(`❌ Pic "tout vert" suspect : ${Math.round(prevCleanRatio * 100)}% → ${Math.round(curCleanRatio * 100)}% de plages propres en <24h. Anomalie d'intégrité — vérifier la source et la couverture avant publication.`)
       ok = false
     }
   }
@@ -127,35 +162,80 @@ function main() {
     }
   }
 
-  // ── Garde MOAT #1 bis : mêmes règles pour les sargassum.json RÉGIONAUX
-  // (public/api/copernicus/<region>/). Une source non-live (ex. 'erddap-fallback'
-  // = grille manquante masquée en clean) bloque la publication comme la racine.
-  // Fail-open sur dossier illisible / fichier absent (warn, pas de blocage) —
-  // même philosophie que la lecture historique de la garde #2.
+  // Same source and operational freshness contract for every required regional payload.
   const copDir = path.join(root, 'public', 'api', 'copernicus')
-  let regionDirs = []
+  const requiredRegionDirs = ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']
+  let discoveredRegionDirs = []
   try {
-    regionDirs = fs.readdirSync(copDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+    discoveredRegionDirs = fs.readdirSync(copDir, { withFileTypes: true })
+      .filter(entry => entry.isDirectory())
+      .map(entry => entry.name)
+      .filter(dirName => fs.existsSync(path.join(copDir, dirName, 'sargassum.json')))
   } catch (e) {
-    console.warn('   ⚠ Répertoire copernicus illisible (garde régionale inactive):', e.message)
+    console.error('❌ Répertoire Copernicus régional illisible — publication bloquée:', e.message)
+    ok = false
   }
+  // Require the six production regions and also validate every additional regional
+  // payload already present (e.g. Barbados), so no stale side payload is skipped.
+  const regionDirs = [...new Set([...requiredRegionDirs, ...discoveredRegionDirs])]
+  const requiredRegionEligibility = []
   for (const dirName of regionDirs) {
     const regPath = path.join(copDir, dirName, 'sargassum.json')
-    if (!fs.existsSync(regPath)) continue // dossier sans payload (ex. _private) — non-bloquant
+    if (!fs.existsSync(regPath)) {
+      console.error(`❌ [${dirName}] payload régional absent — publication bloquée`)
+      ok = false
+      continue
+    }
     let reg = null
     try {
       reg = JSON.parse(fs.readFileSync(regPath, 'utf-8'))
     } catch (e) {
-      console.warn(`   ⚠ ${dirName}/sargassum.json illisible (garde régionale inactive pour cette région):`, e.message)
+      if (requiredRegionDirs.includes(dirName)) {
+        console.error(`❌ [${dirName}] payload régional JSON invalide: ${e.message}`)
+        ok = false
+      } else {
+        console.warn(`   ⚠ [${dirName}] payload non-production illisible (fraîcheur non évaluée): ${e.message}`)
+      }
       continue
     }
-    const regSource = reg && reg.source // reg peut être null (JSON valide mais vide)
+    const regSource = reg && reg.source
     if (!LIVE_SOURCES.includes(regSource)) {
-      console.error(`❌ [${dirName}] source="${regSource}" non-live (dégradée / référence) — publication FTP bloquée pour ne pas diffuser une carte régionale sans données réelles.`)
+      console.error(`❌ [${dirName}] source="${regSource}" non-live — publication bloquée`)
       ok = false
-    } else {
-      console.log(`   région ${dirName}: source=${regSource} ✓`)
+      continue
     }
+    // The 900-minute deploy SLA applies to the six deployed domains only.
+    // Additional catalog payloads (e.g. Barbados) retain the existing source guard
+    // but must not block the six-domain release on an experimental region's age.
+    if (!requiredRegionDirs.includes(dirName)) {
+      console.log(`   région catalogue ${dirName}: source=${regSource} ✓ (hors SLA production six domaines)`)
+      continue
+    }
+    const freshness = evaluateObservation(reg.erddapTimestamp)
+    const prevReg = readGitHeadJson(`public/api/copernicus/${dirName}/sargassum.json`)
+    const elig = evaluatePublicationEligibility(reg.erddapTimestamp, {
+      previousTimestamp: prevReg && prevReg.erddapTimestamp,
+      allowLabeledStale: true
+    })
+    requiredRegionEligibility.push({ regionId: dirName, publishable: elig.publishable, reason: elig.reason })
+    if (!elig.publishable) {
+      const marker = !freshness.ok ? 'observation hors SLA — ' : ''
+      console.error(`❌ [${dirName}] observation refusée : ${marker}${elig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
+      ok = false
+    } else if (elig.labeledStale) {
+      console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min, au-delà du SLA ${MAX_AGE_MINUTES} min, mention non actualisée requise au déploiement`)
+    } else {
+      console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min ✓`)
+    }
+  }
+
+  const fleetEligibility = evaluateFleetPublicationEligibility(requiredRegionEligibility, requiredRegionDirs.length)
+  if (!fleetEligibility.publishable) {
+    const blocked = fleetEligibility.blockedRegions.length
+      ? fleetEligibility.blockedRegions.join(', ')
+      : `résultats valides ${fleetEligibility.checked}/${fleetEligibility.expected}`
+    console.error(`❌ Garde flotte six régions refusée : ${blocked}`)
+    ok = false
   }
 
   console.log('')

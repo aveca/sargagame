@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
+import { worldMapFreshness } from "./lib/world-map-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -197,22 +197,15 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, erddapTimestamp, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
+  beaches, island, updatedAt, erddapTimestamp, source, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
   onFind=null,
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const wmSatT = erddapTimestamp ? Date.parse(erddapTimestamp) : NaN;
-  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now();
-  const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: erddapTimestamp });
-  const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: erddapTimestamp });
-  const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: erddapTimestamp }, lang);
-  const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp, lang) : "···";
-  // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
-  // >=36 h : alerte explicite sur la seule observation satellite.
-  const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
-  const wmSatDotColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
+  const [wmDecisionAvailable, wmSatColor, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
+  const [, setMapFreshnessTick] = useState(false);
+  useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>!tick),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshDelay]);
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -222,7 +215,7 @@ export default function WorldMapView({
   // verrouillé pour TOUT le monde. La donnée affichée reste 100% RÉELLE (forecastByBeach,
   // composite ERDDAP+forecast) ou absente (pin gris) — JAMAIS fabriquée (loi du moat).
   const mapForecastOff = (()=>{try{return /[?&]mapforecast=0/.test(window.location.search)}catch(_){return false}})()
-  const mapPremium = !!isPremium && !mapForecastOff
+  const mapPremium = !!isPremium && !mapForecastOff && wmDecisionAvailable
   // Contrôles compte + notifications VISIBLES sur l'accueil-carte. Avant : le Header
   // standard (cloche + « Mon accès ») était rendu SOUS la chrome fixed de la carte
   // (zIndex 10) → invisible ; on ne pouvait ni activer les alertes ni gérer/résilier
@@ -268,6 +261,12 @@ export default function WorldMapView({
   // sont tapés-sans-réponse → pill → page fiabilité (région-correcte) ; sticker → nearMe().
   const mapLiveTapOff = (()=>{try{return /[?&]maplivetap=0/.test(window.location.search)}catch(_){return false}})()
   const mapCleanTapOff = (()=>{try{return /[?&]mapcleantap=0/.test(window.location.search)}catch(_){return false}})()
+  // Porte d'offre honnête quand le verdict satellite est suspendu (mission
+  // SARG-STALE-OFFER-CTA-6DOMAINS-20261124). Correctif UNIQUE ici : les six domaines
+  // rendent ce même composant partagé. Quand wmDecisionAvailable=false (observation
+  // stale ou inconnue), aucun verdict/prévision n'est publié et un non-Premium voit
+  // une entrée vers l'offre EXISTANTE via onPremium. Rollback : ?wmstaleoffer=0.
+  const staleOfferOff = (()=>{try{return /[?&]wmstaleoffer=0/.test(window.location.search)}catch(_){return false}})()
   // Lisibilité labels carte (grief fondateur 2026-07-02) : le nom blanc + le statut sont posés
   // sur le fond carte (vert/violet/orange) avec un simple glow d'ombre → lavés sur les zones
   // claires. Scrim sombre translucide DERRIÈRE le texte = contraste garanti quelle que soit la
@@ -454,9 +453,10 @@ export default function WorldMapView({
       .filter(b=>b&&b.lat!=null&&b.lng!=null&&(isEUR?b.island===island:true))
       .map(b=>{
         const[vx,vy]=toVB(b.lat,b.lng)
-        const entry=forecastByBeach&&forecastByBeach[b.id]
+        const entry=wmDecisionAvailable&&forecastByBeach&&forecastByBeach[b.id]
         const fc=entry&&entry.d // série jour-par-jour [{st,c,date}]
-        const days=[b.status||null]
+        const currentStatus=wmDecisionAvailable&&b.status||null
+        const days=[currentStatus]
         const conf=[null]
         // PERSISTANCE (décision fondateur 2026-06-30) : un jour sans prévision NE reste
         // PLUS gris muet — on reporte le dernier statut connu (« on s'attend à la même
@@ -477,9 +477,18 @@ export default function WorldMapView({
         let firstHit=null
         for(let d=0;d<days.length;d++){ if(days[d]==="avoid"){ firstHit=d; break } }
         if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
-        return{...b,vx,vy,days,conf,fc:fc||null,drift:(entry&&entry.drift)||null,firstHit}
+        return{
+          ...b,
+          ...(!wmDecisionAvailable?{score:null,afai:null}:{}),
+          status:currentStatus,vx,vy,days,conf,fc:fc||null,
+          drift:(entry&&entry.drift)||null,
+          firstHit,
+        }
       })
-  },[beaches,island,toVB,forecastByBeach])
+  },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
+
+  // Retire le tooltip si le modèle cesse de pouvoir justifier une décision.
+  useLayoutEffect(()=>{if(!wmDecisionAvailable)setSelected(null)},[wmDecisionAvailable])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -490,7 +499,7 @@ export default function WorldMapView({
   // Seuil 0.10. Cull SERRÉ-ÎLE : on ne montre QUE le sargasse PROCHE de la côte/île — pas les bancs
   // au large « inutiles » (fondateur 22/06 soir). `near` = LOD détaillé. Cap = anti-clutter.
   const sargCells = useMemo(()=>{
-    if(!toVB||!afaiGrid||!afaiGrid.points) return []
+    if(!wmDecisionAvailable||!toVB||!afaiGrid||!afaiGrid.points) return []
     const isMQGP=island==="mq"||island==="gp"
     const pts=isMQGP?afaiGrid.points.filter(p=>island==="gp"?p[0]>=15.5:p[0]<15.5):afaiGrid.points
     const out=[]
@@ -502,7 +511,7 @@ export default function WorldMapView({
     }
     out.sort((a,b)=>b.afai-a.afai)
     return out.slice(0,48)
-  },[afaiGrid,island,toVB])
+  },[afaiGrid,island,toVB,wmDecisionAvailable])
 
   // P7 — recherche : plages dont le nom matche la requête (max 6).
   const matches = useMemo(()=>{
@@ -713,8 +722,9 @@ export default function WorldMapView({
   // aquarium). Override debug `?beachfx=1` (force les 3 pires plages quand tout est propre).
   useEffect(()=>{
     const layer=fxRef.current
-    if(!layer||!beachList.length) return
-    while(layer.firstChild) layer.removeChild(layer.firstChild)
+    if(!layer) return
+    layer.replaceChildren()
+    if(!wmDecisionAvailable||!beachList.length) return
     let cx=0,cy=0; for(const b of beachList){cx+=b.vx;cy+=b.vy}; cx/=beachList.length; cy/=beachList.length
     const force=(()=>{try{return /[?&]beachfx=1/.test(window.location.search)}catch(_){return false}})()
     const arr=b=>arrivals&&arrivals[b.id]
@@ -1236,10 +1246,10 @@ export default function WorldMapView({
   const driftFuture = mapPremium && day>=1 && !mapDriftOff && !noAnim
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
   const dayStatus = summarizeBeachStatuses(beachList, day)
-  const cleanCnt  = dayStatus.clean // inconnu ≠ propre (anti-flash)
+  const cleanCnt  = dayStatus.clean // rendu uniquement si la source permet une décision
   const avoidCnt  = dayStatus.avoid
-  const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
-  const vant      = vantColor(beachList,day)
+  const dayLbl = wmDecisionAvailable ? (day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)) : _t(lang,"à vérifier","needs checking","por verificar")
+  const vant      = wmDecisionAvailable ? vantColor(beachList,day) : "#9aa0a8"
   const sunPos = useMemo(()=>{const h=new Date(),hr=h.getHours()+h.getMinutes()/60,a=((hr-6)/12)*Math.PI;return{x:400+Math.cos(a)*280,y:300+Math.sin(a)*160,visible:hr>=6&&hr<=18}},[])
 
   // Defs partagés (gradients + 2 filtres flous) — rendus à l'identique dans le SVG de bake ET le
@@ -1253,6 +1263,10 @@ export default function WorldMapView({
       <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
         <stop offset="0" stopColor="#74D89E"/><stop offset=".3" stopColor="#41BE7B"/>
         <stop offset=".62" stopColor="#2BAE66"/><stop offset="1" stopColor="#157F49"/>
+      </linearGradient>
+      <linearGradient id="wmLandStale" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#D7DCE3"/><stop offset=".3" stopColor="#B9C0CA"/>
+        <stop offset=".62" stopColor="#9AA4B2"/><stop offset="1" stopColor="#7C8796"/>
       </linearGradient>
       <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
         <stop offset="0" stopColor="#FFD27A" stopOpacity=".55"/>
@@ -1312,7 +1326,7 @@ export default function WorldMapView({
         <path d={outline.path} fill="#062033" opacity=".5" filter="url(#wmSoft)" transform="translate(7 13)"/>
         <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".38"/>
         <path d={outline.path} fill="url(#wmSand)" stroke="none"/>
-        <path d={outline.path} fill="url(#wmLand)" stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
+        <path d={outline.path} fill={wmDecisionAvailable ? "url(#wmLand)" : "url(#wmLandStale)"} stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
         <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
         <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
       </g>}
@@ -1370,14 +1384,14 @@ export default function WorldMapView({
       background: warm
         // MONDE GTA SUNSET (cohérence avec le hero) : mer-coucher-de-soleil violet→magenta
         // →orange, soleil chaud haut-droite. Remplace l'ancienne mer bleu-teal comic.
-        ? "radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)"
+  ? "linear-gradient(165deg,#2a1a3e 0%,#3d2350 38%,#241539 68%,#190c2c 100%)"
         : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(162deg,#3aa6c4 0%,#1c6f93 40%,#103f63 72%,#0b2e4d 100%)",
     }}>
       <style>{`
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
         @keyframes wmHalo{0%,100%{opacity:.45}50%{opacity:.8}}
         @keyframes wmAvoidPulse{0%{opacity:.55;transform:scale(.7)}70%{opacity:0;transform:scale(1.9)}100%{opacity:0;transform:scale(1.9)}}
-        @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,50,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,50,42,0)}100%{box-shadow:0 0 0 0 rgba(232,50,42,0)}}
+        
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
         @keyframes wmTapPing{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3)}65%{opacity:.16;transform:translate(-50%,-50%) scale(1.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}}
         @keyframes wmTapCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}55%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
@@ -1396,11 +1410,6 @@ export default function WorldMapView({
         background:"linear-gradient(180deg,rgba(255,178,103,.5) 0%,rgba(255,138,61,.24) 34%,rgba(255,138,61,.08) 60%,transparent 100%)",
         mixBlendMode:"screen"}}/>
 
-      {/* Soleil — disque chaud top-right (le « soleil » d'heure dorée) */}
-      <div style={{position:"absolute",top:"-7%",right:"4%",width:130,height:130,borderRadius:"50%",
-        pointerEvents:"none",zIndex:0,
-        background:"radial-gradient(circle at 50% 50%, rgba(255,238,210,.96), rgba(255,178,103,.9) 38%, rgba(255,138,61,.45) 62%, transparent 74%)",
-        animation:noAnim?"none":"wmSun 11s ease-in-out infinite"}}/>
       {/* Halo soleil large */}
       {!noAnim&&<div style={{position:"absolute",top:"-22%",right:"-12%",width:"80%",height:"58%",
         pointerEvents:"none",zIndex:0,
@@ -1423,12 +1432,7 @@ export default function WorldMapView({
 
       {/* Dégradé bas (veil — profondeur GTA violet bas-gauche) */}
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:2,
-        background:"linear-gradient(200deg,rgba(42,21,80,0) 46%,rgba(26,12,46,.5) 100%)"}}/>
-      {/* Grain film (cohérence monde GTA / hero) — SANS mix-blend : un overlay blend au-dessus
-          du SVG recompose toute la pile à CHAQUE frame de pan/zoom (cher sur GPU mobile). Texture
-          statique conservée en alpha normal. */}
-      <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3,opacity:.05,
-        backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"cover"}}/>
+        background:"linear-gradient(200deg,rgba(42,21,80,0) 46%,rgba(26,12,46,.32) 100%)"}}/>
 
       {/* SVG SOURCE DU BAKE (caché 0×0) — rendu une fois, sérialisé+rasterisé par l'effet bake.
           Hors caméra → jamais transformé ni repeint pendant le geste. */}
@@ -1445,7 +1449,7 @@ export default function WorldMapView({
         viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        aria-label={_t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`)}
+        aria-label={wmDecisionAvailable ? _t(lang,`Carte ${regionName} — chaque plage, son verdict du matin. Déplace, zoome, touche une plage.`,`${regionName} map — every beach, its morning verdict. Pan, zoom, tap a beach.`,`Mapa ${regionName} — cada playa, su veredicto de la mañana. Desplaza, zoom, toca una playa.`) : _t(lang,`Carte ${regionName} — observation satellite à vérifier, aucun verdict actuel disponible.`,`Map ${regionName} — satellite observation needs checking; no current verdict is available.`,`Mapa ${regionName} — observación satelital por verificar; no hay veredicto actual disponible.`)}
         data-sg-live="1"
         onClick={onMapBgClick}
       >
@@ -1504,7 +1508,7 @@ export default function WorldMapView({
               pas prête → apparition UNIQUE et définitive (jamais gris→couleur). Le fond
               de carte baké reste visible en attendant (pas de cul-de-sac). */}
           {(dataReady?beachList:[]).map(b=>{
-            const st=b.days[day] // null tant que le statut n'est pas chargé → pin GRIS, pas vert
+            const st=b.days[day] // beachList is sanitized before rendering
             const isSel=selected?.id===b.id
             // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
             // hit-zone élargie, pas de label. Tap → ouvre la fiche (funnel préservé).
@@ -1659,7 +1663,12 @@ export default function WorldMapView({
                 textShadow:`1px 1px 0 ${INK},0 0 5px ${INK},0 0 9px rgba(13,11,20,.65)`,
               }}>{b.name}</div>
               <div style={{
-                font:"800 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                // Lisibilite (audit 2026-10-22 : badge de statut en 9px, sous le
+                // seuil lisible, surtout « IR A PLAYA »). Plancher 11px sur mobile,
+                // jusqu a 12px sur grand ecran. La couche est en HTML screen-space
+                // (taille pixel constante) ; declutter() masque les etiquettes qui
+                // se chevauchent, donc aucun texte tronque ni superpose n apparait.
+                font:"800 clamp(11px,2.9vw,12px)/1 'Bricolage Grotesque',system-ui,sans-serif",
                 letterSpacing:".05em",
                 textTransform:"uppercase",
                 color:col,
@@ -1696,11 +1705,10 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:wmSatDotColor,border:`1.5px solid ${INK}`,
-              animation:(!wmSatFresh||noAnim)?"none":"wmPulse 2.4s ease-out infinite",
+              width:8,height:8,borderRadius:"50%",background:wmSatColor,border:`1.5px solid ${INK}`,
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatAgeColor,marginLeft:2}}>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatColor,marginLeft:2}}>
               {wmSatAge}
             </span>
             {/* Couleur verte = satellite <12h ; neutre = 12–36h ; ambre = >=36h. */}
@@ -1790,34 +1798,33 @@ export default function WorldMapView({
           }}>
             {regionName} <span style={{color:"#ffd23f"}}>{dayLbl}</span>
           </h2>
-          <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
+          {wmDecisionAvailable && <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
             marginTop:9,display:"inline-flex",flexWrap:"wrap",alignItems:"center",gap:9,rowGap:6,maxWidth:"calc(100vw - 36px)",pointerEvents:"auto",
             cursor:mapCleanTapOff?undefined:"pointer",
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
           }}>
-            <div style={{width:104,height:8,borderRadius:5,background:"#fff",border:`2px solid ${INK}`,overflow:"hidden"}}>
-              <div style={{
-                height:"100%",background:"linear-gradient(90deg,#22C55E,#B87A00)",transition:"width .4s ease",
-                width:beachList.length?Math.round(cleanCnt/beachList.length*100)+"%":"0%",
-              }}/>
-            </div>
-            <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
-            </span>
-            <span
-              aria-label={_t(lang,`${avoidCnt} plages à éviter ${dayLbl}`,`${avoidCnt} beaches to avoid ${dayLbl}`,`${avoidCnt} playas que evitar ${dayLbl}`)}
-              style={{
-                display:"inline-flex",alignItems:"center",gap:4,whiteSpace:"nowrap",
-                padding:"5px 8px",border:`1.5px solid ${INK}`,borderRadius:8,
-                background:avoidCnt>0?"#ffe7e3":"#e5f8eb",
-                color:avoidCnt>0?"#a62b20":"#177A42",
-                font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
-              }}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:14}}>{avoidCnt}</b>
-              {_t(lang,"à éviter","to avoid","a evitar")}
-            </span>
-          </div>
+
+              <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 13px 8px",background:"#eafaf1",
+                border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`}}>
+                <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:26,lineHeight:1,color:"#177A42"}}>{cleanCnt}</b>
+                <span style={{font:"800 10px/1.15 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
+                  textTransform:"uppercase",color:"#177A42"}}>{_t(lang,"plages propres","clean beaches","playas limpias")}<br/>
+                  <span style={{opacity:.72,fontWeight:700,letterSpacing:".02em",textTransform:"none"}}>{dayLbl}</span></span>
+              </div>
+              <span aria-label={_t(lang,`${avoidCnt} plages à éviter ${dayLbl}`,`${avoidCnt} beaches to avoid ${dayLbl}`,`${avoidCnt} playas que evitar ${dayLbl}`)}
+                style={{
+                  display:"inline-flex",alignItems:"center",gap:4,whiteSpace:"nowrap",
+                  padding:"7px 11px 8px",border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`,
+                  background:avoidCnt>0?"#ffe0db":"#e5f8eb",
+                  color:avoidCnt>0?"#a62b20":"#177A42",font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                  letterSpacing:".04em",textTransform:"uppercase",
+                }}>
+                <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:22,lineHeight:1}}>{avoidCnt}</b>
+                {_t(lang,"à éviter","to avoid","a evitar")}
+              </span>
+
+          </div>}
           </>)}
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
@@ -1857,6 +1864,63 @@ export default function WorldMapView({
               <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#177A42"}}>
                 {_t(lang,"C'est fait. Le verdict du matin t'attend demain — mesuré, pas deviné.","Done. The morning verdict lands tomorrow — measured, not guessed.","Listo. El veredicto de la mañana llega mañana — medido, no adivinado.")}
               </span>
+            </div>
+          )}
+
+          {/* PORTE D'OFFRE HONNÊTE QUAND LE VERDICT EST SUSPENDU (mission
+              SARG-STALE-OFFER-CTA-6DOMAINS-20261124). Rendue UNIQUEMENT quand
+              wmDecisionAvailable=false (observation stale/inconnue) et pour un
+              utilisateur non Premium. Le message dit explicitement que l'observation
+              satellite est en retard/à vérifier et que verdicts + prévisions sont
+              suspendus ; aucun statut de plage ni prévision courante n'est exposé ici
+              (les pins restent neutres via wmDecisionAvailable) et aucune promesse de
+              fraîcheur n'est faite. Le clic réutilise onPremium + le parcours d'offre
+              existant : aucun prix, SKU, checkout, paiement ou webhook ajouté.
+              Quand wmDecisionAvailable=true, ce bloc n'existe pas → rendu inchangé. */}
+          {!wmDecisionAvailable && !isPremium && !staleOfferOff && (
+            <div data-testid="wm-stale-offer" role="status" style={{
+              marginTop:9,display:"flex",flexDirection:"column",alignItems:"flex-start",gap:6,
+              pointerEvents:"auto",maxWidth:360,textAlign:"left",
+              background:"#fff7ed",color:INK,
+              border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,
+              padding:"10px 12px",
+            }}>
+              <span data-testid="wm-stale-offer-status" style={{
+                display:"inline-flex",alignItems:"center",gap:6,
+                font:"800 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                letterSpacing:".06em",textTransform:"uppercase",color:"#a62b20",
+              }}>⏳ {wmSatLbl}</span>
+              <div data-testid="wm-stale-offer-message" style={{
+                font:"800 12.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif",color:INK,
+              }}>
+                {_t(lang,
+                  "Observation satellite en retard ou en cours de vérification — verdicts et prévisions suspendus.",
+                  "Satellite observation delayed or being verified — verdicts and forecasts are paused.",
+                  "Observación satelital atrasada o en verificación — veredictos y pronósticos suspendidos.")}
+              </div>
+              <div style={{
+                font:"700 11px/1.35 'Bricolage Grotesque',system-ui,sans-serif",color:"#5b5566",maxWidth:330,
+              }}>
+                {_t(lang,
+                  "Aucun verdict actuel, score ou prévision n'est publié tant qu'une mesure satellite récente n'est pas disponible.",
+                  "No current verdict, score or forecast is published until a recent satellite reading is available.",
+                  "Ningún veredicto, puntuación ni pronóstico actual se publica hasta disponer de una medición satelital reciente.")}
+              </div>
+              <button type="button" className="sg-mapstale-cta" data-testid="wm-stale-offer-cta"
+                onClick={()=>{
+                  try{track&&track("sg_map_stale_offer_cta",{island})}catch(_){}
+                  onPremium&&onPremium("map_stale_offer")
+                }}
+                style={{
+                  display:"inline-flex",alignItems:"center",gap:7,
+                  pointerEvents:"auto",cursor:"pointer",touchAction:"manipulation",
+                  background:"#ffd23f",color:INK,
+                  border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:10,
+                  padding:"9px 14px",minHeight:44,boxSizing:"border-box",
+                  font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                }}>
+                {_t(lang,"Voir l'offre","See the offer","Ver la oferta")} <span aria-hidden="true">→</span>
+              </button>
             </div>
           )}
         </div>
@@ -1916,7 +1980,7 @@ export default function WorldMapView({
           position:"absolute",left:16,bottom:`calc(${mapPremium&&!mapDecideOff?210:164}px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))`,
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
-          {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
+          {wmDecisionAvailable && [["#22C55E",_t(lang,"Propre","Clean","Limpia")],
             ["#B87A00",_t(lang,"Modéré","Moderate","Moderado")],
             ["#E8522A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
             <div key={c} style={{display:"flex",alignItems:"center",gap:7,
@@ -1942,8 +2006,8 @@ export default function WorldMapView({
 
         {/* CTA PRINCIPAL « Trouve ta plage » (mission P0 refonte UX 2026-10-14) — une seule
             action dominante sur l'accueil : ouvre le parcours TrouvePlage IN-APP via onFind
-            (plus d'URL « secrète » ?recommend=1). La peinture (gradient teal = action libre,
-            distincte du SOS doré payant) vit dans la classe .sg-mapfind (app-runtime.css,
+            (plus d'URL « secrète » ?recommend=1). La peinture (gradient or = action
+            libre, unique CTA dominant) vit dans la classe .sg-mapfind (app-runtime.css,
             triple-classe + !important pour survivre au skin .theme-comic/.sg-onink-scope
             qui sinon strippe fond/bordure, cf. note sg-mapchip). Pleine largeur mobile,
             max 380, au-dessus de la frise des jours : bande 76-120px (frise 120-156,
@@ -2061,7 +2125,7 @@ export default function WorldMapView({
               ⭐ {_t(lang,"Premium actif — fais glisser les jours, la prévision est à toi.","Premium active — slide through the days, the forecast is yours.","Premium activo — desliza los días, el pronóstico es tuyo.")}
             </div>
           )}
-          <div style={{
+          {wmDecisionAvailable&&(<div style={{
             pointerEvents:"auto",display:"flex",gap:4,
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:4,
@@ -2094,7 +2158,7 @@ export default function WorldMapView({
                 )})()}
               </button>
             )})}
-          </div>
+          </div>)}
         </div>
 
         {/* Dock bas — label « Carte » inerte (cursor:default, sans onClick) RETIRÉ :

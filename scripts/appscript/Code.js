@@ -585,6 +585,9 @@ function doGet(e) {
         pass_cta: 0,   // pass-only (2026-06-25) : le VRAI CTA du storefront (sg_pass_cta). premium_modal_cta = ancien abo, masqué depuis le flip → ne plus piloter dessus.
         sample_start: 0, email_submit: 0,
         checkout_redirect: 0,
+        // P0.7 (2026-10-22) : checkout 100% on-site → le VRAI début de paiement est
+        // sg_checkout_started (tous providers). checkout_redirect ne couvre que PayPal.
+        checkout_started: 0,
         conversion: 0, checkout_error: 0
       }
 
@@ -713,7 +716,9 @@ function doGet(e) {
         modal_to_sample: funnel.premium_modal_open > 0 ? Math.round(funnel.sample_start / funnel.premium_modal_open * 100) : 0,
         modal_to_any_action: funnel.premium_modal_open > 0 ? Math.round((funnel.premium_modal_cta + funnel.sample_start) / funnel.premium_modal_open * 100) : 0,
         cta_to_redirect: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_redirect / funnel.premium_modal_cta * 100) : 0,
-        redirect_to_payment: funnel.checkout_redirect > 0 ? Math.round((funnel.payments_real || 0) / funnel.checkout_redirect * 100) : 0
+        redirect_to_payment: funnel.checkout_redirect > 0 ? Math.round((funnel.payments_real || 0) / funnel.checkout_redirect * 100) : 0,
+        // P0.7 : taux CTA -> début de paiement réel (on-site, tous providers)
+        cta_to_checkout: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_started / funnel.premium_modal_cta * 100) : 0
       }
 
       return jsonResponse(funnel)

@@ -1,0 +1,52 @@
+'use strict';
+
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const PDV = require('../../scripts/autopilot/post-deploy-verify.cjs');
+
+const source = fs.readFileSync(path.join(__dirname, '../../scripts/autopilot/post-deploy-verify.cjs'), 'utf8');
+let assertions = 0;
+function check(condition, message) {
+  assertions++;
+  assert.ok(condition, message);
+}
+
+const now = Date.parse('2026-10-27T00:33:49.000Z');
+const payload = {
+  source: 'erddap-live',
+  updatedAt: '2026-10-26T22:45:47.765Z',
+  erddapTimestamp: '2026-10-25T12:00:00.000Z',
+  dataAgeMinutes: 2086,
+  stale: false,
+};
+const stale = PDV.checkSatelliteFreshness(payload, now);
+check(stale.status === 'FAILED', 'a fresh pipeline cannot mask a satellite observation older than 36 hours');
+check(stale.ageMinutes === 2194, 'satellite age is recomputed from erddapTimestamp, not the frozen dataAgeMinutes field');
+check(/périmée/.test(stale.detail), 'stale observation reports an explicit reason');
+
+const fresh = PDV.checkSatelliteFreshness({
+  ...payload,
+  erddapTimestamp: '2026-10-26T12:33:49.000Z',
+}, now);
+check(fresh.status === 'VERIFIED' && fresh.ageMinutes === 720, 'a 12-hour observation passes the 36-hour threshold');
+
+const boundary = PDV.checkSatelliteFreshness({
+  ...payload,
+  erddapTimestamp: '2026-10-25T12:33:49.000Z',
+}, now);
+check(boundary.status === 'FAILED' && boundary.ageMinutes === 2160, 'exactly 36 hours is stale under the inclusive public boundary');
+check(boundary.detail.includes('>= 2160min'), 'post-deploy freshness failure reports the inclusive 36h boundary accurately');
+
+check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: null }, now).status === 'FAILED', 'missing satellite timestamp fails closed');
+check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: 'not-a-date' }, now).status === 'FAILED', 'invalid satellite timestamp fails closed');
+check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: '2026-10-27T01:00:00.000Z' }, now).status === 'FAILED', 'future satellite timestamp fails closed');
+check(PDV.checkSatelliteFreshness({ source: 'reference', updatedAt: payload.updatedAt }, now).status === 'NOT_VERIFIED', 'non-live reference payload is not falsely certified as satellite-fresh');
+check(source.includes("set('satellite_freshness', satelliteCheck.status, satelliteCheck.detail)"), 'post-deploy verifier wires satellite freshness into the per-domain gate');
+check(PDV.describeHttpProbe({ ok: true, status: 200 }) === '', 'HTTP 200 with successful curl is accepted');
+check(PDV.describeHttpProbe({ ok: true, status: 404 }) === 'HTTP 404', 'a completed HTTP 404 is reported as an HTTP response');
+check(PDV.describeHttpProbe({ ok: false, status: 200, error: 'Operation timed out\nextra detail' }) === 'curl exited non-zero after HTTP 200: Operation timed out', 'curl transport failure is not mislabeled as an unavailable HTTP asset when a status was printed');
+check(PDV.describeHttpProbe({ ok: false, status: 0, error: 'Could not resolve host\nextra detail' }) === 'curl exited non-zero: Could not resolve host', 'transport failure without an HTTP status preserves the curl error');
+check(source.includes('referenced asset probe failed:'), 'asset verification reports transport failure separately from HTTP status');
+
+console.log(`POST_DEPLOY_SATELLITE_FRESHNESS_TESTS PASS (${assertions} assertions)`);

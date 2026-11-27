@@ -1,3 +1,4 @@
+import { shouldSendRemoteAnalytics } from "./lib/remote-analytics.mjs"
 /**
  * supabasePhotos — backend PHOTOS VISITEURS sur Supabase (100 % gérable au mobile).
  *
@@ -25,6 +26,17 @@ export const SUPABASE_ANON_KEY = "sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz
 
 const BUCKET = "beach-photos"
 
+export function isRemoteAnalyticsEnabled() {
+  try {
+    if (import.meta.env.VITE_DISABLE_REMOTE_ANALYTICS === "true") return false
+    if (import.meta.env.VITE_ALLOW_LOCAL_ANALYTICS === "true") return true
+    if (typeof window === "undefined") return false
+    return shouldSendRemoteAnalytics(window.location.hostname)
+  } catch (_) {
+    return false
+  }
+}
+
 export function supabaseConfigured() {
   return !!(SUPABASE_URL && SUPABASE_ANON_KEY)
 }
@@ -45,13 +57,21 @@ function headers(extra) {
  * l'unload (comme un sendBeacon). Pas de PII (event + params non-nominatifs).
  */
 export function logAnalyticsEvent(event, params, island) {
-  if (!supabaseConfigured() || !event) return
+  if (!isRemoteAnalyticsEnabled() || !supabaseConfigured() || !event) return
   try {
+    const payloadParams = params && typeof params === "object" && !Array.isArray(params) ? { ...params } : {}
+    // Hostname is a public, non-PII dimension needed to separate regional domains
+    // that intentionally share analytics properties. Keep it in Supabase params,
+    // not in the event's business payload or a new database column.
+    try {
+      if(typeof window!=="undefined")payloadParams.hostname ||= location.hostname.toLowerCase()
+      payloadParams.sid = localStorage.sg_cookie_consent === "accepted" && sessionStorage.sg_sid
+    } catch (_) {}
     fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
       method: "POST",
       keepalive: true,
       headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify({ event: String(event), params: params || {}, island: island || null }),
+      body: JSON.stringify({ event: String(event), params: payloadParams, island: island || null }),
     }).catch(() => {})
   } catch (_) {}
 }

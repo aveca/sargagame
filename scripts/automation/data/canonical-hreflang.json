@@ -1,21 +1,33 @@
 {
-  "generatedAt": "2026-10-12T20:25:26.235Z",
+  "generatedAt": "2026-11-23T22:50:45.782Z",
   "sites": {
     "mq": {
-      "pageCount": 363,
-      "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 172,
-      "pagesWithHreflang": 157,
-      "issueCount": 176,
+      "pageCount": 366,
+      "pagesSkippedNoindex": 21,
+      "pagesWithCanonical": 174,
+      "pagesWithHreflang": 158,
+      "issueCount": 180,
       "byKind": {
         "missing-canonical": 171,
-        "canonical-mismatch": 1,
+        "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
       "issues": [
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "cgv.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/cgv",
+          "pageUrl": "/cgv.html"
+        },
+        {
+          "file": "confidentialite.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/confidentialite",
+          "pageUrl": "/confidentialite.html"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -28,6 +40,18 @@
         {
           "file": "jeu/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "mentions-legales.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/mentions-legales",
+          "pageUrl": "/mentions-legales.html"
+        },
+        {
+          "file": "remboursement.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/remboursement",
+          "pageUrl": "/remboursement.html"
         },
         {
           "file": "sarg_carte_satellite_app.html",
@@ -206,40 +230,36 @@
         {
           "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-mancenillier/index.html",
-          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 402,
-      "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 211,
-      "pagesWithHreflang": 196,
-      "issueCount": 176,
+      "pageCount": 405,
+      "pagesSkippedNoindex": 21,
+      "pagesWithCanonical": 213,
+      "pagesWithHreflang": 197,
+      "issueCount": 180,
       "byKind": {
         "missing-canonical": 171,
-        "canonical-mismatch": 1,
+        "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
       "issues": [
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "cgv.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/cgv",
+          "pageUrl": "/cgv.html"
+        },
+        {
+          "file": "confidentialite.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/confidentialite",
+          "pageUrl": "/confidentialite.html"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -252,6 +272,18 @@
         {
           "file": "jeu/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "mentions-legales.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/mentions-legales",
+          "pageUrl": "/mentions-legales.html"
+        },
+        {
+          "file": "remboursement.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/remboursement",
+          "pageUrl": "/remboursement.html"
         },
         {
           "file": "sarg_carte_satellite_app.html",
@@ -429,22 +461,6 @@
         },
         {
           "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-mancenillier/index.html",
           "kind": "missing-canonical"
         }
       ]

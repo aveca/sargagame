@@ -15,7 +15,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') { http_response_code(405);
 // pour ne JAMAIS perdre une mesure légitime.
 $ALLOWED_HOSTS = array(
   'sargasses-martinique.com','sargasses-guadeloupe.com',
-  'sargassummiami.com','sargassumpuntacana.com','sargassumcancun.com'
+  'sargassummiami.com','sargassumpuntacana.com','sargassumcancun.com',
+  'sargazotulum.com'
 );
 function sg_host_ok($url, $allowed) {
   if (!$url) return null; // header absent

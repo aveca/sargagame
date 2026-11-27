@@ -1,0 +1,5 @@
+{
+  "enabled": false,
+  "note": "Emplacements d'affiliation voyage. Aucun lien n'est publié tant que AFFILIATE_ENABLED n'est pas exactement 1 au build ET qu'un slot a une url https et un label réels. Ne pas inventer de partenaire.",
+  "slots": []
+}

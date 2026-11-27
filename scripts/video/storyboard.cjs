@@ -35,18 +35,23 @@ const loadJSON = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')
 // on ne rend pas sur une donnée que l'app elle-même n'affiche plus comme live.
 // La publication FB applique un plafond PLUS STRICT (24 h) côté factory.cjs.
 const RENDER_MAX_AGE_H = 36
-function satelliteAgeHours(sarg) {
-  if (sarg && typeof sarg.dataAgeMinutes === 'number') return sarg.dataAgeMinutes / 60
-  if (sarg && sarg.erddapTimestamp) { const t = Date.parse(sarg.erddapTimestamp); if (!isNaN(t)) return (Date.now() - t) / 3.6e6 }
-  return null // âge satellite indéterminable → non publiable
+function satelliteAgeHours(sarg, now = Date.now()) {
+  // erddapTimestamp is the only scientific clock. dataAgeMinutes is a static
+  // pipeline snapshot and can understate the observation age after publication.
+  const raw = sarg && sarg.erddapTimestamp
+  const timestamp = typeof raw === 'number' ? raw : Date.parse(String(raw ?? ''))
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isFinite(now) || timestamp > now) return null
+  const ageH = (now - timestamp) / 3.6e6
+  return Number.isFinite(ageH) && ageH >= 0 ? ageH : null
 }
-function publishFreshness(sarg, maxAgeH = RENDER_MAX_AGE_H) {
-  const ageH = satelliteAgeHours(sarg)
+function publishFreshness(sarg, maxAgeH = RENDER_MAX_AGE_H, now = Date.now()) {
+  const ageH = satelliteAgeHours(sarg, now)
   if (!sarg || sarg.source !== 'erddap-live') return { ok: false, ageH, reason: `source=${sarg && sarg.source} (≠ erddap-live)` }
   if (sarg.stale === true) return { ok: false, ageH, reason: 'flag stale=true' }
-  if (ageH == null) return { ok: false, ageH, reason: 'âge satellite indéterminable' }
-  if (ageH > maxAgeH) return { ok: false, ageH, reason: `satellite ${ageH.toFixed(1)}h > plafond ${maxAgeH}h` }
-  return { ok: true, ageH, reason: `satellite ${ageH.toFixed(1)}h ≤ ${maxAgeH}h` }
+  if (ageH == null) return { ok: false, ageH, reason: 'horodatage satellite absent, invalide ou futur' }
+  if (!Number.isFinite(maxAgeH) || maxAgeH <= 0) return { ok: false, ageH, reason: 'plafond de fraîcheur invalide' }
+  if (ageH >= maxAgeH) return { ok: false, ageH, reason: `satellite ${ageH.toFixed(1)}h ≥ plafond ${maxAgeH}h` }
+  return { ok: true, ageH, reason: `satellite ${ageH.toFixed(1)}h < plafond ${maxAgeH}h` }
 }
 function assertRenderable(sarg, regionId) {
   const f = publishFreshness(sarg)

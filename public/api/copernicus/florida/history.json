@@ -1,31 +1,31 @@
 {
   "history": [
     {
-      "date": "2026-10-08",
+      "date": "2026-10-28",
       "levels": [
         {
           "id": "fl001",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl002",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl003",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl004",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl005",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -36,6 +36,111 @@
         {
           "id": "fl007",
           "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-30",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -60,12 +165,12 @@
         },
         {
           "id": "fl012",
-          "afai": 0.05,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "fl013",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -80,17 +185,17 @@
         },
         {
           "id": "fl016",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "fl017",
           "afai": 0.08,
           "status": "clean"
         },
         {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
           "id": "fl018",
-          "afai": 0.11,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -100,17 +205,17 @@
         },
         {
           "id": "fl020",
-          "afai": 0.05,
+          "afai": 0.07,
           "status": "clean"
         }
       ]
     },
     {
-      "date": "2026-10-09",
+      "date": "2026-11-03",
       "levels": [
         {
           "id": "fl001",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -120,32 +225,32 @@
         },
         {
           "id": "fl003",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl004",
-          "afai": 0.11,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl005",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl006",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl007",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "fl008",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -165,12 +270,12 @@
         },
         {
           "id": "fl012",
-          "afai": 0.03,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "fl013",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -185,172 +290,67 @@
         },
         {
           "id": "fl016",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "fl017",
           "afai": 0.08,
           "status": "clean"
         },
         {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
           "id": "fl018",
-          "afai": 0.11,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "fl019",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl020",
-          "afai": 0.05,
+          "afai": 0.07,
           "status": "clean"
         }
       ]
     },
     {
-      "date": "2026-10-10",
+      "date": "2026-11-06",
       "levels": [
         {
           "id": "fl001",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl002",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl003",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl004",
-          "afai": 0.11,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl005",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl006",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl007",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl008",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl009",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl010",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl011",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl012",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl013",
           "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl014",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl015",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl016",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "fl017",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl018",
-          "afai": 0.11,
-          "status": "clean"
-        },
-        {
-          "id": "fl019",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl020",
-          "afai": 0.05,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-11",
-      "levels": [
-        {
-          "id": "fl001",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl002",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl003",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl004",
-          "afai": 0.11,
-          "status": "clean"
-        },
-        {
-          "id": "fl005",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl006",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl007",
-          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -365,7 +365,7 @@
         },
         {
           "id": "fl010",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -375,147 +375,42 @@
         },
         {
           "id": "fl012",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl013",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl014",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl015",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl016",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "fl017",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "fl018",
           "afai": 0.11,
           "status": "clean"
         },
         {
-          "id": "fl019",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "fl020",
-          "afai": 0.06,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-12",
-      "levels": [
-        {
-          "id": "fl001",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl002",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl003",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl004",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "fl005",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl006",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl007",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl008",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl009",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl010",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl011",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl012",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
           "id": "fl013",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl014",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl015",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl016",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl017",
-          "afai": 0.09,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl018",
-          "afai": 0.11,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "fl019",
-          "afai": 0.09,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -526,7 +421,7 @@
       ]
     },
     {
-      "date": "2026-10-13",
+      "date": "2026-11-10",
       "levels": [
         {
           "id": "fl001",
@@ -540,112 +435,7 @@
         },
         {
           "id": "fl003",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl004",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl005",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl006",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl007",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl008",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl009",
-          "afai": 0.05,
-          "status": "clean"
-        },
-        {
-          "id": "fl010",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl011",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl012",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl013",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl014",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl015",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl016",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl017",
           "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "fl018",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl019",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "fl020",
-          "afai": 0.06,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-14",
-      "levels": [
-        {
-          "id": "fl001",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl002",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl003",
-          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -660,27 +450,27 @@
         },
         {
           "id": "fl006",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl007",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "fl008",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "fl009",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "fl010",
-          "afai": 0.08,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -690,8 +480,8 @@
         },
         {
           "id": "fl012",
-          "afai": 0.09,
-          "status": "clean"
+          "afai": 0.16,
+          "status": "moderate"
         },
         {
           "id": "fl013",
@@ -700,22 +490,22 @@
         },
         {
           "id": "fl014",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl015",
           "afai": 0.07,
           "status": "clean"
         },
         {
+          "id": "fl015",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
           "id": "fl016",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "fl017",
-          "afai": 0.1,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -730,13 +520,13 @@
         },
         {
           "id": "fl020",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         }
       ]
     },
     {
-      "date": "2026-10-15",
+      "date": "2026-11-13",
       "levels": [
         {
           "id": "fl001",
@@ -750,7 +540,7 @@
         },
         {
           "id": "fl003",
-          "afai": 0.07,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -765,7 +555,532 @@
         },
         {
           "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-14",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-15",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
           "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-16",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-17",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-18",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -785,47 +1100,992 @@
         },
         {
           "id": "fl010",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl011",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl012",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "fl013",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl014",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "fl015",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "fl016",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "fl017",
           "afai": 0.1,
           "status": "clean"
         },
         {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
           "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-19",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
           "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-20",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-21",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-22",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-23",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-24",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-25",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-26",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl019",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl020",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-27",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl013",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl014",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl015",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl016",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl017",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "fl018",
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -841,5 +2101,20 @@
       ]
     }
   ],
-  "changes": []
+  "changes": [
+    {
+      "date": "2026-11-10",
+      "beach": "fl012",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
+    },
+    {
+      "date": "2026-11-15",
+      "beach": "fl012",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    }
+  ]
 }

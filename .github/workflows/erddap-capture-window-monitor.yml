@@ -1,0 +1,31 @@
+name: ERDDAP Capture Window Monitor (read-only)
+
+on:
+  # 00:00–02:45 UTC samples the operational capture window.
+  # 03:00–05:45 UTC distinguishes a late source from a missing probe.
+  schedule:
+    - cron: '*/15 0-5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe AFAI observation timestamps (no publication)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Read ERDDAP timestamps only
+        run: node scripts/probe-erddap-capture-window.cjs

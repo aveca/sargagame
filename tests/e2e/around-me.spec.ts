@@ -1,12 +1,30 @@
 import { test, expect } from "@playwright/test"
+import { dismissCookieBanner } from "./helpers/cookie-banner"
 
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5173"
-const WORLD_FLAG = "?flag=world_around_me=1"
-const WORLD_FLAG_OFF = "?flag=world_around_me=0"
+// Le serveur visé est celui du harnais Playwright (`webServer` de
+// `playwright.config.ts` = `vite preview --port 4173`), comme les autres
+// specs E2E. Avant, ce fichier visait un serveur de DEV codé en dur sur 5173 :
+// absent en CI et en local hors `npm run dev`, les 10 tests échouaient
+// systématiquement sur « Could not connect to server » — un défaut du harnais,
+// pas du produit.
+const BASE_URL =
+  process.env.PREVIEW_URL || process.env.PLAYWRIGHT_BASE_URL || "http://localhost:4173"
+// Gate réel de la fonctionnalité : `src/world/useAroundMe.js` lit
+// `?world_around_me=1` en paramètre DIRECT. La spec utilisait
+// `?flag=world_around_me=1`, une syntaxe que l'application ne parse pas :
+// la fonctionnalité n'était donc jamais activée et les 10 tests échouaient
+// systématiquement (avant : « Could not connect to server », puis :
+// « around-me-controller not found »).
+const WORLD_FLAG = "?world_around_me=1"
+const WORLD_FLAG_OFF = "?world_around_me=0"
 
 test.describe("Around Me Intelligence (flag gated)", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE_URL + WORLD_FLAG, { waitUntil: "networkidle" })
+    // Le bandeau cookies peut superposer le bouton « Me localiser » et faire
+    // expirer le clic en timeout : on le referme avant toute interaction.
+    await dismissCookieBanner(page)
+    await page.waitForTimeout(300)
   })
 
   test("opens with flag, no geolocation prompt on load", async ({ page }) => {

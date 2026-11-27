@@ -28,14 +28,18 @@ function svcHeaders(extra) {
 }
 
 // Étapes comptées (clé = nom event sans le préfixe sg_, comme Code.js).
-const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'checkout_redirect',
-  // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
-  'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated']
+const FUNNEL_KEYS = [
+  'session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta',
+  'pass_cta', 'conversion', 'email_submit', 'checkout_started', 'checkout_redirect',
+  'payment_failed', 'sos_checkout_start', 'sos_checkout_error',
+  // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS.
+  'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated',
+]
 
 async function fetchAll(cutoffIso) {
   const rows = []
   for (let from = 0; ; from += PAGE) {
-    const q = `select=event,island,ts&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
+    const q = `select=event,island,params,ts&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
     let res
     try {
       res = await fetch(`${SUPABASE_URL}/rest/v1/analytics_events?${q}`, {
@@ -52,30 +56,122 @@ async function fetchAll(cutoffIso) {
   return rows
 }
 
+const {
+  parseEventParams,
+  normalizeHost,
+  normalizeEvent,
+  normalizeRegion,
+  classifyAnalyticsHost,
+  sessionIdFromParams,
+} = require('./funnel-analytics-classification.cjs')
+
 function computeFunnel(rows) {
-  const f = {}
-  for (const k of FUNNEL_KEYS) f[k] = 0
-  const byIsland = {}
+  const counts = {}
+  const observedCounts = {}
+  const unverifiedCounts = {}
+  for (const k of FUNNEL_KEYS) {
+    counts[k] = 0
+    observedCounts[k] = 0
+    unverifiedCounts[k] = 0
+  }
+
+  const byRegion = {}
+  const byHost = {}
+  const unverifiedByRegion = {}
+  const sessionsByRegion = {}
+  const observedSessionsByRegion = {}
+  const sessionsByHost = {}
+  const hostClassCounts = { production: 0, local_test: 0, preview: 0, unknown_host: 0 }
+
   for (const r of rows) {
-    const evt = String(r.event || '').replace(/^sg_/, '')
-    if (Object.prototype.hasOwnProperty.call(f, evt)) {
-      f[evt]++
-      const isl = (r.island || 'MQ').toUpperCase()
-      byIsland[isl] = byIsland[isl] || {}
-      byIsland[isl][evt] = (byIsland[isl][evt] || 0) + 1
+    const params = parseEventParams(r.params)
+    const attribution = classifyAnalyticsHost(params, r.island)
+    const region = attribution.region
+    const host = attribution.host
+    const sid = sessionIdFromParams(params)
+    hostClassCounts[attribution.hostClass]++
+
+    if (sid) {
+      observedSessionsByRegion[region] = observedSessionsByRegion[region] || new Set()
+      observedSessionsByRegion[region].add(sid)
+      if (attribution.hostClass === 'production') {
+        sessionsByRegion[region] = sessionsByRegion[region] || new Set()
+        sessionsByRegion[region].add(sid)
+        if (host) {
+          sessionsByHost[host] = sessionsByHost[host] || new Set()
+          sessionsByHost[host].add(sid)
+        }
+      }
+    }
+
+    const evt = normalizeEvent(r.event)
+    if (!Object.prototype.hasOwnProperty.call(counts, evt)) continue
+    observedCounts[evt]++
+
+    if (attribution.hostClass !== 'production') {
+      unverifiedCounts[evt]++
+      unverifiedByRegion[region] = unverifiedByRegion[region] || {}
+      unverifiedByRegion[region][evt] = (unverifiedByRegion[region][evt] || 0) + 1
+      continue
+    }
+
+    counts[evt]++
+    byRegion[region] = byRegion[region] || {}
+    byRegion[region][evt] = (byRegion[region][evt] || 0) + 1
+    if (host) {
+      byHost[host] = byHost[host] || {}
+      byHost[host][evt] = (byHost[host][evt] || 0) + 1
     }
   }
+
   const pct = (n, d) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0)
-  // modal→CTA : pass-only, le CTA réel = pass_cta (+ premium_modal_cta legacy).
-  const ctaTotal = f.premium_modal_cta + f.pass_cta
+  const ctaTotal = counts.premium_modal_cta + counts.pass_cta
   const rates = {
-    session_to_lock: pct(f.forecast_lock_click, f.session_start),
-    lock_to_modal: pct(f.premium_modal_open, f.forecast_lock_click),
-    modal_to_cta: pct(ctaTotal, f.premium_modal_open),
-    cta_to_redirect: pct(f.checkout_redirect, ctaTotal),
-    cta_to_conversion: pct(f.conversion, ctaTotal),
+    session_to_lock: pct(counts.forecast_lock_click, counts.session_start),
+    lock_to_modal: pct(counts.premium_modal_open, counts.forecast_lock_click),
+    modal_to_cta: pct(ctaTotal, counts.premium_modal_open),
+    cta_to_checkout_started: pct(counts.checkout_started, ctaTotal),
+    checkout_started_to_conversion: pct(counts.conversion, counts.checkout_started),
+    cta_to_redirect: pct(counts.checkout_redirect, ctaTotal),
+    cta_to_conversion: pct(counts.conversion, ctaTotal),
   }
-  return { counts: f, cta_total: ctaTotal, rates, by_island: byIsland }
+  const toCounts = source => Object.fromEntries(
+    Object.entries(source).map(([region, ids]) => [region, ids.size])
+  )
+  const distinctSessionsByRegion = toCounts(sessionsByRegion)
+  const observedDistinctSessionsByRegion = toCounts(observedSessionsByRegion)
+  const distinctSessionsByHost = toCounts(sessionsByHost)
+  const byIsland = Object.fromEntries(
+    Object.entries(byRegion).map(([region, regionCounts]) => [region.toUpperCase(), regionCounts])
+  )
+  const unverifiedByIsland = Object.fromEntries(
+    Object.entries(unverifiedByRegion).map(([region, regionCounts]) => [region.toUpperCase(), regionCounts])
+  )
+  const verifiedRows = hostClassCounts.production
+
+  return {
+    counts,
+    observed_counts: observedCounts,
+    unverified_counts: unverifiedCounts,
+    cta_total: ctaTotal,
+    rates,
+    by_region: byRegion,
+    by_island: byIsland,
+    by_host: byHost,
+    unverified_by_region: unverifiedByRegion,
+    unverified_by_island: unverifiedByIsland,
+    distinct_sessions_by_region: distinctSessionsByRegion,
+    observed_distinct_sessions_by_region: observedDistinctSessionsByRegion,
+    distinct_sessions_by_host: distinctSessionsByHost,
+    data_quality: {
+      total_rows: rows.length,
+      verified_production_rows: verifiedRows,
+      local_test_rows: hostClassCounts.local_test,
+      preview_rows: hostClassCounts.preview,
+      unknown_host_rows: hostClassCounts.unknown_host,
+      unverified_rows: rows.length - verifiedRows,
+    },
+  }
 }
 
 async function main() {
@@ -94,4 +190,8 @@ async function main() {
   console.log('[funnel] rates :', JSON.stringify(funnel.rates))
 }
 
-main().catch((e) => { console.error('[funnel] erreur non fatale:', e && e.message); process.exit(0) })
+if (require.main === module) {
+  main().catch((e) => { console.error('[funnel] erreur non fatale:', e && e.message); process.exit(0) })
+}
+
+module.exports = { FUNNEL_KEYS, parseEventParams, normalizeHost, normalizeEvent, normalizeRegion, classifyAnalyticsHost, sessionIdFromParams, computeFunnel }

@@ -1,0 +1,16 @@
+﻿{
+  "$comment": "Mapping non sensible projets Factory -> proprietes Google Search Console. Aucun token ici (la cle SA vit dans C:\\Users\\user\\.config\\sarga-gsc.json, hors repo).",
+  "updated_at": "2026-10-22",
+  "service_account_email": "seo-automation@sargassum-automation.iam.gserviceaccount.com",
+  "auth_mode": "service_account",
+  "scope": "webmasters.readonly (lecture seule, aucun outil d ecriture dans le MCP)",
+  "mcp_server": "google-search-console (mcp-google-search-console@3.0.1, uvx stdio)",
+  "opencode_config": "C:\\Users\\user\\.config\\opencode\\opencode.json",
+  "projects": [
+    { "project": "sargasses-guadeloupe", "repo": "sargagame", "region": "gp", "gsc_property": "sc-domain:sargasses-guadeloupe.com", "type": "domain", "permission": "siteRestrictedUser", "data_access": "OK (teste 2026-10-22)" },
+    { "project": "sargasses-martinique", "repo": "sargagame", "region": "mq", "gsc_property": "sc-domain:sargasses-martinique.com", "type": "domain", "permission": "siteFullUser", "data_access": "OK (teste 2026-10-22)" },
+    { "project": "sargassum-miami", "repo": "sargagame", "region": "florida", "gsc_property": "https://sargassummiami.com/", "type": "url-prefix", "permission": "siteUnverifiedUser", "data_access": "403 - ajouter l email SA comme utilisateur dans GSC (action fondateur)" },
+    { "project": "sargassum-puntacana", "repo": "sargagame", "region": "puntacana", "gsc_property": "https://sargassumpuntacana.com/", "type": "url-prefix", "permission": "siteUnverifiedUser", "data_access": "403 - idem" },
+    { "project": "sargassum-cancun", "repo": "sargagame", "region": "cancun", "gsc_property": "https://sargassumcancun.com/", "type": "url-prefix", "permission": "siteUnverifiedUser", "data_access": "403 - idem" }
+  ]
+}

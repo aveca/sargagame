@@ -1,0 +1,29 @@
+{
+  "window_days": 90,
+  "since": "2026-08-29T07:44:35.058Z",
+  "total_rows": 4,
+  "included_rows": 2,
+  "counts": {
+    "trials": 2,
+    "activated": 0,
+    "paid": 0,
+    "rejected": 0
+  },
+  "rates": {
+    "trial_to_paid": 0,
+    "trial_to_activated": 0,
+    "activated_to_paid": 0
+  },
+  "paid_by_plan": {},
+  "rejected_by_tier": {},
+  "rejected_by_kind": {},
+  "rejected_examples": [],
+  "by_island": {
+    "MQ": {
+      "trials": 2,
+      "activated": 0,
+      "paid": 0
+    }
+  },
+  "excluded_synthetic_rows": 2
+}

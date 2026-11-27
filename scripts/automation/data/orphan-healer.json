@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-12T20:25:27.239Z",
+  "generatedAt": "2026-11-23T22:50:46.770Z",
   "sites": {
     "mq": {
       "donorCount": 5,
-      "targetCount": 49,
+      "targetCount": 50,
       "injections": [
         {
           "donor": "/",
@@ -29,12 +29,12 @@
       "targets": [
         "/alertes/",
         "/danger-sargasses-h2s/",
+        "/saison-sargasses-guadeloupe/",
         "/agir/",
         "/bulletin-sargasses-martinique/",
         "/comic-cartes.html",
         "/conditions/",
-        "/confidentialite/",
-        "/confirme/"
+        "/confidentialite/"
       ]
     },
     "gp": {
@@ -65,8 +65,8 @@
       "targets": [
         "/alertes/",
         "/danger-sargasses-h2s/",
-        "/plages-sans-sargasses/",
-        "/saison-sargasses-guadeloupe/",
+        "/previsions/",
+        "/saison-sargasses-martinique/",
         "/agir/",
         "/algues-guadeloupe/",
         "/bulletin-sargasses-guadeloupe/",

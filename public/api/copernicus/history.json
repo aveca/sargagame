@@ -1,7 +1,557 @@
 {
   "history": [
     {
-      "date": "2026-10-08",
+      "date": "2026-10-28",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-30",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-10",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-13",
       "levels": [
         {
           "id": "grande-anse",
@@ -26,6 +576,1106 @@
         {
           "id": "anse-madame",
           "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-14",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-15",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-16",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-17",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-18",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-19",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-20",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-21",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-22",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.05,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-23",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -55,52 +1705,52 @@
         },
         {
           "id": "precheur",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-gosier",
-          "afai": 0.08,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-deshaies",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-moule",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -111,106 +1761,106 @@
       ]
     },
     {
-      "date": "2026-10-09",
+      "date": "2026-11-24",
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "tartane",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.08,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "pt-marin",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "vauclin",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "precheur",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-malendure",
-          "afai": 0.11,
-          "status": "clean"
-        },
-        {
-          "id": "gp-sainte-anne",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-pt-chateaux",
           "afai": 0.06,
           "status": "clean"
         },
         {
+          "id": "gp-malendure",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
           "id": "gp-gosier",
-          "afai": 0.1,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.08,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.1,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-deshaies",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-moule",
-          "afai": 0.08,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -221,76 +1871,186 @@
       ]
     },
     {
-      "date": "2026-10-10",
+      "date": "2026-11-25",
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "tartane",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.08,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "pt-marin",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "vauclin",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "precheur",
-          "afai": 0.07,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.11,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.08,
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.05,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-26",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "precheur",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -300,27 +2060,27 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.08,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-deshaies",
-          "afai": 0.09,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-moule",
-          "afai": 0.08,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -331,76 +2091,76 @@
       ]
     },
     {
-      "date": "2026-10-11",
+      "date": "2026-11-27",
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "tartane",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "pt-marin",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "vauclin",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "precheur",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.1,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -410,467 +2170,27 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.08,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.08,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.09,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-deshaies",
-          "afai": 0.09,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-moule",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-vieux-fort",
           "afai": 0.06,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-12",
-      "levels": [
-        {
-          "id": "grande-anse",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-mitan",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-noire",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "tartane",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-madame",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "diamant",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "pt-marin",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "sainte-anne",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "les-salines",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "vauclin",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "precheur",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-grande-anse",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-malendure",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-sainte-anne",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-pt-chateaux",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-gosier",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-caravelle",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-bas-du-fort",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-deshaies",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-moule",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-vieux-fort",
-          "afai": 0.06,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-13",
-      "levels": [
-        {
-          "id": "grande-anse",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-mitan",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-noire",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "tartane",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-madame",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "diamant",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "pt-marin",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "sainte-anne",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "les-salines",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "vauclin",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "precheur",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-grande-anse",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-malendure",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-sainte-anne",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-pt-chateaux",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-gosier",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-caravelle",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-bas-du-fort",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-deshaies",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-moule",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-vieux-fort",
-          "afai": 0.06,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-14",
-      "levels": [
-        {
-          "id": "grande-anse",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-mitan",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "anse-noire",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "tartane",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "anse-madame",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "diamant",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "pt-marin",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "sainte-anne",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "les-salines",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "vauclin",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "precheur",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-grande-anse",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-malendure",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-sainte-anne",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-pt-chateaux",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-gosier",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-caravelle",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-bas-du-fort",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-deshaies",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-moule",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-vieux-fort",
-          "afai": 0.06,
-          "status": "clean"
-        }
-      ]
-    },
-    {
-      "date": "2026-10-15",
-      "levels": [
-        {
-          "id": "grande-anse",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "anse-mitan",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "anse-noire",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "tartane",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "anse-madame",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "diamant",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "pt-marin",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "sainte-anne",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "les-salines",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "vauclin",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "precheur",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-grande-anse",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-malendure",
-          "afai": 0.1,
-          "status": "clean"
-        },
-        {
-          "id": "gp-sainte-anne",
-          "afai": 0.07,
-          "status": "clean"
-        },
-        {
-          "id": "gp-pt-chateaux",
-          "afai": 0.06,
-          "status": "clean"
-        },
-        {
-          "id": "gp-gosier",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-caravelle",
-          "afai": 0.08,
-          "status": "clean"
-        },
-        {
-          "id": "gp-bas-du-fort",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-deshaies",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp-moule",
-          "afai": 0.07,
           "status": "clean"
         },
         {

@@ -9,15 +9,20 @@ import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,crea
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+import { legalHref, legalLinks } from "./lib/legal-links.js"
 import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
-import PassOffer from "./PassOffer.jsx"
-import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+// ⚠️ NE PAS réimporter PassOffer ici : l'import était MORT (aucun `<PassOffer` dans
+// ce fichier) mais il tirait PassOffer + src/lib/pricing.js dans le chunk EAGER
+// (chemin critique) — +0,6 Ko gzip au-dessus du budget CI de 210 Ko. PassOffer
+// n'est chargé que par PremiumModal.jsx (LAZY).
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, isRemoteAnalyticsEnabled } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
+import "./sg-a11y-boost.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -119,7 +124,6 @@ const SolutionsStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({def
 const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.MapIntroStory})))
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
-const LazySOSPlage=lazyWithRetry(()=>import("./SOSPlage.jsx"))
 // Slugs stations (validation légère côté App ; STATION_BEATS vit dans StoryScenes.jsx).
 const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargasses","danger-sargasses-h2s","nettoyer-sargasses","methode-carte","en/understanding-sargassum","en/satellite-sargassum-detection"])
 
@@ -152,7 +156,13 @@ const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
 export const __REL = (typeof __RELIABILITY__ !== "undefined" && __RELIABILITY__) || null
 // Taille communauté (plancher honnête leads email) injectée au build — preuve sociale paywall.
 export const __COMM = (typeof __COMMUNITY__ !== "undefined" && Number(__COMMUNITY__)) || 0
-export const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
+// Littéral injecté au build (vite.config.js __IS_NEW_REGION__) : la branche
+// `IS_NEW_REGION ? [] : [plages MQ/GP]` ci-dessous doit être ÉLIMINÉE par le
+// bundler sur les régions USD (sinon 20 plages étrangères + ~1 Ko eager par
+// bundle). Repli runtime identique à l'ancien calcul si le define manque.
+export const IS_NEW_REGION = typeof __IS_NEW_REGION__ !== "undefined"
+  ? !!__IS_NEW_REGION__
+  : !!(__R && __R.id !== "mq" && __R.id !== "gp")
 export const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
 export const SUPPORT_EMAIL = IS_NEW_REGION ? (REGION.emails?.support || ("support@" + REGION.domain)) : "alerte@sargasses-martinique.com"
@@ -223,13 +233,13 @@ export function walletAvail(){
   const check=async()=>{
     const apple=await(async()=>{
       try{
-        const req=new window.PaymentRequest([{supportedMethods:"https://apple.com/apple-pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        const req=new window.PaymentRequest([{supportedMethods:"https://apple.com/apple-pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"1.00"}}})
         return await req.canMakePayment()
       }catch{return false}
     })()
     const google=await(async()=>{
       try{
-        const req=new window.PaymentRequest([{supportedMethods:"https://google.com/pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        const req=new window.PaymentRequest([{supportedMethods:"https://google.com/pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"1.00"}}})
         return await req.canMakePayment()
       }catch{return false}
     })()
@@ -1668,7 +1678,13 @@ export const T={
 /* ═══════════════════════════════════════════════════════════════════════════
    BEACH DATA — 20 inline fallback + runtime fetch for 190
    ═══════════════════════════════════════════════════════════════════════════ */
-export const BEACHES_FALLBACK=[
+/* Nouvelles regions (USD/ES) : plages inline dans __REGION__ (plus haut).
+   BEACHES_FALLBACK reste le repli MQ/GP historique — vide ici : (1) aucun code
+   nouveau-regime ne le lit, (2) il ne doit plus servir d affichage par defaut
+   avant le fetch (un visiteur Cancun voyait des plages de Martinique en plan B),
+   (3) ~1 Ko gzip eager de donnees etrangeres en moins par bundle USD. */
+export const BEACHES_FALLBACK=IS_NEW_REGION?[]:[
+
   {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,kids:true,snorkel:false,parking:true,drive:52},
   {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îlets",lat:14.5522593,lng:-61.0552056,kids:true,snorkel:false,parking:true,drive:18},
   {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,kids:true,snorkel:true,parking:true,drive:25},
@@ -1691,9 +1707,19 @@ export const BEACHES_FALLBACK=[
   {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivières",lat:15.9589717,lng:-61.6719389,kids:true,snorkel:true,parking:true,drive:45},
 ]
 
+
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 /* Nouvelles régions : centre injecté au build via __REGION__ (MQ/GP inchangés). */
 if(IS_NEW_REGION&&REGION.center)ISLAND_CENTER[REGION.id]=[REGION.center.lat,REGION.center.lng]
+/* Nouvelles regions (USD/ES) : leurs plages vivent DANS __REGION__ (inline, plus
+   haut). BEACHES_FALLBACK reste le repli MQ/GP historique — on le VIDE ici :
+   (1) aucun code nouveau-regime ne le lit (tous les acces sont gardes IS_NEW_REGION
+       ci-dessus, cf. PremiumModal _nameOf/_kidsOf et la construction de `beaches`) ;
+   (2) il ne doit PAS servir de repli d'affichage avant le fetch — un visiteur
+       Cancun/Tulum voyait des plages "propres" de Martinique en plan B ;
+   (3) ~1 Ko gzip eager de donnees etrangeres en moins dans chaque bundle USD.
+   Rollback : supprimer ce bloc (retour au repli MQ/GP partout). */
+
 
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 export const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","precheur":"mq033","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
@@ -1791,6 +1817,12 @@ export const PAY_CUR=(IS_NEW_REGION&&REGION&&REGION.currency==="USD")?"usd":"eur
 // est mort depuis le retrait des redirects) : ces consts ne sont que des drapeaux.
 export const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):"onsite"
 export const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):"onsite"
+// Offre annuelle disponible (même source que PremiumModal : LINK_ANNUAL).
+// P0 2026-10-23 : openPremium() référençait `hasAnnual` sans que ce nom existe
+// dans CE module → ReferenceError à chaque clic sur un CTA premium
+// (VER LOS 7 DÍAS, Activar mi alerta…) : le paywall ne s'ouvrait pas,
+// sur les 6 domaines ( reproduit en production avant correction ).
+export const hasAnnual=!!LINK_ANNUAL
 export const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 export const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 // EUR (MQ/GP, REGION_PAY null) : fallback de prix non-null OBLIGATOIRE — depuis
@@ -1819,10 +1851,11 @@ function pricePerDay(){
 // par create-region-payment-links.cjs). Jamais branché sur effectivePlan /
 // stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
 const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
-export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
-// Montant du Trip Pass en cents, dérivé du prix région ("$5.99" → 599). Doit
+// Prix du Trip Pass affiché (offre validée 2026-11-09 : trip7 = 7,99 € / $8.99).
+export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$8.99"):null
+// Montant du Trip Pass en cents, dérivé du prix région ("$8.99" → 899). Doit
 // matcher l'allowlist serveur create-checkout.php action:pay_once ($USD_ISLANDS
-// → [599]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
+// → [899]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
 // avec un montant hors allowlist qui se ferait rejeter 400).
 export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(/[^\d.]/g,""));return Number.isFinite(n)&&n>0?Math.round(n*100):0})()
 // ── Offres EUR (MQ/GP) en MIROIR de l'US — Trip Pass 7j + Annuel ──────────────
@@ -1831,12 +1864,12 @@ export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(
 // n'est lisible que pour les NOUVELLES régions). Les valeurs miroir du bloc
 // `pricing` ajouté à regions/mq.json + gp.json (source de vérité config).
 //
-// TRIP PASS EUR : accès UNIQUE 7 jours, 4,99 € one-time (miroir du tripPass USD
-// $5.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
-// devise EUR. 499¢ DOIT être dans l'allowlist serveur pay_once EUR
-// (create-checkout.php → [499, 799, ...]). EUR uniquement (!IS_NEW_REGION).
-export const EUR_TRIP_CENTS=499
-export const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
+// TRIP PASS EUR : accès UNIQUE 7 jours, 7,99 € one-time (miroir du tripPass USD
+// $8.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
+// devise EUR. 799¢ DOIT être dans l'allowlist serveur pay_once EUR
+// (create-checkout.php → [799, 1499, 2499]). EUR uniquement (!IS_NEW_REGION).
+export const EUR_TRIP_CENTS=799
+export const PRICE_TRIP_EUR=getLang()==="en"?"€7.99":"7,99 €"
 // ANNUEL EUR : 49 €/an (miroir du yearly USD $79). DÉJÀ entièrement câblé côté
 // code (hasAnnual=true pour EUR → toggle annuel, défaut=annuel, serveur 'subscribe'
 // résout prices['annual'] depuis stripe-config.php). Seul l'affichage du prix
@@ -1937,6 +1970,21 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   "sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
+  // P0.7 (2026-10-22) : checkout 100% on-site — l'ancien funnel ne comptait que
+  // sg_checkout_redirect (PayPal uniquement) → checkout=0 en métrique alors que
+  // les PAID passent par le checkout on-site. sg_checkout_started = début réel
+  // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
+  "sg_checkout_started",
+  "pricing_view","CTA_click","checkout_started",
+  // ⚠️ 2026-11-09 — Le parcours de paiement SOS (1 €) est RETIRÉ du client :
+  // `sg_sos_checkout_start` / `sg_sos_checkout_error` ne sont plus émis et ne
+  // sont donc plus allowlistés (cf. tests/unit/sos-public-surface-removed.test.cjs).
+  // Contrôle affichage = débit (2026-11-04) : le serveur renvoie le montant
+  // EFFECTIF qu'il débite (champ `amount` de create_payment). Si le client a
+  // affiché un autre montant (bascule de mois serveur vs navigateur autour du
+  // 1er juin / 1er décembre, ou tarif non aligné), l'écart est MESURÉ au lieu
+  // d'être invisible. 0 écart attendu en régime nominal.
+  "sg_price_mismatch",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
@@ -1950,33 +1998,42 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Les 10 postes du Veilleur « Jusqu'où on descend » (?verticals, 2026-07-02) : ouverture de
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
   "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
+function sgCorrelation(){
+  try{
+    let id=sessionStorage.getItem("sg_corr")
+    if(!id){id=(window.crypto&&crypto.randomUUID&&crypto.randomUUID())||String(Date.now());sessionStorage.setItem("sg_corr",id)}
+    return String(id).slice(0,80)
+  }catch(_){return "local"}
+}
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
+  const remoteEnabled=isRemoteAnalyticsEnabled()
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
   // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
   // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
-  if(SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
+  
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
-  try{window.gtag("event",event,p)}catch(e){}
-  // Measurement Protocol direct beacon — bypasses gtag.js DMA block
-  // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
-  //  et beaconner ici polluerait les stats MQ/GP)
-  if(!IS_NEW_REGION)try{
-    const isGP=window.location.hostname.includes("guadeloupe")
-    const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
-    const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
-    const cid=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/)?.[1]||"a."+Date.now()
-    navigator.sendBeacon&&navigator.sendBeacon(
-      `https://www.google-analytics.com/mp/collect?measurement_id=${mid}&api_secret=${sec}`,
-      JSON.stringify({client_id:cid,events:[{name:event,params:p}]}))
-  }catch{}
+  if(remoteEnabled)try{window.gtag("event",event,p)}catch(e){}
+  // Measurement Protocol credentials are private and must never ship to browsers.
+  // Keep the configured Google tag and first-party Supabase funnel as client analytics paths.
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
+  // ⚠️ 2026-11-26 BUG DE MESURE MESURÉ : `sg_pass_cta` — le SEUL CTA du storefront
+  // LIVE (PassOffer, mode pass-only depuis le flip 2026-06-25) — n'était PAS dans
+  // cette liste. La beacon Apps Script (qui alimente la feuille `analytics_events`
+  // et donc l'action `?action=funnel`) ne partait donc jamais pour un clic CTA
+  // réel → `funnel.pass_cta = 0` sur 28 j (mesuré le 2026-11-26 sur le live :
+  // 1 147 ouvertures de modal, `premium_modal_cta` = 4, `pass_cta` = 0) alors que
+  // le clic est bien émis vers GA4 + Supabase. Le taux modal→CTA affiché mesurait
+  // donc une surface MORTE (ancien abo) au lieu du parcours qui encaisse.
+  // `startsWith("sg_premium")` couvre sg_premium_modal_cta ; `startsWith("sg_checkout")`
+  // couvre sg_checkout_started. Il manquait exactement sg_pass_cta.
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
+    ||event==="sg_pass_cta"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
-  if(critical){
+  if(remoteEnabled&&critical){
     const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
       const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
@@ -1990,11 +2047,12 @@ export function track(event,params={}){
   }
   // Tracking FIRST-PARTY indépendant (sans GA/Sheets) : capture l'event dans le résumé de session.
   try{sgCollectEvent(event,p)}catch(e){}
+  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
 }
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
   try{
-    if(!window.gtag)return
+    if(!isRemoteAnalyticsEnabled()||!window.gtag)return
     const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
     if(!q.length)return
     // Send top 50 oldest events, clear them
@@ -2012,13 +2070,29 @@ try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 // MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
 // pour ne plus dépendre de Apps Script/clasp push pour le funnel.
 export function submitLead(email,source){
+  // Keep attribution in function scope: the Supabase sink runs after the transport try.
+  let island="MQ"
   try{
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
-    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
-    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
   }catch{}
-  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  // ── MÉMOIRE LOCALE DE L'EMAIL (mÊME ORIGINE, AUCUN ENVOI) ─────────────────
+  // L'email QUE LE VISITEUR A DÉJÀ SAISI est mémorisé sous `sg_email` (clé déjà
+  // lue par PremiumModal defaultValue et par la page /premium/) → il ne le
+  // ressaisit pas à l'étape paiement. Parcours visiteur → paiement raccourci
+  // d'une ressaisie, sans nouvelle donnée collectée, sans nouvel événement
+  // analytics, sans toucher à la création de paiement. `window.localStorage`
+  // peut être absent (sandbox de test, navigation privée) → garde-fou silencieux.
+  try{const _em=String(email||"").trim().toLowerCase();if(_em&&window.localStorage)window.localStorage.setItem("sg_email",_em)}catch(_){}
+  // Apps Script delivery is best-effort and independent from first-party funnel logging.
+  try{
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
+    let beaconQueued=false
+    try{if(navigator.sendBeacon)beaconQueued=navigator.sendBeacon(APPS_SCRIPT_URL,body)}catch{}
+    if(!beaconQueued){
+      fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    }
+  }catch{}
+  // Always record the non-PII lead event in Supabase, whether sendBeacon queued or fetch fell back.
   try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
 
@@ -4453,11 +4527,11 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   // cleanup baisse), sinon le satellite. Provenance nommée dans le bandeau ci-dessous → jamais
   // « mesuré au satellite » sur un niveau terrain. Forecast J+1-7 (fcDays) reste 100 % satellite.
   const _terrainStatus=terrainDisplayStatus(beach?.status,terrainEvents)
-  const status=_terrainStatus||_satStatus
-  const sc=comicStatusColor(status)
-  const hasScore=typeof beach?.score==="number"
+  const satelliteDecisionCurrent = isSatelliteFresh12h(sargData)
+  const status = _terrainStatus || (satelliteDecisionCurrent ? _satStatus : "_loading")
+  const sc = comicStatusColor(status)
+  const hasScore = satelliteDecisionCurrent && typeof beach?.score === "number"
   const daypart=(()=>{try{const h=new Date().getHours();return h<12?"matin":h<18?"aprem":"soir"}catch(_){return "matin"}})()
-  const V=comicVerdict(status,lang,daypart)
 
   // ── Score count-up « tally » cartoon — anime 0 → score à l'ouverture de la fiche
   const [scoreAnim,setScoreAnim]=useState(0)
@@ -4472,13 +4546,22 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     return()=>{try{cancelAnimationFrame(raf)}catch(_){}}
   },[beach?.id,beach?.score])
 
-  // ── Fraîcheur satellite (confiance) — preuve « mesuré, pas deviné »
-  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
-  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
-    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
-    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+    // ── Fraîcheur satellite (confiance) — seule l'observation ERDDAP fait foi.
+  const satAge = satelliteAgeHours(sargData)
+  const satFresh = satelliteDecisionCurrent
+  const satLabel = satAge == null
+    ? _t(lang,"Observation satellite à vérifier","Satellite observation needs checking","Medición satelital por verificar")
+    : satAge < 1
+      ? _t(lang,"Dernière observation satellite il y a <1 h","Last satellite observation <1h ago","Última observación satelital hace <1 h")
+      : _t(lang,`Dernière observation satellite il y a ${Math.round(satAge)} h`,`Last satellite observation ${Math.round(satAge)}h ago`,`Última observación satelital hace ${Math.round(satAge)} h`)
+  const lastObservedStatusLabel = (ST[_satStatus] || ST._loading)[lang === "en" ? "le" : lang === "es" ? "les" : "l"]
+  const V = status === "_loading"
+    ? { big: _t(lang,"À vérifier","Check before deciding","Verificar antes de decidir"), when: satLabel, hl: _t(lang,"À vérifier","Check","Verificar") }
+    : _terrainStatus && !satelliteDecisionCurrent
+      ? { ...comicVerdict(status, lang, daypart), when: _t(lang,"signalement terrain récent","recent on-site report","reporte reciente en playa") }
+      : comicVerdict(status, lang, daypart)
 
-  // ── Distance / lieu
+// ── Distance / lieu
   const distKm=(()=>{try{if(!userPos||!beach)return null;return haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
   const locLine=[beach?.commune||null, distKm!=null?_t(lang,`à ${Math.round(distKm)} km`,`${Math.round(distKm)} km away`,`a ${Math.round(distKm)} km`):null].filter(Boolean).join(" · ")
 
@@ -4489,7 +4572,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     // + bleu pour l'info neutre (température). Plus de rainbow vert/ambre/rouge sous le
     // bandeau verdict (retour fondateur « trop de couleurs sur la carte plage »).
     const sgLvl=status==="clean"?{t:_t(lang,"Sargasses faibles","Low sargassum","Sargazo bajo"),c:COMIC.clean}:status==="moderate"?{t:_t(lang,"Sargasses modérées","Moderate sargassum","Sargazo moderado"),c:COMIC.orange}:status==="avoid"?{t:_t(lang,"Sargasses fortes","Heavy sargassum","Sargazo fuerte"),c:COMIC.orange}:null
-    if(sgLvl)out.push(sgLvl)
+    if(sgLvl && status !== "_loading") out.push(sgLvl)
     if(weather){
       if(weather.waveHeight!=null){const w=weather.waveHeight;out.push({t:w<.6?_t(lang,"Houle calme","Calm swell","Mar calmo"):w<1.2?_t(lang,"Houle modérée","Moderate swell","Mar moderado"):_t(lang,"Houle forte","Strong swell","Mar fuerte"),c:w<.6?COMIC.clean:COMIC.orange})}
       if(weather.wind!=null){const v=weather.wind;out.push({t:v<20?_t(lang,"Vent léger","Light wind","Viento leve"):v<35?_t(lang,"Vent modéré","Moderate wind","Viento moderado"):_t(lang,"Vent fort","Strong wind","Viento fuerte"),c:v<20?COMIC.clean:COMIC.orange})}
@@ -4500,7 +4583,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
   // ── Plan B : si avoid/moderate, plages PROPRES proches (réduit la frustration + maille SEO)
   const planB=useMemo(()=>{
-    if(!beach||!allBeaches||status==="clean"||status==="_loading")return[]
+    if(!satelliteDecisionCurrent||!beach||!allBeaches||status==="clean"||status==="_loading")return[]
     // Plafond de distance : « plutôt y aller » n'a de sens que si c'est ATTEIGNABLE.
     // Sur un grand marché (Floride : plages à 390 km), suggérer une plage à l'autre
     // bout de l'État est inutile → on cache au-delà de 60 km (les petites îles MQ/GP
@@ -4509,7 +4592,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       .map(b=>({...b,_d:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
       .filter(b=>b._d<=60)
       .sort((a,b)=>a._d-b._d).slice(0,3)
-  },[beach?.id,allBeaches,status])
+  },[beach?.id,allBeaches,status,satelliteDecisionCurrent])
 
   const requestClose=()=>{
     if(closingRef.current)return; closingRef.current=true
@@ -4607,20 +4690,22 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
             {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}{!userPos&&beach?.lat&&onRequestGeo&&<GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="beach_dive" style={{padding:"2px 8px",fontSize:11,marginLeft:2}}/>}</div>}
           </div>
-          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
+          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{status==="_loading"?_t(lang,"À vérifier","Check first","Verificar"):(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
 
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
             le plus scannable de la recherche). Fini le blanc-sur-crème illisible :
             mot sombre net sur aplat de couleur = la réponse se lit en 0,2 s. */}
-        <div className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
+        <div data-testid="beach-sheet-verdict" className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
           background:status==="avoid"?"linear-gradient(135deg, #FF3B30 0%, #C70000 100%)":sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:status==="avoid"?"0 8px 24px rgba(255,59,48,0.4), 4px 4px 0 #8B0000":`4px 4px 0 ${COMIC.ink}`,
           animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both",position:"relative",zIndex:1}}>
           <div aria-hidden style={{flexShrink:0,filter:status==="avoid"?"drop-shadow(0 0 12px rgba(255,255,255,0.5))":"none"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
             <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:status==="avoid"?"#fff":COMIC.ink,textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {_terrainStatus
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {status==="_loading"
+              ? _t(lang,`Dernier statut observé : ${lastObservedStatusLabel} · pas une confirmation actuelle`,`Last observed status: ${lastObservedStatusLabel} · not a current confirmation`,`Último estado observado: ${lastObservedStatusLabel} · no es una confirmación actual`)
+              : _terrainStatus
               ? ({clean:0,moderate:1,avoid:2}[_terrainStatus]>{clean:0,moderate:1,avoid:2}[_satStatus]
                   ? _t(lang,`relevé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`raised on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`elevado in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`)
                   : _t(lang,`corrigé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`corrected on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`corregido in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`))
@@ -4643,7 +4728,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         )}
 
         {/* Score + facteurs (carte) */}
-        <div className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
+        <div data-testid="beach-sheet-score" className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
           {hasScore&&<div style={{flexShrink:0,textAlign:"center",position:"relative"}}>
             {/* Score-vedette avec halo animé - WOW effect */}
             <div className={status==="clean"?"score-blob-glow":"score-blob-pulse"} style={{
@@ -4667,9 +4752,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Preuve fraîcheur satellite */}
         <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
+          <span style={{width:7,height:7,borderRadius:"50%",background:satFresh?COMIC.clean:COMIC.orange,boxShadow:`0 0 0 3px ${(satFresh?COMIC.clean:COMIC.orange)}33`}}/>{satLabel}
         </div>
 
+        {/* Les prévisions dépendent de la fraîcheur de l'observation source. */}
+        {satelliteDecisionCurrent ? (
+          <>
         {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
@@ -4706,8 +4794,16 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             ?cadran=1, barre plate sinon), mêmes composants que l'ancienne BeachSheet.
             Alimenté par les données hebdo RÉELLES de cette plage + sargData courant ;
             fraîcheur via prédicats partagés (erddap seul), jamais updatedAt. */}
-        {weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
-
+          </>
+        ) : (
+          <div data-testid="beach-sheet-forecast-paused" className="bsc-card" role="status" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
+            <div style={{font:"800 12px/1.3 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:6}}>{_t(lang,"Prévisions suspendues","Forecasts paused","Pronóstico suspendido")}</div>
+            <div style={{font:"600 12px/1.45 'Bricolage Grotesque'",color:COMIC.sub}}>{satAge==null
+              ? _t(lang,"Horodatage satellite inconnu : les prévisions sont masquées.","Satellite timestamp unknown: forecasts are hidden.","Hora satelital desconocida: el pronóstico está oculto.")
+              : _t(lang,"Observation satellite trop ancienne : les prévisions sont masquées jusqu'à une nouvelle mesure.","Satellite observation is too old: forecasts are hidden until a new reading.","La observación satelital es demasiado antigua: el pronóstico se oculta hasta una nueva medición.")}</div>
+          </div>
+        )}
+        {satelliteDecisionCurrent&&weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
         {/* Plan B — où aller maintenant (avoid/moderate) */}
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
           <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
@@ -7415,7 +7511,7 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,republishedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
+const Header = React.memo(function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,republishedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
   const LL=T[lang]||T.fr
   // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
   // paywall). Répond au « aucun tracking de mon paiement sur mon site ». Flag rollback
@@ -7531,7 +7627,9 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
       </div>
     </div>
   )
-}
+})
+Header.displayName = "Header"
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INLINE PUSH CTA — Contextual in beach sheet after 3rd beach view
@@ -10052,6 +10150,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
     :_t(lang,"À ÉVITER AUJOURD'HUI","AVOID TODAY","EVITAR HOY")
   const verdictBg=clean?"#FFC72C":beach.status==="moderate"?"#F59E0B":"#E8522A"
+  // Gate 12h anti-fake-LIVE : masquer verdicts/scores/counters quand satellite vieille
+  const verdictFresh=updFresh
   // J+1 réel quand résolvable (weekly keyé par id sarg pour MQ/GP, id direct
   // pour les nouvelles régions) — sinon pas de promesse.
   const wkId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
@@ -10081,6 +10181,17 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   const statusShort=b=>b.status==="clean"?_t(lang,"Propre","Clean","Limpia")
     :b.status==="moderate"?_t(lang,"Modéré","Moderate","Moderada"):_t(lang,"À éviter","Avoid","Evitar")
   const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
+  // Compteur live « coast » : plages propres / à éviter sur la sélection du hero.
+  // Aucune requête reseau : topBeaches est deja en memoire (passe par l appelant).
+  const liveCounts=(()=>{
+    const list=Array.isArray(topBeaches)?topBeaches:(Array.isArray(pickBeaches)?pickBeaches:[])
+    let clean=0,avoid=0
+    for(const b of list){if(!b||!b.status)continue
+      if(b.status==="clean")clean++
+      else if(b.status==="avoid")avoid++
+    }
+    return{clean,avoid,total:list.length}
+  })()
   const ovl={fontSize:11,fontWeight:700,letterSpacing:".16em",color:"#FFC72C",textTransform:"uppercase",marginBottom:10}
   const h2s={fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,40px)",lineHeight:1.02,
     letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
@@ -10094,6 +10205,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
       <style>{`@keyframes sgHeroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@keyframes sgHeroShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes sgHeroPulse{0%,100%{opacity:.4}50%{opacity:1}}
 .sg-heroSec{position:relative;min-height:100vh}
 @supports(min-height:100svh){.sg-heroSec{min-height:100svh}}
 .sg-rv{opacity:0;transform:translateY(26px);transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
@@ -10135,6 +10248,17 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 
       {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
       <section ref={heroRef} className="sg-heroSec">
+      {/* Hero skeleton pendant le chargement satellite (additif · rollback ?heroskel=0) */}
+      {!/[?&]heroskel=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(!sargData?.erddapTimestamp||beach.status==="_loading")&&(
+      <div style={{padding:"0 20px calc(10px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",display:"flex",flexDirection:"column",gap:10,height:"min(480px,46svh)",justifyContent:"center"}}>
+        <div style={{height:60,borderRadius:30,background:"linear-gradient(90deg,#10231E 25%,#1a352E 50%,#10231E 75%)",backgroundSize:"200% 100%",animation:"sgHeroShimmer 1.6s ease-in-out infinite"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",animation:"sgHeroPulse 2s ease-in-out infinite"}}/>
+          <div style={{height:14,borderRadius:7,background:"linear-gradient(90deg,#10231E 25%,#1a352E 50%,#10231E 75%)",backgroundSize:"200% 100%",animation:"sgHeroShimmer 1.6s ease-in-out infinite",flex:1}}/>
+        </div>
+        <div style={{height:10,borderRadius:5,background:"linear-gradient(90deg,#10231E 25%,#1a352E 50%,#10231E 75%)",backgroundSize:"200% 100%",animation:"sgHeroShimmer 1.6s ease-in-out infinite",width:"60%"}}/>
+      </div>
+      )}
       <HeroScene/>
       {/* Le voile média couvre la photo : c'est LUI qui reçoit les taps sur
           l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
@@ -10172,9 +10296,59 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         </h1>
         <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
-          {verdictTxt}
-          {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
+          {updFresh?verdictTxt:"Vérification en cours"}
+          {beach.score!=null&&updFresh&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
+        {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
+        {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
+        <div onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px rgba(34,197,94,.75)":"none",flexShrink:0}}/>
+          {updFresh?<>{_t(lang,"Observation satellite","Satellite observation","Observación satelital")}{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
+        </div>
+        )}
+        {/* Compteur live des plages propres / à éviter (additif · rollback ?herolive=0) */}
+        {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&updFresh&&(
+        <div onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
+            <span style={{color:"#fff"}}>{liveCounts.clean} {_t(lang,"propres","clean","limpias")}</span>
+          </span>
+          <span style={{opacity:.45}}>·</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:"#E8522A",flexShrink:0}}/>
+            <span style={{color:"rgba(255,255,255,.9)"}}>{liveCounts.avoid} {_t(lang,"àéviter","to avoid","a evitar")}</span>
+          </span>
+        </div>
+        )}
+        {/* Navigation rapide plage suivante propre (additif · rollback ?heronext=0) */}
+        {!/[?&]heronext=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(()=>{
+          const list=Array.isArray(topBeaches)?topBeaches:(Array.isArray(pickBeaches)?pickBeaches:[])
+          const idx=list.findIndex(b=>b&&b.id===beach.id)
+          const next=list.slice(idx+1).find(b=>b&&b.status==="clean")||list.find(b=>b&&b.status==="clean"&&b.id!==beach.id)
+          if(!next)return null
+          return(
+          <div onClick={()=>{track("sg_hero_tap",{t:"next"});onOpenBeach&&onOpenBeach(next)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+              <span style={{width:8,height:8,borderRadius:"50%",background:"#FFC72C",flexShrink:0}}/>
+              <span style={{color:"#fff"}}>{_t(lang,"Prochaine plage propre","Next clean beach","Playa limpia siguiente")}</span>
+            </span>
+            <span style={{fontSize:12,color:"#fff",fontWeight:800}}>{next.name}</span>
+            <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>▸</span>
+          </div>
+          )
+        })()}
+        )}
+        {/* Tendance J+1 (additif · rollback ?herotomo=0) */}
+        {!/[?&]herotomo=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&j1&&(
+        <div onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:j1==="clean"?"#22C55E":j1==="moderate"?"#F59E0B":"#E8522A",flexShrink:0}}/>
+            <span style={{color:"#fff"}}>{_t(lang,"Demain","Tomorrow","Mañana")}</span>
+          </span>
+          <span style={{fontSize:12,color:"#fff",fontWeight:800}}>{forecastLabel(j1,lang)}</span>
+          <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>{j1==="clean"?"▲":j1==="moderate"?"▬":"▼"}</span>
+        </div>
+        )}
         {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
@@ -10237,7 +10411,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             {upd?(updFresh?` · LIVE ${upd}`:` · ${_t(lang,"Données en retard","Data delayed","Datos desactualizados")}`):""}
           </p>
         </div>
-        {!!(topBeaches&&topBeaches.length)&&(
+        {updFresh && ((topBeaches&&topBeaches.length) && (
           <div className="sg-l-cards sg-rv">
             {topBeaches.map(b=>(
               <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
@@ -10255,7 +10429,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
               </button>
             ))}
           </div>
-        )}
+        ))}
         {/* SÉLECTEUR — choisis ta plage directement depuis l'accueil (recherche
             + liste live de toutes les plages, tap = fiche). Demande user 13/06. */}
         {!!(pickBeaches&&pickBeaches.length>3)&&(()=>{
@@ -10418,14 +10592,15 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         {/* Liens société/légaux — régions USD/ES (pages générées EN/ES, slugs
             localisés). Identité opérateur 97TECH visible partout, comme MQ/GP. */}
         {IS_NEW_REGION && (() => {
-          const sl = lang==="es"?{t:"terminos",p:"privacidad",r:"reembolso",rel:"fiabilidad"}:{t:"terms",p:"privacy",r:"refund",rel:"reliability"}
+          const lg = legalLinks(lang)
+          const relHref = reliabilityHref(lang)
           const ls={color:"rgba(255,255,255,.38)"}, lsd={color:"rgba(255,255,255,.3)"}
           return (
             <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
-              <a href={`/${sl.rel}/`} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
-              <a href={`/${sl.t}/`} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
-              <a href={`/${sl.p}/`} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
-              <a href={`/${sl.r}/`} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
+              <a href={relHref||undefined} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
+              <a href={lg.terms||undefined} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
+              <a href={lg.privacy||undefined} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
+              <a href={lg.refund||undefined} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
               <div style={{marginTop:6,color:"rgba(255,255,255,.26)"}}>{_t(lang,"Édité par","Operated by","Operado por")} 97TECH · SAS · RCS Paris 882&nbsp;370&nbsp;703</div>
             </div>
           )
@@ -11453,7 +11628,6 @@ export default function App(){
   // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
-  const[showSOS,setShowSOS]=useState(false)
   // Parcours « Trouve ta plage » (TrouvePlage) ouvert IN-APP depuis le CTA primaire de la carte —
   // plus besoin du deep-link ?recommend=1 (conservé pour rétro-compatibilité des liens sortants).
   const[showRecommend,setShowRecommend]=useState(RECOMMEND_MODE)
@@ -11488,53 +11662,12 @@ export default function App(){
     }catch{}
     try{
       const params=new URLSearchParams(window.location.search)
-      // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
-      const sessionId=params.get("session_id")
-      // Trip Pass one-time : ?pass=trip → pose une expiration 7j AU LIEU du flag
-      // permanent. DOIT être testé AVANT le bloc générique (qui, lui, lit
-      // session_id et poserait sg_premium=1 à vie). Revenu loggé pareil (le
-      // webhook gère checkout.session.completed pour les sessions mode=payment).
-      // Pass one-time TIME-BOXÉ : ?pass=trip (7j, rétrocompat) OU ?pass=pNN (NN jours,
-      // ex pass vacances p30). Pose une expiration AU LIEU du flag premium permanent.
-      const passParam=params.get("pass")
-      if(passParam&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
-        const days=passParam==="trip"?7:Math.min(120,Math.max(1,parseInt(passParam.slice(1),10)||7))
-        const end=Date.now()+days*86400000
-        try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
-          }).catch(e=>sgLogError("webhook_conversion",e))}catch(ex){sgLogError("webhook_conversion_wrap",ex)}
-        }
-        // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
-        // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
-        // sur les autres replaceState (manage/premium_email).
-        params.delete("pass");params.delete("session_id");params.delete("premium");params.delete("success")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
-      }
-      if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
-        s("sg_premium",true)
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"direct"})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        // Log payment to Apps Script (fire-and-forget)
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
-          }).catch(()=>{})}catch(ex){}
-        }
-        params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
-        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
+      // Un paramètre d'URL (?premium=1, ?success=1, ?session_id, ?pass) ne confirme
+      // jamais un paiement et n'écrit aucun droit. L'accès vient du webhook,
+      // puis de /?restore=1.
+      if(params.get("paywall")==="1"){
+        openPremium("paywall_deeplink");
+        {const qs=params.toString().replace(/paywall/,"");window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
         return true
       }
     }catch(e){}
@@ -13468,7 +13601,7 @@ export default function App(){
       let hasEm=false;try{hasEm=!!localStorage.getItem("sg_email")}catch(_){}
       if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
     }
-    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null})
+    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s});track("sg_paywall_view",{source:s,offer:hasAnnual?"annual":"monthly",price_monthly:PRICE_MO||null,price_annual:PRICE_YR||null});track("pricing_view",{livemode:true,correlation_id:sgCorrelation(),source:s})
   },[captureGate])
 
   // ── Listener custom event sg_open_paywall (relance après paiement échoué) ───
@@ -13565,7 +13698,7 @@ export default function App(){
     if(v==="premium")openPremium("nav")
     else {setShowPremium(false);setView(v)} // close paywall when navigating away → fixes ⭐ tab staying lit on map/list
   },[openPremium])
-  // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
+  // Deep-link OUVRE le paywall. ?premium=1 n'accorde aucun accès. Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
   // /alertes/ = landing page hot-intent (cherché "alertes sargasses") → ouvre paywall direct.
   // Distinct du general auto-open désactivé L11319 (intention tiède) : ici l'intention est CHAUDE.
@@ -13591,21 +13724,35 @@ export default function App(){
       try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
       try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
       window.history.replaceState({},"",window.location.pathname)}
-    else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
-    else if(p.get("sos")==="1"){setShowSOS(true);track("sg_sos_open",{source:"deeplink"});window.history.replaceState({},"",window.location.pathname)}
+    // SUPPRIMÉ (2026-11-27) : `else if(ALERT_PATHS.test(pathname)) openPremium("alertes_landing")`.
+    // Cette branche ouvrait le paywall À FROID sur /alertes/ (+ /en/sargassum-alerts/,
+    // /es/alertas-sargazo/) — c'est-à-dire exactement ce que la doctrine enregistrée
+    // 15 lignes plus bas interdit (« le mur ne s'ouvre PLUS que sur intention CHAUDE »,
+    // cf. useEffect engagement désactivé par un early return volontaire, même fichier).
+    //
+    // PREUVES (lecture seule, aucun paiement déclenché) :
+    //  · LIVE 2026-11-26 sur https://sargasses-martinique.com/alertes/ : le paywall
+    //    s'ouvre tout seul à la première visite et son overlay (z=1100) couvre tout le
+    //    viewport. Le DOM de la page n'a que 3 <a>, dont UN seul atteignable, et il est
+    //    DANS la modale (« Avant de payer, voyez nos erreurs → » vers /fiabilite/).
+    //    → le visiteur ne voit pas la page /alertes/, il voit un mur.
+    //  · Funnel ?action=funnel, 28 j : alertes_landing = 305 ouvertures pour
+    //    premium_modal_cta = 0. À titre de comparaison sur la même fenêtre :
+    //    beach_sheet 34/2 (5,9 %) et chasse_detail 158/2 (1,3 %) — les sources où le
+    //    mur s'ouvre sur une intention réelle.
+    //  · Cause du 0 : le visiteur d'/alertes/ demande une ALERTE (la page est rédigée
+    //    pour ça, cf. contenu noscript `alertes` dans vite.config.js) ; on lui servait
+    //    une offre de prévision 7 jours.
+    //
+    // CE QUI NE CHANGE PAS :
+    //  · le deep-link `/?paywall=1&utm_source=alertes_noscript` (CTA explicite de la
+    //    page /alertes/) reste l'unique entrée nommée de cette page : un CLIC reste
+    //    la seule intention qui ouvre le mur ici aussi ;
+    //  · les branches `?paywall=1|cancel` (retour paiement) et `?pro=1` (B2B) sont
+    //    intactes — elles servent un visiteur qui a déjà agi ;
+    //  · ALERT_PATHS (hub premium `?pw_alertes=1`) n'est pas touché : c'est une
+    //    surface de contenu, pas une ouverture automatique du mur.
   }catch(_){}},[openPremium])
-
-  // SOS deep-link handler — separate effect to ensure it runs on mount regardless of openPremium stability
-  useEffect(()=>{
-    try{
-      const p=new URLSearchParams(window.location.search)
-      if(p.get("sos")==="1"){
-        setShowSOS(true)
-        track("sg_sos_open",{source:"deeplink"})
-        window.history.replaceState({},"",window.location.pathname)
-      }
-    }catch(_){}
-  },[])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
@@ -13674,7 +13821,7 @@ export default function App(){
     try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
   })
   // Mission P0 refonte UX (2026-10-14) : la bannière cookies (~100px) recouvrait la chrome basse
-  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/SOS/chat/découverte tant qu'elle est affichée.
+  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/chat/découverte tant qu'elle est affichée.
   useEffect(()=>{try{
     const h=(!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb)?"100px":"0px"
     document.documentElement.style.setProperty("--sg-consent-h",h)
@@ -13770,9 +13917,13 @@ export default function App(){
           (carte → fiche → alerte). Code dormant conservé, joignable seulement via ?hero=1
           pour une éventuelle réintroduction ; aucun bouton « Jouer » en prod. */}
       <AbDebug/>
-      {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
-          l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
-      <p style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</p>
+      {/* Mot-clé SEO sr-only — <h1> (était <p>, voir correctif) : la scène/route visible
+          ne fournit AUCUN <h1> dans le DOM rendu (mesuré sur les 6 domaines : home et
+          fiche plage, h1 absent). Le commentaire précédent supposait un <h1> visible qui
+          n'existe pas → home + fiche rendues sans aucun heading de niveau 1.
+          Ce sr-only est donc l'unique <h1> de la page : un seul h1, texte crawlable,
+          invisible par construction (position:absolute + clip + 1px). */}
+      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
       {/* contentVisibility:hidden pendant l'attract → la carte (WorldMapView, statique au
           repos) n'est plus peinte/composée sous le reel opaque (perf bas de gamme). No-op si
           non supporté ; "visible" par défaut → zéro impact hors attract (smoke inchangé). */}
@@ -14203,7 +14354,7 @@ export default function App(){
               in that band unclickable on both mobile and desktop. */}
           <div className="sg-header-chrome" style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
             <style>{`.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}`}</style>
-            <Header island={island} onIslandChange={(id)=>{setIsland(id);setSelectedBeach(null)}}
+            <Header key={island} island={island} onIslandChange={(id)=>{setIsland(id);setSelectedBeach(null)}}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
@@ -14515,7 +14666,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(166px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
+            style={{position:"fixed",right:14,bottom:"calc(158px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
               alignItems:"center",justifyContent:"center",
@@ -14536,18 +14687,6 @@ export default function App(){
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
-          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,pointerEvents:"none"}}>
-            <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
-              <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
-                className="sg-soscta"
-                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 20px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:15,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
-                <span style={{font:"800 14px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
-              </button>
-            </div>
-          </div>
-        )}
-        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(220px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
@@ -14563,8 +14702,7 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-        {showSOS&&<div style={{position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",WebkitOverflowScrolling:"touch"}}><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
-        
+
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
             onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}
@@ -14692,8 +14830,8 @@ export default function App(){
                   openPremium={openPremium}
                 />
                 <LazyWorldMapView
-                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                  erddapTimestamp={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                  beaches={allBeaches} island={island} updatedAt={sargData?.updatedAt}
+                  erddapTimestamp={sargData?.erddapTimestamp} source={sargData?.source}
                   lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
                   rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
                   arrivals={mapArrivals}
@@ -14856,7 +14994,7 @@ display:"flex",flexDirection:"column",gap:8,backdropFilter:"blur(12px)",WebkitBa
                 "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser.",
                 "We use cookies to improve experience and measure analytics. You can accept or decline.",
                 "Usamos cookies para mejorar la experiencia y medir la audiencia. Puedes aceptar o rechazar.")}
-              {' '}<a href={lang==="en"?"/en/privacy/":lang==="es"?"/es/privacy/":"/confidentialite/"}
+              {' '}<a href={legalHref("privacy",lang)||undefined}
                 style={{color:"#FFC72C",textDecoration:"underline"}}>{_t(lang,"En savoir plus","Learn more","Saber más")}</a>
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>

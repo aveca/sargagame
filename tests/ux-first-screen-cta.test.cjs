@@ -17,6 +17,7 @@ const path = require('node:path')
 const app = fs.readFileSync(path.join(__dirname, '../src/Sargasses_PROD.jsx'), 'utf8')
 const map = fs.readFileSync(path.join(__dirname, '../src/WorldMapView.jsx'), 'utf8')
 const funnel = fs.readFileSync(path.join(__dirname, '../src/TrouvePlage.jsx'), 'utf8')
+const frustration = fs.readFileSync(path.join(__dirname, '../src/useFrustrationDetection.js'), 'utf8')
 
 // 1. CTA primaire sur la carte + i18n
 assert.equal(map.includes('data-testid="cta-trouve-ta-plage"'), true, 'le CTA principal « Trouve ta plage » doit exister sur la carte')
@@ -32,11 +33,8 @@ assert.equal(app.includes('trouveplage=0'), true, 'rollback ?trouveplage=0 oblig
 
 // 4. bannière cookies : le chrome bas remonte, le CTA reste visible
 assert.equal(app.includes('"--sg-consent-h"'), true, 'la bannière cookies doit exposer --sg-consent-h')
-for (const f of [
-  ['src/Sargasses_PROD.jsx', 'SOS PLAGE'],
-]) { void f }
 assert.equal(map.includes('var(--sg-consent-h,0px)'), true, 'le CTA carte doit remonter au-dessus de la bannière cookies')
-assert.equal((app.match(/var\(--sg-consent-h,0px\)/g) || []).length >= 3, true, 'SOS/chat/découverte remontent aussi (--sg-consent-h ≥ 3 usages)')
+assert.equal((app.match(/var\(--sg-consent-h,0px\)/g) || []).length >= 2, true, 'CTA/chat/découverte remontent aussi (--sg-consent-h ≥ 2 usages)')
 
 // 5. fermeture douce sans rechargement quand onClose est fourni
 assert.equal(funnel.includes('onClose = null'), true, 'TrouvePlage accepte onClose optionnel')
@@ -45,10 +43,19 @@ assert.ok(
   'la fermeture IN-APP nettoie l’URL sans recharger (replaceState)'
 )
 
-// 6. régression SOS : le portail payant ne doit plus être strippé par .sg-fab
-//    (fond encre !important rendait le SOS invisible sur fond nuit — vu en prod 2026-10-14)
+// 6. le parcours SOS a été retiré (2026-11-09) : plus aucun CTA doré dédié,
+//    plus aucune classe .sg-soscta dans le CSS applicatif.
 const css = fs.readFileSync(path.join(__dirname, '../src/app-runtime.css'), 'utf8')
-assert.equal(css.includes('.sg-soscta.sg-soscta.sg-soscta'), true, 'classe armurée .sg-soscta obligatoire (gradient or)')
-assert.equal(app.includes('className="sg-soscta"'), true, 'le bouton SOS doit utiliser .sg-soscta (pas .sg-fab)')
+assert.equal(css.includes('.sg-soscta'), false, 'la classe .sg-soscta doit avoir disparu du CSS')
+assert.equal(app.includes('sg-soscta'), false, 'le bouton SOS ne doit plus exister dans l\'app')
 
-console.log('OK — CTA « Trouve ta plage » visible sans param URL, rollback documenté, bannière cookies non bloquante, SOS or restauré')
+// 7. anti-régression P0 (2026-10-27) : le chat d'hésitation ne s'ouvre jamais
+//    avant le 1er contact — le premier écran reste dégagé (défaut mesuré en
+//    prod : 44,8 % d'occlusion mobile à t=12s, zéro interaction, CTA poussé
+//    sous la ligne de flottaison). Rollback existant : ?frustration=0.
+assert.equal(frustration.includes('const hasInteracted = useRef(false)'), true, 'marqueur d’intention présent (hasInteracted)')
+assert.equal(frustration.includes('const intentEvents = [\'click\', \'keydown\', \'touchstart\']'), true, 'liste d’événements d’intention isolée')
+assert.equal(frustration.includes('for (const e of intentEvents) document.addEventListener(e, markIntent'), true, 'l’intention = clic/touche/clavier uniquement (pas le simple scroll)')
+assert.equal(frustration.includes('if (!hasInteracted.current) { lastInteraction.current = now; return }'), true, 'garde : l’hésitation avant le 1er contact n’ouvre jamais le chat')
+
+console.log('OK — CTA « Trouve ta plage » visible sans param URL, rollback documenté, bannière cookies non bloquante, parcours SOS retiré, chat anti-occlusion verrouillé')

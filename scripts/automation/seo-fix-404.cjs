@@ -9,7 +9,7 @@
 const { readFileSync, writeFileSync, existsSync } = require('fs')
 const { resolve } = require('path')
 const { BEACHES } = require('./lib/config.cjs')
-const { DRY_RUN, LIMITS, appendLog, isPathRedirected, validateHtaccess, similarity } = require('./lib/safety.cjs')
+const { DRY_RUN, LIMITS, appendLog, isPathRedirected, isSelfRedirect, validateHtaccess, similarity } = require('./lib/safety.cjs')
 
 const HTACCESS_PATH = resolve(__dirname, '..', '..', 'public', '.htaccess')
 const AUDIT_PATH = resolve(__dirname, 'data', 'audit-summary.json')
@@ -116,6 +116,13 @@ function main() {
       // Find best matching beach
       const match = findBestMatch(path)
       const target = match ? `/plages/${match.beach.slug}/` : '/'
+
+      // Never create a 301 that points back to the same URL (including slash-only variants).
+      if (isSelfRedirect(path, target)) {
+        console.log(`  ✓ Skip self-redirect: ${path} → ${target}`)
+        continue
+      }
+
       const cleanPath = path.replace(/^\//, '').replace(/\/$/, '')
 
       // Build RewriteRule

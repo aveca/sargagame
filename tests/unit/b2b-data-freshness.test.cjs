@@ -1,0 +1,114 @@
+'use strict'
+
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+const vm = require('node:vm')
+const helperSource = fs.readFileSync(path.join(__dirname, '../../public/b2b-data-freshness.js'), 'utf8')
+const helperWindow = {}
+vm.runInNewContext(helperSource, { window: helperWindow })
+const freshness = helperWindow.SargagameB2BFreshness
+assert.ok(freshness && typeof freshness.getObservationFreshness === 'function', 'browser helper must expose its public contract')
+
+const now = Date.parse('2026-10-30T13:26:57.000Z')
+const recent = new Date(now - 2 * 60 * 60 * 1000).toISOString()
+const old = new Date(now - 4405 * 60 * 1000).toISOString()
+
+assert.equal(freshness.getObservationFreshness({ source: 'erddap-live', erddapTimestamp: recent, updatedAt: new Date(now).toISOString(), stale: false }, 'en', now).status, 'fresh')
+assert.equal(freshness.getObservationFreshness({ source: 'reference', erddapTimestamp: recent, stale: false }, 'en', now).status, 'unknown', 'non-live sources cannot certify satellite freshness')
+assert.equal(freshness.getObservationFreshness({ erddapTimestamp: recent, stale: false }, 'en', now).status, 'unknown', 'a missing source cannot certify satellite freshness')
+const republishedOld = freshness.getObservationFreshness({ source: 'erddap-live', erddapTimestamp: old, updatedAt: new Date(now).toISOString(), stale: false }, 'fr', now)
+assert.equal(republishedOld.status, 'stale', 'recent republication must not make an old observation fresh')
+assert.equal(Math.round(republishedOld.ageMs / 60000), 4405)
+const exactThreshold = freshness.getObservationFreshness({ source: 'erddap-live', erddapTimestamp: new Date(now - 36 * 60 * 60 * 1000).toISOString(), stale: false }, 'en', now)
+assert.equal(exactThreshold.status, 'stale', 'the exact 36-hour boundary must be stale')
+assert.match(republishedOld.label, /ancienne/)
+const spanishOld = freshness.getObservationFreshness({ source: 'erddap-live', erddapTimestamp: old, updatedAt: new Date(now).toISOString(), stale: false }, 'es', now)
+assert.equal(spanishOld.status, 'stale')
+assert.match(spanishOld.label, /antigua/)
+assert.equal(freshness.getObservationFreshness({ source: 'erddap-live', updatedAt: new Date(now).toISOString(), stale: false }, 'en', now).status, 'unknown')
+assert.equal(freshness.getObservationFreshness({ source: 'erddap-live', erddapTimestamp: new Date(now + 60000).toISOString(), stale: false }, 'fr', now).status, 'unknown')
+assert.equal(freshness.getObservationFreshness({ source: 'erddap-live', erddapTimestamp: recent, stale: true }, 'en', now).status, 'stale')
+
+const freshRecord = {
+  generatedAt: new Date(now - 60 * 60 * 1000).toISOString(),
+  freshness: { stale: false },
+  regions: ['mq', 'gp'],
+  window: { from: '2026-10-01', to: '2026-10-30' },
+  sampleSize: 2205,
+  overall: { statusHitRatePct: 99 }
+}
+assert.equal(freshness.getTrackRecordState(freshRecord, 'mq', now).available, true)
+assert.equal(freshness.getTrackRecordState(freshRecord, 'MQ', now).scopeLabel, 'MQ + GP')
+assert.equal(freshness.getTrackRecordState(freshRecord, 'tulum', now).reason, 'region-not-covered')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, freshness: { stale: true } }, 'mq', now).reason, 'stale-record')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, freshness: undefined }, 'mq', now).reason, 'stale-record')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, generatedAt: new Date(now - 37 * 60 * 60 * 1000).toISOString() }, 'mq', now).reason, 'expired-record')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, generatedAt: new Date(now + 60000).toISOString() }, 'mq', now).reason, 'invalid-generated-at')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, generatedAt: undefined }, 'mq', now).reason, 'invalid-generated-at')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, sampleSize: 0 }, 'mq', now).reason, 'incomplete-record')
+
+const root = path.resolve(__dirname, '../..')
+const pages = [
+  ['public/pro/hotels/index.html', 'fr'],
+  ['public/pro/en/hotels/index.html', 'en'],
+  ['public/pro/es/hotels/index.html', 'es'],
+  ['public/pro/collectivites/index.html', 'fr'],
+  ['public/pro/en/collectivites/index.html', 'en'],
+  ['public/pro/es/collectivites/index.html', 'es']
+]
+for (const [relative, locale] of pages) {
+  const html = fs.readFileSync(path.join(root, relative), 'utf8')
+  assert.ok(html.includes('/b2b-data-freshness.js'), relative + ' must load the shared freshness contract')
+  assert.ok(html.includes("getTrackRecordState(d,'mq')"), relative + ' must gate the record on region and freshness')
+  assert.ok(html.includes("getObservationFreshness(data,'"+locale+"')"), relative + ' must use the ERDDAP timestamp helper')
+  assert.match(html, /class="freshpill is-unknown"/, relative + ' must start in an unknown state before the observation is checked')
+  assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy|de acierto)|76\s*%\s*(?:to|à|a)\s*79\s*%|4×\s*\/\s*(?:jour|day|día)|live conditions badge|live demo|live snapshot|demo en vivo|datos reales, al instante/i, relative + ' must not publish unsupported accuracy, sampling or live-data claims')
+}
+const proHubPages = [
+  'public/pro/index.html',
+  'public/pro/en/index.html',
+  'public/pro/es/index.html'
+]
+for (const relative of proHubPages) {
+  const html = fs.readFileSync(path.join(root, relative), 'utf8')
+  assert.ok(html.includes('<script src="/b2b-data-freshness.js"></script>'), relative + ' must load the shared track-record freshness contract')
+  const gate = html.indexOf("getTrackRecordState(d,'mq')")
+  const unavailable = html.indexOf('if(!state.available)', gate)
+  const percentage = html.indexOf('var pct=', gate)
+  assert.ok(gate >= 0 && unavailable > gate && percentage > unavailable, relative + ' must reject stale/out-of-scope records before reading accuracy')
+  assert.doesNotMatch(html, /76\s*%?\s*(?:to|à|a)\s*79\s*%|76\s*%.*79\s*%|76\s*% a 79\s*%/i, relative + ' must not hardcode a historical accuracy range')
+}
+
+const b2bTrustPages = [
+  'public/pro/index.html',
+  'public/pro/en/index.html',
+  'public/pro/es/index.html',
+  'public/pro/hotels/index.html',
+  'public/pro/en/hotels/index.html',
+  'public/pro/es/hotels/index.html'
+]
+const unsupportedDailyProof = /auditons? chaque jour|auditée? chaque jour|auditée? quotidiennement|audited (?:daily|every day)|publish(?:ed)? and audit(?:ed)? daily|auditada cada día|auditado cada día|auditada a diario|auditado a diario|4\s*(?:×|x)\s*\/\s*(?:jour|day|día)|4\s*(?:times|passes|pasadas)\s+(?:per day|a day|por día)/i
+for (const relative of b2bTrustPages) {
+  const html = fs.readFileSync(path.join(root, relative), 'utf8')
+  assert.doesNotMatch(html, unsupportedDailyProof, relative + ' must not promise a daily audit or four AFAI observations per day')
+}
+
+const pricingPages = [
+  { path: 'public/pro/pricing/index.html', prices: ['79 €/mois', '690 €/an'] },
+  { path: 'public/pro/en/pricing/index.html', prices: ['$89/month', '$790/year'] },
+  { path: 'public/pro/es/pricing/index.html', prices: ['$89/mes', '$790/año'] }
+]
+for (const item of pricingPages) {
+  const pricing = fs.readFileSync(path.join(root, item.path), 'utf8')
+  assert.ok(pricing.includes('/b2b-data-freshness.js'), item.path + ' must load the shared freshness contract')
+  assert.ok(pricing.includes("getTrackRecordState(d, 'mq')"), item.path + ' must scope the public record to MQ')
+  assert.doesNotMatch(pricing, /Fiabilité publiée et auditée|4×\s*\/\s*jour|4×\s*\/\s*day|4×\s*\/\s*día/i, item.path + ' must not publish stale proof or promise four AFAI observations per day')
+  assert.ok(item.prices.every(price => pricing.includes(price)), item.path + ' must preserve its existing prices without selecting a new offer')
+}
+
+const api = fs.readFileSync(path.join(root, 'public/api/index.html'), 'utf8')
+assert.ok(api.includes('Alternate Floating Algae Index'), 'API docs must use the verified AFAI expansion')
+assert.doesNotMatch(api, /Algae Floating Area Index/, 'API docs must not use the incorrect AFAI expansion')
+
+console.log('PASS: six B2B locales, observation freshness, scoped track-record gating, source cadence copy and canonical pricing invariance')

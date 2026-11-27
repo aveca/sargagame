@@ -1,0 +1,20 @@
+{
+  "purpose": "Authorized Pages-only production release after B2B hotel form fix and stale-state freshness correction",
+  "authorization": "User explicitly authorized full autonomous execution on 2026-11-24",
+  "source_commit": "6e0db9d1c41917efc9bd0dda074425f3cd572cbe",
+  "scope": [
+    "sargagame",
+    "sargagame-gp",
+    "sargagame-florida",
+    "sargagame-puntacana",
+    "sargagame-rivieramaya",
+    "sargagame-tulum"
+  ],
+  "constraints": [
+    "preserve exact live satellite observations",
+    "recompute only dataAgeMinutes and stale metadata",
+    "no Worker deployment",
+    "no payment or secret changes",
+    "rollback on any live verification failure"
+  ]
+}

@@ -1,15 +1,183 @@
 name: Cloudflare Production
 
+# ARCHITECTURE DU DÉCLENCHEMENT (P0 — cf. run 39383768675 / SHA 4eea0367)
+#
+#   push sur `main`            -> parcours de PRODUCTION complet :
+#                                  build -> certification-gate (fail-closed)
+#                                  -> deploy + deploy-pages -> verify-fleet
+#                                  -> post-deploy-verify
+#   workflow_dispatch sur `main` -> idem (déploiement manuel encadré)
+#   workflow_run (Copernicus sur `main`, réussi) -> idem (rafraîchissement
+#                                  des données puis déploiement du contenu de main)
+#   toute autre ref / tout autre événement -> run de VALIDATION :
+#                                  le job `scope` marque le parcours de
+#                                  production NON APPLICABLE ; les builds et les
+#                                  contrôles sont exécutés, les jobs de
+#                                  production sont écartés explicitement.
+#
+# Pourquoi : la porte de certification exige les checks CI `test-frontend` et
+# `perf` SUR LE SHA EXACT. Ces checks ne sont produits que sur `main` (ou PR
+# vers `main`). Déclencher la production sur une branche de développement rend
+# donc la porte inexécutable — refus systématique, sans bug de code (10 runs
+# rouges identiques sur `agent/coding/TASK-P1-002`).
+#
+# La porte reste fail-closed : sur un run de PRODUCTION, sans checks requis
+# verts sur le SHA exact, le déploiement est refusé. Ni le garde-fou, ni la
+# liste des checks requis, ni la vérification de déploiement ne sont modifiés.
+
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'AGENTS.md'
+      - '.github/workflows/daily-copernicus.yml'
+      - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/erddap-capture-window-monitor.yml'
+      - 'scripts/probe-erddap-capture-window.cjs'
+      - 'tests/unit/erddap-capture-window-monitor.test.cjs'
+      # Isolement de l'outillage de release Pages : la publication des six
+      # domaines passe par `pages-code-only-release.yml`, qui possede sa propre
+      # porte (build + tests + budget gzip + payload preserve + audit Playwright
+      # + rollback automatique). Un changement de CE workflow (ou de son
+      # garde-fou de non-regression) ne doit donc pas redeployer le Worker ni
+      # reconfigurer les secrets de paiement : sans cette exclusion, corriger
+      # le gate de la release Pages declencherait un deploiement production
+      # Workers depuis un simple push sur `main`.
+      # Garde-fou de non-regression : tests/unit/pages-code-only-workflow.test.cjs
+      - '.github/workflows/pages-code-only-release.yml'
+      - 'tests/unit/pages-code-only-workflow.test.cjs'
+      - 'scripts/lib/hotel-landing-fr.cjs'
+      - 'scripts/lib/region-seo-pages.cjs'
+      - 'scripts/automation/prepare-pages-code-only-payload.cjs'
+      - 'scripts/automation/verify-pages-code-only-change.cjs'
+      - 'src/ChasseHome.jsx'
+      - 'src/lib/format-freshness.mjs'
+      - 'tests/unit/b2b-hotel-form-contract.test.cjs'
+      - 'tests/unit/bug-2026-015-offer-decoupling.test.cjs'
+      - 'tests/unit/pages-code-only-change-guard.test.cjs'
+      # Audit E2E/test-only : relancer les parcours sans redeployer sg-payments ni réécrire les secrets.
+      - 'scripts/automation/user-journey-audit.cjs'
+      - 'tests/unit/user-journey-report.test.cjs'
+      - '.github/workflows/user-journey-audit.yml'
+      # Memoire des agents (handoff, backlog, changelog) : une mise a jour de
+      # documentation NE doit jamais redployer le Worker ni reecrire les
+      # secrets de paiement. Cette exclusion rend le chemin de handoff
+      # document-only neutre pour la production.
+      - '.ai/**'
+      # Garde-fou de non-regression de cette exclusion.
+      - 'tests/unit/ai-docs-paths-ignore.test.cjs'
+      # Pont autopilot multi-depot : OUTILLAGE pur (CLI du runner Factory V3
+      # existant), reference par AUCUN workflow. Modifier le pont ne doit donc
+      # pas redeployer le Worker ni reecrire les secrets de paiement.
+      # Exclusion STRICTE fichier par fichier : `scripts/autopilot/**` contient
+      # des scripts CRITIQUES pour la production (check-predeploy-satellite-
+      # freshness.cjs, check-prepared-html.cjs, html-integrity.cjs,
+      # post-deploy-verify.cjs) — les exclure wholesale desactiverait leur
+      # deploiement. Le garde-fou ci-dessous interdit cette regression.
+      - 'scripts/autopilot/multi-repo-bridge.cjs'
+      - 'scripts/autopilot/multi-repo-bridge.test.cjs'
+      # Runner + orchestrateur Factory : outillage LOCAL du PC du fondateur
+      # (boucle 24/7 qui importe les missions AUTOPILOT et exécute une
+      # opportunité par cycle). Aucun workflow ne les execute — ils ne font
+      # donc partie ni du contenu deploye ni des secrets de paiement.
+      # Modifier le câblage du runner ne doit surtout pas redeployer le Worker
+      # ni reecrire les secrets Mollie depuis un simple push sur `main`.
+      - 'scripts/autopilot/runner.cjs'
+      - 'scripts/autopilot/orchestrator.cjs'
+      # Module de notifications du runner LOCAL (Discord + healthchecks).
+      # Il n'etait pas commite : le runner ne pouvait pas demarrer depuis un
+      # checkout propre (MODULE_NOT_FOUND avant le premier cycle). Aucun
+      # workflow ne l'execute -> exclusion fichier par fichier (jamais
+      # `scripts/autopilot/lib/**` en bloc : des helpers critiques de la
+      # production vivent dans ce dossier).
+      - 'scripts/autopilot/lib/notify.cjs'
+      # Wrappers Windows du runner LOCAL + helpers de journalisation/pruning.
+      # Aucun workflow ne les execute : les corriger ne doit pas redeployer le
+      # Worker. `scripts/autopilot/lib/common.cjs` n'est utilise QUE par
+      # l'outillage local du runner (verifie : aucun workflow ne l'importe) —
+      # garde-fou dans tests/unit/autopilot-clean-checkout-runnable.test.cjs.
+      - 'scripts/autopilot/autopilot-live.cmd'
+      - 'scripts/autopilot/autopilot.cmd'
+      - 'scripts/autopilot/prune.cjs'
+      - 'scripts/autopilot/lib/common.cjs'
+      - 'scripts/autopilot/local-model-router.cjs'
+      # Boucle de selection/decouverte de l'orchestrateur (outillage LOCAL).
+      # Aucun workflow ne les execute ni ne les importe : les corriger ne doit
+      # pas redeployer le Worker. `lib/memory.cjs` est la persistance de la
+      # queue de l'autopilot local — il ne touche ni aux secrets ni au build.
+      - 'scripts/autopilot/analyze.cjs'
+      - 'scripts/autopilot/discover.cjs'
+      - 'scripts/autopilot/lib/memory.cjs'
+      # Execution de l'opportunite par l'agent local (outillage LOCAL).
+      # Aucun workflow ne l'execute : le corriger ne doit pas redeployer le
+      # Worker. L'adaptateur d'agent est sous `.ai/**`, deja exclu.
+      - 'scripts/autopilot/implement.cjs'
+      - 'tests/unit/autopilot-local-agent-contract.test.cjs'
+      # Garde-fou de non-regression de cette exclusion.
+      - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
+      - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
+      - 'tests/unit/autopilot-clean-checkout-runnable.test.cjs'
+      - 'tests/unit/autopilot-queue-persistence-loop.test.cjs'
+      # ── Pont autonome GitHub <-> Factory V3 <-> OpenCode (2026-11-09) ──────
+      # Modules du cycle de vie des missions [AUTOPILOT] (outillage LOCAL du
+      # PC du fondateur). Aucun workflow ne les execute ni ne les importe :
+      # les corriger ne doit surtout pas redeployer le Worker ni reecrire les
+      # secrets de paiement (MOLLIE_API_KEY, SUPABASE_SERVICE_KEY).
+      # Exclusion STRICTE fichier par fichier — `scripts/autopilot/lib/**`
+      # contient des helpers CRITIQUES pour la production, jamais de glob.
+      - 'scripts/autopilot/lib/agent-prompt.cjs'
+      - 'scripts/autopilot/lib/agent-prompt.probe.cjs'
+      - 'scripts/autopilot/lib/agent-router.cjs'
+      - 'scripts/autopilot/lib/agent-router.test.cjs'
+      - 'scripts/autopilot/lib/final-scope.cjs'
+      - 'scripts/autopilot/lib/final-scope.test.cjs'
+      - 'scripts/autopilot/lib/mission-lifecycle.cjs'
+      - 'scripts/autopilot/lib/mission-lifecycle.test.cjs'
+      - 'scripts/autopilot/lib/mission-publisher.cjs'
+      - 'scripts/autopilot/lib/mission-watchdog.cjs'
+      - 'scripts/autopilot/lib/orchestrator-scope.test.cjs'
+      - 'scripts/autopilot/lib/restore-scope.test.cjs'
+      - 'scripts/autopilot/lib/safety-guard.cjs'
+      - 'scripts/autopilot/lib/safety-guard.test.cjs'
+      - 'scripts/autopilot/lib/gitops.cjs'
+      - 'scripts/autopilot/status.cjs'
+      - 'scripts/autopilot/multi-repo-bridge-e2e.test.cjs'
+      # Persistance + exploitation du service 24/7 (tache planifiee Windows,
+      # arret propre, installation). Aucun workflow ne les execute.
+      - 'scripts/autopilot/autopilot-service.cmd'
+      - 'scripts/autopilot/autopilot-stop.cmd'
+      - 'scripts/autopilot/autopilot-stop.ps1'
+      - 'scripts/autopilot/install-service.ps1'
+      # Runbook d'exploitation du pont autonome : documentation pure, jamais
+      # deployee. Fichier par fichier (pas de `docs/**` wholesale).
+      - 'docs/AUTOPILOT-RUNBOOK.md'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
     types:
       - completed
+    # Filtre de branche : un déploiement ne peut être déclenché que par un
+    # run de l'amorce effectué sur `main` (une publication sur une branche de
+    # développement ne doit jamais déclencher un déploiement de production).
+    branches:
+      - main
+    # NOTE (2026-10-20) : ce déclencheur reste INOPÉRANT dans ce dépôt —
+    # 0 run `workflow_run` produit sur 162 exécutions, alors que l'amorce
+    # « Daily Copernicus + Deploy » s'est terminée plus de 247 fois depuis le
+    # 07/10 (y compris après le run 39406923824, terminé en `failure`).
+    # Le seul déclencheur `workflow_run` qui fonctionne ici
+    # (`user-journey-audit.yml` → « Cloudflare Production ») déclare le même
+    # filtre de branche — sans que cela suffise à réveiller celui-ci.
+    # Le chemin RÉEL de publication → déploiement est désormais EXPLICITE :
+    # `data-refresh.yml` / `daily-copernicus.yml` dispatchent `ci-tests.yml`,
+    # `perf-budget.yml` puis `cloudflare-production.yml` sur le SHA exact
+    # (scripts/automation/trigger-production-deploy.cjs). Vérifié en
+    # production : runs 39410485389 / 39410487343 / 39410489619, tous verts.
+    # Ce déclencheur est conservé comme filet de sécurité (il ne peut pas
+    # double-déployer : le groupe de concurrence sérialise les runs) — mais il
+    # ne doit PAS être compté comme un chemin de livraison fiable.
 
 permissions:
   contents: read
@@ -19,10 +187,98 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ── PÉRIMÈTRE D'APPLICATION (P0) ──────────────────────────────────────────
+  # Détermine si ce run est un run de PRODUCTION (déploiement réel) ou un run
+  # de VALIDATION (build + contrôles de développement, sans parcours de prod).
+  #
+  # POURQUOI CE JOB EXISTE — cause racine des 10 échecs de certification
+  # observés (run 39383768675, SHA 4eea0367, branche agent/coding/TASK-P1-002) :
+  # ce workflow se déclenchait en `push` sur une branche de développement, alors
+  # que les checks CI exigés par la porte de certification (`test-frontend`,
+  # `perf`) ne sont produits que sur `main` (ou PR vers `main`). Sur une autre
+  # ref ils n'existent JAMAIS pour ce SHA : la porte, fail-closed par
+  # conception, refusait systématiquement — 10 exécutions rouges identiques,
+  # aucune ligne de code en cause.
+  #
+  # CE QUE CE JOB NE FAIT PAS — il ne contourne aucune preuve :
+  #   - la porte de certification reste fail-closed et inchangée sur tout run
+  #     de production (mêmes checks requis, même attente bornée anti-course) ;
+  #   - un run non applicable n'est jamais « vert » par fraude : les jobs de
+  #     production sont ÉCARTÉS (skipped) et le motif est écrit explicitement
+  #     dans le résumé du run (GitHub annotation ::warning::) ;
+  #   - une absence de preuve n'est jamais convertie en succès : un run de
+  #     production sans `test-frontend`/`perf` verts reste rouge.
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      production: ${{ steps.decide.outputs.production }}
+      ref: ${{ steps.decide.outputs.ref }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - id: decide
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          TRIGGER_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          set -euo pipefail
+          production=false
+          reason=""
+          case "$EVENT_NAME" in
+            push)
+              if [ "$REF_NAME" = "main" ]; then
+                production=true
+                reason="push sur 'main' : parcours de production applicable"
+              fi
+              ;;
+            workflow_dispatch)
+              if [ "$REF_NAME" = "main" ]; then
+                production=true
+                reason="declenchement manuel sur 'main' : parcours de production applicable"
+              fi
+              ;;
+            workflow_run)
+              if [ "$TRIGGER_BRANCH" = "main" ] && [ "$TRIGGER_CONCLUSION" = "success" ]; then
+                production=true
+                reason="workflow_run 'Daily Copernicus + Deploy' reussi sur 'main' : parcours de production applicable"
+              fi
+              ;;
+            *)
+              reason="evenement '$EVENT_NAME' non couvert par un deploiement"
+              ;;
+          esac
+          if [ "$production" != "true" ]; then
+            reason="ref '$REF_NAME' (evenement '$EVENT_NAME') non deployable : parcours de production NON APPLICABLE - build et controles executes, aucun deploiement, aucune certification exigee"
+            echo "::warning title=Cloudflare Production - parcours non applicable::${reason}"
+          fi
+          echo "production=$production" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF_NAME" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Cloudflare Production - perimetre du run"
+            echo ""
+            echo "- Evenement : \`$EVENT_NAME\`"
+            echo "- Ref : \`$REF_NAME\`"
+            echo "- Parcours de production : \`$production\`"
+            echo "- Motif : $reason"
+            if [ "$production" != "true" ]; then
+              echo ""
+              echo "> **NON APPLICABLE** - ce run ne deploie rien."
+              echo "> Les jobs de production (certification-gate, deploy, deploy-pages,"
+              echo "> verify-fleet, post-deploy-verify) sont ecartes explicitement."
+              echo "> Les builds et controles de ce run restent valables comme"
+              echo "> validation de developpement."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
+      # Une région hors SLA ne doit pas annuler les builds des autres.
+      fail-fast: false
       matrix:
         include:
           - id: mq
@@ -32,8 +288,8 @@ jobs:
           - id: rivieramaya
           - id: tulum
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -53,6 +309,15 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      - name: Verify localized beach indexes in prepared package
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/verify-regional-beach-index.cjs
+      - name: Pre-deploy satellite freshness gate (all six regions)
+        if: github.ref == 'refs/heads/main'
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Validate prepared HTML CSP and bundle references
         env:
           VITE_REGION: ${{ matrix.id }}
@@ -73,6 +338,8 @@ jobs:
   #   NOT_PROVEN           = checks absents/rouges/en-cours, API indisponible,
   #                          attestation corrompue ⇒ REFUS (deploy/deploy-pages skipped)
   certification-gate:
+    needs: [scope]
+    if: needs.scope.outputs.production == 'true'
     permissions:
       contents: read
       checks: read        # lecture des check-runs du SHA (preuve CI authentique)
@@ -82,10 +349,10 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0  # requis : résolution du commit produit effectif
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
       # Attente bornée anti-course gate-vs-CI (P0) : la gate tourne dans la
@@ -104,16 +371,56 @@ jobs:
           GATE_OUTCOME: ${{ steps.gate.outcome }}
       - name: Upload job trace
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: trace-gate-${{ github.run_id }}-${{ github.run_attempt }}
           path: scripts/traces/
           if-no-files-found: ignore
           retention-days: 90
 
+  mollie-live-gate:
+    needs: [scope]
+    if: needs.scope.outputs.production == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+    steps:
+      - name: Require LIVE Mollie key and payment backend secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${MOLLIE_API_KEY:-}" in
+            live_*) echo "Mollie key mode: LIVE (option, Stripe Payment Links are the default cashier)" ;;
+            test_*) echo "::warning::Mollie key is TEST. Stripe Payment Links remain the default cashier." ;;
+            *) echo "::error::MOLLIE_API_KEY missing or unrecognized"; exit 1 ;;
+          esac
+          test -n "${SUPABASE_SERVICE_KEY:-}" || { echo "::error::SUPABASE_SERVICE_KEY is missing"; exit 1; }
+          test -n "${MOLLIE_WEBHOOK_SECRET:-}" || { echo "::error::MOLLIE_WEBHOOK_SECRET is missing"; exit 1; }
+          echo "Required payment backend secrets are present; values were not printed."
+
+  deploy-sg-payments:
+    needs: [certification-gate, scope]
+    if: needs.scope.outputs.production == 'true' && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Deploy sg-payments without touching existing secrets or routes
+        working-directory: workers/sg-payments
+        run: npx --yes wrangler@latest deploy --keep-vars
+
   deploy:
-    needs: [build, certification-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    needs: [build, certification-gate, scope, mollie-live-gate]
+    if: always() && needs.scope.result == 'success' && needs.scope.outputs.production == 'true' && needs.certification-gate.result == 'success' && needs.mollie-live-gate.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'failure') && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -139,8 +446,8 @@ jobs:
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
       MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -176,8 +483,17 @@ jobs:
           DOMAIN: ${{ matrix.domain }}
         run: |
           node -e "const fs=require('fs');const ftp=String(require('./regions/index.cjs').getRegion(process.env.REGION).ftpDir).replace(/^.\//,'');if(!fs.existsSync(ftp+'/index.html')){console.error('assets dir missing '+ftp);process.exit(1)};let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN).replaceAll('__ASSETS_DIR__','./'+ftp);fs.writeFileSync('wrangler.jsonc',s)"
+      - name: Recheck satellite freshness immediately before Worker deploy
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Deploy Worker
-        run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
+        # `--strict` abandonne le déploiement dès que le Worker a été modifié
+        # via l'API script (le `secret put` de l'étape suivante, ou un réglage
+        # dashboard). Depuis ce blocage, aucun asset ne part, y compris le JSON
+        # satellite. On déploie le Worker du dépôt puis on réécrit les secrets.
+        # workers/sg-payments n'est pas ce Worker et n'est pas modifié ici.
+        run: npx --yes wrangler@latest deploy --config wrangler.jsonc
       - name: Configure Worker secrets
         run: |
           printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
@@ -255,7 +571,7 @@ jobs:
           done
       - name: Upload fingerprint
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fingerprint-${{ matrix.id }}
           path: fingerprint-${{ matrix.id }}.json
@@ -282,12 +598,13 @@ jobs:
   # CONTRÔLE POST-DÉPLOIEMENT RÉEL — s'exécute UNIQUEMENT après un déploiement
   # autorisé et réussi. Vérifications HTTP réelles sur chaque domaine live :
   # accessibilité, identité artefact (version.json), fraîcheur données,
-  # cohérence région↔plages, params régionaux (canonical, GA4), ?sos=1,
-  # contrat API paiement (POST __payment_smoke__ => 400, backend configuré).
+  # cohérence région↔plages, params régionaux (canonical, GA4), ABSENCE de
+  # la surface SOS publique, contrat API paiement (POST __payment_smoke__ => 400,
+  # backend configuré).
   # Tout contrôle non réalisable reste NOT_VERIFIED ; tout échec => job rouge.
   post-deploy-verify:
-    needs: [deploy]
-    if: always() && needs.deploy.result == 'success'
+    needs: [deploy, scope]
+    if: always() && needs.deploy.result == 'success' && needs.scope.outputs.production == 'true'
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -297,15 +614,15 @@ jobs:
       # Utilisé uniquement si l’intégrité HTML live échoue : purge des 2 URL exactes.
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
       # P0 §4 : l'identité d'artefact post-déploiement doit COMPARER le servi
       # au construit (v/b des 6 fingerprints uploadés par le job deploy).
       # Sans attente, artifact_identity reste NOT_VERIFIED (jamais VERIFIED).
       - name: Download built fingerprints
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: fingerprint-*
           path: fingerprints/
@@ -319,7 +636,7 @@ jobs:
         run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json --expect-v "${{ steps.fp.outputs.v }}" --expect-b "${{ steps.fp.outputs.b }}" --fingerprint-dir fingerprints/
       - name: Upload post-deploy report + job trace
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: post-deploy-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -333,8 +650,8 @@ jobs:
           node -e "const fs=require('fs');if(fs.existsSync('post-deploy-report.json')){const r=JSON.parse(fs.readFileSync('post-deploy-report.json','utf8'));let s='## Post-deploy verification\n\nJob trace: '+r.jobId+'\n\nSTAGE: **'+r.stage+'**\n\n| Région | Domaine | Stade |\n|---|---|---|\n';for(const d of r.domains)s+='| '+d.region+' | '+d.domain+' | '+d.stage+' |\n';fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,s)}"
 
   deploy-pages:
-    needs: [build, certification-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    needs: [build, certification-gate, scope, mollie-live-gate]
+    if: always() && needs.scope.result == 'success' && needs.scope.outputs.production == 'true' && needs.certification-gate.result == 'success' && needs.mollie-live-gate.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'failure') && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -357,8 +674,8 @@ jobs:
           - region: tulum
             project: sargagame-tulum
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -387,8 +704,12 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.region }}
         run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
+      - name: Recheck satellite freshness immediately before Pages deploy
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Deploy Pages
-        uses: cloudflare/wrangler-action@v4
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -398,13 +719,13 @@ jobs:
   # C'est le garde-fou qui aurait bloqué le cutover du 07/10 (tulum figé,
   # sitemap 404 sur 3 domaines, canonicals GP → Martinique).
   verify-fleet:
-    needs: [deploy]
-    if: always() && needs.deploy.result == 'success'
+    needs: [deploy, scope]
+    if: always() && needs.deploy.result == 'success' && needs.scope.outputs.production == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm

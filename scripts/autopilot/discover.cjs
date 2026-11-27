@@ -266,7 +266,7 @@ async function discoverUXUI(obs) {
             severity: 'medium',
             evidence: err.slice(0, 160),
             source: 'discovery:ux-ui',
-            expectedImpact: 'fix JS error',
+            expectedImpact: 'supprimer les erreurs JavaScript qui bloquent l\'interaction sur la page',
             metric: 'console errors count',
           }));
         }
@@ -281,8 +281,8 @@ async function discoverUXUI(obs) {
           severity: 'medium',
           evidence: `LCP ${p.lcp}ms > 4000ms (${p.route}@${p.viewport})`,
           source: 'discovery:ux-ui',
-          expectedImpact: 'improve LCP',
-          metric: 'LCP ms',
+          expectedImpact: 'reduire le LCP au-dela de 4000 ms pour un premier affichage plus rapide',
+          metric: 'LCP en millisecondes',
         }));
       }
     }
@@ -370,7 +370,7 @@ async function discoverDataDB(cfg) {
           severity: 'high',
           evidence: `region ${r.id} has 0 beaches`,
           source: 'discovery:data-db',
-          expectedImpact: 'restore beach data',
+          expectedImpact: 'restaurer la liste des plages de la region pour ne plus servir de page vide',
           metric: 'beach count per region',
         }));
       }
@@ -407,7 +407,7 @@ async function discoverDevQuality(cfg) {
             severity: check.severity,
             evidence: `${check.type} found in ${f}`,
             source: 'discovery:dev-quality',
-            expectedImpact: 'clean code',
+            expectedImpact: 'reduire la dette de code mesuree pour faciliter les corrections futures',
             metric: 'code quality issues',
           }));
         }
@@ -436,7 +436,7 @@ async function discoverPerformance(obs) {
           evidence: `TTFB ${p.timing.ttfb}ms > 2000ms (${p.route}@${p.viewport})`,
           source: 'discovery:performance',
           expectedImpact: 'improve server response',
-          metric: 'TTFB ms',
+          metric: 'TTFB en millisecondes',
         }));
       }
     }

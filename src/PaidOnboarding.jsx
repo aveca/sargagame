@@ -85,7 +85,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
         {step === 0 && (
           <>
             <h1 style={h1}>{t("Quelles plages Le Veilleur garde pour toi ?", "Which beaches should Le Veilleur keep for you?", "¿Qué playas debe cuidar Le Veilleur para ti?")}</h1>
-            <p style={sub}>{t("Choisis-en 1 à 3. Le Veilleur les surveillera au satellite, 4×/jour, et te prévient le matin où l'une bascule — en tête de ta dépêche.", "Pick 1 to 3. Le Veilleur watches them by satellite, 4×/day, and warns you the morning one of them turns — first in your morning dispatch.", "Elige de 1 a 3. Le Veilleur las vigila por satélite, 4×/día, y te avisa la mañana en que una cambie — primero en tu parte matinal.")}</p>
+            <p style={sub}>{t("Choisis-en 1 à 3. Le Veilleur les suit à partir des dernières observations satellite disponibles et t'avertit lorsqu'un changement validé est détecté — en tête de ta dépêche.", "Pick 1 to 3. Le Veilleur checks the latest available satellite observations and alerts you when a validated change is detected — first in your morning dispatch.", "Elige de 1 a 3. Le Veilleur comprueba las últimas observaciones satelitales disponibles y te avisa cuando detecta un cambio validado — primero en tu parte matinal.")}</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {suggestions.map(b => {
                 const on = favSet.has(b.id)

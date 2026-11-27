@@ -9,10 +9,13 @@
   // par aucun retraitement domaine (canonicals, robots, sitemap.xml, overlay
   // _gp/, swap des données Copernicus) — c'est la régression de prod du 07/10.
   "assets":{"directory":"./__ASSETS_DIR__","binding":"ASSETS","not_found_handling":"404-page",
-    // SÉCURITÉ : sans run_worker_first, les assets existants contournent le
-    // handler (garde _private/.php/dotfiles morte — constaté : /api/.htaccess
-    // lisible sur workers.dev). true = chaque requête passe par index.js.
-    "run_worker_first":true},
+    // run_worker_first = false : les assets statiques compatibles sont servis
+    // directement par Cloudflare sans invocation Worker → économie de quotas.
+    // Les chemins dynamiques (API, Apple Pay, guards) sont toujours traités
+    // par le code Worker car ils ne correspondent pas aux assets statiques.
+    // Ancient valeur: true = chaque requête passait par index.js (cause 79 570
+    // invocationsWorker sur 6 sites dont 89 900 sous-requêtes observées).
+    "run_worker_first":false},
   "vars":{"SUPABASE_URL":"https://rswdmjtdzrucqzzukfmd.supabase.co"}
   // routes retirés : nécessitent permission "Workers Routes:Edit" sur le token Cloudflare.
   // Le Worker déploie sur workers.dev ; les routes domaines custom se configurent

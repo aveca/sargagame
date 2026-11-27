@@ -1,0 +1,18 @@
+[
+  { "name": "Dreams Tulum Resort & Spa", "slug": "dreams-tulum", "beachId": "tu001", "area": "Tulum (Playa Paraíso)" },
+  { "name": "Conrad Tulum Riviera Maya", "slug": "conrad-tulum", "beachId": "tu001", "area": "Tulum (Playa Paraíso)" },
+  { "name": "Hilton Tulum Riviera Maya All-Inclusive Resort", "slug": "hilton-tulum", "beachId": "tu001", "area": "Tulum (Playa Paraíso)" },
+  { "name": "Iberostar Selection Tulum", "slug": "iberostar-tulum", "beachId": "tu001", "area": "Tulum (Playa Paraíso)" },
+  { "name": "Kore Tulum Retreat & Spa Resort", "slug": "kore-tulum", "beachId": "tu001", "area": "Tulum (Playa Paraíso)" },
+  { "name": "Hotel Bardo Tulum", "slug": "hotel-bardo-tulum", "beachId": "tu002", "area": "Tulum (Playa Pescadores)" },
+  { "name": "La Zebra Colibri Boutique Hotel", "slug": "la-zebra-tulum", "beachId": "tu002", "area": "Tulum (Playa Pescadores)" },
+  { "name": "Noma Tulum", "slug": "noma-tulum", "beachId": "tu002", "area": "Tulum (Playa Pescadores)" },
+  { "name": "Be Tulum", "slug": "be-tulum", "beachId": "tu003", "area": "Tulum (Playa Ruinas)" },
+  { "name": "Casa de las Olas", "slug": "casa-de-las-olas", "beachId": "tu003", "area": "Tulum (Playa Ruinas)" },
+  { "name": "Hotel La Zebra", "slug": "la-zebra-tulum-ruinas", "beachId": "tu003", "area": "Tulum (Playa Ruinas)" },
+  { "name": "Jashita Hotel", "slug": "jashita-hotel", "beachId": "tu004", "area": "Tulum (Playa Santa Fe)" },
+  { "name": "Mi Amor Colibri Boutique Hotel", "slug": "mi-amor-tulum", "beachId": "tu004", "area": "Tulum (Playa Santa Fe)" },
+  { "name": "La Valise Tulum", "slug": "la-valise-tulum", "beachId": "tu004", "area": "Tulum (Playa Santa Fe)" },
+  { "name": "Xcacel Beach Eco Resort", "slug": "xcacel-beach-eco-resort", "beachId": "tu005", "area": "Tulum (Playa Xcacel)" },
+  { "name": "Hotel Cabanas Tulum", "slug": "cabanas-tulum", "beachId": "tu005", "area": "Tulum (Playa Xcacel)" }
+]

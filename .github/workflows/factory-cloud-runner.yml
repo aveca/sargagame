@@ -1,12 +1,12 @@
 name: Factory Cloud Runner (Sargagame — NEUTRALISÉ)
 
 on:
-  # NEUTRALISÉ 2026-10-15 (directive : boucle de codage UNIQUE = Factory locale PC1,
-  # Ollama + OpenCode, zéro appel de modèle payant). Ce runner GitHub hébergé constituait
-  # une seconde boucle d'implémentation concurrente (cron 15 min + push) : suppressée.
-  # Les déclencheurs push/schedule sont retirés. L'exécution reste possible UNIQUEMENT
-  # en workflow_dispatch avec confirmation explicite ET variable de repo
-  # FACTORY_CLOUD_RUNNER_ENABLED=true (désactivée par défaut) — garde-fou double opt-in.
+  # NEUTRALISÉ 2026-10-15 : ce runner GitHub hébergé est une implémentation legacy
+  # fondée sur Ollama local, désormais hors de l'infrastructure active (les agents
+  # utilisent les API NVIDIA et les quotas cloud gratuits via le routeur Factory).
+  # Les déclencheurs push/schedule ont été retirés. Ne pas réactiver ce chemin legacy :
+  # il reste seulement dispatchable avec confirmation explicite ET variable repo
+  # FACTORY_CLOUD_RUNNER_ENABLED=true (désactivée par défaut) — double opt-in.
   # Ne touche PAS à ci-tests, perf-budget, user-journey-audit (Playwright), ni
   # cloudflare-production, daily-copernicus, live-production-sentinel (CI/data/vérifs conservés).
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
       CF_D1_DATABASE_ID: 3e7179cd-8058-4881-9eea-c58527dfb3a3
     steps:
       - name: Checkout Sargagame
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
           persist-credentials: true
@@ -52,7 +52,7 @@ jobs:
 
       - name: Cache local coding model
         if: steps.claim.outputs.has_job == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/ollama-models
           key: ollama-qwen2.5-coder-7b-v1

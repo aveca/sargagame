@@ -109,5 +109,11 @@ module.exports = {
     research: path.join(AP_DIR, 'research'),
     experiments: path.join(AP_DIR, 'experiments'),
     runnerLog: path.join(AP_DIR, 'runs', 'runner.log'),
+    // Sortie console du watchdog (wrapper .cmd). SEPAREE de runner.log :
+    // sous Windows, le `>>` du wrapper ouvre runner.log en mode exclusif et
+    // tout append concurrent echoue en EBUSY -> la trace du runner etait
+    // silencieusement perdue (le try/catch de rlog masquait l'echec).
+    runnerConsoleLog: path.join(AP_DIR, 'runs', 'runner-console.log'),
+    statusFile: path.join(AP_DIR, 'status.json'),
   },
 };

@@ -13,10 +13,10 @@
  * Each section triggers animation once on first reveal via IntersectionObserver.
  * prefers-reduced-motion: all transitions skipped, content shown immediately.
  */
-import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { _t, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
-const SOSPlage = lazy(() => import("./SOSPlage.jsx"))
+import { getObservationFreshness } from "./observation-freshness.js"
 
 /* ── Inline helpers (mirrors from Sargasses_PROD to avoid circular dep) ── */
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
@@ -33,7 +33,6 @@ function stLabel(status,lang){const S={clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"
 function stLabelLong(status,lang){const S={clean:{fr:"GO - Baignade OK",en:"GO - Safe to swim",es:"IR A PLAYA - Baño OK"},moderate:{fr:"ATTENTION - À vérifier",en:"ATTENTION - Check first",es:"ATTENTION - A verificar"},avoid:{fr:"ÉVITER - Évite l'eau",en:"ÉVITER - Skip the swim",es:"ÉVITER - Evita el agua"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
 export function explainBeachStatus(status,lang){const M={clean:{fr:"Eau dégagée au satellite — tu peux y aller.",en:"Clear water on satellite — good to go.",es:"Agua despejada en satélite — puedes ir."},moderate:{fr:"Dépôts possibles — jette un œil avant de teposer.",en:"Some deposits possible — look before settling in.",es:"Posibles restos — mira antes de instalarte."},avoid:{fr:"Sargasses vues au satellite — vise une plage propre à côté.",en:"Sargassum seen on satellite — try a clean beach nearby.",es:"Sargazo visto por satélite — prueba una playa limpia cercana."}};const e=M[status]||{fr:"Statut en vérification — reviens dans un moment.",en:"Status being checked — come back shortly.",es:"Estado en verificación — vuelve en un momento."};return e[lang]||e.fr}
 export function isStatusExplainOn(search){try{const s=typeof search==="string"?search:window.location.search;return !/[?&]statusexplain=0(?:&|$)/.test(s)}catch(_){return true}}
->>>>>>> 752480ffb70b40080a810956eb1b7537f530fa80
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,p=Math.PI/180,x=(lat2-lat1)*p,y=(lon2-lon1)*p,h=Math.sin(x/2)**2+Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin(y/2)**2
   return 2*R*Math.asin(Math.sqrt(Math.min(1,h)))
@@ -207,23 +206,29 @@ export default function BeachSheet({
   const trk=(n,p)=>{try{(trackProp||window.track||console.log)(n,p)}catch(_){}}
   const swipe=useSwipeClose(()=>onClose&&onClose(),{threshold:70,guardInput:true})
   const closingRef=useRef(false)
-  const hasScore=typeof beach?.score==="number"
-  const status=beach?.status||"_loading"
+  const freshness=getObservationFreshness(sargData)
+  const hasTrustedObservation=freshness.fresh
+  const hasScore=hasTrustedObservation&&typeof beach?.score==="number"
+  const status=hasTrustedObservation?(beach?.status||"_loading"):"_loading"
   const vmeta=verdictMeta(status,lang)
-  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
-  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
-    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
-    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+  const satAge=freshness.ageMinutes==null?null:freshness.ageMinutes/60
+  const satLabel=hasTrustedObservation
+    ?satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
+      :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satellite hace ${Math.round(satAge)} h`)
+    :freshness.reason==="stale"
+      ?_t(lang,`Observation satellite ancienne (${Math.round(satAge||0)} h)`,`Satellite observation is stale (${Math.round(satAge||0)}h)`,`Observación satelital antigua (${Math.round(satAge||0)} h)`)
+      :_t(lang,"Horodatage satellite indisponible","Satellite timestamp unavailable","Marca de tiempo satelital no disponible")
   const distKm=(()=>{try{if(!userPos||!beach)return null;return haversineKm(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
   const locLine=[beach?.commune||null,distKm!=null?_t(lang,`à ${Math.round(distKm)} km`,`${Math.round(distKm)} km away`,`a ${Math.round(distKm)} km`):null].filter(Boolean).join(" · ")
 
   // Forecast
   const forecast=useMemo(()=>{
+    if(!hasTrustedObservation)return null
     if(forecastProp&&forecastProp.length)return forecastProp
     if(!beach)return null
     const w=sargData?.weekly?.[beach.id]||sargData?._enrichedWeekly?.[`_interp_${beach.id}`]||null
     return w?.forecast||null
-  },[beach?.id,sargData,forecastProp])
+  },[beach?.id,sargData,forecastProp,hasTrustedObservation])
 
   const fcDays=(forecast||[]).slice(0,7)
   const planB=useMemo(()=>{
@@ -232,15 +237,9 @@ export default function BeachSheet({
       .map(b=>({...b,_d:haversineKm(beach.lat,beach.lng,b.lat,b.lng)}))
       .filter(b=>b._d<=60).sort((a,b)=>a._d-b._d).slice(0,3)
   },[beach?.id,allBeaches,status])
-  const alt=useMemo(()=>nearestCleanAlt(beach,allBeaches),[beach?.id,allBeaches])
+  const alt=useMemo(()=>hasTrustedObservation?nearestCleanAlt(beach,allBeaches):null,[beach?.id,allBeaches,hasTrustedObservation])
 
   const fave=favorites&&favorites.includes(beach?.id)
-
-  const [showSOS, setShowSOS] = useState(false)
-  const onSOSClick = () => {
-    trk("sg_sos_beachsheet_click", { beach_id: beach?.id, status })
-    setShowSOS(true)
-  }
 
   // CTA
   const ctaLabel=isPremium?_t(lang,"Mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
@@ -302,7 +301,7 @@ export default function BeachSheet({
           <BeachHeroScene beach={beach}/>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.12) 0%, transparent 35%, transparent 50%, rgba(0,0,0,.5) 100%)"}}/>
           <div style={{position:"absolute",top:"38%",left:0,right:0,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
-            <Veilleur mood={moodFromScore(beach.score)} size={72}/>
+            <Veilleur mood={moodFromScore(hasScore?beach.score:null)} size={72}/>
           </div>
           <div style={{position:"absolute",bottom:20,left:20,right:20,zIndex:1}}>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(28px,8vw,42px)",lineHeight:.92,color:"#fff",textTransform:"uppercase",letterSpacing:"-.3px",textShadow:"0 2px 16px rgba(0,0,0,.5)",wordBreak:"break-word"}}>{beach.name}</div>
@@ -316,8 +315,36 @@ export default function BeachSheet({
           </div>
         </div>
 
+        {/* ── DECISION CARD (additive · rollback ?decisioncard=0) ── */}
+        {!/[?&]decisioncard=0(?:&|$)/.test(typeof window!=="undefined"?window.location.search:"")&&(
+        <div style={{padding:"0 20px",marginTop:14}}>
+          <div className="bs-card" style={{maxWidth:400,margin:"0 auto",padding:"14px 16px 12px",display:"flex",alignItems:"center",gap:14}}>
+            <div style={{flexShrink:0,width:58,height:58,borderRadius:"50%",border:`3px solid ${COMIC.ink}`,background:vmeta.color,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:status==="avoid"?"#fff":COMIC.ink}}>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:24,lineHeight:1}}>{hasScore?beach.score:"–"}</div>
+              <div style={{font:"800 7px/1 'Bricolage Grotesque'",letterSpacing:".08em",marginTop:2,opacity:.85}}>SCORE</div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,5.4vw,26px)",lineHeight:1,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.2px"}}>{vmeta.emoji} {vmeta.verb}</div>
+              <div style={{font:"700 10px/1.3 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,letterSpacing:".04em"}}>{satLabel}</div>
+            </div>
+            <div style={{flexShrink:0,display:"flex",gap:5,alignItems:"flex-end"}} aria-label={_t(lang,"Prévisions 7 jours","7-day forecast","Previsión 7 días")} role="img">
+              {fcDays.length?fcDays.map((d,i)=>{
+                const dl=["D","L","M","M","J","V","S"];let L="?"
+                try{const dt=new Date(d.date+"T12:00:00Z");L=dl[dt.getUTCDay()]}catch(_){}
+                return(<div key={i} title={forecastLabel(d.status,lang)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                  <span style={{width:13,height:13,borderRadius:4,background:forecastColor(d.status),border:`2px solid ${COMIC.ink}`}}/>
+                  <span style={{font:"800 8px/1 'Bricolage Grotesque'",color:COMIC.sub}}>{L}</span>
+                </div>)
+              }):<span style={{font:"700 10px/1 'Bricolage Grotesque'",color:COMIC.sub}}>—</span>}
+            </div>
+          </div>
+        </div>
+        )}
+
         {/* ── STORY SECTIONS (scroll-driven reveals) ── */}
         <div style={{padding:"0 0 4px"}}>
+          {!hasTrustedObservation&&<div data-testid="stale-observation-notice" role="status" style={{margin:"0 0 18px",padding:"13px 15px",border:"2px solid #1b2522",borderRadius:12,background:"#FFF1D6",color:"#1b2522",fontSize:12,fontWeight:700,lineHeight:1.5,textAlign:"center"}}>{_t(lang,"Observation satellite trop ancienne ou indisponible : verdict et prévision suspendus. Vérifie les conditions sur place avant de te déplacer.","Satellite observation is stale or unavailable: the verdict and forecast are paused. Check local conditions before travelling.","La observación satelital es antigua o no está disponible: el veredicto y el pronóstico están suspendidos. Comprueba las condiciones locales antes de viajar.")}</div>}
+
           {/* #1 — Score reveal */}
           <StorySection delay={0}>
             <div style={{textAlign:"center",maxWidth:360,margin:"0 auto"}}>
@@ -326,7 +353,7 @@ export default function BeachSheet({
                 ? <AnimatedScore target={beach.score}/>
                 : <div style={{width:100,height:100,borderRadius:"50%",border:`4px solid ${COMIC.ink}`,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,color:COMIC.sub}}>…</div>}
               <div style={{font:"600 13px/1.5 'Bricolage Grotesque'",color:COMIC.sub,marginTop:12,maxWidth:280,margin:"12px auto 0"}}>
-                {beach.scoreReason||_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")}
+                {hasScore?(beach.scoreReason||_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")):_t(lang,"Score suspendu jusqu’à une observation récente.","Score paused until a recent observation is available.","Puntuación suspendida hasta disponer de una observación reciente.")}
               </div>
             </div>
           </StorySection>
@@ -354,37 +381,6 @@ export default function BeachSheet({
               {_t(lang,"Le verdict est 100 % data satellite. L'argent ne l'influence jamais.","The verdict is 100% satellite data. Money never touches it.","El veredicto es 100 % datos satelitales. El dinero nunca lo influye.")}
             </div>
             {statusExplainOn&&<div data-testid="status-explain" style={{textAlign:"center",marginTop:8,font:"600 12px/1.5 'Bricolage Grotesque'",color:COMIC.ink,maxWidth:360,margin:"8px auto 0"}}>{explainBeachStatus(status,lang)}</div>}
-          </StorySection>
-
-          {/* SOS PLAGE 24H — CTA after verdict */}
-          <StorySection delay={.15} style={{padding:"24px 20px"}}>
-            <div style={{maxWidth:400,margin:"0 auto",textAlign:"center"}}>
-              <div style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"#FFC72C",marginBottom:8}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:"#22C55E" }}/>
-                {_t(lang,"SOS PLAGE 24H","SOS BEACH 24H","SOS PLAYA 24H")}
-              </div>
-              <h3 style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(22px,5vw,28px)",lineHeight:1,color:"#fff",margin:"4px 0 8px",letterSpacing:"-.01em"}}>
-                {_t(lang,"Quelle plage choisir <span style='color:#FFC72C'>demain</span> ?","Which beach to pick <span style='color:#FFC72C'>tomorrow</span>?","¿Qué playa elegir <span style='color:#FFC72C'>mañana</span>?")}
-              </h3>
-              <p style={{fontSize:13,lineHeight:1.5,fontWeight:600,color:"rgba(234,247,244,.70)",margin:"0 0 16px"}}>
-                {_t(lang,"Prévision sargasses personnalisée · Satellite 4×/jour · Décision immédiate.","Personalized sargassum forecast · Satellite 4×/day · Instant decision.","Previsión sargazo personalizada · Satélite 4×/día · Decisión inmediata.")}
-              </p>
-              <button onClick={onSOSClick}
-                style={{
-                  width:"100%",padding:"16px 20px",borderRadius:14,border:"none",
-                  background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
-                  color:"#190c2c",fontWeight:800,fontSize:16,fontFamily:"inherit",
-                  cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
-                  fontFamily:"inherit"
-                }}>
-                {_t(lang,"Voir mon rapport — 1 €","See my report — 1 €","Ver mi informe — 1 €")}
-              </button>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:10,fontSize:11,fontWeight:700,color:"rgba(234,247,244,.55)"}}>
-                <span>🔒 Mollie</span><span aria-hidden="true">·</span>
-                <span>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
-                <span>{_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</span>
-              </div>
-            </div>
           </StorySection>
 
           {/* #3 — Forecast 7j */}
@@ -472,7 +468,7 @@ export default function BeachSheet({
 
           {/* Quick Status Badge */}
           <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",marginBottom:12,background:comicStatusColor(status),border:`2.5px solid ${COMIC.ink}`,borderRadius:14,boxShadow:`3px 3px 0 ${COMIC.ink}`}}>
-            <Veilleur mood={moodFromScore(beach.score)} size={44}/>
+            <Veilleur mood={moodFromScore(hasScore?beach.score:null)} size={44}/>
             <div>
               <div style={{font:"800 20px/1 'Bricolage Grotesque'",color:status==="avoid"?"#fff":COMIC.ink,textTransform:"uppercase",letterSpacing:"-.2px"}}>{stLabelLong(status,lang)}</div>
               <div style={{font:"700 11px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,.75)":COMIC.ink,opacity:.75,marginTop:2}}>
@@ -558,11 +554,6 @@ export default function BeachSheet({
         </div>
       </div>
     </>
-    {showSOS && (
-      <Suspense fallback={null}>
-        <SOSPlage lang={lang} sargData={sargData} region={beach?.island || "mq"} onClose={() => setShowSOS(false)} />
-      </Suspense>
-    )}
   )
 }
 

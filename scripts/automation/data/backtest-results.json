@@ -1,247 +1,247 @@
 {
-  "totalPairs": 441,
+  "totalPairs": 1428,
   "windowDays": 30,
-  "archiveDays": 7,
-  "historyDays": 7,
+  "archiveDays": 19,
+  "historyDays": 20,
   "dateRange": {
-    "archiveFrom": "2026-10-08",
-    "archiveTo": "2026-10-14"
+    "archiveFrom": "2026-10-27",
+    "archiveTo": "2026-11-25"
   },
   "lifetime": {
-    "totalPairs": 441,
-    "statusHitRate": 100,
-    "days": 17,
+    "totalPairs": 1848,
+    "statusHitRate": 99,
+    "days": 48,
     "from": "2026-07-27",
-    "to": "2026-10-14"
+    "to": "2026-11-25"
   },
   "byHorizon": {
     "day1": {
       "statusHitRate": 99,
-      "afaiMAE": 0.011,
-      "avgConfidence": 61,
-      "pairs": 126
+      "afaiMAE": 0.008,
+      "avgConfidence": 60,
+      "pairs": 273
     },
     "day2": {
       "statusHitRate": 99,
-      "afaiMAE": 0.012,
+      "afaiMAE": 0.009,
       "avgConfidence": 60,
-      "pairs": 105
+      "pairs": 252
     },
     "day3": {
-      "statusHitRate": 100,
-      "afaiMAE": 0.013,
+      "statusHitRate": 99,
+      "afaiMAE": 0.011,
       "avgConfidence": 56,
-      "pairs": 84
+      "pairs": 273
     },
     "day4": {
-      "statusHitRate": 100,
-      "afaiMAE": 0.014,
+      "statusHitRate": 99,
+      "afaiMAE": 0.011,
       "avgConfidence": 50,
-      "pairs": 63
+      "pairs": 252
     },
     "day5": {
       "statusHitRate": 100,
-      "afaiMAE": 0.018,
+      "afaiMAE": 0.009,
       "avgConfidence": 44,
-      "pairs": 42
+      "pairs": 189
     },
     "day6": {
       "statusHitRate": 100,
-      "afaiMAE": 0.022,
+      "afaiMAE": 0.009,
       "avgConfidence": 40,
-      "pairs": 21
+      "pairs": 189
     }
   },
   "byBeach": {
     "grande-anse": {
       "statusHitRate": 100,
       "afaiMAE": 0.007,
-      "pairs": 21
+      "pairs": 68
     },
     "anse-mitan": {
       "statusHitRate": 100,
-      "afaiMAE": 0.009,
-      "pairs": 21
+      "afaiMAE": 0.008,
+      "pairs": 68
     },
     "anse-noire": {
       "statusHitRate": 100,
-      "afaiMAE": 0.008,
-      "pairs": 21
+      "afaiMAE": 0.007,
+      "pairs": 68
     },
     "tartane": {
-      "statusHitRate": 90,
-      "afaiMAE": 0.028,
-      "pairs": 21
+      "statusHitRate": 100,
+      "afaiMAE": 0.005,
+      "pairs": 68
     },
     "anse-madame": {
       "statusHitRate": 100,
-      "afaiMAE": 0.01,
-      "pairs": 21
+      "afaiMAE": 0.007,
+      "pairs": 68
     },
     "diamant": {
       "statusHitRate": 100,
-      "afaiMAE": 0.009,
-      "pairs": 21
+      "afaiMAE": 0.008,
+      "pairs": 68
     },
     "pt-marin": {
       "statusHitRate": 100,
-      "afaiMAE": 0.011,
-      "pairs": 21
+      "afaiMAE": 0.007,
+      "pairs": 68
     },
     "sainte-anne": {
-      "statusHitRate": 100,
-      "afaiMAE": 0.008,
-      "pairs": 21
+      "statusHitRate": 94,
+      "afaiMAE": 0.014,
+      "pairs": 68
     },
     "les-salines": {
       "statusHitRate": 100,
-      "afaiMAE": 0.008,
-      "pairs": 21
+      "afaiMAE": 0.005,
+      "pairs": 68
     },
     "vauclin": {
       "statusHitRate": 100,
-      "afaiMAE": 0.013,
-      "pairs": 21
+      "afaiMAE": 0.006,
+      "pairs": 68
     },
     "precheur": {
       "statusHitRate": 100,
-      "afaiMAE": 0.007,
-      "pairs": 21
+      "afaiMAE": 0.006,
+      "pairs": 68
     },
     "gp-grande-anse": {
       "statusHitRate": 100,
-      "afaiMAE": 0.019,
-      "pairs": 21
+      "afaiMAE": 0.018,
+      "pairs": 68
     },
     "gp-malendure": {
       "statusHitRate": 100,
-      "afaiMAE": 0.02,
-      "pairs": 21
+      "afaiMAE": 0.018,
+      "pairs": 68
     },
     "gp-sainte-anne": {
       "statusHitRate": 100,
-      "afaiMAE": 0.015,
-      "pairs": 21
+      "afaiMAE": 0.008,
+      "pairs": 68
     },
     "gp-pt-chateaux": {
-      "statusHitRate": 100,
-      "afaiMAE": 0.01,
-      "pairs": 21
+      "statusHitRate": 96,
+      "afaiMAE": 0.014,
+      "pairs": 68
     },
     "gp-gosier": {
-      "statusHitRate": 100,
-      "afaiMAE": 0.015,
-      "pairs": 21
+      "statusHitRate": 97,
+      "afaiMAE": 0.011,
+      "pairs": 68
     },
     "gp-caravelle": {
       "statusHitRate": 100,
-      "afaiMAE": 0.02,
-      "pairs": 21
+      "afaiMAE": 0.007,
+      "pairs": 68
     },
     "gp-bas-du-fort": {
-      "statusHitRate": 100,
-      "afaiMAE": 0.02,
-      "pairs": 21
+      "statusHitRate": 97,
+      "afaiMAE": 0.017,
+      "pairs": 68
     },
     "gp-deshaies": {
       "statusHitRate": 100,
-      "afaiMAE": 0.018,
-      "pairs": 21
+      "afaiMAE": 0.015,
+      "pairs": 68
     },
     "gp-moule": {
       "statusHitRate": 100,
-      "afaiMAE": 0.017,
-      "pairs": 21
+      "afaiMAE": 0.007,
+      "pairs": 68
     },
     "gp-vieux-fort": {
       "statusHitRate": 100,
-      "afaiMAE": 0.01,
-      "pairs": 21
+      "afaiMAE": 0.007,
+      "pairs": 68
     }
   },
   "overall": {
-    "statusHitRate": 100,
-    "afaiMAE": 0.013
+    "statusHitRate": 99,
+    "afaiMAE": 0.01
   },
   "byRegime": {
     "unknown": {
-      "n": 231,
-      "hit": 231,
+      "n": 42,
+      "hit": 42,
       "falseAlarm": 0,
-      "actClean": 231
+      "actClean": 42
     },
     "calm": {
-      "n": 210,
-      "hit": 208,
-      "falseAlarm": 2,
-      "actClean": 210
+      "n": 1386,
+      "hit": 1375,
+      "falseAlarm": 11,
+      "actClean": 1386
     }
   },
   "byRegimeDirection": {
     "unknown|clean": {
-      "n": 231,
-      "hit": 231
+      "n": 42,
+      "hit": 42
     },
     "calm|clean": {
-      "n": 208,
-      "hit": 208
+      "n": 1375,
+      "hit": 1375
     },
     "calm|ALERT": {
-      "n": 2,
+      "n": 11,
       "hit": 0
     }
   },
   "regimeReliability": {
     "note": "Reliability conditioned on each beach's OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls. Always bind the figure to its window; for the freshest current-model number cite the reforecast output, not the archive blend.",
     "method": "archive",
-    "window": "2026-10-08 → 2026-10-14",
+    "window": "2026-10-27 → 2026-11-25",
     "regimes": {
       "unknown": {
-        "samples": 231,
+        "samples": 42,
         "cleanReliabilityPct": 100,
-        "cleanSamples": 231,
+        "cleanSamples": 42,
         "alertReliabilityPct": null,
         "alertSamples": 0,
         "falseAlarmRatePct": 0
       },
       "calm": {
-        "samples": 210,
+        "samples": 1386,
         "cleanReliabilityPct": 100,
-        "cleanSamples": 208,
+        "cleanSamples": 1375,
         "alertReliabilityPct": 0,
-        "alertSamples": 2,
+        "alertSamples": 11,
         "falseAlarmRatePct": 1
       }
     },
     "headline": {
-      "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-10-08 → 2026-10-14) se sont vérifiées (sur 208) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-      "en": "100% of our \"clean water\" forecasts (calm season, 2026-10-08 → 2026-10-14) proved correct (over 208); the rare alerts stay flagged low-confidence until the data confirms them.",
-      "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-10-08 → 2026-10-14) resultaron correctos (sobre 208); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+      "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-10-27 → 2026-11-25) se sont vérifiées (sur 1375) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+      "en": "100% of our \"clean water\" forecasts (calm season, 2026-10-27 → 2026-11-25) proved correct (over 1375); the rare alerts stay flagged low-confidence until the data confirms them.",
+      "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-10-27 → 2026-11-25) resultaron correctos (sobre 1375); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-10-14T14:57:36.496Z",
+  "computed": "2026-11-25T19:50:46.286Z",
   "pairs": [
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
       "beach": "les-salines",
       "horizon": 3,
       "regime": "calm",
       "predicted": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 56
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
       "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "vauclin",
       "horizon": 1,
       "regime": "calm",
@@ -251,15 +251,15 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "vauclin",
       "horizon": 2,
       "regime": "calm",
@@ -269,15 +269,15 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
       "beach": "vauclin",
       "horizon": 3,
       "regime": "calm",
@@ -287,15 +287,15 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "precheur",
       "horizon": 1,
       "regime": "calm",
@@ -305,15 +305,15 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "precheur",
       "horizon": 2,
       "regime": "calm",
@@ -323,15 +323,15 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
       "beach": "precheur",
       "horizon": 3,
       "regime": "calm",
@@ -341,35 +341,17 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "gp-grande-anse",
       "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.1,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-grande-anse",
-      "horizon": 2,
       "regime": "calm",
       "predicted": {
         "afai": 0.09,
@@ -377,1023 +359,159 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-grande-anse",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.08,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-malendure",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.1,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-malendure",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-malendure",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.08,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-sainte-anne",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
         "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-sainte-anne",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-sainte-anne",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-pt-chateaux",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-pt-chateaux",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-pt-chateaux",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-gosier",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-gosier",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-gosier",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
       "afaiError": 0.03
     },
     {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-caravelle",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-caravelle",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.03
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-caravelle",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.03
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-bas-du-fort",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.08,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-bas-du-fort",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-bas-du-fort",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.03
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-deshaies",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-deshaies",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-deshaies",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.08,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-moule",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-moule",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-moule",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-12",
-      "beach": "gp-vieux-fort",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-13",
-      "beach": "gp-vieux-fort",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-11",
-      "targetDate": "2026-10-14",
-      "beach": "gp-vieux-fort",
-      "horizon": 3,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 56
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "grande-anse",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "grande-anse",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "anse-mitan",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "anse-mitan",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "anse-noire",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "anse-noire",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "tartane",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "tartane",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "anse-madame",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "anse-madame",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "diamant",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "diamant",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "pt-marin",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "pt-marin",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "sainte-anne",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "sainte-anne",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "les-salines",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "les-salines",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "vauclin",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "vauclin",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "precheur",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "precheur",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.06,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "gp-grande-anse",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.1,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "gp-grande-anse",
       "horizon": 2,
       "regime": "calm",
       "predicted": {
-        "afai": 0.1,
+        "afai": 0.08,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.02
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-grande-anse",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.08,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.02
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "gp-malendure",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.03
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "gp-malendure",
       "horizon": 2,
       "regime": "calm",
       "predicted": {
-        "afai": 0.1,
+        "afai": 0.08,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.02
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-malendure",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.08,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.02
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
+      "beach": "gp-sainte-anne",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
       "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "gp-sainte-anne",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "gp-sainte-anne",
       "horizon": 2,
       "regime": "calm",
       "predicted": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-sainte-anne",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "gp-pt-chateaux",
       "horizon": 1,
       "regime": "calm",
@@ -1403,15 +521,15 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "gp-pt-chateaux",
       "horizon": 2,
       "regime": "calm",
@@ -1421,160 +539,34 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-pt-chateaux",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "gp-gosier",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.08,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "gp-gosier",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "gp-caravelle",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.07,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "gp-caravelle",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.06,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "gp-bas-du-fort",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "gp-bas-du-fort",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "gp-deshaies",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "gp-deshaies",
-      "horizon": 2,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.09,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
-      "beach": "gp-moule",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
@@ -1583,16 +575,16 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
-      "beach": "gp-moule",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
+      "beach": "gp-gosier",
       "horizon": 2,
       "regime": "calm",
       "predicted": {
@@ -1601,15 +593,249 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-gosier",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
+      "beach": "gp-caravelle",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
+      "beach": "gp-caravelle",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-caravelle",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
+      "beach": "gp-bas-du-fort",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
+      "beach": "gp-bas-du-fort",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-bas-du-fort",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
+      "beach": "gp-deshaies",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.08,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
       "afaiError": 0.02
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-13",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
+      "beach": "gp-deshaies",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.07,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-deshaies",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.07,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
+      "beach": "gp-moule",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.07,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.02
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
+      "beach": "gp-moule",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.07,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.02
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-moule",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-23",
       "beach": "gp-vieux-fort",
       "horizon": 1,
       "regime": "calm",
@@ -1619,15 +845,15 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-12",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-24",
       "beach": "gp-vieux-fort",
       "horizon": 2,
       "regime": "calm",
@@ -1637,15 +863,33 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-22",
+      "targetDate": "2026-11-25",
+      "beach": "gp-vieux-fort",
+      "horizon": 3,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 56
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "grande-anse",
       "horizon": 1,
       "regime": "calm",
@@ -1655,51 +899,105 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "grande-anse",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "anse-mitan",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.07,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.02
-    },
-    {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
-      "beach": "anse-noire",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.05,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
         "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
       "afaiError": 0.01
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "anse-mitan",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "anse-noire",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "anse-noire",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "tartane",
       "horizon": 1,
       "regime": "calm",
@@ -1709,17 +1007,17 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
-      "beach": "anse-madame",
-      "horizon": 1,
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "tartane",
+      "horizon": 2,
       "regime": "calm",
       "predicted": {
         "afai": 0.05,
@@ -1727,15 +1025,51 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "anse-madame",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "anse-madame",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "diamant",
       "horizon": 1,
       "regime": "calm",
@@ -1745,15 +1079,33 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "diamant",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "pt-marin",
       "horizon": 1,
       "regime": "calm",
@@ -1763,15 +1115,33 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "pt-marin",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "sainte-anne",
       "horizon": 1,
       "regime": "calm",
@@ -1781,15 +1151,33 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "sainte-anne",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "les-salines",
       "horizon": 1,
       "regime": "calm",
@@ -1799,15 +1187,33 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "les-salines",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "vauclin",
       "horizon": 1,
       "regime": "calm",
@@ -1817,16 +1223,142 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "vauclin",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "precheur",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "precheur",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "gp-grande-anse",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-grande-anse",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "gp-malendure",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-malendure",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "gp-sainte-anne",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
@@ -1835,69 +1367,33 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
-      "beach": "gp-grande-anse",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
-      "beach": "gp-malendure",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.09,
-        "status": "clean",
-        "confidence": 60
-      },
-      "actual": {
-        "afai": 0.1,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0.01
-    },
-    {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
       "beach": "gp-sainte-anne",
-      "horizon": 1,
+      "horizon": 2,
       "regime": "calm",
       "predicted": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "gp-pt-chateaux",
       "horizon": 1,
       "regime": "calm",
@@ -1907,88 +1403,142 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-pt-chateaux",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "gp-gosier",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-gosier",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "gp-caravelle",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.07,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-caravelle",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "gp-bas-du-fort",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.08,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
-      "beach": "gp-deshaies",
-      "horizon": 1,
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-bas-du-fort",
+      "horizon": 2,
       "regime": "calm",
       "predicted": {
-        "afai": 0.08,
+        "afai": 0.05,
         "status": "clean",
         "confidence": 60
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
-      "beach": "gp-moule",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "gp-deshaies",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
@@ -1997,16 +1547,304 @@
         "confidence": 60
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
-      "snapshotDate": "2026-10-13",
-      "targetDate": "2026-10-14",
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-deshaies",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
+      "beach": "gp-moule",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-moule",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-24",
       "beach": "gp-vieux-fort",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-23",
+      "targetDate": "2026-11-25",
+      "beach": "gp-vieux-fort",
+      "horizon": 2,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "grande-anse",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "anse-mitan",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "anse-noire",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "tartane",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "anse-madame",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "diamant",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "pt-marin",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "sainte-anne",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "les-salines",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "vauclin",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "precheur",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-grande-anse",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
@@ -2020,6 +1858,168 @@
       },
       "statusHit": 1,
       "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-malendure",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-sainte-anne",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-pt-chateaux",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-gosier",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-caravelle",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-bas-du-fort",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-deshaies",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.06,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.01
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-moule",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
+    },
+    {
+      "snapshotDate": "2026-11-24",
+      "targetDate": "2026-11-25",
+      "beach": "gp-vieux-fort",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
+        "afai": 0.05,
+        "status": "clean",
+        "confidence": 60
+      },
+      "actual": {
+        "afai": 0.05,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0
     }
   ]
 }
