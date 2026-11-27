@@ -9,6 +9,7 @@ import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
 // Source de vérité des prix B2C (miroir du serveur) — voir src/lib/pricing.js.
 import { PASS_DAYS, PASS_KEYS, passBaseCents, passCopy, passEffectiveCents, formatCents, resolvePass } from "./lib/pricing.js"
+import { getSegment } from "./lib/segment.js"
 import { selectB2bPaylink } from "./lib/b2b-paylink-offer.mjs"
 // Accusés serveur réels du parcours B2B (lead + essai) : le succès n'est
 // affiché qu'après confirmation de persistance. Même règle que les pages
@@ -60,16 +61,32 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
 // ── B2C Pass storefront : les 3 passes de src/lib/pricing.js (p30 en avant) ──
 // Un pass = une durée fixe = un paiement unique, SANS abonnement.
 // Le clic pose passCtxRef puis ouvre l'écran de paiement (Mollie/Stripe/PayPal).
+// Beacon de segmentation vers Apps Script (même endpoint que src/PassOffer.jsx).
+const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (typeof navigator !== "undefined" && navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
+
 const PassStorefront = memo(function PassStorefront({ lang = "fr", currency = "eur", source = "unknown", setPayStep, passCtxRef, highlightedKey }) {
   const cur = currency === "usd" ? "usd" : "eur"
   const featuredKey = "p30" // produit mis en avant (offre validée 2026-11-09)
+  const seg = getSegment()
+  // Copy A/B : 85 % benefit-first, 15 % control. Override query pour QA/rollback.
+  const copyVariant = (() => { try { const assigned = abVariant("pass_copy", ["control", "benefit"], [0.15, 0.85]); const q = typeof window !== "undefined" ? (window.location.search || "") : ""; if (/[?&]passcopy=1(?:&|$)/.test(q)) return "benefit"; if (/[?&]passcopy=0(?:&|$)/.test(q)) return "control"; return assigned } catch (_) { return "control" } })()
   const money = (c) => formatCents(c, cur, lang)
+  // Exposition du storefront : sg_pass_offer_view + sbeacon view (mesure d'impression).
+  useEffect(() => {
+    try { sbeacon({ stage: "view", segment: seg, model: "oneprice", pass: featuredKey, copy_variant: copyVariant }) } catch (_) {}
+    try { track("sg_pass_offer_view", { segment: seg, model: "oneprice", pass: featuredKey, cents: passEffectiveCents(featuredKey, cur), copy_variant: copyVariant }) } catch (_) {}
+  }, [])
   const onBuy = (key) => {
     const base = passBaseCents(key, cur)
     const eff = passEffectiveCents(key, cur)
     const days = PASS_DAYS[key] || 30
     passCtxRef.current = { pass: key, cents: base, eff, days, cur }
-    try { track("sg_pass_cta", { pass: key, cents: eff, base_cents: base, source, onsite: 1, method: "card" }) } catch (_) {}
+    try { sbeacon({ stage: "cta", segment: seg, pass: key, cents: eff, base_cents: base, copy_variant: copyVariant }) } catch (_) {}
+    // UNE seule émission sg_pass_cta par clic, avec l'attribution COMPLÈTE
+    // (copy_variant + segment + source). Jamais de doublon depuis PremiumModal.
+    try { track("sg_pass_cta", { pass: key, cents: eff, base_cents: base, segment: seg, copy_variant: copyVariant, source, onsite: 1, method: "card" }) } catch (_) {}
+    try { track("CTA_click", { livemode: true, correlation_id: (typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID()) || String(Date.now()), pass: key }) } catch (_) {}
     try { localStorage.setItem("sg_checkout_abandoned", JSON.stringify({ email: localStorage.getItem("sg_email") || "", ts: Date.now() })) } catch (_) {}
     setPayStep(true)
   }
@@ -108,7 +125,7 @@ const PassStorefront = memo(function PassStorefront({ lang = "fr", currency = "e
               <div className="anton" style={{ fontSize: 30, lineHeight: 1, color: "#FFC72C", marginBottom: 3, letterSpacing: "-.01em" }}>{price}</div>
               <div style={{ fontSize: 11.5, fontWeight: 800, color: "rgba(234,247,244,.5)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>{copy.days}</div>
               <button onClick={() => onBuy(key)} style={{
-                width: "100%", border: "none", cursor: "pointer", fontFamily: "inherit",
+                width: "100%", cursor: "pointer", fontFamily: "inherit",
                 font: "800 14px/1 'Bricolage Grotesque',system-ui,sans-serif", borderRadius: 12, padding: "12px",
                 background: highlighted ? "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)" : "linear-gradient(180deg,#2d1b4d,#1f0f36)",
                 color: highlighted ? "#190c2c" : "#fff", boxShadow: highlighted ? "0 2px 0 0 rgba(0,0,0,.20)" : "1px 1px 0 rgba(255,255,255,.09)",
