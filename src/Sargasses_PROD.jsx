@@ -1997,7 +1997,28 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_attract_view","sg_attract_tap","sg_attract_share","sg_lobby_scan",
   // Les 10 postes du Veilleur « Jusqu'où on descend » (?verticals, 2026-07-02) : ouverture de
   // l'overlay des 10 verticales + tap d'une action (par tier) + capture waitlist PILOT (Prisme).
-  "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist"])
+  "sg_verticales_view","sg_verticales_tap","sg_verticales_waitlist",
+  // ⚠️ 2026-11-27 — TROU DE MESURE DU CHEMIN DE L'ARGENT (défaut LIVE) :
+  // l'étape entre `sg_pass_cta` (clic « acheter ») et `sg_checkout_started`
+  // (soumission du formulaire carte) était INVISIBLE. TOUTE la famille
+  // `sg_pay_*` de PremiumModal sortait en GA4 mais JAMAIS dans Supabase, faute
+  // d'être ici — cf. tests/unit/funnel-checkout-events.test.cjs contrat 4b.
+  // Conséquence mesurée sur 7 j (funnel-snapshot.json, 2026-11-20 → 11-27) :
+  //   10 `pass_cta` → `checkout_started` = 0, sans AUCUN moyen de distinguer
+  // « abandon au formulaire » de « parti en wallet », ni de savoir si l'écran
+  // de paiement a seulement été atteint. Le taux `cta_to_checkout_started`
+  // sous-comptait donc structurellement l'intention wallet.
+  //   (Le REVENU, lui, n'était pas aveugle : le retour ?mollie_return=1 émet
+  //   `sg_conversion`.) Les 7 événements ci-dessous + les clés de
+  //   FUNNEL_KEYS (scripts/automation/funnel-from-supabase.cjs) referment le trou.
+  // Mesure PURE : aucun de ces événements ne déclenche d'action de paiement.
+  "sg_pay_wallet_start",     // intention Apple/Google Pay (le chemin le plus court)
+  "sg_pay_email_captured",   // email laissé sur l'écran de paiement = lead chaud
+  "sg_pay_onsite_open",      // écran de paiement atteint (+ ready + latence ms)
+  "sg_pay_onsite_back",      // sortie de l'écran de paiement sans payer (abandon)
+  "sg_pay_onsite_3ds",       // étape 3DS atteinte
+  "sg_pay_onsite_error",     // erreur technique (doublure détaillée de sg_payment_failed)
+  "sg_pay_onsite_fail"])     // échec de confirmation
 function sgCorrelation(){
   try{
     let id=sessionStorage.getItem("sg_corr")

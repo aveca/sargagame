@@ -1633,6 +1633,39 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // redirect: types card+link only) → action subscribe (essai 7j, prix
   // région) → premium activé EN PLACE. Fallback intégral : Payment Link.
   const[payStep,_setPayStep]=useState(false)
+  // ── Disponibilité des wallets express (Apple Pay / Google Pay) ─────────────
+  // ⚠️ 2026-11-27 — DÉFAUT LIVE MESURÉ : `walletAvail()` (Sargasses_PROD.jsx)
+  // renvoie `check()`, c-à-d une fonction `async`, donc une PROMISE. L'ancien
+  // code faisait, DANS LE RENDU :
+  //     const w = walletAvail()
+  //     if (!w.apple && !w.google) return null          // ← w est une Promise
+  // Une Promise n'a ni `.apple` ni `.google` → tout le bloc express était
+  // SUPPRIMÉ au premier rendu de l'écran de paiement, et RIEN ne le
+  // réaffichait : le seul autre appelant était la prop morte
+  // `wallet={walletAvail()}` de <PassOffer> (que PassOffer ne déclare pas), et
+  // taper dans le champ email ne provoque AUCUN re-render (onPayEmailInput ne
+  // fait qu'un debounce). Le cache `sg_wallet_avail` (TTL 5 min) n'était donc
+  // réchauffé qu'après coup : le 1-tap, le chemin de paiement le plus court,
+  // n'était PAS GARANTI d'être offert, et son abandon était invisible en
+  // métrique (`sg_pay_wallet_start` hors allowlist — cf. Sargasses_PROD.jsx).
+  // Correctif : on RÉSOUT la détection en state, dans un effet, et on relance
+  // à l'ouverture de l'écran de paiement. La vérité arrive toujours APRÈS le
+  // premier rendu ; le rendu, lui, ne dépend plus jamais d'une Promise.
+  // `null` = pas encore connu (on n'affiche rien) ; `{apple,google}` = connu.
+  const [wallet,setWallet]=useState(null)
+  useEffect(()=>{
+    let alive=true
+    const run=async()=>{
+      let w=null
+      try{ w = await Promise.resolve(walletAvail()) }catch(_){ w=null }
+      if(!alive)return
+      setWallet(w&&typeof w==="object"
+        ?{apple:!!w.apple,google:!!w.google}
+        :{apple:false,google:false})
+    }
+    run()
+    return()=>{alive=false}
+  },[payStep,PAY_PROVIDER,PAY_CAPTURE_ONLY])
   const payStepRef=useRef(false)
   const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
   // ── Présélection du pass depuis l'URL (?pass=p30|trip7|season) ───────────────
@@ -2559,7 +2592,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} passKey={_passFromUrl} ctaSource={source||"unknown"}
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} passKey={_passFromUrl} ctaSource={source||"unknown"}
           onBuy={(item)=>{
           passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
@@ -2593,7 +2626,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} passKey={_passFromUrl} ctaSource={source||"unknown"} onBuy={(item)=>{
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} passKey={_passFromUrl} ctaSource={source||"unknown"} onBuy={(item)=>{
           passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
@@ -3370,9 +3403,11 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           )}
           {/* Wallets express (Apple Pay / Google Pay) — Mollie, hors capture. Tap →
               feuille native via le checkout hébergé Mollie (payWithWallet). Affichés
-              uniquement si le device les supporte (walletAvail). Carte = repli on-site. */}
+              uniquement si le device les supporte (state `wallet`, résolu par
+              effet — JAMAIS `walletAvail()` dans le rendu : c'est une Promise).
+              Carte = repli on-site. */}
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(()=>{
-            const w=walletAvail()
+            const w=wallet||{apple:false,google:false}
             if(!w.apple&&!w.google)return null
             // Repli = Trip Pass (offre validée 2026-11-09 : 7,99 € / $8.99).
             const cents = passCtxRef.current?.cents ?? (PAY_CUR==="usd"?899:799)

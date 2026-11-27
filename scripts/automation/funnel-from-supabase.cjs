@@ -34,6 +34,17 @@ const FUNNEL_KEYS = [
   'payment_failed', 'sos_checkout_start', 'sos_checkout_error',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS.
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated',
+  // ⚠️ 2026-11-27 — TROU DE MESURE DU CHEMIN DE L'ARGENT. Toute la famille
+  // `pay_*` de PremiumModal était ABSENTE d'ici ET de SG_FUNNEL_EVENTS →
+  // GA4 only, jamais Supabase. L'étape entre `pass_cta` (clic « acheter »)
+  // et `checkout_started` (soumission du formulaire carte) était donc
+  // indiagnostiquable. Mesure du 2026-11-27 :
+  //   10 pass_cta → checkout_started = 0
+  // sans aucun moyen de distinguer « abandon au formulaire » de « parti en
+  // wallet », ni de savoir si l'écran de paiement a seulement été atteint.
+  // Ces clés + les 2 taux ci-dessous ferment le trou. Mesure pure.
+  'pay_wallet_start', 'pay_email_captured', 'pay_onsite_open', 'pay_onsite_back',
+  'pay_onsite_3ds', 'pay_onsite_error', 'pay_onsite_fail',
 ]
 
 async function fetchAll(cutoffIso) {
@@ -131,6 +142,17 @@ function computeFunnel(rows) {
     lock_to_modal: pct(counts.premium_modal_open, counts.forecast_lock_click),
     modal_to_cta: pct(ctaTotal, counts.premium_modal_open),
     cta_to_checkout_started: pct(counts.checkout_started, ctaTotal),
+    // ⚠️ 2026-11-27 : ces 2 taux n'existaient pas → « 10 clics → 0 checkout »
+    // était indiagnostiquable. `cta_to_pay_started` = part de l'intention de
+    // paiement réellement partie (wallet OU formulaire soumis) vs clics CTA.
+    // ⚠️ Pas un pourcentage de sessions : un MÊME utilisateur peut passer par
+    // les deux (il tape Apple Pay, ça échoue, il soumet la carte). La somme
+    // dépasse donc parfois la base — d'où le plafond à 100 : un taux >100 %
+    // est un artefact de comptage, jamais un signal.
+    cta_to_pay_started: Math.min(100, pct(counts.pay_wallet_start + counts.checkout_started, ctaTotal)),
+    // Part des clics CTA qui ont au moins laissé un email = lead chaud
+    // récupérable par la relance panier abandonné.
+    cta_to_email_captured: pct(counts.pay_email_captured, ctaTotal),
     checkout_started_to_conversion: pct(counts.conversion, counts.checkout_started),
     cta_to_redirect: pct(counts.checkout_redirect, ctaTotal),
     cta_to_conversion: pct(counts.conversion, ctaTotal),
