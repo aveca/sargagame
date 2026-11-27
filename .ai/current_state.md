@@ -1,3 +1,48 @@
+## 2026-11-27 · Mission TRACK-RECORD-GLOBAL-ARTIFACT-20261127 · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : `/api/copernicus/track-record.json` répondait 404 sur 4 des 6 domaines (florida, puntacana, rivieramaya, tulum) alors que le paywall le fetch à chaque affichage — cause racine trouvée dans le packaging `prepare-ftp.cjs`, corrigée + garde-fou fail-closed.
+- **Détails** :
+  - PREUVES LIVE (27/11 17:01 UTC, curl, contournement de cache CF) : `200` sargasses-martinique.com / sargasses-guadeloupe.com · `404` sargassummiami.com / sargassumpuntacana.com / sargassumcancun.com / sargazotulum.com. Le 404 est aussi un HIT CF (négatif caché) — pas un simple retard de propagation.
+  - MÉCANISME : `prepare-ftp.cjs` a deux chemins. Le build `mq/gp` passe par `SHARED_LEGACY_IDS` → `copyRecursive(dist, out)` intégral → tous les artefacts globaux conservés (d'où 200). Les 4 régions touristes passent par `prepareNewRegion(region)` (l. 869+) qui PURGE d'abord une liste d'« overlays régionaux » puis ne re-pose QUE `sargassum.json`, `history.json`, `sargassum-banks.json`, `sargassum-grid.json`. Tout fichier purgé absent de `public/api/copernicus/<region.id>/` est donc supprimé du domaine sans jamais être réinjecté.
+  - CAUSE RACINE : le commit `2bc0ddc23` (« feat(b2b): track-record API public auditable ») avait ajouté `track-record.json` à cette liste, et `2eb55c8c6` y avait déjà mis `forecast-archive.json` et `forecast-accuracy.json`. Vérifié au système de fichiers : ces 3 fichiers n'existent QU'à la racine `public/api/copernicus/` — aucune copie régionale (mq/gp n'ont aucun des 5 ; florida/puntacana/rivieramaya/tulum/barbados n'ont que banks/grid). Ce sont donc des artefacts GLOBAUX, purgés à tort.
+  - IMPACT : `PremiumModal.jsx` (l. 340 et 1534), `ChasseHome.jsx` (l. 1642), `WeekHub.jsx` (l. 144) et `DemoReel.jsx` (l. 122) fetch tous `/api/copernicus/track-record.json` — le paywall perdait sa preuve de fiabilité (`.catch(() => {})` = échec silencieux).
+  - CORRECTIF : la liste ne contient plus que les 2 fichiers qui ont une variante régionale réelle (`sargassum-banks.json`, `sargassum-grid.json`) + invariant explicite + `throw` si une entrée n'a aucune variante régionale (fail-closed : le packaging échoue au lieu de livrer un 404).
+  - PREUVE LOCALE DU CORRECTIF : build `VITE_REGION=florida` → `node scripts/prepare-ftp.cjs` → `florida-ftp/api/copernicus/track-record.json`, `forecast-archive.json`, `forecast-accuracy.json` présents et BYTE-IDENTIQUES à la source globale (sha256) ; `sargassum-banks.json` / `sargassum-grid.json` toujours purgés puis re-posés depuis `public/api/copernicus/florida/` (identiques, 0 réf MQ) — l'isolement régional n'est pas cassé. `sargassum.json` racine : 597 champs comparés, SEUL `dataAgeMinutes` change (1675 → 1753 = fraîcheur de packaging) — 0 niveau, 0 score, 0 prévision touchée.
+  - GARDE-FOU VÉRIFIÉ PAR EXÉCUTION : injection temporaire de `citizen-accuracy.json` (artefact global) dans la liste → `node scripts/prepare-ftp.cjs` échoue avec le message explicite de l'invariant (l. 1223), fichier restauré automatiquement ensuite (vérifié : `citizen-accuracy` absent, correction intacte).
+  - CONTRE-ÉPREUVE DU TEST : le test échoue sur l'ancien code (`exit=1, fail 1`, expected true / actual false) et passe sur le code corrigé — ce n'est pas un test décoratif.
+
+### Fichiers modifiés
+- `scripts/prepare-ftp.cjs` — `REGION_SPECIFIC_OVERLAYS` réduit aux 2 vrais overlays régionaux, invariant documenté + garde-fou qui lève une erreur explicite, log de fin de bloc corrigé
+- `tests/track-record-packaging-global-artifact.test.cjs` — NOUVEAU : verrouille l'invariant (purge uniquement si variante régionale présente), la préservation des 3 artefacts globaux, la re-copie des overlays purgés, et la présence du garde-fou dans le script
+
+### Tests réalisés
+- [x] `node --test tests/track-record-packaging-global-artifact.test.cjs` → PASS (et FAIL sur l'ancien code : contre-épreuve)
+- [x] `node --test` sur les 4 tests track-record (pricing-stale, publication-workflow, widget-stale, packaging) → 4/4 PASS
+- [x] `npm run build` (VITE_REGION=mq) → exit 0, b=22eef7a0
+- [x] `node scripts/check-bundle-budget.cjs` → 207,6 Ko ≤ 210 Ko
+- [x] `node scripts/ux-smoke.mjs` (build MQ) → FUNNEL_REACHED=map+fiche+paywall / ERRORS=[] / WHITE_OR_TRANSPARENT_BUTTONS=[] / RM_INFINITE=[]
+- [x] `npx esbuild scripts/prepare-ftp.cjs --bundle=false` → exit 0
+- [x] `git diff --check` → exit 0 · PHP lint hors périmètre (aucun .php touché)
+- [ ] CI de la PR : à vérifier après push (`ci-tests.yml` exécute déjà `prepare-ftp.cjs`, l. 34)
+
+### Problèmes restants
+- [ ] SORTIE PRODUCTION DU CORRECTIF CONVERSION (`wm-stale-offer` + `forecastgate`) : toujours pas faite — bundle figé depuis le 24/11, autorisation fondateur explicite requise (voir mission PAGES-TRIGGER-CONVERSION-20261127 ci-dessous).
+- [ ] track-record.json restera 404 EN PRODUCTION sur les 4 domaines jusqu'au prochain déploiement de ces régions : ce correctif est du packaging, il ne sort rien tant qu'aucun deploy n'est déclenché (même verrou que ci-dessus).
+- [ ] Smoke UX sur build région touristique (VITE_REGION=florida) : `ERRORS` non vide (`STALE_MAP_DECISION_LEAK` mobile + desktop — le bandeau « satellite en retard » n'est pas détecté sur la locale en/es). Préexistant et indépendant de cette mission (comparaison faite : même smoke sur build MQ = `ERRORS=[]` ; mon diff ne touche ni `src/` ni les données). Signalé, non corrigé — à traiter par l'agent QA/ui-ux.
+- [ ] Overlays carte banks/grid : le garde-fou vérifie qu'une variante existe AILLEURS (≥1 région), pas qu'elle existe pour la région bâtie. Si une région (ex. barbados) n'a pas de copie régionale de banks/grid, elle perd quand même ces deux fichiers — historique depuis `2eb55c8c6`, hors périmètre de cette mission. Les régions `mq`/`gp` ne sont PAS concernées : elles passent par le chemin `SHARED_LEGACY_IDS` (`copyRecursive` intégral, aucune purge). À durcir plus tard (vérifier la variante de la RÉGION bâtie, pas l'existence globale).
+
+### Prochaine action recommandée
+1. Merger cette PR (CI verte, périmètre non financier, rollback `git revert`) puis demander/attendre l'autorisation fondateur pour le déploiement production — sans quoi le 404 live persiste. — Rôle : coding_agent puis devops_agent
+2. Vérifier en production APRÈS déploiement que `/api/copernicus/track-record.json` répond 200 sur les 6 domaines (contrôle post-déploiement, lecture seule). — Rôle : devops_agent
+3. Reprendre le `STALE_MAP_DECISION_LEAK` sur régions touristiques (Bandereau i18n ou détection du smoke). — Rôle : qa_agent
+4. Arbitrer les overlays banks/grid sur mq/gp (séparation données vs carte). — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/track-record-global-overlay-20261127` (depuis origin/main 0b820f309)
+- PR : à créer dans cette session
+- Commit head : à compléter après commit
+
 ## 2026-11-27 · Mission PAGES-TRIGGER-CONVERSION-20261127 · Agent: devops_agent (devops_agent (OpenCode))
 
 ### Travail effectué
