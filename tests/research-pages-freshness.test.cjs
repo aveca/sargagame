@@ -5,9 +5,9 @@ const vm = require('node:vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const pages = [
-  { path: 'public/recherche/index.html', canonical: 'https://sargasses-martinique.com/recherche/', horizon: 'J+', stale: /périmé|incomplet|indisponible/i },
-  { path: 'public/research/index.html', canonical: 'https://sargasses-martinique.com/research/', horizon: 'D+', stale: /stale|incomplete|unavailable/i },
-  { path: 'public/investigacion/index.html', canonical: 'https://sargasses-martinique.com/investigacion/', horizon: 'D+', stale: /obsoleto|incompleto|no está disponible/i }
+  { path: 'public/recherche/index.html', canonical: 'https://sargasses-martinique.com/recherche/', horizon: 'J+', arrowLabel: 'Palmarès →', stale: /périmé|incomplet|indisponible/i },
+  { path: 'public/research/index.html', canonical: 'https://sargasses-martinique.com/research/', horizon: 'D+', arrowLabel: 'Track record →', stale: /stale|incomplete|unavailable/i },
+  { path: 'public/investigacion/index.html', canonical: 'https://sargasses-martinique.com/investigacion/', horizon: 'D+', arrowLabel: 'Historial →', stale: /obsoleto|incompleto|no está disponible/i }
 ];
 
 class FakeElement {
@@ -103,7 +103,8 @@ function assertFiguresHidden(document, page, reason) {
 (async () => {
   for (const page of pages) {
     const html = fs.readFileSync(path.join(ROOT, page.path), 'utf8');
-    assert.doesNotMatch(html, /(?:[ÃÂ][^\s<]|â(?:[€”™œ–—]|[\u0080-\u00bf])|ðŸ|ï¸)/, page.path + ': no UTF-8 mojibake in page copy or metadata');
+    assert.doesNotMatch(html, /(?:[ÃÂ][^\s<]|â(?:[†€”™œ–—]|[\u0080-\u00bf])|ðŸ|ï¸)/, page.path + ': no UTF-8 mojibake in page copy or metadata');
+    assert.ok(html.includes(page.arrowLabel), page.path + ': localized track-record link must contain a valid UTF-8 arrow');
 
     // Initial HTML and structured data must not expose the old figures.
     assert.ok(html.includes('href="' + page.canonical + '"'), page.path + ': canonical preserved');
