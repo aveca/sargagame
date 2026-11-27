@@ -6,6 +6,11 @@
 
 ---
 
+## À faire — automatisation infra (manuels, fondateur)
+
+- [ ] P1 - **Retrait des routes sg-noso (Cloudflare)** (@devops_agent) : exécuter `node scripts/sg-cf-remove-noso-routes.cjs plan` puis `apply` avec `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (token avec permission Zone:Workers Routes:Edit). Script prêt (PR #1501), mapping exact des 6 domaines, create→verify→delete→re-verify. **Prérequis** : token Cloudflare avec les bons droits. **Automatisation** : workflow `.github/workflows/sg-noso-routes.yml` (workflow_dispatch) — déclencher manuellement depuis GitHub Actions après avoir ajouté les secrets `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` dans le repo. **Rollback** : les routes sg-noso sont conservées (re-créables en 1 appel) ; le script ne supprime que si la coexistence est vérifiée.
+- [ ] P1 - **Redéploiement sg-payments (Cloudflare)** (@devops_agent) : le workflow `deploy-sg-payments` échoue sur `/accounts/.../workers/scripts/sg-payments/routes` (permission). **Action** : (a) vérifier que le token `CLOUDFLARE_API_TOKEN` a la permission Workers Scripts:Edit, ou (b) déployer manuellement `cd workers/sg-payments && npx wrangler deploy --keep-vars` avec un token admin. **Aucun changement de code requis** — le code est à jour sur `main`. **Vérification** : `GET https://sargasses-martinique.com/api/mollie-pay?pass=p30` doit renvoyer le nouveau comportement (email prefill dans le checkout).
+
 ## Récemment complété
 
 - [x] P1 - **SARG-EMAIL-PREFILL-20261126 : l'email capturé pré-remplit le paiement** (@coding_agent, 2026-11-26, branche `agent/coding/SARG-EMAIL-PREFILL-20261126`, PR à ouvrir — **NON mergée, AUCUN déploiement**) : la capture email existait déjà (Apps Script + Supabase `sg_email_submit`) et l'étape paiement lisait déjà `localStorage.sg_email` (`PremiumModal` ×3) mais **rien n'écrivait cette clé** → ressaisie obligatoire à l'étape paiement. Correctif minimal : `submitLead` mémorise l'email déjà saisi (normalisé, non destructeur, sans `localStorage` il ne casse rien) + la page `/premium/` pré-remplit et réécrit `sg_email`. Aucun nouvel envoi, aucun nouvel événement analytics, aucun pixel/prix/checkout touché. Gate : build exit 0 · budget 207,2/210 Ko · `npm test` 202/202 · `diff --check` exit 0. **Rollback** : `git revert` du commit.
