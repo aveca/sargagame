@@ -13716,7 +13716,34 @@ export default function App(){
       try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
       try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
       window.history.replaceState({},"",window.location.pathname)}
-    else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
+    // SUPPRIMÉ (2026-11-27) : `else if(ALERT_PATHS.test(pathname)) openPremium("alertes_landing")`.
+    // Cette branche ouvrait le paywall À FROID sur /alertes/ (+ /en/sargassum-alerts/,
+    // /es/alertas-sargazo/) — c'est-à-dire exactement ce que la doctrine enregistrée
+    // 15 lignes plus bas interdit (« le mur ne s'ouvre PLUS que sur intention CHAUDE »,
+    // cf. useEffect engagement désactivé par un early return volontaire, même fichier).
+    //
+    // PREUVES (lecture seule, aucun paiement déclenché) :
+    //  · LIVE 2026-11-26 sur https://sargasses-martinique.com/alertes/ : le paywall
+    //    s'ouvre tout seul à la première visite et son overlay (z=1100) couvre tout le
+    //    viewport. Le DOM de la page n'a que 3 <a>, dont UN seul atteignable, et il est
+    //    DANS la modale (« Avant de payer, voyez nos erreurs → » vers /fiabilite/).
+    //    → le visiteur ne voit pas la page /alertes/, il voit un mur.
+    //  · Funnel ?action=funnel, 28 j : alertes_landing = 305 ouvertures pour
+    //    premium_modal_cta = 0. À titre de comparaison sur la même fenêtre :
+    //    beach_sheet 34/2 (5,9 %) et chasse_detail 158/2 (1,3 %) — les sources où le
+    //    mur s'ouvre sur une intention réelle.
+    //  · Cause du 0 : le visiteur d'/alertes/ demande une ALERTE (la page est rédigée
+    //    pour ça, cf. contenu noscript `alertes` dans vite.config.js) ; on lui servait
+    //    une offre de prévision 7 jours.
+    //
+    // CE QUI NE CHANGE PAS :
+    //  · le deep-link `/?paywall=1&utm_source=alertes_noscript` (CTA explicite de la
+    //    page /alertes/) reste l'unique entrée nommée de cette page : un CLIC reste
+    //    la seule intention qui ouvre le mur ici aussi ;
+    //  · les branches `?paywall=1|cancel` (retour paiement) et `?pro=1` (B2B) sont
+    //    intactes — elles servent un visiteur qui a déjà agi ;
+    //  · ALERT_PATHS (hub premium `?pw_alertes=1`) n'est pas touché : c'est une
+    //    surface de contenu, pas une ouverture automatique du mur.
   }catch(_){}},[openPremium])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
