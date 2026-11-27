@@ -93,13 +93,13 @@ export default function HomeHeroV2({ lang, sargData, onPremium, onShowMap, track
             Sargasses
           </div>
         </div>
-        <button aria-label="Changer de langue" style={{
+        <span aria-label={lang === "fr" ? "Langue : français" : lang === "es" ? "Idioma: español" : "Language: English"} style={{
           background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.15)",
           color: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600,
-          cursor: "pointer", minHeight: 32, fontFamily: "inherit",
+          minHeight: 32, fontFamily: "inherit", display: "inline-flex", alignItems: "center",
         }}>
-          {lang === "fr" ? "FR" : lang === "es" ? "ES" : "EN"} ▾
-        </button>
+          {lang === "fr" ? "FR" : lang === "es" ? "ES" : "EN"}
+        </span>
       </div>
 
       {/* Hero */}

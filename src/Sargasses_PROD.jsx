@@ -4642,7 +4642,24 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       backdropRef.current&&(backdropRef.current.style.transition="opacity .26s ease",backdropRef.current.style.opacity="0")}catch(_){}
     setTimeout(()=>{closingRef.current=false;onClose&&onClose()},250)
   }
-  useEffect(()=>{const h=e=>{if(e.key==="Escape")requestClose()};document.addEventListener("keydown",h);return()=>document.removeEventListener("keydown",h)},[])
+  useEffect(()=>{
+    prevFocusRef.current=(typeof document!=="undefined"&&document.activeElement instanceof HTMLElement)?document.activeElement:null
+    const t=setTimeout(()=>{try{(closeBtnRef.current||sheetRef.current)?.focus?.()}catch(_){}},0)
+    const h=e=>{
+      if(e.key==="Escape"){e.preventDefault();requestClose();return}
+      if(e.key!=="Tab")return
+      const root=sheetRef.current
+      if(!root)return
+      const sel='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      const nodes=Array.prototype.filter.call(root.querySelectorAll(sel),el=>el.offsetParent!==null||el===document.activeElement)
+      if(!nodes.length){e.preventDefault();root.focus?.();return}
+      const first=nodes[0],last=nodes[nodes.length-1],a=document.activeElement
+      if(e.shiftKey){if(a===first||!root.contains(a)){e.preventDefault();last.focus()}}
+      else if(a===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener("keydown",h,true)
+    return()=>{clearTimeout(t);document.removeEventListener("keydown",h,true);try{prevFocusRef.current?.focus?.()}catch(_){}}
+  },[])
   // Drag-to-dismiss (seuil 10% hauteur écran — recherche Reanimated) + rubber-band
   // _swBlock : ne pas armer le swipe-close si un champ est focus (email/note) — fix
   // régression data-loss (audit UX) ; + garde scrollTop>5 (ne fight pas le scroll contenu).
@@ -4716,6 +4733,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       {/* bsc-fiche = cible EXCLUSIVE de la media query desktop ci-dessus (bsc-sheet est
           aussi la classe de l'overlay B2BModal — ne pas le clamp par ricochet) */}
       <div ref={sheetRef} className="bsc-sheet bsc-fiche" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Détail plage","Beach details","Detalle de playa")} tabIndex={-1}
         style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
@@ -4723,7 +4741,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           animation:"bscUp .42s cubic-bezier(.16,1,.3,1) both",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
         {/* Grip + X visible (NN/g : jamais handle seul) */}
         <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
-        <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+        <button ref={closeBtnRef} onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
           style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 
         {/* En-tête : nom + badge statut */}
@@ -5006,10 +5024,26 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   }
 
   // Escape key to close
+  // Dialog a11y : focus initial, Escape, Tab trap, restauration focus au close.
+  const closeBtnRef=useRef(null)
+  const prevFocusRef=useRef(null)
   useEffect(()=>{
-    const h=e=>{if(e.key==="Escape")requestClose()}
-    document.addEventListener("keydown",h)
-    return()=>document.removeEventListener("keydown",h)
+    prevFocusRef.current=(typeof document!=="undefined"&&document.activeElement instanceof HTMLElement)?document.activeElement:null
+    const t=setTimeout(()=>{try{(closeBtnRef.current||sheetRef.current)?.focus?.()}catch(_){}},0)
+    const h=e=>{
+      if(e.key==="Escape"){e.preventDefault();requestClose();return}
+      if(e.key!=="Tab")return
+      const root=sheetRef.current
+      if(!root)return
+      const sel='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      const nodes=Array.prototype.filter.call(root.querySelectorAll(sel),el=>el.offsetParent!==null||el===document.activeElement)
+      if(!nodes.length){e.preventDefault();root.focus?.();return}
+      const first=nodes[0],last=nodes[nodes.length-1],a=document.activeElement
+      if(e.shiftKey){if(a===first||!root.contains(a)){e.preventDefault();last.focus()}}
+      else if(a===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener("keydown",h,true)
+    return()=>{clearTimeout(t);document.removeEventListener("keydown",h,true);try{prevFocusRef.current?.focus?.()}catch(_){}}
   },[onClose])
 
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
@@ -5052,7 +5086,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         }
         requestClose()
       }}/>
-      <div className="sheet" ref={sheetRef}
+      <div className="sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Détail plage","Beach details","Detalle de playa")} tabIndex={-1}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
@@ -5082,7 +5116,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
           {/* Close button */}
-          <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
+          <button ref={closeBtnRef} onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
             width:44,height:44,borderRadius:22,
             background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
             border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
