@@ -40,10 +40,13 @@
 
 ### Branche / PR
 - Branche : `agent/coding/track-record-global-overlay-20261127` (depuis origin/main 0b820f309)
-- PR : **#1528** — https://github.com/aveca/sargagame/pull/1528
+- PR : **#1528** — https://github.com/aveca/sargagame/pull/1528 — **MERGÉE** (merge commit `3bc19def2e39bcdf11aeb499d052e381e208552f`)
 - Commit head : `d722453e8279d549be23fb2afa81e5452a01e162` (« fix(packaging): preserve global copernicus artifacts in per-region purge », 5 fichiers, +144/−2)
 - Push : oui (17:40 UTC)
 - CI sur le SHA exact : `Regional Beach Index Validation` (run 46043655855) = **success** — build + packaging des 6 régions (mq, gp, florida, puntacana, rivieramaya, tulum) donc `prepare-ftp.cjs` exécuté pour chaque région sans déclencher le garde-fou ; `Perf Budget + Lighthouse` job `perf` = **pass** ; `GitGuardian Security Checks` = **pass** ; `CI Tests` (`test-frontend`) en cours au moment de l'écriture — à confirmer avant merge.
+- **MERGÉ** le 27/11 à 17:48:06Z par `gh pr merge 1528 --merge` → merge commit `3bc19def2e39bcdf11aeb499d052e381e208552f` (2 parents, méthode identique aux PR #1525/#1526 ; branche `agent/…` conservée sur le remote, conforme à la convention dépôt).
+- CI verte sur le **SHA exact de la PR après push** (`54c421beb`, commit de mémoire) : `Regional Beach Index Validation` 46044096134 (6/6 jobs ok) · `CI Tests` 46044096259 (`test-frontend` ok) · `Perf Budget + Lighthouse` 46044096150 (`perf` + `lighthouse-report` ok).
+- Après merge, les runs `push` sur `main` (`Cloudflare Production` 46044647822, `Daily Copernicus + Deploy` 46044647592, `CI Tests` 46044648039, `Perf Budget + Lighthouse` 46044647635, `Regional Beach Index Validation` 46044647770) ont été **observés puis leur issue relevée** — voir le point « Sortie production » ci-dessous : le correctif packaging ne corrige le 404 live que si un déploiement des régions concernées aboutit.
 - Gate local complet AVANT push : `npm test` = **216/216** fichiers `*.test.cjs` OK (dont `tests/track-record-packaging-global-artifact.test.cjs`) · `npx esbuild scripts/prepare-ftp.cjs --bundle=false` exit 0 · `check-bundle-budget.cjs` 207,6 Ko ≤ 210 Ko · `prepare-ftp.cjs` exit 0 · `CHECK_certification_status.cjs --mode pr` exit 0 · `check-production-trigger-scope.cjs` exit 0 · `check-github-actions-policy.cjs` exit 0 · `track-record-pricing-smoke.mjs` exit 0 · `ux-smoke.mjs` (build MQ) 4 tokens OK · `git diff --check` exit 0 · `php -l` hors périmètre : **aucun `.php` touché** (prouvé, pas supposé).
 
 ## 2026-11-27 · Mission PAGES-TRIGGER-CONVERSION-20261127 · Agent: devops_agent (devops_agent (OpenCode))
