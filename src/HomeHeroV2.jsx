@@ -7,7 +7,7 @@
  *
  * Rollback: ?homeherov2=0 (force control) or remove the abVariant gate.
  */
-import React from "react"
+import React, { useEffect } from "react"
 
 const T = {
   fr: {
@@ -57,6 +57,11 @@ const T = {
 export default function HomeHeroV2({ lang, sargData, onPremium, onShowMap, track }) {
   const t = T[lang] || T.fr
   const ts = sargData?.erddapTimestamp || sargData?.updatedAt || null
+
+  // Track impression (once per mount)
+  useEffect(() => {
+    try { track && track("sg_home_hero_view", { variant: "hero" }) } catch (_) {}
+  }, [])  // eslint-disable-line react-hooks/exhaustive-deps
   const freshLabel = t.freshness(ts)
 
   const handleCta = () => {

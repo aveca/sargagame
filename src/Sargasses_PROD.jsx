@@ -1988,6 +1988,8 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_price_mismatch",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
+  // HomeHeroV2 A/B (2026-11-27) : tracking du nouveau hero (10% rollout).
+  "sg_home_hero_cta_click","sg_home_hero_map_click","sg_home_hero_dismiss",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated","sg_pass_offer_view",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
