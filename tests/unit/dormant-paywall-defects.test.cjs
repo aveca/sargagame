@@ -147,7 +147,7 @@ assert.ok(/<SeqDots\b/.test(modalCode),
   '`SeqDots` n\'est plus RENDU : le funnel B2B a perdu son indicateur de séquence')
 assert.ok(/^import\s+React,\{[^}]*\buseMemo\b/m.test(modal),
   'import `useMemo` perdu : il sert encore ailleurs dans PremiumModal')
-assert.ok(/<PassOffer\b/.test(modalCode), 'PassOffer doit rester rendu dans PremiumModal')
+assert.ok(/<PassStorefront\b/.test(modalCode), 'PassStorefront doit rester rendu dans PremiumModal')
 
 // ── 6. le rendu pass-only garde ses props vivantes ──────────────────────────
 // ⚠️ 2026-11-27 — MISSION « wallets + mesure » : la 3ᵉ prop morte
@@ -162,15 +162,13 @@ assert.ok(/<PassOffer\b/.test(modalCode), 'PassOffer doit rester rendu dans Prem
 // `walletAvail()` renvoie une PROMISE quand le cache est froid → les boutons
 // express n'étaient PAS garantis d'être offerts. Le contrat ci-dessous verrouille
 // les deux sens : la prop morte ne revient pas, et le kick reste dans un effet.
-const passOnlyRender = modalCode.slice(
-  modalCode.indexOf('{passOnly&&<PassOffer'),
-  modalCode.indexOf('{!passOnly&&pwComic')
-)
-assert.ok(passOnlyRender.length > 200, 'rendu pass-only introuvable')
-for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'freshTs={', 'passKey={_passFromUrl}', 'ctaSource={source', 'onBuy=']) {
+const passOnlyStart = modalCode.indexOf('{passOnly&&<PassStorefront')
+const passOnlyEnd = modalCode.indexOf('{!passOnly&&pwComic', passOnlyStart + 1)
+assert.ok(passOnlyStart >= 0 && passOnlyEnd > passOnlyStart, 'rendu pass-only introuvable')
+const passOnlyRender = modalCode.slice(passOnlyStart, passOnlyEnd)
+for (const live of ['lang={lang}', 'currency={PAY_CUR}', 'source={source||"unknown"', 'setPayStep={setPayStep}', 'passCtxRef={passCtxRef}', 'highlightedKey={_passFromUrl']) {
   assert.ok(passOnlyRender.includes(live),
-    `le rendu pass-only a perdu \`${live}\` — dont l'attribution (\`ctaSource\`) et ` +
-    `la fraîcheur (\`freshTs\`) : une régression de mesure, pas un nettoyage`)
+    `le rendu pass-only a perdu \`${live}\` — dont l'attribution (\`source\`) et le rappel de paiement (\`setPayStep\`) : une régression de mesure, pas un nettoyage`)
 }
 assert.ok(!/wallet=\{walletAvail\(\)\}/.test(modalCode),
   'la prop morte `wallet={walletAvail()}` est revenue sur un <PassOffer> : ' +

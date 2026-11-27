@@ -89,9 +89,13 @@ assert.ok(!/track\("sg_pass_cta",\{pass:item\./.test(modal),
     '(doublon : 2 lignes par clic, taux modal→CTA gonfle ×2)')
 assert.ok(!/track\("sg_pass_cta",\{[^}]*item\.(pass|cents|baseCents)/.test(modal),
   'aucune emission sg_pass_cta de PremiumModal ne doit lire le payload PassOffer (item.*)')
-assert.strictEqual((modal.match(/ctaSource=\{source\|\|"unknown"\}/g) || []).length, 2,
-  'les deux points de montage de PassOffer doivent passer ctaSource, sinon la ' +
+assert.strictEqual((modal.match(/source=\{source\|\|"unknown"\}/g) || []).length, 2,
+  'les deux points de montage de PassStorefront doivent passer source, sinon la ' +
     'segmentation modale par source dans ?action=funnel perd le CTA')
+assert.ok(/copy_variant:\s*copyVariant/.test(modal),
+  'l emission sg_pass_cta de PassStorefront doit porter copy_variant (variante A/B)')
+assert.ok(/segment:\s*seg/.test(modal),
+  'l emission sg_pass_cta de PassStorefront doit porter segment (visiteur)')
 
 // ── 4. l'émission unique porte l'attribution complète ─────────────────────
 const buyBody = offer.slice(offer.indexOf('const buy=()=>{'), offer.indexOf('const lost ='))

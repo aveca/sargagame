@@ -4,12 +4,12 @@
  * ⚠️ CHEMIN DE L'ARGENT — code déplacé À L'IDENTIQUE. Les helpers/constantes partagés
  * (track, _t, C, T, abVariant, startCheckout deps, loadMollieJs/Stripe/PayPal, pricing…)
  * sont importés depuis Sargasses_PROD.jsx via exports nommés (mêmes singletons). */
-import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
-import PassOffer from "./PassOffer.jsx"
+import React,{useState,useEffect,useMemo,useRef,useCallback,memo} from "react"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
 // Source de vérité des prix B2C (miroir du serveur) — voir src/lib/pricing.js.
-import { PASS_DAYS, passBaseCents, resolvePass } from "./lib/pricing.js"
+import { PASS_DAYS, PASS_KEYS, passBaseCents, passCopy, passEffectiveCents, formatCents, resolvePass } from "./lib/pricing.js"
+import { getSegment } from "./lib/segment.js"
 import { selectB2bPaylink } from "./lib/b2b-paylink-offer.mjs"
 // Accusés serveur réels du parcours B2B (lead + essai) : le succès n'est
 // affiché qu'après confirmation de persistance. Même règle que les pages
@@ -57,6 +57,95 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
   {[1,2].map(i=>(<div key={i} style={{height:56,borderRadius:14,border:"1px solid rgba(255,255,255,.08)",background:"linear-gradient(90deg,rgba(255,255,255,.03) 25%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>))}
   <div style={{height:48,borderRadius:14,border:"1.5px solid rgba(255,199,44,.25)",background:"linear-gradient(90deg,rgba(255,199,44,.06) 25%,rgba(255,199,44,.12) 50%,rgba(255,199,44,.06) 75%)",backgroundSize:"200% 100%",animation:"sg-skeleton 1.5s ease-in-out infinite"}}/>
 </div>)
+
+// ── B2C Pass storefront : les 3 passes de src/lib/pricing.js (p30 en avant) ──
+// Un pass = une durée fixe = un paiement unique, SANS abonnement.
+// Le clic pose passCtxRef puis ouvre l'écran de paiement (Mollie/Stripe/PayPal).
+// Beacon de segmentation vers Apps Script (même endpoint que src/PassOffer.jsx).
+const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (typeof navigator !== "undefined" && navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
+
+const PassStorefront = memo(function PassStorefront({ lang = "fr", currency = "eur", source = "unknown", setPayStep, passCtxRef, highlightedKey }) {
+  const cur = currency === "usd" ? "usd" : "eur"
+  const featuredKey = "p30" // produit mis en avant (offre validée 2026-11-09)
+  const seg = getSegment()
+  // Copy A/B : 85 % benefit-first, 15 % control. Override query pour QA/rollback.
+  const copyVariant = (() => { try { const assigned = abVariant("pass_copy", ["control", "benefit"], [0.15, 0.85]); const q = typeof window !== "undefined" ? (window.location.search || "") : ""; if (/[?&]passcopy=1(?:&|$)/.test(q)) return "benefit"; if (/[?&]passcopy=0(?:&|$)/.test(q)) return "control"; return assigned } catch (_) { return "control" } })()
+  const money = (c) => formatCents(c, cur, lang)
+  // Exposition du storefront : sg_pass_offer_view + sbeacon view (mesure d'impression).
+  useEffect(() => {
+    try { sbeacon({ stage: "view", segment: seg, model: "oneprice", pass: featuredKey, copy_variant: copyVariant }) } catch (_) {}
+    try { track("sg_pass_offer_view", { segment: seg, model: "oneprice", pass: featuredKey, cents: passEffectiveCents(featuredKey, cur), copy_variant: copyVariant }) } catch (_) {}
+  }, [])
+  const onBuy = (key) => {
+    const base = passBaseCents(key, cur)
+    const eff = passEffectiveCents(key, cur)
+    const days = PASS_DAYS[key] || 30
+    passCtxRef.current = { pass: key, cents: base, eff, days, cur }
+    try { sbeacon({ stage: "cta", segment: seg, pass: key, cents: eff, base_cents: base, copy_variant: copyVariant }) } catch (_) {}
+    // UNE seule émission sg_pass_cta par clic, avec l'attribution COMPLÈTE
+    // (copy_variant + segment + source). Jamais de doublon depuis PremiumModal.
+    try { track("sg_pass_cta", { pass: key, cents: eff, base_cents: base, segment: seg, copy_variant: copyVariant, source, onsite: 1, method: "card" }) } catch (_) {}
+    try { track("CTA_click", { livemode: true, correlation_id: (typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID()) || String(Date.now()), pass: key }) } catch (_) {}
+    try { localStorage.setItem("sg_checkout_abandoned", JSON.stringify({ email: localStorage.getItem("sg_email") || "", ts: Date.now() })) } catch (_) {}
+    setPayStep(true)
+  }
+  return (
+    <section className="sg-pass-storefront" style={{ marginBottom: 22, color: "#e6edf3" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFC72C", display: "inline-block" }} />
+        <h2 style={{ font: "800 20px/1.1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing: "-.01em", color: "#fff", margin: 0 }}>
+          {_t(lang, "Choisissez votre pass", "Choose your pass", "Elige tu pase")}
+        </h2>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
+        {PASS_KEYS.map((key) => {
+          const base = passBaseCents(key, cur)
+          const eff = passEffectiveCents(key, cur)
+          const days = PASS_DAYS[key] || 30
+          const copy = passCopy(key, lang)
+          const featured = key === featuredKey
+          const highlighted = Boolean(highlightedKey) && highlightedKey === key && !featured
+          const price = money(eff)
+          return (
+            <div key={key} style={{
+              position: "relative", borderRadius: 16, padding: "15px 13px 17px",
+              background: featured ? "linear-gradient(165deg,rgba(255,199,44,.15),rgba(255,199,44,.04))" : "rgba(255,255,255,.04)",
+              border: featured ? "2px solid #FFC72C" : "1px solid rgba(255,255,255,.09)",
+              boxShadow: featured ? "0 8px 28px rgba(255,199,44,.13),inset 0 0 0 1px rgba(255,199,44,.10)" : "0 4px 14px rgba(0,0,0,.22)",
+              display: "flex", flexDirection: "column", gap: 7, minHeight: 300
+            }}>
+              {featured && (
+                <span style={{ position: "absolute", top: 10, left: 12, zIndex: 2, font: "700 9px/1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing: ".08em", textTransform: "uppercase", color: "#FFC72C", background: "rgba(13,11,20,.72)", padding: "2px 8px", borderRadius: 999, border: "1px solid rgba(255,199,44,.35)" }}>
+                  {_t(lang, "Le plus populaire", "Most popular", "Más popular")}
+                </span>
+              )}
+              <h3 style={{ margin: "0 0 5px", font: "800 16px/1.15 'Bricolage Grotesque',system-ui,sans-serif", color: "#fff", letterSpacing: "-.005em" }}>{copy.title}</h3>
+              <p style={{ margin: "0 0 9px", fontSize: 12.5, lineHeight: 1.4, color: "rgba(234,247,244,.62)" }}>{copy.sub}</p>
+              <div className="anton" style={{ fontSize: 30, lineHeight: 1, color: "#FFC72C", marginBottom: 3, letterSpacing: "-.01em" }}>{price}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: "rgba(234,247,244,.5)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>{copy.days}</div>
+              <button onClick={() => onBuy(key)} style={{
+                width: "100%", cursor: "pointer", fontFamily: "inherit",
+                font: "800 14px/1 'Bricolage Grotesque',system-ui,sans-serif", borderRadius: 12, padding: "12px",
+                background: highlighted ? "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)" : "linear-gradient(180deg,#2d1b4d,#1f0f36)",
+                color: highlighted ? "#190c2c" : "#fff", boxShadow: highlighted ? "0 2px 0 0 rgba(0,0,0,.20)" : "1px 1px 0 rgba(255,255,255,.09)",
+                border: highlighted ? "none" : "1px solid rgba(255,255,255,.12)"
+              }}>
+                {_t(lang, "Débloquer →", "Unlock →", "Desbloquear →")}
+              </button>
+              <div style={{ marginTop: "auto", fontSize: 10.5, color: "rgba(234,247,244,.4)", lineHeight: 1.4 }}>
+                {_t(lang, "Paiement unique · sans engagement", "One-time · no commitment", "Pago único · sin compromiso")}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <p style={{ fontSize: 12, opacity: .55, margin: "9px 0 0", textAlign: "center" }}>
+        {_t(lang, "Mollie · paiement sécurisé · accès immédiat", "Mollie · secure payment · instant access", "Mollie · pago seguro · acceso inmediato")}
+      </p>
+    </section>
+  )
+})
 
 // Route de la page « fiabilité » selon région/langue (miroir de reliabilityHref
 // dans Sargasses_PROD.jsx, non exporté) : MQ/GP → /fiabilite/, régions US → EN/ES.
@@ -2592,11 +2681,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} passKey={_passFromUrl} ctaSource={source||"unknown"}
-          onBuy={(item)=>{
-          passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
-          if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
-        }}/>}
+        {passOnly&&<PassStorefront lang={lang} currency={PAY_CUR} source={source||"unknown"} setPayStep={setPayStep} passCtxRef={passCtxRef} highlightedKey={_passFromUrl}/>}
         {!passOnly&&pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
@@ -2626,9 +2711,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} passKey={_passFromUrl} ctaSource={source||"unknown"} onBuy={(item)=>{
-          passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
-          if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassStorefront lang={lang} currency={PAY_CUR} source={source||"unknown"} setPayStep={setPayStep} passCtxRef={passCtxRef} highlightedKey={_passFromUrl}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
         {scenePay&&!pwConstel&&(<>
