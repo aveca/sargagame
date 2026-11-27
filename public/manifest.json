@@ -1,9 +1,12 @@
 {
-  "name": "Sargasses Martinique & Guadeloupe",
+  "id": "/",
+  "name": "Sargasses — Prévisions des plages",
   "short_name": "Sargasses",
-  "description": "Carte des sargasses en temps réel. Où se baigner aujourd'hui en Martinique et Guadeloupe.",
+  "description": "Scores de plage, prévisions de sargasses et âge de la dernière observation satellite. Aucune donnée inventée.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#0d1117",
   "theme_color": "#0d1117",
@@ -31,14 +34,14 @@
   "categories": ["weather", "travel"],
   "shortcuts": [
     {
-      "name": "Carte sargasses",
-      "url": "/carte-sargasses/",
-      "description": "Carte interactive en temps réel"
+      "name": "Rechercher une plage",
+      "url": "/recherche/",
+      "description": "Chercher une plage par nom ou par région"
     },
     {
-      "name": "Prévisions 7 jours",
-      "url": "/previsions/",
-      "description": "Prévisions sargasses sur 7 jours"
+      "name": "Près de moi",
+      "url": "/sargasses-pres-de-moi/",
+      "description": "Plages autour de ma position, après autorisation"
     }
   ]
 }
