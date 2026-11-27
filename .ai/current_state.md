@@ -1,3 +1,36 @@
+## 2026-11-27 · Mission SARG-POSTDEPLOY-VERIFY-20261127 · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : PR #1493 mergée sur `main` + déploiement frontend réussi sur les 6 domaines ; les 2 échecs de déploiement (`deploy-sg-payments`, `post-deploy-verify`) sont des blocages préexistants (permission Cloudflare routes + surface SOS `sg-noso`), non causés par cette PR. Script de remplacement de routes `sg-cf-remove-noso-routes.cjs` créé (plan/apply, create→verify→delete→re-verify). BUG-2026-015 marqué comme déjà implémenté.
+- **Détails** : merge commit `cbce672180606c963e7702fc1bccc3370b39f99b`. Bundle `v221` (`daa84acf`) déployé sur les 6 domaines ; vérifié live que le JS contient `localStorage.setItem("sg_email")` + `getItem("sg_email")`. Données Copernicus fraîches (âge ≈ 23 h, sous seuil 26 h). `deploy-sg-payments` FAILED (permission Cloudflare API sur `/routes`) — worker non redéployé, version live inchangée. `post-deploy-verify` FAILED (`sos_public_surface` — `sg-soscta` servi par `sg-noso` sur les 6 domaines). Script `scripts/sg-cf-remove-noso-routes.cjs` créé avec mapping exact et garde-fous ; syntaxe OK ; mode `plan` échoue proprement sans token.
+- **Vérifications live** (agent délégué) : 6/6 domaines contiennent `sg-soscta` ; `/premium/` contient `sg_email` (×2) ; `mollie-pay?pass=sos` → 410 ; `version.json` v221 b=daa84acf.
+
+### Fichiers modifiés
+- `scripts/sg-cf-remove-noso-routes.cjs` — nouveau (remplacement de routes sg-noso → sargagame-<région>)
+- `.ai/tasks.md` — BUG-2026-015 marqué comme déjà implémenté (option (a) retenue)
+- `.ai/changelog.md`, `.ai/current_state.md` — handoff
+
+### Tests réalisés
+- [x] `node --check scripts/sg-cf-remove-noso-routes.cjs` → exit 0
+- [x] Mode plan sans token → exit 2 avec message clair (pas de crash)
+- [x] Vérification live (6 domaines) → sg-soscta présent partout, sg_email dans /premium/, v221 déployé
+- [x] `git diff --check` → exit 0
+
+### Problèmes restants
+- [ ] `deploy-sg-payments` bloqué (permission Cloudflare routes) — action manuelle fondateur
+- [ ] `post-deploy-verify` bloqué (`sos_public_surface` — nécessite remplacement des routes sg-noso) — action manuelle fondateur, script prêt
+- [ ] PR #1410 (BUG-2026-015) : vérifier si elle est mergée (le code est présent dans main)
+
+### Prochaine action recommandée
+1. Fondateur : poser un token Cloudflare avec permission routes → lancer `node scripts/sg-cf-remove-noso-routes.cjs plan` puis `apply` — Rôle : devops_agent
+2. Fondateur : redéployer `sg-payments` (permission routes) — Rôle : devops_agent
+
+### Branche / PR
+- Branche : `agent/coding/SARG-POSTDEPLOY-VERIFY-20261127`
+- PR : à ouvrir
+
+---
+
 ## 2026-11-26 · Mission SARG-EMAIL-PREFILL-20261126 · Agent: coding_agent (OpenCode)
 
 ### Travail effectué
