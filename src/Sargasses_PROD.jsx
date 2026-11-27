@@ -2018,7 +2018,18 @@ export function track(event,params={}){
   // Measurement Protocol credentials are private and must never ship to browsers.
   // Keep the configured Google tag and first-party Supabase funnel as client analytics paths.
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
+  // ⚠️ 2026-11-26 BUG DE MESURE MESURÉ : `sg_pass_cta` — le SEUL CTA du storefront
+  // LIVE (PassOffer, mode pass-only depuis le flip 2026-06-25) — n'était PAS dans
+  // cette liste. La beacon Apps Script (qui alimente la feuille `analytics_events`
+  // et donc l'action `?action=funnel`) ne partait donc jamais pour un clic CTA
+  // réel → `funnel.pass_cta = 0` sur 28 j (mesuré le 2026-11-26 sur le live :
+  // 1 147 ouvertures de modal, `premium_modal_cta` = 4, `pass_cta` = 0) alors que
+  // le clic est bien émis vers GA4 + Supabase. Le taux modal→CTA affiché mesurait
+  // donc une surface MORTE (ancien abo) au lieu du parcours qui encaisse.
+  // `startsWith("sg_premium")` couvre sg_premium_modal_cta ; `startsWith("sg_checkout")`
+  // couvre sg_checkout_started. Il manquait exactement sg_pass_cta.
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
+    ||event==="sg_pass_cta"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
