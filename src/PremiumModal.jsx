@@ -2346,48 +2346,20 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   // abo (WorldPaywall/ComicPaywall + bloc plans). En capture (PAY_CAPTURE_ONLY) on garde
   // l'ancien flux email-offert (passOnly=false → l'UI abo/capture s'affiche normalement).
   const passOnly=pwPass&&!PAY_CAPTURE_ONLY
-  // ── passseq (A/B pw_pass_seq) — verdict panel adverse 2026-07-02 « offre-first » ──
-  //    Le B2C = ask 1-tap WALLET (impulsif), PAS un formulaire B2B → séquencer EN AMONT
-  //    de la grille est friction-négatif : l'offre RESTE l'écran d'atterrissage (0 tap
-  //    ajouté). Seule différence du bras « seq » : le lien « voir nos erreurs » ouvre un
-  //    écran preuve IN-MODAL opt-in (grille 7 j réelle + registre) au lieu d'un onglet
-  //    /fiabilite/ externe (= leak). Détour EN AVAL, jamais avant l'offre → l'impulsif
-  //    n'est jamais pénalisé. (Le « wallet remonté » du 1er jet a été RETIRÉ à la vérif :
-  //    la pile de valeur est déjà AU-DESSUS de la grille → déplacer le wallet ne réduit pas
-  //    le temps-jusqu'au-wallet et fend la grille 3-SKU pour les locaux — no-op risqué.)
-  //    Surface de REVENU PRIMAIRE → JAMAIS default-on : A/B 50/50, mesure = Mollie par bras.
-  //    ?passseq=0 = PassOffer strictement inchangé (rollback) · ?passseq=1 force.
-  const passSeq=passOnly&&(()=>{try{const q=window.location.search;
-    if(/[?&]passseq=0/.test(q))return false;if(/[?&]passseq=1/.test(q))return true;
-    return abVariant("pw_pass_seq",["control","seq"],[.5,.5])==="seq"}catch(_){return false}})()
-  // Données PRÉCALCULÉES de l'écran preuve É2 (helpers région dispo ICI → PassOffer reste
-  // lean). MOAT : Auj/Dem = SEULS jours colorés (forecast RÉEL du JSON) ; J+2..6 = null
-  // (cadenas côté PassOffer, JAMAIS une couleur fabriquée). proofLine = régime au plus gros
-  // échantillon « mer propre », suffixe « (saison calme) » SEULEMENT si le régime dominant
-  // EST calm (jamais un 100 % nu). Fraîcheur HONNÊTE : « Vu du satellite » seulement si
-  // erddapTimestamp, sinon « Données mises à jour ». Dégradation gracieuse (null-safe).
-  const _seqProof=useMemo(()=>{
-    if(!passSeq)return null
-    const has=lv=>!!(lv&&lv.id&&sargData?.weekly?.[lv.id]?.forecast?.length)
-    const ctxLvl=(()=>{if(!beach)return null;const sid=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];return sid?_islandLvls.find(l=>l.id===sid)||null:null})()
-    const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
-    const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
-    const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})
-    const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null
-      const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]
-      if(!ent||!ent[1].cleanReliabilityPct)return null
-      const[reg,best]=ent;const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
-      const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""
-      return _t(lang,`${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées · registre public`,
-        `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts satellite-checked · public record`,
-        `${best.cleanReliabilityPct}% correctos${calm} · ${nf} pronósticos “agua limpia” verificados · registro público`)}catch(_){return null}})()
-    const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null
-      const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null
-      return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
-        :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)})()
-    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[passSeq,sargData,beach,island,_trackRec,lang])
+  // ── RETIRÉ 2026-11-27 : A/B `pw_pass_seq` + écran preuve séquentiel ──
+  // DÉFAUT DORMANT, AUCUN IMPACT LIVE. `PassOffer` (src/PassOffer.jsx) n'accepte
+  // QUE {lang,currency,community,freshTs,onBuy,passKey,ctaSource} : les props
+  // `seq`/`proof`/`onProofOpen`/`onProofBack` passées ci-dessous étaient ignorées par
+  // React → `passSeq` (abVariant 50/50) et le précalcul `_seqProof` tournaient pour
+  // RIEN (bras « seq » invisible, `sg_pass_proof_open` / `sg_pass_seq_back` jamais
+  // émis). Ni prix, ni paiement, ni copie visible concernés → retrait sans effet
+  // observable. Verrouillé par tests/unit/dormant-paywall-defects.test.cjs.
+  // Verdict d'origine conservé (panel adverse 2026-07-02, « offre-first ») : le B2C
+  // = ask 1-tap WALLET (impulsif), pas un formulaire B2B → séquencer en amont de la
+  // grille est friction-négatif, l'offre RESTE l'écran d'atterrissage (0 tap ajouté).
+  // Le bras « seq » ne changeait que le lien « voir nos erreurs » (écran preuve
+  // in-modal opt-in au lieu d'un onglet /fiabilite/ externe = leak). Ne PAS
+  // réintroduire avant d'avoir câblé PassOffer (props + écran + mesure des 2 events).
   // A/B pw_season : surface le SKU « pass saison » dormant (24,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799, 1499, 2499]¢ ; 2499 OK). Cash d'avance + zéro churn.
@@ -2588,9 +2560,6 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
         {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} passKey={_passFromUrl} ctaSource={source||"unknown"}
-          seq={passSeq} proof={_seqProof}
-          onProofOpen={()=>{try{track("sg_pass_proof_open",{source:source||"unknown"})}catch(_){}}}
-          onProofBack={()=>{try{track("sg_pass_seq_back",{source:source||"unknown"})}catch(_){}}}
           onBuy={(item)=>{
           passCtxRef.current={pass:item.pass,cents:item.c,eff:item.cents||item.c,days:item.days||PASS_DAYS[item.pass]||7,cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
@@ -3254,14 +3223,13 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             </div>
           </div>
         </div>
-        {/* Transparence prix USD haute saison (juin-nov) : afficher la tarification
-            saisonnière AVANT le paiement pour préserver la confiance (moat honnêteté).
-            Petit texte discret, pas de bloc séparé — ne casse pas le flow. */}
-        {PAY_CUR==="usd"&&(()=>{const m=new Date().getMonth()+1;return(m>=6&&m<=11)?(
-          <div style={{textAlign:"center",marginTop:6,fontSize:10.5,color:"rgba(255,255,255,.45)",letterSpacing:".01em"}}>
-            {_t(lang,"Tarif haute saison en cours · +15 % applies outside trip passes","High-season rate · +15 % on 30-day & season passes","Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
-          </div>
-        ):null})()}
+        {/* RETIRÉ 2026-11-27 : bandeau « Tarif haute saison · +15 % » (USD).
+            OBSOLÈTE — la surcharge USD de haute saison n'existe PLUS côté serveur
+            depuis 2026-11-09 (src/lib/pricing.js : base = montant réellement débité ;
+            cf. aussi src/PassOffer.jsx). Annoncer un « +15 % » jamais facturé aurait
+            menti sur le prix → retrait.
+            DÉFAUT DORMANT : ce bloc vivait dans la branche legacy `!passOnly && !pwComic`
+            (jamais rendue en mode pass-only) → AUCUN impact live aujourd'hui. */}
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>
