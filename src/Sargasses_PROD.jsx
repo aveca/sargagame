@@ -89,6 +89,7 @@ const VEILLE_OFF=(()=>{try{return /[?&]veille=0/.test(window.location.search)}ca
 const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
+const LazyHomeHeroV2=lazyWithRetry(()=>import("./HomeHeroV2"))
 const LazyWorldView3D=lazyWithRetry(()=>import("./WorldView3D"))
 // Détail plage « monde comic » (ChasseDetail) ouvert au tap d'un pin carte — garde le
 // joueur dans l'univers arène au lieu de l'éjecter vers la fiche data « scroll satellite »
@@ -11629,6 +11630,9 @@ export default function App(){
     return"mq"
   })
   const[view,setView]=useState("map") // map | list | learn | premium
+  // A/B home_hero_v2 : 10% des visiteurs voient le nouveau hero (valeur + CTA premium above the fold).
+  // ?homeherov2=1 force le variant ; ?homeherov2=0 force le control (map actuelle).
+  const homeHeroV2=(()=>{try{const q=window.location.search;if(/[?&]homeherov2=1/.test(q))return"hero";if(/[?&]homeherov2=0/.test(q))return"control";return abVariant("home_hero_v2",["control","hero"],[.9,.1])}catch(_){return"control"}})()
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
@@ -14041,6 +14045,17 @@ export default function App(){
               aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
           </div>
         )})()}
+
+        {/* HOME HERO V2 — A/B home_hero_v2 (10% traffic). Nouveau hero above-the-fold
+            avec valeur + CTA premium. Rollback ?homeherov2=0. */}
+        {homeHeroV2==="hero"&&view==="map"&&!selectedBeach&&!showPremium&&!showHero&&!showWorld&&!showArchipel&&(
+          <ErrBound fallback={null}><Suspense fallback={null}>
+            <LazyHomeHeroV2 lang={lang} sargData={sargData} island={island}
+              onPremium={(src)=>{try{track("sg_home_hero_cta_click",{source:src})}catch(_){};openPremium(src)}}
+              onShowMap={()=>{setView("map");try{track("sg_home_hero_map_click",{})}catch(_){}}}
+              track={track}/>
+          </Suspense></ErrBound>
+        )}
 
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
