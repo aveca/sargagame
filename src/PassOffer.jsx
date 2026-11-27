@@ -17,7 +17,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, passKey = "p30" }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, passKey = "p30", ctaSource = null }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -41,7 +41,16 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice",pass:key,copy_variant:copyVariant});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice",pass:key,cents:effCents,copy_variant:copyVariant})}catch(_){}},[])
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:key,cents:effCents,base_cents:baseCents,copy_variant:copyVariant})
-    try{track("sg_pass_cta",{cents:effCents,base_cents:baseCents,pass:key,segment:seg,copy_variant:copyVariant})}catch(_){}
+    // UNE seule émission `sg_pass_cta` par clic réel, avec l'attribution COMPLÈTE
+    // (variante de copy + source d'ouverture du paywall). ⚠️ 2026-11-26 : ce même
+    // événement était AUSSI émis par le `onBuy` de PremiumModal, avec d'autres
+    // champs et SANS `copy_variant` → 2 lignes par clic dans la feuille
+    // analytics_events, donc un taux modal→CTA gonflé ×2 dans `?action=funnel`
+    // (et la segmentation par source perdue sur l'une des deux lignes). La source
+    // arrive par la prop `ctaSource` (renseignée par PremiumModal ; null = usage
+    // autonome, aucun champ inventé). `method` reste "card" : PassOffer n'expose
+    // aucun bouton wallet, le paiement carte est le seul chemin réel.
+    try{track("sg_pass_cta",{cents:effCents,base_cents:baseCents,pass:key,segment:seg,copy_variant:copyVariant,...(ctaSource?{source:ctaSource}:{}),onsite:1,method:"card"})}catch(_){}
     try{track("CTA_click",{livemode:true,correlation_id:(typeof crypto!=="undefined"&&crypto.randomUUID&&crypto.randomUUID())||String(Date.now()),pass:key})}catch(_){}
     localStorage.setItem('sg_checkout_started_at', Date.now())
     // c = centimes de BASE (ce que le serveur attend) ; cents = montant effectif.
