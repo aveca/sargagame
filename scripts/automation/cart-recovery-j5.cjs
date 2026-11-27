@@ -1,17 +1,30 @@
 #!/usr/bin/env node
 /**
- * Cart Recovery J+5 — Dernier rappel + incitation (-2€)
+ * Cart Recovery J+5 — Dernier rappel
  * Usage: node scripts/automation/cart-recovery-j5.cjs [--dry] [--hold] [--send] [--cap=N]
  *  --dry   : dry-run (log only, no send)
  *  --hold  : write outbox JSON only (no SMTP send) — DÉFAUT
  *  --send  : envoi réel via SMTP (nécessite SMTP_PASS en env)
  *  --cap=N : plafond d'envois (défaut 50)
+ *
+ * 2026-11-27 — deux corrections (aucun impact live : ce script n'est appelé
+ * par AUCUN workflow, le chemin vivant est sales-lifecycle-emails.yml →
+ * recover-abandoned-cart.cjs) :
+ *   1. PRIX : l'email promettait « 12,99 € au lieu de 14,99 € » avec
+ *      PROMO_PRICE_EUR_CENTS = 1299. AUCUN serveur ne facture 12,99 €
+ *      (grille réelle = 14,99 € / 16,99 $ depuis le 2026-11-09). Le prix
+ *      affiché vient de lib/pass-price.cjs, verrouillé par
+ *      tests/unit/price-parity.test.cjs.
+ *   2. LIEN : `?promo=sejour_promo_eur` n'est lu par AUCUNE route (src/,
+ *      workers/, public/api/), et `/checkout` n'existe pas. Le CTA utilise le
+ *      deep-link vivant `/?paywall=1&pass=p30`.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 const { createTransport } = require('nodemailer');
+const { passPrice, paywallUrl } = require('./lib/pass-price.cjs');
 
 const OUTBOX_DIR = path.join(__dirname, 'data', 'outbox');
 const SENT_MARKER = path.join(__dirname, 'data', 'cart-recovery-j5-sent.json');
@@ -20,8 +33,6 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.s
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const CAP_DEFAULT = 50;
-const PROMO_PRICE_EUR_CENTS = 1299; // 12,99€ au lieu de 14,99€
-const PASS_ID = 'sejour_promo_eur';
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -83,22 +94,17 @@ async function fetchSentJ5() {
 }
 
 function buildPromoLink(email, region, beachId) {
-  const base = region === 'mq' || region === 'gp' ? 'https://sargasses-martinique.com' : 'https://sargassumcancun.com';
-  const params = new URLSearchParams({
-    promo: PASS_ID,
-    email: email,
-    beach: beachId || '',
-    source: 'cart_recovery_j5'
-  });
-  return `${base}/checkout?${params.toString()}`;
+  // 2026-11-27 : le paramètre `promo` n'est lu par aucune route (aucun
+  // rabais appliqué) et `/checkout` n'existe pas. On pointe vers le
+  // deep-link vivant, comme le workflow de relance en production.
+  return paywallUrl(region, 'j5');
 }
 
 function renderEmail({ email, beachName, region, promoLink, unsubscribeLink }) {
-  const subject = 'On garde ton pass 48h — 12,99€ au lieu de 14,99€';
+  const p = passPrice(region);
+  const subject = `Dernier rappel : ton pass 30 jours t'attend — ${p.price}`;
   const regionLabel = region === 'mq' ? 'Martinique' : region === 'gp' ? 'Guadeloupe' : region === 'florida' ? 'Floride' : region === 'puntacana' ? 'Punta Cana' : 'Riviera Maya';
   const beachLabel = beachName || 'ta plage';
-  const priceBefore = '14,99€';
-  const priceAfter = '12,99€';
 
   const html = `
 <!DOCTYPE html>
@@ -126,19 +132,18 @@ function renderEmail({ email, beachName, region, promoLink, unsubscribeLink }) {
 <body>
   <div class="wrapper">
     <div class="card">
-      <span class="badge">OFFRE EXCEPTIONNELLE 48H</span>
-      <h1>On garde ton pass pour <span style="color:#e6edf3">${beachLabel}</span></h1>
-      <p>Tu as regardé le verdict pour <strong>${beachLabel}</strong> (${regionLabel}) il y a 5 jours. La mer n'a pas changé d'avis — mais le prix, si.</p>
+      <span class="badge">DERNIER RAPPEL</span>
+      <h1>Ton pass t'attend toujours pour <span style="color:#e6edf3">${beachLabel}</span></h1>
+      <p>Tu as regardé le verdict pour <strong>${beachLabel}</strong> (${regionLabel}) il y a 5 jours. La mer n'a pas changé d'avis — et le prix non plus.</p>
       <div class="price-row">
-        <span class="price-old">${priceBefore}</span>
-        <span class="price-new">${priceAfter}</span>
+        <span class="price-new">${p.price}</span>
       </div>
-      <p style="margin:16px 0; color:#9ca3af; font-size:14px;">−2€ exceptionnel, valable <strong>48h seulement</strong>. Après, le pass revient à 14,99€.</p>
-      <a href="${promoLink}" class="cta">Récupérer mon pass à 12,99€</a>
+      <p style="margin:16px 0; color:#9ca3af; font-size:14px;">30 jours de verdicts et d'alertes, paiement unique — <strong>${p.price}</strong>, rien de plus.</p>
+      <a href="${promoLink}" class="cta">Récupérer mon pass à ${p.price}</a>
       <div class="deadline">
-        ⏳ Offre expire dans 48h — <a href="${promoLink}" style="color:#ffc72c; text-decoration:underline;">je récupère mon pass maintenant</a>
+        Paiement unique · ${p.days} jours d'accès · sans abonnement — <a href="${promoLink}" style="color:#ffc72c; text-decoration:underline;">je récupère mon pass maintenant</a>
       </div>
-      <p style="margin-top:24px; font-size:13px; color:#8b949e;">Pas d'abonnement, pas de renouvellement auto. Un paiement unique, accès illimité à vie aux verdicts jour par jour.</p>
+      <p style="margin-top:24px; font-size:13px; color:#8b949e;">Pas d'abonnement, pas de renouvellement auto. Un paiement unique, ${p.days} jours d'accès aux verdicts jour par jour.</p>
     </div>
     <div class="footer">
       <p>Sargasses — <em>Il regarde la mer, jamais vos clients.</em></p>
@@ -148,15 +153,13 @@ function renderEmail({ email, beachName, region, promoLink, unsubscribeLink }) {
 </body>
 </html>`;
 
-  const text = `On garde ton pass pour ${beachLabel} (${regionLabel}) 48h — 12,99€ au lieu de 14,99€
+  const text = `Ton pass 30 jours t'attend toujours — ${p.price}
 
-Tu as regardé le verdict il y a 5 jours. La mer n'a pas changé d'avis — mais le prix, si.
+Tu as regardé le verdict pour ${beachLabel} (${regionLabel}) il y a 5 jours. La mer n'a pas changé d'avis.
 
-−2€ exceptionnel, valable 48h seulement. Après, le pass revient à 14,99€.
+30 jours de verdicts et d'alertes, paiement unique : ${p.price}.
 
 Récupérer mon pass : ${promoLink}
-
-Offre expire dans 48h.
 
 —
 Sargasses — Il regarde la mer, jamais vos clients.

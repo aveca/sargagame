@@ -2,10 +2,15 @@
 /**
  * cart-recovery-j3.cjs — J+3 Cart Recovery Email (Retention Agent)
  * Usage: node scripts/automation/cart-recovery-j3.cjs [--dry] [--day=1|3|5]
- * 
- * J+3 = "Dernier rappel : ton pass 30j à 12,99€ expire" — urgence douce, preuve fiabilité
+ *
+ * J+3 = "Dernier rappel : ton pass 30j à 14,99€ expire" — urgence douce, preuve fiabilité
  * Condition: pas de conversion J+1, pas d'email J+3 déjà envoyé (sg_cart_recovery_j3_sent)
  * Merge J+1/J+3/J+5 via --day param (future-proof)
+ *
+ * PRIX : 2026-11-27 — les sujets/copies annonçaient 12,99 € (et 11,99 $), un
+ * tarif qu'AUCUN serveur ne facture. Le prix affiché vient maintenant de
+ * scripts/automation/lib/pass-price.cjs (grille réelle, verrouillée par
+ * tests/unit/price-parity.test.cjs). Aucun montant n'est écrit en dur ici.
  */
 
 'use strict';
@@ -13,6 +18,7 @@
 const fs = require('fs');
 const path = require('path');
 const { createTransport } = require('nodemailer');
+const { passPrice } = require('./lib/pass-price.cjs');
 
 const ROOT = process.cwd();
 const DRY = process.argv.includes('--dry');
@@ -21,15 +27,17 @@ const DAY = (() => {
   return m ? parseInt(m.split('=')[1], 10) : 3;
 })();
 
+// Sujets construits AVEC le prix réel (aucun montant en dur).
+const PRICE = passPrice('mq').price;
 const DAY_CONFIG = {
-  1: { subject: 'Ton pass 30j à 12,99€ t\'attend encore 🌊', tone: 'doux', marker: 'sg_cart_recovery_j1_sent', templateFile: 'cart-recovery-j1-template.md' },
-  3: { subject: 'Dernier rappel : ton pass 30j à 12,99€ expire', tone: 'urgence_douce', marker: 'sg_cart_recovery_j3_sent', templateFile: 'cart-recovery-j3-template.md' },
-  5: { subject: 'Dernière chance : ton pass 30j à 12,99€ expire demain', tone: 'urgence_finale', marker: 'sg_cart_recovery_j5_sent', templateFile: 'cart-recovery-j5-template.md' }
+  1: { subject: () => `Ton pass 30j à ${PRICE} t'attend encore 🌊`, tone: 'doux', marker: 'sg_cart_recovery_j1_sent', templateFile: 'cart-recovery-j1-template.md' },
+  3: { subject: () => `Dernier rappel : ton pass 30j à ${PRICE} expire`, tone: 'urgence_douce', marker: 'sg_cart_recovery_j3_sent', templateFile: 'cart-recovery-j3-template.md' },
+  5: { subject: () => `Dernière chance : ton pass 30j à ${PRICE} expire demain`, tone: 'urgence_finale', marker: 'sg_cart_recovery_j5_sent', templateFile: 'cart-recovery-j5-template.md' }
 };
 
 const CFG = DAY_CONFIG[DAY] || DAY_CONFIG[3];
 const MARKER = CFG.marker;
-const SUBJECT = CFG.subject;
+const SUBJECT = CFG.subject();
 const TONE = CFG.tone;
 const TEMPLATE_FILE = path.join(ROOT, 'scripts', 'automation', CFG.templateFile);
 
@@ -58,9 +66,9 @@ function loadTemplate() {
     return fs.readFileSync(TEMPLATE_FILE, 'utf-8');
   } catch {
     return `{{#if tone_urgence_douce}}
-Dernier rappel : ton pass 30j à 12,99€ expire bientôt.
+Dernier rappel : ton pass 30j à {{prix}} expire bientôt.
 
-Tu as regardé les plages, tu as vu le verdict. Le pass 30 jours à 12,99€ t'attend encore — mais plus pour longtemps.
+Tu as regardé les plages, tu as vu le verdict. Le pass 30 jours à {{prix}} t'attend encore — mais plus pour longtemps.
 
 On publie notre fiabilité sur {{fiabilite_url}} : 76-79% selon la saison, mesuré au satellite, pas deviné. C'est la seule prévision qui publie ses erreurs.
 
@@ -76,10 +84,12 @@ function renderTemplate(tpl, ctx) {
     .replace(/{{fiabilite_url}}/g, ctx.fiabiliteUrl)
     .replace(/{{pass_url}}/g, ctx.passUrl)
     .replace(/{{unsub_url}}/g, ctx.unsubUrl)
+    .replace(/{{prix}}/g, ctx.price)
+    .replace(/{{jours}}/g, String(ctx.days))
     .replace(/{{tone_urgence_douce}}/g, ctx.tone === 'urgence_douce')
     .replace(/{{tone_urgence_finale}}/g, ctx.tone === 'urgence_finale')
     .replace(/{{tone_doux}}/g, ctx.tone === 'doux')
-    .replace(/{{cta}}/g, `<p style="text-align:center;margin:24px 0;"><a href="${ctx.passUrl}" style="background:#FFC72C;color:#0d1117;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-family:Bricolage Grotesque,sans-serif;display:inline-block;">Activer mon pass 30j — 12,99€</a></p>`);
+    .replace(/{{cta}}/g, `<p style="text-align:center;margin:24px 0;"><a href="${ctx.passUrl}" style="background:#FFC72C;color:#0d1117;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-family:Bricolage Grotesque,sans-serif;display:inline-block;">Activer mon pass 30j — ${ctx.price}</a></p>`);
 }
 
 async function sendEmail(to, subject, html) {
@@ -139,7 +149,9 @@ async function main() {
       fiabiliteUrl: FIABILITE_URL,
       passUrl: PASS_URL,
       unsubUrl: UNSUB_URL,
-      tone: TONE
+      tone: TONE,
+      price: PRICE,
+      days: passPrice('mq').days,
     });
 
     try {

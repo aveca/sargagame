@@ -8,11 +8,22 @@
  * Sends recovery email via SMTP using brandHeader + template
  *
  * Env: SUPABASE_URL, SUPABASE_SERVICE_KEY, SMTP_*, DRY_RUN=1|0
+ *
+ * 2026-11-27 — deux défauts corrigés (aucun impact live : ce script n'est
+ * appelé par AUCUN workflow, le chemin vivant est recover-abandoned-cart.cjs) :
+ *   1. PRIX : l'email annonçait « 12,99 € (ou 11,99 $) », montant facturé
+ *      nulle part. Le prix vient maintenant de lib/pass-price.cjs (grille
+ *      réelle, verrouillée par tests/unit/price-parity.test.cjs).
+ *   2. LIEN : le CTA pointait vers
+ *      `payment-links.mollie.com/payment/your-sejour-eur-link` — placeholder
+ *      jamais remplacé, 404 garanti. Le CTA utilise désormais le deep-link
+ *      vivant `/?paywall=1&pass=p30`, comme recover-abandoned-cart.cjs.
  */
 
 const { createClient } = require('@supabase/supabase-js');
 const { createTransport } = require('nodemailer');
 const { brandHeader } = require('./lib/email-send.cjs');
+const { passPrice, paywallUrl } = require('./lib/pass-price.cjs');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -26,15 +37,12 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 function getPassUrl(region) {
-  const regionKey = (region || 'eur').toLowerCase().startsWith('us') ? 'usd' : 'eur';
-  if (regionKey === 'usd') {
-    return 'https://payment-links.mollie.com/payment/your-sejour-usd-link';
-  }
-  return 'https://payment-links.mollie.com/payment/your-sejour-eur-link';
+  return paywallUrl(region, 'j1');
 }
 
 function buildEmail({ email, firstName, region, ctaUrl, subject }) {
-  const preheader = 'Ton pass 30 jours t\'attend — 12,99 €';
+  const p = passPrice(region);
+  const preheader = `Ton pass 30 jours t'attend — ${p.price}`;
   const headerHtml = brandHeader({ preheader });
 
   const bodyHtml = `
@@ -47,13 +55,13 @@ function buildEmail({ email, firstName, region, ctaUrl, subject }) {
 
       <p style="margin: 0 0 16px; font-size: 16px;">Notre prévision « mer propre » est <strong>auditée à ~76 %</strong> toutes saisons confondues (voir <a href="https://sargasses-martinique.com/fiabilite/" style="color:#0066cc;">/fiabilité/</a>).</p>
 
-      <p style="margin: 0 0 16px; font-size: 16px;">Ton pass 30 jours t'attend à <strong>12,99 €</strong> (ou 11,99 $ selon ta région). Pas d'abonnement, pas de carte mémorisée.</p>
+      <p style="margin: 0 0 16px; font-size: 16px;">Ton pass 30 jours t'attend à <strong>${p.price}</strong> — le prix affiché est le prix payé, sans abonnement ni carte mémorisée.</p>
 
       <p style="margin: 0 0 24px; font-size: 16px;">Si tu veux le corriger toi-même, le verdict gratuit d'aujourd'hui est <a href="https://sargasses-martinique.com/" style="color:#0066cc;">ici</a>.</p>
 
       <p style="text-align: center; margin: 32px 0;">
         <a href="${ctaUrl}" style="display:inline-block; background:#FFC72C; color:#0d1117; font-weight:700; padding:14px 28px; border-radius:8px; text-decoration:none; font-size:16px; font-family:'Anton',sans-serif; letter-spacing:0.5px;">
-          Récupérer mon pass 30j — 12,99 €
+          Récupérer mon pass 30j — ${p.price}
         </a>
       </p>
 
@@ -155,10 +163,9 @@ async function main() {
     return;
   }
 
-  const subject = 'Ton pass 30j t\'attend — 12,99 €';
-
   for (const cart of abandoned) {
     const ctaUrl = getPassUrl(cart.region);
+    const subject = `Ton pass 30j t'attend — ${passPrice(cart.region).price}`;
 
     console.log(`\n📧 Processing ${cart.email} (${cart.region}) → ${ctaUrl}`);
 
