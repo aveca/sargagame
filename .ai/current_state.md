@@ -1,3 +1,35 @@
+## 2026-11-14 17:20 UTC · Agent: OpenCode (Factory B — sargagame)
+
+### Travail effectué
+- **Résumé 1 ligne** : fraîcheur Copernicus audite (honnête, stale=true à 3184 min réelles), câblage `refreshSatellitePayload` du build vérifié et dorénavant protégé par un test de régression ; aucun produit modifié, aucun paiement touché.
+- **Détails** : voir `.ai/changelog.md` (même date). PRs #1430/#1469 observées OPEN+CONFLICTING, contenu non dupliqué.
+
+### Fichiers modifiés
+- `tests/unit/build-sargassum-json-freshness-wiring.test.cjs` — nouveau (test seul)
+- `.ai/changelog.md` — entrée datée
+- `.ai/current_state.md` — ce handoff
+
+### Tests réalisés
+- [x] npm run build → exit 0 (2 exécutions)
+- [x] check-bundle-budget → 206,7 Ko ≤ 210 Ko, exit 0 (2 exécutions)
+- [x] run-tests → 203/203 fichiers OK, exit 0 (re-run post-ajout, dont le nouveau test)
+- [x] node tests/unit/build-sargassum-json-freshness-wiring.test.cjs → exit 0 (10 assertions)
+- [ ] ux-smoke / playwright E2E — non exécutés (hors périmètre mission B, aucun UI touché)
+
+### Problèmes restants
+- [ ] PR #1430 et #1469 : CONFLICTING avec main — rebase nécessaire (autre agent)
+- [ ] Observation ERDDAP actuelle 2026-11-12T12:00Z (53 h) : dépassement du SLA satellite 900 min — comportement fail-closed conforme, attendre un publish NOAA frais
+- [ ] Warning esbuild pré-existant : `src/Sargasses_PROD.jsx:10321` caractère `}` invalide dans un élément JSX (non bloquant, build vert)
+
+### Prochaine action recommandée
+1. Rebase #1430/#1469 sur main — Rôle : coding/data
+2. Charger une observation ERDDAP fraîche via `daily-copernicus.yml` (dispatch) — Rôle : data
+
+### Branche / PR
+- Branche : `agent/mission/factory-b-copernicus`
+- PR : à créer (preuves dans le body)
+- Commit head : voir PR
+
 ## 2026-11-13 · Pro hôtel : paiement direct, e-mail d'accès (PR #1427, non mergée)
 
 - Les pages `/pro/pricing/` FR, EN et ES ont deux boutons vers les Payment Links Pro. Le script `public/pro/pricing-pay.js` choisit EUR ou USD selon l'un des 6 domaines.
