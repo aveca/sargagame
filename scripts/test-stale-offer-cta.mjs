@@ -48,7 +48,7 @@ try {
   assert.equal((src.match(/onPremium\("map_stale_offer"\)/g) || []).length, 1, 'un seul appel onPremium')
   assert.match(src, /!wmDecisionAvailable && !isPremium/, 'gated sur stale + non-Premium')
   assert.equal((src.match(/data-testid="wm-stale-offer-last-observation"/g) || []).length, 1, 'horodatage de la dernière observation visible')
-  assert.match(src, /formatObservationTimestamp\\(erddapTimestamp/, 'date dérivée de l’horodatage source satellite')
+  assert.match(src, /formatObservationTimestamp\(erddapTimestamp/, 'date dérivée de l’horodatage source satellite')
   pass('shared-component-single-fix+dated-observation')
 } catch (e) { fail(`shared-component-single-fix: ${e.message}`) }
 
