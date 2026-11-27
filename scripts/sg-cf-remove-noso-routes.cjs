@@ -2,8 +2,8 @@
 // sg-cf-remove-noso-routes.cjs
 //
 // Remplace les routes frontantes DOMAIN/* -> sg-noso par DOMAIN/* -> sargagame-<region>
-// (create -> verify coexistence -> delete old -> re-verify). sg-noso est CONSERVE
-// (routes re-creables en un appel). Aucun domaine ne peut se retrouver sans route.
+// via PUT (mise a jour atomique, pas de downtime, pas de suppression).
+// sg-noso est CONSERVE (routes re-creables en un appel).
 //
 // Usage :
 //   CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... node scripts/sg-cf-remove-noso-routes.cjs plan
@@ -11,7 +11,7 @@
 //
 // Modes :
 //   plan  -> lecture seule : liste les routes actuelles et ce qui serait fait.
-//   apply -> execute la sequence create->verify->delete->re-verify.
+//   apply -> execute la mise a jour atomique (PUT) + verification.
 //
 // Variables d'environnement requises :
 //   CLOUDFLARE_API_TOKEN    token avec permissions Zone:Workers Routes:Edit + Zone:Read
@@ -30,12 +30,6 @@ if (!ACCOUNT) { console.error('CLOUDFLARE_ACCOUNT_ID manquant'); process.exit(2)
 if (!['plan', 'apply'].includes(MODE)) { console.error('Mode inconnu: ' + MODE + ' (plan|apply)'); process.exit(2); }
 
 // Mapping exact (service bindings live, prouve 2026-11-10) :
-//   sargasses-guadeloupe.com -> sargagame-gp
-//   sargasses-martinique.com  -> sargagame-mq
-//   sargassummiami.com        -> sargagame-florida
-//   sargassumpuntacana.com    -> sargagame-puntacana
-//   sargassumcancun.com       -> sargagame-rivieramaya
-//   sargazotulum.com          -> sargagame-tulum
 const MAPPING = [
   { domain: 'sargasses-guadeloupe.com', worker: 'sargagame-gp' },
   { domain: 'sargasses-martinique.com',  worker: 'sargagame-mq' },
@@ -76,92 +70,69 @@ async function listRoutes(zoneId) {
   return json.result || [];
 }
 
-async function createRoute(zoneId, pattern, script) {
-  return cf('POST', '/zones/' + zoneId + '/workers/routes', { pattern, script });
-}
-
-async function deleteRoute(zoneId, routeId) {
-  return cf('DELETE', '/zones/' + zoneId + '/workers/routes/' + routeId);
+async function updateRoute(zoneId, routeId, pattern, script) {
+  return cf('PUT', '/zones/' + zoneId + '/workers/routes/' + routeId, { pattern, script });
 }
 
 function patternFor(domain) { return domain + '/*'; }
 
-async function processDomain(entry, apply) {
+async function processDomain(entry) {
   const { domain, worker } = entry;
   const zoneId = await getZoneId(domain);
   const routes = await listRoutes(zoneId);
   const pattern = patternFor(domain);
-  const oldRoutes = routes.filter(r => r.pattern === pattern && r.script === 'sg-noso');
-  const newRoutes = routes.filter(r => r.pattern === pattern && r.script === worker);
-  const otherRoutes = routes.filter(r => r.pattern === pattern && r.script !== 'sg-noso' && r.script !== worker);
+  const targetRoute = routes.find(r => r.pattern === pattern);
 
   console.log('\n=== ' + domain + ' (zone ' + zoneId + ') ===');
   console.log('  pattern : ' + pattern);
-  console.log('  routes existantes sur ce pattern :');
-  for (const r of routes.filter(r => r.pattern === pattern)) {
-    console.log('    - ' + r.script + ' (id=' + r.id + ')');
-  }
-  if (otherRoutes.length) {
-    console.warn('  ⚠ routes inattendues sur ce pattern (non touchées) : ' + otherRoutes.map(r => r.script).join(', '));
-  }
 
-  if (!oldRoutes.length && newRoutes.length) {
-    console.log('  ✓ déjà migré : ' + worker + ' présent, aucun sg-noso. Rien à faire.');
-    return { domain, status: 'already-migrated' };
-  }
-  if (!oldRoutes.length && !newRoutes.length) {
-    console.warn('  ⚠ aucune route sg-noso ni ' + worker + ' sur ce pattern. Vérifier manuellement.');
+  if (!targetRoute) {
+    console.warn('  ⚠ aucune route sur ce pattern. Vérifier manuellement.');
     return { domain, status: 'no-route' };
   }
 
-  if (MODE === 'plan') {
-    console.log('  PLAN :');
-    if (!newRoutes.length) console.log('    1. CREATE  ' + pattern + ' -> ' + worker);
-    console.log('    2. VERIFY  coexistence ' + worker + ' + sg-noso');
-    console.log('    3. DELETE  ' + oldRoutes.length + ' route(s) sg-noso');
-    console.log('    4. RE-VERIFY  ' + worker + ' seul sur le pattern');
-    return { domain, status: 'planned', oldRoutes: oldRoutes.length, newRoutes: newRoutes.length };
+  console.log('  route actuelle : ' + targetRoute.script + ' (id=' + targetRoute.id + ')');
+
+  if (targetRoute.script === worker) {
+    console.log('  ✓ déjà migré : ' + worker + '. Rien à faire.');
+    return { domain, status: 'already-migrated' };
   }
 
-  // APPLY
-  let createdId = null;
+  if (targetRoute.script !== 'sg-noso') {
+    console.warn('  ⚠ route pointe vers ' + targetRoute.script + ' (pas sg-noso). Vérifier manuellement.');
+    return { domain, status: 'unexpected-script', current: targetRoute.script };
+  }
+
+  if (MODE === 'plan') {
+    console.log('  PLAN : PUT ' + pattern + ' : sg-noso -> ' + worker + ' (atomique, pas de downtime)');
+    return { domain, status: 'planned', routeId: targetRoute.id };
+  }
+
+  // APPLY — mise a jour atomique
+  console.log('  APPLY : PUT ' + pattern + ' : sg-noso -> ' + worker + ' ...');
+  const originalScript = targetRoute.script;
   try {
-    if (!newRoutes.length) {
-      console.log('  1/4 CREATE ' + pattern + ' -> ' + worker + ' ...');
-      const created = await createRoute(zoneId, pattern, worker);
-      createdId = (created.result && created.result.id) || null;
-      console.log('      créé (id=' + createdId + ')');
-    } else {
-      console.log('  1/4 CREATE ignoré (' + worker + ' déjà présent)');
-    }
+    const updated = await updateRoute(zoneId, targetRoute.id, pattern, worker);
+    const newScript = (updated.result && updated.result.script) || worker;
+    if (newScript !== worker) throw new Error('Mise à jour non confirmée : script=' + newScript);
 
-    // 2. verify coexistence
-    console.log('  2/4 VERIFY coexistence ...');
-    const afterCreate = await listRoutes(zoneId);
-    const hasNew = afterCreate.some(r => r.pattern === pattern && r.script === worker);
-    const hasOld = afterCreate.some(r => r.pattern === pattern && r.script === 'sg-noso');
-    if (!hasNew) throw new Error('VERIFY échoué : ' + worker + ' absent après création');
-    console.log('      ' + worker + '=' + hasNew + ', sg-noso=' + hasOld + ' (coexistence OK)');
+    // verify
+    const after = await listRoutes(zoneId);
+    const verified = after.find(r => r.id === targetRoute.id);
+    if (!verified || verified.script !== worker) throw new Error('Vérification échouée : script=' + (verified && verified.script));
 
-    // 3. delete old sg-noso routes
-    console.log('  3/4 DELETE sg-noso (' + oldRoutes.length + ' route(s)) ...');
-    for (const r of oldRoutes) {
-      await deleteRoute(zoneId, r.id);
-      console.log('      supprimé id=' + r.id);
-    }
-
-    // 4. re-verify
-    console.log('  4/4 RE-VERIFY ...');
-    const finalRoutes = await listRoutes(zoneId);
-    const finalNew = finalRoutes.filter(r => r.pattern === pattern && r.script === worker);
-    const finalOld = finalRoutes.filter(r => r.pattern === pattern && r.script === 'sg-noso');
-    if (!finalNew.length) throw new Error('RE-VERIFY échoué : ' + worker + ' absent après suppression');
-    if (finalOld.length) throw new Error('RE-VERIFY échoué : sg-noso encore présent');
-    console.log('      ' + worker + '=' + finalNew.length + ', sg-noso=' + finalOld.length + ' ✓');
-    return { domain, status: 'migrated', createdId };
+    console.log('  ✓ Route mise à jour : ' + pattern + ' -> ' + worker + ' (id=' + targetRoute.id + ')');
+    return { domain, status: 'migrated', routeId: targetRoute.id };
   } catch (err) {
     console.error('  ✗ ERREUR sur ' + domain + ' : ' + err.message);
-    if (createdId) console.error('    route créée (id=' + createdId + ') mais suppression non atteinte — vérifier manuellement');
+    // rollback attempt
+    console.error('  ↩ Tentative de rollback : remettre sg-noso ...');
+    try {
+      await updateRoute(zoneId, targetRoute.id, pattern, originalScript);
+      console.error('  ↩ Rollback OK : route remise à ' + originalScript);
+    } catch (rbErr) {
+      console.error('  ✗ ROLLBACK ÉCHOUÉ : ' + rbErr.message + ' — route dans un état inconnu, vérifier manuellement !');
+    }
     throw err;
   }
 }
@@ -169,10 +140,11 @@ async function processDomain(entry, apply) {
 (async () => {
   console.log('Mode : ' + MODE.toUpperCase());
   console.log('Mapping : ' + MAPPING.length + ' domaines');
+  console.log('Méthode : PUT atomique (pas de downtime)');
   const results = [];
   for (const entry of MAPPING) {
     try {
-      results.push(await processDomain(entry, MODE === 'apply'));
+      results.push(await processDomain(entry));
     } catch (err) {
       console.error('\nArrêt sur erreur : ' + err.message);
       process.exit(1);
@@ -181,7 +153,8 @@ async function processDomain(entry, apply) {
   console.log('\n=== RÉSUMÉ ===');
   for (const r of results) console.log('  ' + r.domain + ' : ' + r.status);
   if (MODE === 'plan') {
-    console.log('\nPour appliquer : relancer avec le mode "apply" (et CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID).');
+    console.log('\nPour appliquer : relancer avec le mode "apply".');
+  } else {
+    console.log('\n✓ Remplacement terminé. Vérifier le site en production (sg-soscta ne doit plus être servi).');
   }
 })();
-PY
