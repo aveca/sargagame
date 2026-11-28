@@ -13,7 +13,7 @@ const season = content.pages && content.pages.season
 
 assert.ok(season, 'Florida Spanish season page remains configured')
 assert.equal(season.slug, 'temporada-sargazo-florida', 'canonical route slug is preserved')
-assert.match(season.title, /temporada de sargazo en florida/i, 'title matches the primary Spanish search intent')
+assert.match(season.title, /temporada de sargazo en miami y florida/i, 'title matches the observed Miami and Florida seasonal search intent')
 assert.match(season.title, /2026/, 'title retains the current season year')
 assert.ok(season.title.length <= 60, 'title remains within the selected SERP length budget')
 assert.ok(season.desc.length <= 158, 'meta description remains within the selected SERP length budget')
