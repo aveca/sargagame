@@ -2020,8 +2020,8 @@
         },
         {
           "id": "fl005",
-          "afai": 0.11,
-          "status": "clean"
+          "afai": 0.18,
+          "status": "moderate"
         },
         {
           "id": "fl006",
@@ -2045,7 +2045,7 @@
         },
         {
           "id": "fl010",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -2115,6 +2115,13 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.07
+    },
+    {
+      "date": "2026-11-28",
+      "beach": "fl005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.18
     }
   ]
 }
