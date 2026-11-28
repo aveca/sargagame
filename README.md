@@ -70,3 +70,7 @@ npm run dev
 npm run build
 VITE_REGION=puntacana npm run build
 ```
+
+## Test dry-run bridge multi-repo
+
+Ce fichier a été modifié dans le cadre d'un test de validation du bridge multi-dépôt (dry-run, sans impact production sur `main`). Branche `p0/dryrun-test-sargagame-001` — à ne pas merger.
