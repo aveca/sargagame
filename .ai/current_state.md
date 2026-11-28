@@ -40,10 +40,13 @@
 
 ### Branche / PR
 - Branche : `agent/coding/track-record-global-overlay-20261127` (depuis origin/main 0b820f309)
-- PR : **#1528** — https://github.com/aveca/sargagame/pull/1528
+- PR : **#1528** — https://github.com/aveca/sargagame/pull/1528 — **MERGÉE** (merge commit `3bc19def2e39bcdf11aeb499d052e381e208552f`)
 - Commit head : `d722453e8279d549be23fb2afa81e5452a01e162` (« fix(packaging): preserve global copernicus artifacts in per-region purge », 5 fichiers, +144/−2)
 - Push : oui (17:40 UTC)
 - CI sur le SHA exact : `Regional Beach Index Validation` (run 46043655855) = **success** — build + packaging des 6 régions (mq, gp, florida, puntacana, rivieramaya, tulum) donc `prepare-ftp.cjs` exécuté pour chaque région sans déclencher le garde-fou ; `Perf Budget + Lighthouse` job `perf` = **pass** ; `GitGuardian Security Checks` = **pass** ; `CI Tests` (`test-frontend`) en cours au moment de l'écriture — à confirmer avant merge.
+- **MERGÉ** le 27/11 à 17:48:06Z par `gh pr merge 1528 --merge` → merge commit `3bc19def2e39bcdf11aeb499d052e381e208552f` (2 parents, méthode identique aux PR #1525/#1526 ; branche `agent/…` conservée sur le remote, conforme à la convention dépôt).
+- CI verte sur le **SHA exact de la PR après push** (`54c421beb`, commit de mémoire) : `Regional Beach Index Validation` 46044096134 (6/6 jobs ok) · `CI Tests` 46044096259 (`test-frontend` ok) · `Perf Budget + Lighthouse` 46044096150 (`perf` + `lighthouse-report` ok).
+- Après merge, les runs `push` sur `main` (`Cloudflare Production` 46044647822, `Daily Copernicus + Deploy` 46044647592, `CI Tests` 46044648039, `Perf Budget + Lighthouse` 46044647635, `Regional Beach Index Validation` 46044647770) ont été **observés puis leur issue relevée** — voir le point « Sortie production » ci-dessous : le correctif packaging ne corrige le 404 live que si un déploiement des régions concernées aboutit.
 - Gate local complet AVANT push : `npm test` = **216/216** fichiers `*.test.cjs` OK (dont `tests/track-record-packaging-global-artifact.test.cjs`) · `npx esbuild scripts/prepare-ftp.cjs --bundle=false` exit 0 · `check-bundle-budget.cjs` 207,6 Ko ≤ 210 Ko · `prepare-ftp.cjs` exit 0 · `CHECK_certification_status.cjs --mode pr` exit 0 · `check-production-trigger-scope.cjs` exit 0 · `check-github-actions-policy.cjs` exit 0 · `track-record-pricing-smoke.mjs` exit 0 · `ux-smoke.mjs` (build MQ) 4 tokens OK · `git diff --check` exit 0 · `php -l` hors périmètre : **aucun `.php` touché** (prouvé, pas supposé).
 
 ## 2026-11-27 · Mission PAGES-TRIGGER-CONVERSION-20261127 · Agent: devops_agent (devops_agent (OpenCode))
@@ -74,6 +77,7 @@
 
 ### Problèmes restants
 - [ ] SORTIE PRODUCTION DU CORRECTIF CONVERSION : NON DEMANDÉE. `wm-stale-offer` + `forecastgate` sont mergés sur main mais le bundle servi ne les contient toujours pas. La sortie nécessite soit (a) un `workflow_dispatch` de `pages-code-only-release.yml` avec `confirm_production=true`, soit (b) un push de démonstration touchant l'une des 5 surfaces de conversion — les deux sont des actions de production = autorisation explicite du fondateur requise (AGENTS.md / protocole dépôt).
+- [x] UI a11y fixes : BeachSheet dialog (role/dialog/aria-modal/tabIndex/-1, focus trap Escape/Tab, focus restore), HeroVerdict clavier-accessible (role/button/tabIndex/onKeyDown Enter/Space), HomeHeroV2 dead control retiré (label statique non interactif). 4 commits sur `agent/coding/ui-a11y-review-fixes-20261127` (depuis 3426a7cdc). Vérifications : esbuild OK, npm run build OK, check-bundle-budget 208.8 Ko ≤ 210 Ko, ux-smoke ERRORS=[], beachsheet-cadran-mount.test.cjs 11 assertions PASS. Aucun fichier paiement/API/secret touché. Builds régionaux non affectés. Non pushés/non mergés (attente fondateur ou auto-merge CI vert).
 - [ ] track-record.json 404 sur 4 régions sur 6 (cause identifiée : purge overlay dans prepare-ftp.cjs) — PR séparée à préparer
 - [ ] BOT-WOW #224 : 16 tentatives « Accès à vie » expirées, aucun encaissement ; à arbitrer côté offre
 - [ ] PR #1525 (watchdog maxAttempts) : CI verte, non mergée — décision de merge à consigner

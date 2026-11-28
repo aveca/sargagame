@@ -206,6 +206,9 @@ export default function BeachSheet({
   const trk=(n,p)=>{try{(trackProp||window.track||console.log)(n,p)}catch(_){}}
   const swipe=useSwipeClose(()=>onClose&&onClose(),{threshold:70,guardInput:true})
   const closingRef=useRef(false)
+  const sheetRef=swipe.ref
+  const closeBtnRef=useRef(null)
+  const prevFocusRef=useRef(null)
   const freshness=getObservationFreshness(sargData)
   const hasTrustedObservation=freshness.fresh
   const hasScore=hasTrustedObservation&&typeof beach?.score==="number"
@@ -250,7 +253,29 @@ export default function BeachSheet({
     try{if(swipe.ref.current)swipe.ref.current.style.transition="transform .26s cubic-bezier(.4,0,1,1)";if(swipe.ref.current)swipe.ref.current.style.transform="translateY(102%)"}catch(_){}
     setTimeout(()=>{closingRef.current=false;onClose&&onClose()},260)
   }
-  useEffect(()=>{const h=e=>{if(e.key==="Escape")requestClose()};document.addEventListener("keydown",h);return()=>document.removeEventListener("keydown",h)},[])
+  useEffect(()=>{
+    prevFocusRef.current=(typeof document!=="undefined"&&document.activeElement instanceof HTMLElement)?document.activeElement:null
+    const focusInitial=()=>{try{(closeBtnRef.current||sheetRef.current)?.focus?.()}catch(_){}}
+    const t=setTimeout(focusInitial,0)
+    const h=e=>{
+      if(e.key==="Escape"){e.preventDefault();requestClose();return}
+      if(e.key!=="Tab")return
+      const root=sheetRef.current
+      if(!root)return
+      const sel='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      const nodes=Array.prototype.filter.call(root.querySelectorAll(sel),el=>el.offsetParent!==null||el===document.activeElement)
+      if(!nodes.length){e.preventDefault();root.focus?.();return}
+      const first=nodes[0], last=nodes[nodes.length-1], a=document.activeElement
+      if(e.shiftKey){if(a===first||!root.contains(a)){e.preventDefault();last.focus()}}
+      else if(a===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener("keydown",h,true)
+    return()=>{
+      clearTimeout(t)
+      document.removeEventListener("keydown",h,true)
+      try{prevFocusRef.current?.focus?.()}catch(_){}
+    }
+  },[])
 
   if(!beach)return null
 
@@ -266,8 +291,10 @@ export default function BeachSheet({
         @keyframes bsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
         .bs-card{background:${COMIC.cream};border:3px solid ${COMIC.ink};border-radius:16px;box-shadow:3px 3px 0 ${COMIC.ink}}
         .bs-chip{font:800 12px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px}
-        .bs-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bs-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease, box-shadow .08s ease}
+        .bs-gobtn:hover{filter:brightness(1.02)}
         .bs-gobtn:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bs-gobtn:focus-visible,.bs-sheet button:focus-visible{outline:3px solid #1b6bff;outline-offset:3px}
         .bs-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){
           .bs-story-section{opacity:1!important;transform:none!important;transition:none!important}
@@ -282,6 +309,7 @@ export default function BeachSheet({
       {/* Sheet */}
       <div ref={swipe.ref} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd}
         className={"bs-sheet"+(v2Enabled?" sg-v2-beach-sheet":"")}
+        role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Détail plage","Beach details","Detalle de playa")} tabIndex={-1}
         style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
@@ -291,7 +319,7 @@ export default function BeachSheet({
         <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
 
         {/* Close */}
-        <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+        <button ref={closeBtnRef} onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
           style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>

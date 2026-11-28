@@ -4643,7 +4643,24 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       backdropRef.current&&(backdropRef.current.style.transition="opacity .26s ease",backdropRef.current.style.opacity="0")}catch(_){}
     setTimeout(()=>{closingRef.current=false;onClose&&onClose()},250)
   }
-  useEffect(()=>{const h=e=>{if(e.key==="Escape")requestClose()};document.addEventListener("keydown",h);return()=>document.removeEventListener("keydown",h)},[])
+  useEffect(()=>{
+    prevFocusRef.current=(typeof document!=="undefined"&&document.activeElement instanceof HTMLElement)?document.activeElement:null
+    const t=setTimeout(()=>{try{(closeBtnRef.current||sheetRef.current)?.focus?.()}catch(_){}},0)
+    const h=e=>{
+      if(e.key==="Escape"){e.preventDefault();requestClose();return}
+      if(e.key!=="Tab")return
+      const root=sheetRef.current
+      if(!root)return
+      const sel='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      const nodes=Array.prototype.filter.call(root.querySelectorAll(sel),el=>el.offsetParent!==null||el===document.activeElement)
+      if(!nodes.length){e.preventDefault();root.focus?.();return}
+      const first=nodes[0],last=nodes[nodes.length-1],a=document.activeElement
+      if(e.shiftKey){if(a===first||!root.contains(a)){e.preventDefault();last.focus()}}
+      else if(a===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener("keydown",h,true)
+    return()=>{clearTimeout(t);document.removeEventListener("keydown",h,true);try{prevFocusRef.current?.focus?.()}catch(_){}}
+  },[])
   // Drag-to-dismiss (seuil 10% hauteur écran — recherche Reanimated) + rubber-band
   // _swBlock : ne pas armer le swipe-close si un champ est focus (email/note) — fix
   // régression data-loss (audit UX) ; + garde scrollTop>5 (ne fight pas le scroll contenu).
@@ -4701,8 +4718,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         /* Classe SANS « cta » dans le nom : esquive le skin forcé .theme-comic
            [class*="cta"] qui imposait Anton+letter-spacing sur ce bouton. BIBLE : un
            SEUL Anton/écran = le nom de plage ; le CTA reste Bricolage 800. */
-        .bsc-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bsc-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease, box-shadow .08s ease}
+        .bsc-gobtn:hover{filter:brightness(1.02)}
         .bsc-gobtn:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bsc-gobtn:focus-visible,.bsc-sheet button:focus-visible{outline:3px solid #1b6bff;outline-offset:3px}
         /* iOS WebKit peint un fond BLANC natif sur tout <button> sans reset → fini le « blanc chelou » */
         .bsc-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){.bsc-chip,.bsc-bar,.bsc-row{animation:none!important}}
@@ -4717,6 +4736,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       {/* bsc-fiche = cible EXCLUSIVE de la media query desktop ci-dessus (bsc-sheet est
           aussi la classe de l'overlay B2BModal — ne pas le clamp par ricochet) */}
       <div ref={sheetRef} className="bsc-sheet bsc-fiche" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Détail plage","Beach details","Detalle de playa")} tabIndex={-1}
         style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
@@ -4724,7 +4744,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           animation:"bscUp .42s cubic-bezier(.16,1,.3,1) both",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
         {/* Grip + X visible (NN/g : jamais handle seul) */}
         <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
-        <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+        <button ref={closeBtnRef} onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
           style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 
         {/* En-tête : nom + badge statut */}
@@ -5007,10 +5027,26 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   }
 
   // Escape key to close
+  // Dialog a11y : focus initial, Escape, Tab trap, restauration focus au close.
+  const closeBtnRef=useRef(null)
+  const prevFocusRef=useRef(null)
   useEffect(()=>{
-    const h=e=>{if(e.key==="Escape")requestClose()}
-    document.addEventListener("keydown",h)
-    return()=>document.removeEventListener("keydown",h)
+    prevFocusRef.current=(typeof document!=="undefined"&&document.activeElement instanceof HTMLElement)?document.activeElement:null
+    const t=setTimeout(()=>{try{(closeBtnRef.current||sheetRef.current)?.focus?.()}catch(_){}},0)
+    const h=e=>{
+      if(e.key==="Escape"){e.preventDefault();requestClose();return}
+      if(e.key!=="Tab")return
+      const root=sheetRef.current
+      if(!root)return
+      const sel='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      const nodes=Array.prototype.filter.call(root.querySelectorAll(sel),el=>el.offsetParent!==null||el===document.activeElement)
+      if(!nodes.length){e.preventDefault();root.focus?.();return}
+      const first=nodes[0],last=nodes[nodes.length-1],a=document.activeElement
+      if(e.shiftKey){if(a===first||!root.contains(a)){e.preventDefault();last.focus()}}
+      else if(a===last){e.preventDefault();first.focus()}
+    }
+    document.addEventListener("keydown",h,true)
+    return()=>{clearTimeout(t);document.removeEventListener("keydown",h,true);try{prevFocusRef.current?.focus?.()}catch(_){}}
   },[onClose])
 
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
@@ -5053,7 +5089,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         }
         requestClose()
       }}/>
-      <div className="sheet" ref={sheetRef}
+      <div className="sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label={beach?.name||_t(lang,"Détail plage","Beach details","Detalle de playa")} tabIndex={-1}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
@@ -5083,7 +5119,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
           {/* Close button */}
-          <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
+          <button ref={closeBtnRef} onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
             width:44,height:44,borderRadius:22,
             background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
             border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
@@ -10271,9 +10307,13 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 @keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
 .sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}
 @keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+.sg-heroTap{transition:transform .14s ease, filter .14s ease, box-shadow .14s ease}
+.sg-heroTap:hover{filter:brightness(1.04)}
+.sg-heroTap:active{transform:translateY(1px) scale(.995)}
+.sg-heroTap:focus-visible{outline:3px solid #FFC72C;outline-offset:3px;border-radius:12px}
 @media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}
 .sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}.sg-flow{animation:none}
-.sgst-ring,.sgst-ring2,.sgst-bob{animation:none}}`}</style>
+.sg-heroTap{transition:none}.sgst-ring,.sgst-ring2,.sgst-bob{animation:none}}`}</style>
 
       {/* STICKY BAR — apparaît quand le hero sort de l'écran (modèle SpaceX) */}
       <div className={"sg-stick"+(stuck?" on":"")} aria-hidden={!stuck}>
@@ -10311,7 +10351,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       {/* Bandeau haut : décoratif (wordmark + LIVE) mais AU-DESSUS du voile cliquable
           → sans handler il avalait le tap (dead-clicks home). On lui donne le même
           tap = ouvrir la fiche, pour récupérer ces clics morts. */}
-      <div onClick={()=>{track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
+      <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"topbar"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
         <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
@@ -10324,34 +10364,36 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",
         maxWidth:560,margin:"0 auto"}}>
         {userPos&&(
-          <div onClick={()=>{track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
+          <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"near"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
             color:"#FFC72C",marginBottom:8,cursor:"pointer"}}>
             📍 {_t(lang,"LA PLUS PROCHE DE TOI","CLOSEST TO YOU","LA MÁS CERCA DE TI")}
           </div>
         )}
-        <div onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
+        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
           {dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
         </div>
-        <h1 onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
-          letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",cursor:"pointer",
+        <h1 style={{margin:"0 0 14px"}}>
+          <button type="button" onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{background:"none",border:"none",padding:0,margin:0,fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
+          letterSpacing:".01em",textTransform:"uppercase",color:"#fff",cursor:"pointer",textAlign:"left",
           textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
-          {beach.name}
+            {beach.name}
+          </button>
         </h1>
-        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
+        <div className="sg-heroTap" role="button" tabIndex={0} aria-label={_t(lang,"Voir le verdict détaillé","See detailed verdict","Ver veredicto detallado")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
           {updFresh?verdictTxt:"Vérification en cours"}
           {beach.score!=null&&updFresh&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
         {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
         {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
-        <div onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
+        <div className="sg-heroTap" role="button" tabIndex={0} aria-label={_t(lang,"Voir la fraîcheur de l'observation","See observation freshness","Ver frescura de la observación")} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px rgba(34,197,94,.75)":"none",flexShrink:0}}/>
           {updFresh?<>{_t(lang,"Observation satellite","Satellite observation","Observación satelital")}{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </div>
         )}
         {/* Compteur live des plages propres / à éviter (additif · rollback ?herolive=0) */}
         {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&updFresh&&(
-        <div onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+        <button type="button" onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase",background:"none",border:"none",padding:0,font: "inherit"}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
             <span style={{color:"#fff"}}>{liveCounts.clean} {_t(lang,"propres","clean","limpias")}</span>
@@ -10361,7 +10403,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             <span style={{width:8,height:8,borderRadius:"50%",background:"#E8522A",flexShrink:0}}/>
             <span style={{color:"rgba(255,255,255,.9)"}}>{liveCounts.avoid} {_t(lang,"àéviter","to avoid","a evitar")}</span>
           </span>
-        </div>
+        </button>
         )}
         {/* Navigation rapide plage suivante propre (additif · rollback ?heronext=0) */}
         {!/[?&]heronext=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(()=>{
@@ -10370,20 +10412,20 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           const next=list.slice(idx+1).find(b=>b&&b.status==="clean")||list.find(b=>b&&b.status==="clean"&&b.id!==beach.id)
           if(!next)return null
           return(
-          <div onClick={()=>{track("sg_hero_tap",{t:"next"});onOpenBeach&&onOpenBeach(next)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+          <button type="button" onClick={()=>{track("sg_hero_tap",{t:"next"});onOpenBeach&&onOpenBeach(next)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase",background:"none",border:"none",padding:0,font:"inherit",textAlign:"left"}}>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:"#FFC72C",flexShrink:0}}/>
               <span style={{color:"#fff"}}>{_t(lang,"Prochaine plage propre","Next clean beach","Playa limpia siguiente")}</span>
             </span>
             <span style={{fontSize:12,color:"#fff",fontWeight:800}}>{next.name}</span>
             <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>▸</span>
-          </div>
+          </button>
           )
         })()}
         )}
         {/* Tendance J+1 (additif · rollback ?herotomo=0) */}
         {!/[?&]herotomo=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&j1&&(
-        <div onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+        <div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:j1==="clean"?"#22C55E":j1==="moderate"?"#F59E0B":"#E8522A",flexShrink:0}}/>
             <span style={{color:"#fff"}}>{_t(lang,"Demain","Tomorrow","Mañana")}</span>
@@ -10392,7 +10434,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>{j1==="clean"?"▲":j1==="moderate"?"▬":"▼"}</span>
         </div>
         )}
-        {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
+        {sub&&<div role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}}} onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
             home vs 72-98% "état maintenant", mais sur grand écran les
