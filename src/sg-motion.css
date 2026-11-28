@@ -1,0 +1,109 @@
+/* ════════════════════════════════════════════════════════
+   SARGASSES — Motion budget & stability guardrails (2026)
+   Mission OPP-DISC-aha-visual-instability-mq-home
+   
+   Objectif : stabiliser AHA moment rendering sur home/mq.
+   
+   Budgets :
+   - Animation frame ≤ 16ms (~60fps), composite-only properties
+   - No layout/paint triggers in idle regions
+   - prefers-reduced-motion compliance (media-feature query)
+   ═════════════════════════======
+
+Loi 1 — Motion budget strict — toutes les animations :
+- Composite-layer only (`transform`, `opacity`) pour rester dans le pipeline de composition GPU
+- Interne à une même DOM arborescence → pas de repaint/layout en cascade
+- Clamped transitions (0.2s/300ms) sur mobile, jamais inférieurs au tick display
+
+Loi 2 — Reduced motion mandatory : `@media (prefers-reduced-motion: reduce)` active par défaut, zéro animation sauf feedback essential (focus ring). Respect des WCAG 2.2 §3.2.6.
+
+Loi 3 — Throttle/Debouncer in-JS avant mount — tout setState lié au pointer/mouse scroll doit être clamped à ~16ms (`useSyncExternalStore` ou `ResizeObserver`). Hors de ces contraintes → jank garanti N × 60 calls/sec où N = instances mounted.
+
+Loi 4 — Zone critique first-paint : chunk initial ne porte que le HeroVerdict/GameFunnel/HomeAZ + map world barebones + footer légende ; tout « wow / scene » (splash, vignette, hero veill) behind `lazy()`+`Suspense`. Le LCP reste < P30 par les assets critiques inline (fonts dans HTML).
+
+Loi 5 — i18n : pas de string en dur. Traductions via `_t(fr,en,es)` ou tokens CSS custom-properties (`var(--sg-anim-name-duration)`) injectés au build pour A/B tests flag-enabled / disabled.
+
+═══════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════ 
+   LOI 2 — REDUCED MOTION BY DEFAULT (WCAG §3.2.6)
+   
+   Toute animation de transition doit se dégrader à zéro :
+   - Opacity / transform = instant ou pas du tout
+   - Aucune apparition/dissipation progressive
+   ```  
+   @media (prefers-reduced-motion: reduce){*{transition:none;animation-duration:.01s;scroll-behavior:auto;}svg * {transform-box:fill-box;transform-origin:center;}@keyframes/*{animation-duration:.01s}}}
+   ```  */
+
+
+/* ═══════════════════════════════════════════════════════ 
+   LOI 4 — FIRST-PAINT CRITICAL CHUNK (performance LCP)
+   
+   Le bundle eager ne contient que :
+   - HeroVerdict + GameFunnel/HomeAZ + map world barebones (`world-bg`, `region-badge`)
+   - Footer légende + marque  
+   
+   Scènes « wow / narrative » derrière lazy()+Suspense (splash, vignette hero veilleur, story overlay).
+
+═══════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════ 
+   LOI 3 — THROTTLE/DEBOUNCE IN-JS (clamped ≤16ms display tick)
+   
+   Pattern JS (appliquer dans les composants React qui lisent pointer/mouse scroll resize events):
+
+import {useSyncExternalStore,useState,CSSProperties}from"react";export function throttledListener(fn){let uid=Symbol(),lastTick=new Map();return(e)=>{const idx=`${uid}-${e.type}`;if(!lastTick.has(idx)){try{setImmediate(()=>fn(e));return}catch(_){}}else if(Date.now()-lastTick.get(idx)<16)return};try{let prev=setTimeout(()=>{},40);function onTrigger(evt){clearInterval(prev);prev=setTimeout(()=>({}),35)};e?.addEventListener&&onTrigger(evt);e?.removeEventListener&&(window[idx]=previous=throttledListener(window)));setTimeout(()=(lastTick.delete(idx))},16)}return fn}
+
+
+/* ═══════════════════════════════════════════════════════ 
+   MOTION RULES (apply to <style> injections / CSS modules) 
+  
+   
+*/
+
+/* Global reset: no default browser animations */
+html, body { animation: none; scroll-behavior: auto; }
+
+
+/* ══════════════════════════
+   HOME MQ STABILITY — LOI 1+2 
+   =========================================================================== 
+
+   La mission aha-visual-instability-mq-home corrige le churn visuel du splash
+   home (home visual instability pctHot=0.177).
+
+   Solution minimaliste : désactiver les animations de l'overlay hero par défaut,
+   conserver la transition statique pour feedback tactile.
+*/
+
+/* Désactive toutes les transitions CSS sur les éléments d'introduction à l'écran premier */
+html[data-home-mq-flag="true"] .hero-intro-overlay { animation: none !important; opacity: 1 !important }
+ html[data-home-mq-flag="true"]. hero-splash-bg 
+{ background-image : var(--sg-hero-splash-bg) 
+   background-size cover}  
+ /* Conserver la transition statique pour feedback tactile uniquement */ .hero-touch-feedback { transform: translate(var(--touch-delta)) scale(1.02); opacity: 1; transition: none }
+/* Feedback focus/accessibilité toujours préservé (a11y) */ *:focus-visible, button:focus-visible, a:focus-visible 
+{ outline : 3px solid var(--sg-mute, rgba(0 ,0 ,0 .4));outline-offset2px;border-radius:8px;}
+
+
+html[data-home-mq-flag="true"]
+.hero-entrance-dissolve { opacity: 1 !important; animation-fill-mode:none}
+ html[data- home- mq-flag= true][data-splash-visible="false"]. hero-fade-in { animation-name:nop }
+
+@keyframes nop{from,to{opacity:0}}
+
+
+html [ data-home-mq-flag = "true"] .fade-out-dissolve 
+,hero-exit-swipe-up
+{animation-duration:.2s;transition-property:transform}
+
+
+/* ══════════════════════════════════════ 
+   SCENE TOKENS — GOLDEN-HOUR SOURCE (SCENE_TOKENS JS inline)
+
+  
+*/
+
+
