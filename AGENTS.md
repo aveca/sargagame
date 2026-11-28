@@ -521,3 +521,14 @@ Après réception du rapport, ChatGPT vérifie directement sur GitHub le commit,
 - Préserver les changements locaux, les secrets et l'historique Git ; jamais de force-push.
 - Les règles spécifiques de ce dépôt, notamment celles relatives aux paiements, aux données, à la production et au déploiement, restent prioritaires. Ne pas effectuer de suppression irréversible, migration destructive, fusion ou déploiement de production sans autorisation explicite.
 - N'utiliser que les outils réellement disponibles. Si l'accès navigateur/runtime local manque, le signaler sans prétendre avoir testé.
+
+
+## Canonical autonomy contract (mandatory)
+
+Read `AUTONOMY_CONTRACT.md` before every mission. It is the canonical cross-agent operating contract for autonomy, evidence, human-approval boundaries, and conflict resolution. Repository-specific product and delivery restrictions remain in force; this contract does not grant new credentials or override a safety gate.
+
+- Do not ask the founder to copy/paste prompts or relay routine reports when the authorized Factory/GitHub channel is operational.
+- For ordinary reversible work in the permitted scope, claim, implement, test, branch, push, PR, report, and resume autonomously.
+- Never claim local GUI execution from API/headless evidence. Use a dedicated Factory-owned GUI profile; never touch personal/protected sessions.
+- Never expand permissions by editing only documentation. Runtime admission and delivery code must enforce the same policy.
+- If policies conflict or a capability is missing, fail closed, identify the exact blocker, and continue with safe preparatory work.
