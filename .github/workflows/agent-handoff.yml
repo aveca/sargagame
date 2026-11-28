@@ -1,9 +1,8 @@
 name: Agent Handoff Automation
 
 on:
-  schedule:
-    # Toutes les 4 heures : vérifie s'il y a du travail en attente
-    - cron: '0 */4 * * *'
+  # Manual diagnostic only. Local agent execution is owned by the Factory bridge,
+  # not by this GitHub-hosted workflow.
   workflow_dispatch:
     inputs:
       task_id:
